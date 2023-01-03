@@ -59,6 +59,7 @@ const columns = [
 function Bots() {
   const [, contextDispatch] = useSoftUIController();
   const botsList = useSelector((state) => state.bots.list);
+  const loading = useSelector((state) => state.bots.loading);
   const loadingBots = useSelector((state) => state.bots.loadingBots);
   const dispatch = useDispatch();
 
@@ -69,7 +70,7 @@ function Bots() {
   let { user } = useAuth();
 
   useEffect(async () => {
-    await BotsApi.getList(user.token, dispatch);
+    dispatch(BotsApi.getList(user.token));
   }, []);
 
   return (
@@ -80,6 +81,18 @@ function Bots() {
           <Card>
             <SuiBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
               <SuiTypography variant="h6">Telegram Bots</SuiTypography>
+              <SuiButton
+                textColor="success"
+                iconOnly={true}
+                circular={true}
+                buttonColor="error"
+                variant="text"
+                onClick={() => dispatch(BotsApi.getList(user.token))}
+              >
+                <Icon className="text-info" fontSize="default">
+                  refresh
+                </Icon>
+              </SuiButton>
             </SuiBox>
             <SuiBox customClass={classes.tables_table}>
               <TableContainer>
@@ -115,7 +128,7 @@ function Bots() {
                         <TableCell colSpan={5}>
                           <SuiBox p={1} textAlign="center">
                             <SuiTypography variant="button" fontWeight="medium">
-                              {"No bots"}
+                              {!loading ? "No bots" : <CircularProgress color="info" />}
                             </SuiTypography>
                           </SuiBox>
                         </TableCell>
@@ -146,9 +159,7 @@ function Bots() {
                                       {bot.name}
                                     </SuiTypography>
                                     <SuiTypography variant="caption" textColor="secondary">
-                                      {bot.token.slice(0, 4) +
-                                        "****" +
-                                        bot.token.slice(bot.token.length - 5, bot.token.length)}
+                                      {bot.additional_data?.username}
                                     </SuiTypography>
                                   </SuiBox>
                                 </SuiBox>
@@ -188,7 +199,8 @@ function Bots() {
                                     buttonColor="error"
                                     variant="text"
                                     onClick={() =>
-                                      dispatch(BotsApi.clearWebhook(user.token, bot.id))
+                                      // dispatch(BotsApi.clearWebhook(user.token, bot.id))
+                                      alert("TBA: handle confirmation")
                                     }
                                   >
                                     <Icon className="text-danger" fontSize="default">
@@ -244,6 +256,15 @@ function Bots() {
                                   textColor="secondary"
                                   fontWeight="medium"
                                 >
+                                  <SuiButton
+                                    buttonColor="dark"
+                                    variant="text"
+                                    onClick={() => {
+                                      dispatch(BotsApi.sync(user.token, bot.id));
+                                    }}
+                                  >
+                                    sync
+                                  </SuiButton>
                                   <SuiButton
                                     buttonColor="dark"
                                     variant="text"

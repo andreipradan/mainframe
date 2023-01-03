@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Bot(models.Model):
+    additional_data = models.JSONField(blank=True, default=dict, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=False)
     last_called_on = models.DateTimeField(blank=True, null=True)

@@ -6,6 +6,7 @@ export const botsSlice = createSlice({
     editorOpen: false,
     errors: null,
     list: null,
+    loading: false,
     loadingBots: null,
     selectedBot: null,
   },
@@ -30,8 +31,13 @@ export const botsSlice = createSlice({
     set: (state, action) => {
       state.list = action.payload;
       state.errors = null;
+      state.loading = false;
     },
     setLoading: (state, action) => {
+      state.list = null;
+      state.loading = action.payload;
+    },
+    setLoadingBots: (state, action) => {
       state.loadingBots = !state.loadingBots
         ? [action.payload]
         : [...state.loadingBots, action.payload];
@@ -44,6 +50,7 @@ export const botsSlice = createSlice({
   },
 });
 
-export const { add, remove, select, set, setErrors, setLoading, update } = botsSlice.actions;
+export const { add, remove, select, set, setErrors, setLoading, setLoadingBots, update } =
+  botsSlice.actions;
 
 export default botsSlice.reducer;

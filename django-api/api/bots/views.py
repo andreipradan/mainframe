@@ -45,3 +45,24 @@ class BotViewSet(viewsets.ModelViewSet):
         if instance.webhook != serializer.validated_data["webhook"]:
             self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
+
+    @action(detail=True, methods=['get'], url_path="sync")
+    def sync(self, request, **kwargs):
+        instance = self.get_object()
+        try:
+            bot = telegram.Bot(instance.token)
+        except telegram.error.TelegramError as e:
+            return JsonResponse({"Telegram Error": e.message}, status=400)
+
+        bot_data = {
+            "additional_data": {
+                **bot.bot.to_dict(),
+                "last_name": bot.bot.last_name,
+                "link": bot.bot.link,
+            },
+            "name": bot.bot.full_name,
+        }
+        serializer = self.get_serializer(instance, data=bot_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return JsonResponse(data=serializer.data)

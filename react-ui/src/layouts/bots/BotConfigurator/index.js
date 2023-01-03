@@ -146,7 +146,7 @@ function Configurator() {
           <SuiTypography variant="body2" textColor="text">
             {selectedBot
               ? selectedBot.markedForDeletion
-                ? "Are you sure you want to delete this bot?"
+                ? `Are you sure you want to delete ${selectedBot.name}?`
                 : "Edit details"
               : "Fill in details"}{" "}
           </SuiTypography>
