@@ -2,7 +2,13 @@ import { createSlice } from "@reduxjs/toolkit";
 
 export const botsSlice = createSlice({
   name: "bots",
-  initialState: { editorOpen: false, errors: null, list: null, selectedBot: null },
+  initialState: {
+    editorOpen: false,
+    errors: null,
+    list: null,
+    loadingBots: null,
+    selectedBot: null,
+  },
   reducers: {
     add: (state, action) => {
       state.list = state.list ? [...state.list, action.payload] : [action.payload];
@@ -25,15 +31,19 @@ export const botsSlice = createSlice({
       state.list = action.payload;
       state.errors = null;
     },
+    setLoading: (state, action) => {
+      state.loadingBots = !state.loadingBots
+        ? [action.payload]
+        : [...state.loadingBots, action.payload];
+    },
     update: (state, action) => {
-      state.list = state.list.map((bot) =>
-        bot.id === action.payload.botId ? action.payload.data : bot
-      );
+      state.list = state.list.map((bot) => (bot.id === action.payload.id ? action.payload : bot));
       state.errors = null;
+      state.loadingBots = state.loadingBots.filter((bot) => bot.id === action.payload.id);
     },
   },
 });
 
-export const { add, remove, select, set, setErrors, update } = botsSlice.actions;
+export const { add, remove, select, set, setErrors, setLoading, update } = botsSlice.actions;
 
 export default botsSlice.reducer;

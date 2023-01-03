@@ -84,7 +84,6 @@ function Configurator() {
   let { user } = useAuth();
 
   const handleCloseConfigurator = async () => {
-    if (selectedBot) reduxDispatch(select(null));
     if (errors) reduxDispatch(setErrors(null));
     dispatch({ type: "OPEN_CONFIGURATOR", value: false });
   };
@@ -155,77 +154,83 @@ function Configurator() {
 
         <Icon
           className={`font-bold ${classes.configurator_close_icon}`}
-          onClick={handleCloseConfigurator}
+          onClick={async () => {
+            reduxDispatch(select(null));
+            await handleCloseConfigurator();
+          }}
         >
           close
         </Icon>
       </SuiBox>
-
-      <Divider />
+      {!selectedBot?.markedForDeletion && <Divider />}
       <SuiBox component="form" role="form">
-        <SuiBox mb={0.5}>
-          <SuiBox mb={1} ml={0.5}>
-            <SuiTypography component="label" variant="caption" fontWeight="bold">
-              Name
-            </SuiTypography>
-          </SuiBox>
-          <SuiInput
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            type="text"
-            placeholder="Name"
-          />
-        </SuiBox>
-        <SuiBox mb={2}>
-          <SuiBox mb={1} ml={0.5}>
-            <SuiTypography component="label" variant="caption" fontWeight="bold">
-              Token
-            </SuiTypography>
-          </SuiBox>
-          <SuiInput
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            type="password"
-            placeholder="Token"
-          />
-        </SuiBox>
-        <SuiBox display="flex" alignItems="center">
-          <Switch checked={isActive} onChange={() => setIsActive(!isActive)} />
-          <SuiTypography
-            variant="button"
-            fontWeight="regular"
-            onClick={(e) => setIsActive(e.target.value)}
-            customClass="cursor-pointer user-select-none"
-          >
-            &nbsp;&nbsp;Is Active?
-          </SuiTypography>
-        </SuiBox>
-        <SuiBox mb={0.5}>
-          <SuiBox mb={1} ml={0.5}>
-            <SuiTypography component="label" variant="caption" fontWeight="bold">
-              Webhook
-            </SuiTypography>
-          </SuiBox>
-          <SuiInput
-            value={webhook}
-            onChange={(event) => setWebhook(event.target.value)}
-            type="url"
-            placeholder="Webhook"
-          />
-        </SuiBox>
-        <SuiBox mb={0.5}>
-          <SuiBox mb={1} ml={0.5}>
-            <SuiTypography component="label" variant="caption" fontWeight="bold">
-              Whitelist
-            </SuiTypography>
-          </SuiBox>
-          <SuiInput
-            value={whitelist}
-            onChange={(event) => setWhitelist(event.target.value)}
-            type="list"
-            placeholder="Whitelist"
-          />
-        </SuiBox>
+        {!selectedBot?.markedForDeletion && (
+          <>
+            <SuiBox mb={0.5}>
+              <SuiBox mb={1} ml={0.5}>
+                <SuiTypography component="label" variant="caption" fontWeight="bold">
+                  Name
+                </SuiTypography>
+              </SuiBox>
+              <SuiInput
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                type="text"
+                placeholder="Name"
+              />
+            </SuiBox>
+            <SuiBox mb={2}>
+              <SuiBox mb={1} ml={0.5}>
+                <SuiTypography component="label" variant="caption" fontWeight="bold">
+                  Token
+                </SuiTypography>
+              </SuiBox>
+              <SuiInput
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                type="password"
+                placeholder="Token"
+              />
+            </SuiBox>
+            <SuiBox display="flex" alignItems="center">
+              <Switch checked={isActive} onChange={() => setIsActive(!isActive)} />
+              <SuiTypography
+                variant="button"
+                fontWeight="regular"
+                onClick={(e) => setIsActive(e.target.value)}
+                customClass="cursor-pointer user-select-none"
+              >
+                &nbsp;&nbsp;Is Active?
+              </SuiTypography>
+            </SuiBox>
+            <SuiBox mb={0.5}>
+              <SuiBox mb={1} ml={0.5}>
+                <SuiTypography component="label" variant="caption" fontWeight="bold">
+                  Webhook
+                </SuiTypography>
+              </SuiBox>
+              <SuiInput
+                value={webhook}
+                onChange={(event) => setWebhook(event.target.value)}
+                type="url"
+                placeholder="Webhook"
+              />
+            </SuiBox>
+            <SuiBox mb={0.5}>
+              <SuiBox mb={1} ml={0.5}>
+                <SuiTypography component="label" variant="caption" fontWeight="bold">
+                  Whitelist
+                </SuiTypography>
+              </SuiBox>
+              <SuiInput
+                value={whitelist}
+                onChange={(event) => setWhitelist(event.target.value)}
+                type="list"
+                placeholder="Whitelist"
+              />
+            </SuiBox>
+          </>
+        )}
         <SuiBox mt={2} mb={2} textAlign="center">
           <h6
             style={{
@@ -247,7 +252,7 @@ function Configurator() {
         <SuiBox mt={4} mb={1}>
           <SuiButton
             variant="gradient"
-            buttonColor="info"
+            buttonColor={selectedBot?.markedForDeletion ? "error" : "info"}
             fullWidth
             onClick={selectedBot ? (selectedBot.markedForDeletion ? deleteBot : updateBot) : addBot}
           >

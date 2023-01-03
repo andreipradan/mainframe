@@ -1,5 +1,5 @@
 import axios from "./index";
-import { add, remove, set, setErrors, update } from "../redux/botsSlice";
+import { add, remove, select, set, setErrors, setLoading, update } from "../redux/botsSlice";
 
 const handleErrors = async (err, dispatch) => {
   if (err.response) {
@@ -18,6 +18,13 @@ const handleErrors = async (err, dispatch) => {
 };
 
 class BotsApi {
+  static clearWebhook = (token, botId) => (dispatch) => {
+    dispatch(setLoading(botId));
+    axios
+      .put(`${base}${botId}/clear-webhook/`, {}, { headers: { Authorization: token } })
+      .then((response) => dispatch(update(response.data)))
+      .catch((err) => handleErrors(err, dispatch));
+  };
   static delete = (token, botId) => (dispatch) => {
     axios
       .delete(`${base}${botId}`, { headers: { Authorization: token } })
@@ -30,17 +37,30 @@ class BotsApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch));
   };
+  static getWebhook = (token, botId) => (dispatch) => {
+    dispatch(setLoading(botId));
+    axios
+      .get(`${base}${botId}/get-webhook/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(update(response.data)))
+      .catch((err) => handleErrors(err, dispatch));
+  };
   static postNewBot = (token, data) => (dispatch) => {
     axios
       .post(base, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(add(response.data)))
+      .then((response) => {
+        dispatch(add(response.data));
+        dispatch(select(null));
+      })
       .catch((err) => handleErrors(err, dispatch));
   };
 
   static updateBot = (token, botId, data) => (dispatch) => {
     axios
-      .put(`${base}${botId}`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(update({ botId: botId, data: response.data })))
+      .put(`${base}${botId}/`, data, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(update(response.data));
+        dispatch(select(null));
+      })
       .catch((err) => handleErrors(err, dispatch));
   };
 }

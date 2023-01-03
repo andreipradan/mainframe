@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "mainframe"
+version = "0.1.0"
+description = ""
+authors = ["Andrei Prădan <andrei@pradan.dev>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.1.5"
+django-cors-headers = "^3.13.0"
+django-environ = "0.9.0"
+djangorestframework = "3.14.0"
+gunicorn = "20.1.0"
+psycopg2-binary = "2.9.5"
+pyjwt = "2.6.0"
+python-telegram-bot = "13.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

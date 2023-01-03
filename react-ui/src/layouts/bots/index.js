@@ -28,9 +28,11 @@ import Footer from "examples/Footer";
 import styles from "layouts/bots/styles";
 
 import { Table as MuiTable, TableCell } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import TableRow from "@mui/material/TableRow";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
+
 import colors from "../../assets/theme/base/colors";
 import typography from "../../assets/theme/base/typography";
 import borders from "../../assets/theme/base/borders";
@@ -43,8 +45,8 @@ import SuiBadge from "../../components/SuiBadge";
 import { useAuth } from "../../auth-context/auth.context";
 import { select } from "../../redux/botsSlice";
 import { useSoftUIController } from "../../context";
-// import Link from "@mui/material/Link";
 import SuiButton from "../../components/SuiButton";
+import Icon from "@mui/material/Icon";
 
 const columns = [
   { name: "name", align: "left" },
@@ -57,6 +59,7 @@ const columns = [
 function Bots() {
   const [, contextDispatch] = useSoftUIController();
   const botsList = useSelector((state) => state.bots.list);
+  const loadingBots = useSelector((state) => state.bots.loadingBots);
   const dispatch = useDispatch();
 
   const classes = styles();
@@ -152,20 +155,50 @@ function Bots() {
                               </SuiTypography>
                             </SuiBox>
                             <SuiBox component="td" p={1} textAlign="left">
-                              <SuiTypography
-                                variant="button"
-                                fontWeight="regular"
-                                textColor="secondary"
-                                customClass="d-inline-block w-max"
-                              >
-                                <SuiTypography
-                                  variant="caption"
-                                  fontWeight="medium"
-                                  textColor="text"
-                                >
-                                  {bot.webhook}
-                                </SuiTypography>
-                              </SuiTypography>
+                              {!loadingBots?.includes(bot.id) ? (
+                                <>
+                                  <SuiTypography
+                                    variant="button"
+                                    fontWeight="regular"
+                                    textColor="secondary"
+                                    customClass="d-inline-block w-max"
+                                  >
+                                    <SuiTypography
+                                      variant="caption"
+                                      fontWeight="medium"
+                                      textColor="text"
+                                    >
+                                      {bot.webhook || "not set"}
+                                    </SuiTypography>
+                                  </SuiTypography>
+                                  <SuiButton
+                                    iconOnly={true}
+                                    circular={true}
+                                    buttonColor="error"
+                                    variant="text"
+                                    onClick={() => dispatch(BotsApi.getWebhook(user.token, bot.id))}
+                                  >
+                                    <Icon className="text-success" fontSize="default">
+                                      refresh
+                                    </Icon>
+                                  </SuiButton>
+                                  <SuiButton
+                                    circular={true}
+                                    iconOnly={true}
+                                    buttonColor="error"
+                                    variant="text"
+                                    onClick={() =>
+                                      dispatch(BotsApi.clearWebhook(user.token, bot.id))
+                                    }
+                                  >
+                                    <Icon className="text-danger" fontSize="default">
+                                      close
+                                    </Icon>
+                                  </SuiButton>
+                                </>
+                              ) : (
+                                <CircularProgress size={10} color="success" />
+                              )}
                             </SuiBox>
                             <SuiBox component="td" p={1} textAlign="center">
                               <SuiTypography
