@@ -94,8 +94,8 @@ function SignIn() {
 
   return (
     <CoverLayout
-      title="Flask React Soft Dashboard"
-      description={`${user && user.token ? "" : "Enter your email and password to sign in"}`}
+      title="mainframe"
+      description={`${user && user.token ? "" : "Sign in using email and password"}`}
       image={curved9}
     >
       {user && user.token ? (

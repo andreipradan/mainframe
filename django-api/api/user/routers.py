@@ -19,6 +19,4 @@ router.register(r"checkSession", ActiveSessionViewSet, basename="check-session")
 
 router.register(r"logout", LogoutViewSet, basename="logout")
 
-urlpatterns = [
-    *router.urls,
-]
+urlpatterns = router.urls

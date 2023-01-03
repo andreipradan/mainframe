@@ -16,6 +16,8 @@ Coded by www.creative-tim.com
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 import App from "App";
 
 // Soft UI Dashboard React Context Provider
@@ -30,7 +32,9 @@ ReactDOM.render(
   <BrowserRouter>
     <SoftUIControllerProvider>
       <AuthProvider userData={user}>
-        <App />
+        <Provider store={store}>
+          <App />
+        </Provider>
       </AuthProvider>
     </SoftUIControllerProvider>
   </BrowserRouter>,

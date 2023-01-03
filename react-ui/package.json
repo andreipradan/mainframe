@@ -8,7 +8,7 @@
     "build": {
         "yarn": "v14.0.0,v16.0.0",
         "npm": "v14.0.0,v16.0.0"
-    },    
+    },
     "bugs": {
         "url": "https://github.com/app-generator/react-soft-ui-dashboard/issues"
     },
@@ -24,11 +24,12 @@
         "@mui/material": "^5.0.0",
         "@mui/styled-engine": "^5.0.0",
         "@mui/styles": "^5.0.0",
+        "@reduxjs/toolkit": "^1.9.1",
         "@testing-library/jest-dom": "^5.11.4",
         "@testing-library/react": "^11.1.0",
         "@testing-library/user-event": "^12.1.10",
-        "chart.js": "^3.4.1",
         "axios": "^0.21.1",
+        "chart.js": "^3.4.1",
         "chroma-js": "^2.1.2",
         "clsx": "^1.1.1",
         "jss": "^10.7.1",
@@ -41,6 +42,7 @@
         "react-dom": "^17.0.2",
         "react-flatpickr": "^3.10.7",
         "react-github-btn": "^1.2.1",
+        "react-redux": "^8.0.5",
         "react-router-dom": "^5.2.0",
         "react-scripts": "4.0.3",
         "stylis": "^4.0.10",

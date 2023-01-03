@@ -38,6 +38,7 @@ Coded by www.creative-tim.com
 // Soft UI Dashboard React layouts
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
+import Bots from "layouts/bots";
 import Billing from "layouts/billing";
 import VirtualReality from "layouts/virtual-reality";
 import RTL from "layouts/rtl";
@@ -55,6 +56,7 @@ import SpaceShip from "examples/Icons/SpaceShip";
 import CustomerSupport from "examples/Icons/CustomerSupport";
 import CreditCard from "examples/Icons/CreditCard";
 import Cube from "examples/Icons/Cube";
+import SmartToyIconOutlined from "@mui/icons-material/SmartToyOutlined";
 
 const routes = [
   {
@@ -64,6 +66,16 @@ const routes = [
     route: "/dashboard",
     icon: <Shop size="12px" />,
     component: Dashboard,
+    noCollapse: true,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Bots",
+    key: "bots",
+    route: "/bots",
+    icon: <SmartToyIconOutlined size="12px" />,
+    component: Bots,
     noCollapse: true,
     protected: true,
   },

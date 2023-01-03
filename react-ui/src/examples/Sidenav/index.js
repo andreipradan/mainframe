@@ -163,7 +163,7 @@ function Sidenav({ routes, ...rest }) {
           />
           <SuiBox customClass={classes.sidenav_logoLabel}>
             <SuiTypography component="h6" variant="button" fontWeight="medium">
-              Soft UI Dashboard
+              Mainframe
             </SuiTypography>
           </SuiBox>
         </NavLink>

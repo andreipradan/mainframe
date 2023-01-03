@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "api",
     "api.user",
     "api.authentication",
+    "bots",
 ]
 
 MIDDLEWARE = [
@@ -84,12 +85,12 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE"  : env("DB_ENGINE"  , default="django.db.backends.sqlite3"),
-        "NAME"    : env("DB_DATABASE", default=os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER"    : env("DB_USER"    , default=None),
-        "PASSWORD": env("DB_PASSWORD", default=None),
-        "HOST"    : env("DB_HOST"    , default=None),
-        "PORT"    : env("DB_PORT"    , default=None),
+        "ENGINE": env("DB_ENGINE", default="django.db.backends.postgresql"),
+        "NAME": env("DB_DATABASE", default="mainframe_db"),
+        "USER": env("DB_USER", default="mainframe_user"),
+        "PASSWORD": env("DB_PASSWORD", default="mainframe_pass"),
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default=5432),
     }
 }
 
@@ -152,7 +153,7 @@ REST_FRAMEWORK = {
 #  CORS 
 # ##################################################################### #
 
-CORS_ALLOW_ALL_ORIGINS=True
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Load the default ones
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
@@ -162,7 +163,6 @@ CORS_ALLOWED_ORIGINS_ENV = env("CORS_ALLOWED_ORIGINS", default=None)
 
 if CORS_ALLOWED_ORIGINS_ENV:
     CORS_ALLOWED_ORIGINS += CORS_ALLOWED_ORIGINS_ENV.split(' ')
-
 
 # ##################################################################### #
 #  TESTING 

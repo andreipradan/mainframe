@@ -103,9 +103,9 @@ function Configurator() {
         px={3}
       >
         <SuiBox>
-          <SuiTypography variant="h5">Soft UI Configurator</SuiTypography>
+          <SuiTypography variant="h5">Configurator</SuiTypography>
           <SuiTypography variant="body2" textColor="text">
-            See our dashboard options.
+            See your dashboard options.
           </SuiTypography>
         </SuiBox>
 
@@ -188,7 +188,7 @@ function Configurator() {
         </SuiBox>
         <SuiBox display="flex" justifyContent="center">
           <GitHubButton
-            href="https://github.com/app-generator/django-reactsoft-dashboard"
+            href="https://github.com/andreipradan/mainframe"
             data-icon="octicon-star"
             data-size="large"
             data-show-count="true"

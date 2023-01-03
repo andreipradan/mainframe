@@ -38,6 +38,7 @@ import SuiBox from "components/SuiBox";
 // Soft UI Dashboard PRO React example components
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
+import BotConfigurator from "layouts/bots/BotConfigurator";
 
 // Soft UI Dashboard PRO React themes
 import theme from "assets/theme";
@@ -127,11 +128,11 @@ export default function App() {
       onClick={handleConfiguratorOpen}
     >
       <Icon className=" text-dark" fontSize="default">
-        settings
+        {window.location.pathname !== "/bots" ? "settings" : "add"}
       </Icon>
     </SuiBox>
   );
-
+  const RightSlideMenu = window.location.pathname !== "/bots" ? Configurator : BotConfigurator;
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
       <StylesProvider jss={jss}>
@@ -140,11 +141,11 @@ export default function App() {
           {layout === "dashboard" && (
             <>
               <Sidenav routes={routes} />
-              <Configurator />
+              <RightSlideMenu />
               {configsButton}
             </>
           )}
-          {layout === "vr" && <Configurator />}
+          {layout === "vr" && <RightSlideMenu />}
           <Switch>
             {getRoutes(routes)}
             <Redirect from="*" to="/authentication/sign-in" />
@@ -159,11 +160,11 @@ export default function App() {
         {layout === "dashboard" && (
           <>
             <Sidenav routes={routes} />
-            <Configurator />
+            <RightSlideMenu />
             {configsButton}
           </>
         )}
-        {layout === "vr" && <Configurator />}
+        {layout === "vr" && <RightSlideMenu />}
         <Switch>
           {getRoutes(routes)}
           <Redirect from="*" to="/dashboard" />
