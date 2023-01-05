@@ -22,7 +22,9 @@ const handleErrors = async (err, dispatch) => {
     }
     dispatch(setErrors(Object.keys(err.response.data).map((k) => `${k}: ${err.response.data[k]}`)));
   } else {
-    dispatch(setErrors([`Something went wrong [${err.response?.status}]`]));
+    dispatch(
+      setErrors([`Something went wrong [${err.response?.status || err.response || err.message}]`])
+    );
   }
 };
 

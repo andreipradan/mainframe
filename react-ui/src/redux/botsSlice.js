@@ -24,6 +24,7 @@ export const botsSlice = createSlice({
     },
     setErrors: (state, action) => {
       state.errors = action.payload;
+      state.loading = false;
     },
     select: (state, action) => {
       state.selectedBot = action.payload;

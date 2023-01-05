@@ -82,7 +82,7 @@ function Bots() {
             <SuiBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
               <SuiTypography variant="h6">Telegram Bots</SuiTypography>
               <SuiButton
-                textColor="success"
+                textcolor="success"
                 iconOnly={true}
                 circular={true}
                 buttonColor="error"
