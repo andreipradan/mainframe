@@ -25,7 +25,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 
-import styles from "layouts/bots/styles";
+import styles from "examples/Configurator/styles";
 
 import { Table as MuiTable, TableCell } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -41,7 +41,6 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SuiAvatar from "../../components/SuiAvatar";
 import rocket from "../../assets/images/illustrations/rocket-white.png";
-import SuiBadge from "../../components/SuiBadge";
 import { useAuth } from "../../auth-context/auth.context";
 import { select } from "../../redux/botsSlice";
 import { useSoftUIController } from "../../context";
@@ -51,7 +50,6 @@ import Icon from "@mui/material/Icon";
 const columns = [
   { name: "name", align: "left" },
   { name: "webhook", align: "left" },
-  { name: "status", align: "center" },
   { name: "last called on", align: "center" },
   { name: "action", align: "center" },
 ];
@@ -149,17 +147,17 @@ function Bots() {
                                   <SuiBox mr={2}>
                                     <SuiAvatar
                                       src={rocket}
-                                      alt={bot.name}
+                                      alt={bot.full_name}
                                       size="sm"
                                       variant="rounded"
                                     />
                                   </SuiBox>
                                   <SuiBox display="flex" flexDirection="column">
                                     <SuiTypography variant="button" fontWeight="medium">
-                                      {bot.name}
+                                      {bot.full_name}
                                     </SuiTypography>
                                     <SuiTypography variant="caption" textColor="secondary">
-                                      {bot.additional_data?.username}
+                                      @{bot.username}
                                     </SuiTypography>
                                   </SuiBox>
                                 </SuiBox>
@@ -219,21 +217,6 @@ function Bots() {
                                 textColor="secondary"
                                 customClass="d-inline-block w-max"
                               >
-                                <SuiBadge
-                                  variant="gradient"
-                                  badgeContent={bot.is_active ? "online" : "offline"}
-                                  color={bot.is_active ? "success" : "error"}
-                                  size="extra-small"
-                                />
-                              </SuiTypography>
-                            </SuiBox>
-                            <SuiBox component="td" p={1} textAlign="center">
-                              <SuiTypography
-                                variant="button"
-                                fontWeight="regular"
-                                textColor="secondary"
-                                customClass="d-inline-block w-max"
-                              >
                                 <SuiTypography
                                   variant="caption"
                                   textColor="secondary"
@@ -260,15 +243,6 @@ function Bots() {
                                     buttonColor="dark"
                                     variant="text"
                                     onClick={() => {
-                                      dispatch(BotsApi.sync(user.token, bot.id));
-                                    }}
-                                  >
-                                    sync
-                                  </SuiButton>
-                                  <SuiButton
-                                    buttonColor="dark"
-                                    variant="text"
-                                    onClick={() => {
                                       dispatch(select(bot));
                                       contextDispatch({
                                         type: "OPEN_CONFIGURATOR",
@@ -276,20 +250,7 @@ function Bots() {
                                       });
                                     }}
                                   >
-                                    edit
-                                  </SuiButton>
-                                  <SuiButton
-                                    buttonColor="error"
-                                    variant="text"
-                                    onClick={() => {
-                                      dispatch(select({ ...bot, markedForDeletion: true }));
-                                      contextDispatch({
-                                        type: "OPEN_CONFIGURATOR",
-                                        value: true,
-                                      });
-                                    }}
-                                  >
-                                    delete
+                                    <Icon className="material-icons-round">edit</Icon>&nbsp;edit
                                   </SuiButton>
                                 </SuiTypography>
                               </SuiTypography>
@@ -300,6 +261,19 @@ function Bots() {
                   </TableBody>
                 </MuiTable>
               </TableContainer>
+              {botsList && (
+                <SuiBox
+                  display="flex"
+                  justifyContent="left"
+                  alignItems="right"
+                  flexWrap="wrap"
+                  color="text"
+                  fontSize={size.sm}
+                  px={1.5}
+                >
+                  Total: {botsList.length}
+                </SuiBox>
+              )}
             </SuiBox>
           </Card>
         </SuiBox>

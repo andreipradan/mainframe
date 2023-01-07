@@ -70,7 +70,7 @@ export default makeStyles(
           height: pxToRem(42),
           boxShadow: buttonBoxShadow.main,
 
-          "&:first-child": {
+          "&:not(:last-child)": {
             marginRight: pxToRem(8),
           },
 

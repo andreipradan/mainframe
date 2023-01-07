@@ -25,6 +25,7 @@ export const botsSlice = createSlice({
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
+      state.loadingBots = null;
     },
     select: (state, action) => {
       state.selectedBot = action.payload;
@@ -46,7 +47,7 @@ export const botsSlice = createSlice({
     update: (state, action) => {
       state.list = state.list.map((bot) => (bot.id === action.payload.id ? action.payload : bot));
       state.errors = null;
-      state.loadingBots = state.loadingBots.filter((bot) => bot.id === action.payload.id);
+      state.loadingBots = state.loadingBots?.filter((bot) => bot.id === action.payload.id);
     },
   },
 });

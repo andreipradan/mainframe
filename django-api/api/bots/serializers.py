@@ -1,8 +1,63 @@
+import logging
+
+import telegram
 from rest_framework import serializers
 from bots.models import Bot
 
 
 class BotSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    first_name = serializers.CharField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
+    last_name = serializers.CharField(read_only=True)
+    telegram_id = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(read_only=True)
+
     class Meta:
         model = Bot
         fields = "__all__"
+
+    def validate(self, attrs):
+        bot = telegram.Bot(attrs["token"])
+
+        if self.instance and not self.context.get("sync") is True:
+            if list(attrs) == ["token"]:
+                try:
+                    bot.get_me()
+                    logging.info("Setting new token")
+                    return attrs
+                except telegram.error.TelegramError as e:
+                    raise serializers.ValidationError({"Telegram Error": e.message})
+
+            webhook = attrs.get("webhook")
+            if webhook != self.instance.webhook:
+                try:
+                    bot.set_webhook(webhook)
+                except telegram.error.TelegramError as e:
+                    raise serializers.ValidationError({"Telegram Error": e.message})
+                logging.info(f"Setting new webhook: {webhook}")
+
+            return attrs
+
+        else:
+            if list(attrs) != ["token"]:
+                raise serializers.ValidationError(f"Only token allowed")
+
+            attrs = {"token": attrs["token"]}
+
+            try:
+                attrs["webhook"] = bot.get_webhook_info()["url"]
+            except telegram.error.TelegramError as e:
+                raise serializers.ValidationError({"Telegram Error": e.message})
+
+            bot = bot.bot
+            additional_data = bot.to_dict()
+            attrs["telegram_id"] = additional_data.pop("id")
+            attrs["username"] = additional_data.pop("username")
+            attrs.update({
+                field: getattr(bot, field, None)
+                for field in ["first_name", "full_name", "last_name"]
+            })
+            attrs["additional_data"] = additional_data
+
+        return attrs

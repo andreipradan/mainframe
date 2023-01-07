@@ -20,7 +20,14 @@ const handleErrors = async (err, dispatch) => {
     if (err.response.data["msg"] === "User is not logged on.") {
       localStorage.clear();
     }
-    dispatch(setErrors(Object.keys(err.response.data).map((k) => `${k}: ${err.response.data[k]}`)));
+    dispatch(
+      setErrors(
+        Object.keys(err.response.data).map((k) => {
+          let errors = err.response.data[k];
+          return `${k}: ${errors.length ? err.response.data[k].join(", ") : errors}`;
+        })
+      )
+    );
   } else {
     dispatch(
       setErrors([`Something went wrong [${err.response?.status || err.response || err.message}]`])
@@ -38,8 +45,11 @@ class BotsApi {
   };
   static delete = (token, botId) => (dispatch) => {
     axios
-      .delete(`${base}${botId}`, { headers: { Authorization: token } })
-      .then(() => dispatch(remove(botId)))
+      .delete(`${base}${botId}/`, { headers: { Authorization: token } })
+      .then(() => {
+        dispatch(remove(botId));
+        dispatch(select(null));
+      })
       .catch((err) => handleErrors(err, dispatch));
   };
   static getList = (token) => (dispatch) => {
@@ -65,21 +75,21 @@ class BotsApi {
       })
       .catch((err) => handleErrors(err, dispatch));
   };
-  static sync = (token, botId) => (dispatch) => {
-    dispatch(setLoadingBots(botId));
-    axios
-      .get(`${base}${botId}/sync/`, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update(response.data));
-      })
-      .catch((err) => handleErrors(err, dispatch));
-  };
   static updateBot = (token, botId, data) => (dispatch) => {
     axios
-      .put(`${base}${botId}/`, data, { headers: { Authorization: token } })
+      .patch(`${base}${botId}/`, data, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(update(response.data));
         dispatch(select(null));
+      })
+      .catch((err) => handleErrors(err, dispatch));
+  };
+  static sync = (token, botId) => (dispatch) => {
+    dispatch(setLoadingBots(botId));
+    axios
+      .put(`${base}${botId}/sync/`, {}, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(update(response.data));
       })
       .catch((err) => handleErrors(err, dispatch));
   };

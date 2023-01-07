@@ -19,8 +19,9 @@ import clsx from "clsx";
 
 import Drawer from "@mui/material/Drawer";
 import Divider from "@mui/material/Divider";
-import Switch from "@mui/material/Switch";
 import Icon from "@mui/material/Icon";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import SuiBox from "components/SuiBox";
 import SuiTypography from "components/SuiTypography";
@@ -35,6 +36,7 @@ import { select, setErrors } from "../../../redux/botsSlice";
 import { useAuth } from "../../../auth-context/auth.context";
 import { useDispatch, useSelector } from "react-redux";
 import { isArray } from "chart.js/helpers";
+import pxToRem from "../../../assets/theme/functions/pxToRem";
 
 function Configurator() {
   const reduxDispatch = useDispatch();
@@ -50,6 +52,7 @@ function Configurator() {
   const [token, setToken] = useState("");
   const [webhook, setWebhook] = useState("");
   const [whitelist, setWhitelist] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (openConfigurator && !selectedBot && !errors) clearFields();
@@ -86,18 +89,16 @@ function Configurator() {
   const handleCloseConfigurator = async () => {
     if (errors) reduxDispatch(setErrors(null));
     dispatch({ type: "OPEN_CONFIGURATOR", value: false });
+    setShowPassword(false);
   };
 
   const addBot = async () => {
-    reduxDispatch(
-      BotsApi.postNewBot(user.token, {
-        name: name,
-        token: token,
-        is_active: isActive,
-        webhook: webhook,
-        whitelist: isArray(whitelist) ? whitelist : whitelist?.split(","),
-      })
-    );
+    reduxDispatch(BotsApi.postNewBot(user.token, { token: token }));
+    await handleCloseConfigurator();
+  };
+
+  const deleteBot = async () => {
+    reduxDispatch(BotsApi.delete(user.token, selectedBot.id));
     await handleCloseConfigurator();
   };
 
@@ -114,8 +115,8 @@ function Configurator() {
     await handleCloseConfigurator();
   };
 
-  const deleteBot = async () => {
-    reduxDispatch(BotsApi.delete(user.token, selectedBot.id));
+  const syncBot = async () => {
+    reduxDispatch(BotsApi.sync(user.token, selectedBot.id));
     await handleCloseConfigurator();
   };
 
@@ -139,16 +140,10 @@ function Configurator() {
       >
         <SuiBox>
           <SuiTypography variant="h5">
-            {selectedBot
-              ? `${selectedBot.markedForDeletion ? "Delete" : "Edit"} ${selectedBot.name}`
-              : "Add a new bot"}
+            {selectedBot ? selectedBot.full_name : "Add a new bot"}
           </SuiTypography>
           <SuiTypography variant="body2" textColor="text">
-            {selectedBot
-              ? selectedBot.markedForDeletion
-                ? `Are you sure you want to delete ${selectedBot.name}?`
-                : "Edit details"
-              : "Fill in details"}{" "}
+            {selectedBot ? "Edit details" : "Fill in details"}{" "}
           </SuiTypography>
         </SuiBox>
 
@@ -162,47 +157,34 @@ function Configurator() {
           close
         </Icon>
       </SuiBox>
-      {!selectedBot?.markedForDeletion && <Divider />}
+      <Divider />
       <SuiBox component="form" role="form">
-        {!selectedBot?.markedForDeletion && (
+        <SuiBox mb={2}>
+          <SuiBox mb={1} ml={0.5}>
+            <SuiTypography component="label" variant="caption" fontWeight="bold">
+              Token
+            </SuiTypography>
+            <SuiButton
+              iconOnly={true}
+              circular={true}
+              buttonColor={showPassword ? "error" : "info"}
+              variant="text"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ float: "right" }}
+            >
+              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </SuiButton>
+          </SuiBox>
+          <SuiInput
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            type={showPassword ? "text" : "password"}
+            placeholder={showPassword ? "Token" : "Token (hidden)"}
+          />
+        </SuiBox>
+
+        {selectedBot && (
           <>
-            <SuiBox mb={0.5}>
-              <SuiBox mb={1} ml={0.5}>
-                <SuiTypography component="label" variant="caption" fontWeight="bold">
-                  Name
-                </SuiTypography>
-              </SuiBox>
-              <SuiInput
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                type="text"
-                placeholder="Name"
-              />
-            </SuiBox>
-            <SuiBox mb={2}>
-              <SuiBox mb={1} ml={0.5}>
-                <SuiTypography component="label" variant="caption" fontWeight="bold">
-                  Token
-                </SuiTypography>
-              </SuiBox>
-              <SuiInput
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                type="password"
-                placeholder="Token"
-              />
-            </SuiBox>
-            <SuiBox display="flex" alignItems="center">
-              <Switch checked={isActive} onChange={() => setIsActive(!isActive)} />
-              <SuiTypography
-                variant="button"
-                fontWeight="regular"
-                onClick={(e) => setIsActive(e.target.value)}
-                customClass="cursor-pointer user-select-none"
-              >
-                &nbsp;&nbsp;Is Active?
-              </SuiTypography>
-            </SuiBox>
             <SuiBox mb={0.5}>
               <SuiBox mb={1} ml={0.5}>
                 <SuiTypography component="label" variant="caption" fontWeight="bold">
@@ -231,7 +213,7 @@ function Configurator() {
             </SuiBox>
           </>
         )}
-        <SuiBox mt={2} mb={2} textAlign="center">
+        <SuiBox mt={2} mb={2} textAlign="center" display="flex" flexWrap="wrap">
           <h6
             style={{
               fontSize: ".8em",
@@ -248,16 +230,33 @@ function Configurator() {
             </ul>
           </h6>
         </SuiBox>
-
-        <SuiBox mt={4} mb={1}>
+        <SuiBox customClass={classes.configurator_sidenav_types}>
+          {selectedBot && (
+            <SuiButton buttonColor="success" fullWidth variant="gradient" onClick={syncBot}>
+              <Icon className="material-icons-round">sync</Icon>&nbsp;sync
+            </SuiButton>
+          )}
           <SuiButton
-            variant="gradient"
-            buttonColor={selectedBot?.markedForDeletion ? "error" : "info"}
+            buttonColor="info"
             fullWidth
-            onClick={selectedBot ? (selectedBot.markedForDeletion ? deleteBot : updateBot) : addBot}
+            variant={"gradient"}
+            onClick={selectedBot ? updateBot : addBot}
+            mr={pxToRem(8)}
           >
-            {selectedBot ? (selectedBot.markedForDeletion ? "Delete" : "Update") : "Add"}
+            <Icon className="material-icons-round">{selectedBot ? "upgrade" : "add"}</Icon>&nbsp;
+            {selectedBot ? "update" : "add"}
           </SuiButton>
+          {selectedBot && (
+            <SuiButton
+              buttonColor="error"
+              disabled={true}
+              variant="gradient"
+              onClick={deleteBot}
+              fullWidth
+            >
+              <Icon className="material-icons-round">delete</Icon>&nbsp;delete
+            </SuiButton>
+          )}
         </SuiBox>
       </SuiBox>
     </Drawer>
