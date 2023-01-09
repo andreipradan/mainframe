@@ -37,6 +37,7 @@ import { useAuth } from "../../../auth-context/auth.context";
 import { useDispatch, useSelector } from "react-redux";
 import { isArray } from "chart.js/helpers";
 import pxToRem from "../../../assets/theme/functions/pxToRem";
+import Switch from "@mui/material/Switch";
 
 function Configurator() {
   const reduxDispatch = useDispatch();
@@ -48,7 +49,7 @@ function Configurator() {
   const classes = styles({ sidenavColor });
 
   const [name, setName] = useState("");
-  const [isActive, setIsActive] = useState(true);
+  const [isExternal, setIsExternal] = useState(true);
   const [token, setToken] = useState("");
   const [webhook, setWebhook] = useState("");
   const [whitelist, setWhitelist] = useState([]);
@@ -61,7 +62,7 @@ function Configurator() {
   const clearFields = () => {
     setName("");
     setToken("");
-    setIsActive(false);
+    setIsExternal(false);
     setWebhook("");
     setWhitelist([]);
     if (errors) reduxDispatch(setErrors(null));
@@ -69,7 +70,7 @@ function Configurator() {
 
   const fillFieldsFromSelectedBot = () => {
     setName(selectedBot.name);
-    setIsActive(selectedBot.is_active);
+    setIsExternal(selectedBot.is_external);
     setToken(selectedBot.token);
     setWebhook(selectedBot.webhook);
     setWhitelist(selectedBot.whitelist);
@@ -107,7 +108,7 @@ function Configurator() {
       BotsApi.updateBot(user.token, selectedBot.id, {
         name: name,
         token: token,
-        is_active: isActive,
+        is_external: isExternal,
         webhook: webhook,
         whitelist: isArray(whitelist) ? whitelist : whitelist?.split(","),
       })
@@ -185,6 +186,17 @@ function Configurator() {
 
         {selectedBot && (
           <>
+            <SuiBox display="flex" alignItems="center">
+              <Switch checked={isExternal} onChange={() => setIsExternal(!isExternal)} />
+              <SuiTypography
+                variant="button"
+                fontWeight="regular"
+                onClick={(e) => setIsExternal(e.target.value)}
+                customClass="cursor-pointer user-select-none"
+              >
+                &nbsp;&nbsp;Is External?
+              </SuiTypography>
+            </SuiBox>
             <SuiBox mb={0.5}>
               <SuiBox mb={1} ml={0.5}>
                 <SuiTypography component="label" variant="caption" fontWeight="bold">

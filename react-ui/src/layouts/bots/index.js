@@ -154,7 +154,7 @@ function Bots() {
                                   </SuiBox>
                                   <SuiBox display="flex" flexDirection="column">
                                     <SuiTypography variant="button" fontWeight="medium">
-                                      {bot.full_name}
+                                      {bot.full_name} {bot.is_external ? "[Ext]" : null}
                                     </SuiTypography>
                                     <SuiTypography variant="caption" textColor="secondary">
                                       @{bot.username}

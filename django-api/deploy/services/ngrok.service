@@ -1,0 +1,13 @@
+[Unit]
+Description=Ngrok public URL service
+After=backend.service
+
+[Service]
+User=andreierdna
+WorkingDirectory=/home/andreierdna/projects/mainframe/django-api
+ExecStart=ngrok http 7777
+ExecStartPost=/usr/local/bin/poetry run set-hooks
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

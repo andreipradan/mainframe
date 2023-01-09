@@ -7,6 +7,7 @@ class Bot(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     first_name = models.CharField(max_length=32)
     full_name = models.CharField(max_length=32)
+    is_external = models.BooleanField(default=False)
     last_called_on = models.DateTimeField(blank=True, null=True)
     last_name = models.CharField(blank=True, max_length=32, null=True)
     telegram_id = models.BigIntegerField()
