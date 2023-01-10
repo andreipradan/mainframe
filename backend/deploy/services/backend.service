@@ -3,8 +3,8 @@ Description=django backend server
 
 [Service]
 User=andreierdna
-WorkingDirectory=/home/andreierdna/projects/mainframe/django-api
-ExecStart=/usr/local/bin/poetry run python manage.py runserver 7777
+WorkingDirectory=/home/andreierdna/projects/mainframe/backend
+ExecStart=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py runserver 7777
 ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done'
 Restart=always
 

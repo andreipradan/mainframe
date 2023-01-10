@@ -1,5 +1,6 @@
 import logging
-import dotenv
+
+import environ
 import github
 import requests
 import telegram
@@ -29,10 +30,11 @@ def get_ngrok_url():
 
 
 def set_hooks():
-    env = dotenv.dotenv_values()
+    env = environ.Env()
+
     ngrok_url = get_ngrok_url()
 
-    g = github.Github(env["GITHUB_ACCESS_TOKEN"],)
+    g = github.Github(env("GITHUB_ACCESS_TOKEN"),)
     hook_config = {
         "name": "web",
         "config": {
@@ -43,7 +45,7 @@ def set_hooks():
         "events": ["push"],
         "active": True,
     }
-    repository = g.get_repo(f"{env['GITHUB_USERNAME']}/mainframe")
+    repository = g.get_repo(f"{env('GITHUB_USERNAME')}/mainframe")
     hooks = repository.get_hooks()
 
     logger.warning(f"Deleting all hooks [{hooks.totalCount}]")
@@ -57,3 +59,7 @@ def set_hooks():
     for bot in Bot.objects.filter(is_external=False):
         if bot.webhook:
             logger.debug(f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(bot.webhook)}")
+
+
+if __name__ == "__main__":
+    set_hooks()

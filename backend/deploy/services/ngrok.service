@@ -4,9 +4,9 @@ After=backend.service
 
 [Service]
 User=andreierdna
-WorkingDirectory=/home/andreierdna/projects/mainframe/django-api
+WorkingDirectory=/home/andreierdna/projects/mainframe/backend
 ExecStart=ngrok http 7777
-ExecStartPost=/usr/local/bin/poetry run set-hooks
+ExecStartPost=/home/andreierdna/.virtualenvs/mainframe/bin/python deploy/hooks.py
 Restart=always
 
 [Install]
