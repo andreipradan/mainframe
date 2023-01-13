@@ -3,12 +3,15 @@ import hmac
 import logging
 import socket
 import subprocess
+from ipaddress import ip_address, ip_network
 
 import environ
+import requests
 import telegram
 from django.conf import settings
 from django.core.exceptions import BadRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
+from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
@@ -27,52 +30,73 @@ def run_cmd(cmd, prefix=None):
     return output
 
 
-def validate_signature(data, secret, headers):
-    sig_header = "X-Hub-Signature-256"
-    if sig_header not in headers:
-        return False
-    computed_sign = hmac.new(secret.encode("utf-8"), data, hashlib.sha256).hexdigest()
-    _, signature = headers[sig_header].split("=")
-    return hmac.compare_digest(signature, computed_sign)
-
-
 @csrf_exempt
 def mainframe(request):
     if not request.method == "POST":
         raise MethodNotAllowed(request.method)
 
+    # Verify if request came from GitHub
+    forwarded_for = u'{}'.format(request.META.get('HTTP_X_FORWARDED_FOR'))
+    client_ip_address = ip_address(forwarded_for)
+    whitelist = requests.get('https://api.github.com/meta').json()['hooks']
+
     config = environ.Env()
 
     bot = telegram.Bot(token=config("DEBUG_TOKEN"))
     chat_id = config("DEBUG_CHAT_ID")
-    host_name = socket.gethostname()
+    prefix = "[mainframe][github]"
 
-    if not validate_signature(request.POST, settings.SECRET_KEY, request.headers):
-        bot.send_message(chat_id=chat_id, text=f"[{host_name}] Invalid hook signature")
-        raise BadRequest("Invalid signature")
+    for valid_ip in whitelist:
+        if client_ip_address in ip_network(valid_ip):
+            break
+    else:
+        return HttpResponseForbidden('Permission denied.')
 
-    output = run_cmd("git pull origin main")
-    if not output:
-        bot.send_message(
-            chat_id=chat_id, text=f"[{host_name}] Could not git pull"
-        )
-        return HttpResponse("ok")
+    # Verify the request signature
+    header_signature = request.META.get('HTTP_X_HUB_SIGNATURE')
+    if header_signature is None:
+        bot.send_message(chat_id=chat_id, text=f"{prefix} No signature")
+        return HttpResponseForbidden('Permission denied.')
 
-    if output.strip() == b"Already up to date.":
-        bot.send_message(
-            chat_id=chat_id, text=f"[{host_name}] [git pull] No new changes"
-        )
-        return HttpResponse("ok")
+    sha_name, signature = header_signature.split('=')
+    if sha_name != 'sha1':
+        bot.send_message(chat_id=chat_id, text=f"{prefix} operation not supported")
+        return HttpResponseServerError('Operation not supported.', status=501)
 
-    if output.strip().startswith("CONFLICT"):
-        bot.send_message(
-            chat_id=chat_id, text=f"[{host_name}] [git pull] Conflict"
-        )
-        return HttpResponse("ok")
+    mac = hmac.new(force_bytes(settings.SECRET_KEY), msg=force_bytes(request.body), digestmod=hashlib.sha1)
+    if not hmac.compare_digest(force_bytes(mac.hexdigest()), force_bytes(signature)):
+        bot.send_message(chat_id=chat_id, text=f"{prefix} Permission denied")
+        return HttpResponseForbidden('Permission denied.')
 
-    run_cmd("./deploy/setup.sh")
+    # If request reached this point we are in a good shape
+    # Process the GitHub events
+    event = request.META.get('HTTP_X_GITHUB_EVENT', 'ping')
 
-    bot.send_message(
-        chat_id=chat_id, text=f"[{host_name}] Mainframe deployed successfully"
-    )
-    return HttpResponse("ok")
+    bot.send_message(chat_id=chat_id, text=f"{prefix} Got a '{event}' event")
+    if event == 'ping':
+        return HttpResponse('pong')
+
+    elif event == 'push':
+        output = run_cmd("git pull origin main")
+        if not output:
+            bot.send_message(chat_id=chat_id, text=f"{prefix} Could not git pull")
+            return HttpResponse("ok")
+        if output.strip() == b"Already up to date.":
+            bot.send_message(chat_id=chat_id, text=f"[{prefix}] Already up to date")
+            return HttpResponse("ok")
+
+        if output.strip().startswith("CONFLICT"):
+            bot.send_message(
+                chat_id=chat_id, text=f"[{prefix}] Conflict"
+            )
+            return HttpResponse("ok")
+
+        run_cmd("./deploy/setup.sh")
+
+        bot.send_message(chat_id=chat_id, text=f"[{prefix}] Deployed successfully")
+        return HttpResponse('success')
+
+    return HttpResponse(status=204)
+
+
+
