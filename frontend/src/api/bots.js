@@ -59,13 +59,6 @@ class BotsApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch));
   };
-  static getWebhook = (token, botId) => (dispatch) => {
-    dispatch(setLoadingBots(botId));
-    axios
-      .get(`${base}${botId}/get-webhook/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(update(response.data)))
-      .catch((err) => handleErrors(err, dispatch));
-  };
   static postNewBot = (token, data) => (dispatch) => {
     axios
       .post(base, data, { headers: { Authorization: token } })

@@ -9,6 +9,7 @@ import telegram
 from django.conf import settings
 from django.core.exceptions import BadRequest
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
 
@@ -35,6 +36,7 @@ def validate_signature(data, secret, headers):
     return hmac.compare_digest(signature, computed_sign)
 
 
+@csrf_exempt
 def mainframe(request):
     if not request.method == "POST":
         raise MethodNotAllowed(request.method)

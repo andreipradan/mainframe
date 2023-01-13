@@ -180,31 +180,6 @@ function Bots() {
                                       {bot.webhook || "not set"}
                                     </SuiTypography>
                                   </SuiTypography>
-                                  <SuiButton
-                                    iconOnly={true}
-                                    circular={true}
-                                    buttonColor="error"
-                                    variant="text"
-                                    onClick={() => dispatch(BotsApi.getWebhook(user.token, bot.id))}
-                                  >
-                                    <Icon className="text-success" fontSize="default">
-                                      refresh
-                                    </Icon>
-                                  </SuiButton>
-                                  <SuiButton
-                                    circular={true}
-                                    iconOnly={true}
-                                    buttonColor="error"
-                                    variant="text"
-                                    onClick={() =>
-                                      // dispatch(BotsApi.clearWebhook(user.token, bot.id))
-                                      alert("TBA: handle confirmation")
-                                    }
-                                  >
-                                    <Icon className="text-danger" fontSize="default">
-                                      close
-                                    </Icon>
-                                  </SuiButton>
                                 </>
                               ) : (
                                 <CircularProgress size={10} color="success" />

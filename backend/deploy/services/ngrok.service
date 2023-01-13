@@ -6,7 +6,7 @@ After=backend.service
 User=andreierdna
 WorkingDirectory=/home/andreierdna/projects/mainframe/backend
 ExecStart=ngrok http 7777
-ExecStartPost=/home/andreierdna/.virtualenvs/mainframe/bin/python deploy/hooks.py
+ExecStartPost=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py set_hooks
 Restart=always
 
 [Install]
