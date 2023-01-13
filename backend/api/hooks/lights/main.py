@@ -3,6 +3,7 @@ import json
 
 import environ
 import telegram
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from api.hooks.lights import inlines
@@ -27,34 +28,35 @@ def lights(request):
             toggle_components = data.split(" ")
             if not len(toggle_components) == 2:
                 logger.error(f"Invalid parameters for toggle: {toggle_components}")
-                return ""
-            return inlines.toggle(update, data.split(" ")[1])
+                return HttpResponse("ok")
+            return HttpResponse(inlines.toggle(update, data.split(" ")[1]))
         method = getattr(inlines, data, None)
         if not method:
             logger.error(f"Unhandled callback: {data}")
-            return ""
-        return getattr(inlines, data)(update)
+            return HttpResponse("ok")
+
+        return HttpResponse(getattr(inlines, data)(update))
 
     if not message:
         logger.warning("No message")
-        return ""
+        return HttpResponse("ok")
 
     if message.from_user.username not in whitelist:
         who = message.from_user.username or message.from_user.id
         logging.error(f"Ignoring message from: {who}")
-        return ""
+        return HttpResponse("ok")
 
     if not hasattr(message, "text") or not message.text:
         logging.warning(f"Got no text")
-        return ""
+        return HttpResponse("ok")
 
     if not message.text.startswith("/"):
         logger.warning(f"Not a command: {message.text}")
-        return ""
+        return HttpResponse("ok")
 
     command = message.text[1:]
     if command == "start":
-        return inlines.start(update)
+        return HttpResponse(inlines.start(update))
 
     logger.warning(f"Unhandled command: {message.text}")
-    return ""
+    return HttpResponse("ok")
