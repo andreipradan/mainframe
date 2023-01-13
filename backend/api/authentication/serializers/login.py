@@ -37,7 +37,9 @@ class LoginSerializer(serializers.Serializer):
         user = authenticate(username=email, password=password)
 
         if user is None:
-            raise exceptions.AuthenticationFailed({"success": False, "msg": "Wrong credentials"})
+            raise exceptions.AuthenticationFailed(
+                {"success": False, "msg": "Wrong credentials"}
+            )
 
         if not user.is_active:
             raise exceptions.ValidationError(

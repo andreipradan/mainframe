@@ -54,10 +54,12 @@ class BotSerializer(serializers.ModelSerializer):
             additional_data = bot.to_dict()
             attrs["telegram_id"] = additional_data.pop("id")
             attrs["username"] = additional_data.pop("username")
-            attrs.update({
-                field: getattr(bot, field, None)
-                for field in ["first_name", "full_name", "last_name"]
-            })
+            attrs.update(
+                {
+                    field: getattr(bot, field, None)
+                    for field in ["first_name", "full_name", "last_name"]
+                }
+            )
             attrs["additional_data"] = additional_data
 
         return attrs

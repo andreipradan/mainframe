@@ -13,7 +13,7 @@ class BotViewSet(viewsets.ModelViewSet):
     serializer_class = BotSerializer
     permission_classes = (IsAuthenticated,)
 
-    @action(detail=True, methods=['put'], url_path="clear-webhook")
+    @action(detail=True, methods=["put"], url_path="clear-webhook")
     def clear_webhook(self, request, **kwargs):
         instance = self.get_object()
         try:
@@ -30,12 +30,14 @@ class BotViewSet(viewsets.ModelViewSet):
             self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
-    @action(detail=True, methods=['put'], url_path="sync")
+    @action(detail=True, methods=["put"], url_path="sync")
     def sync(self, request, **kwargs):
         instance = self.get_object()
         context = super().get_serializer_context()
         context["sync"] = True
-        serializer = self.get_serializer(instance, context=context, data={"token": instance.token}, partial=True)
+        serializer = self.get_serializer(
+            instance, context=context, data={"token": instance.token}, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return JsonResponse(data=serializer.data)

@@ -38,7 +38,9 @@ class Command(BaseCommand):
 
         ngrok_url = get_ngrok_url()
 
-        g = github.Github(env("GITHUB_ACCESS_TOKEN"), )
+        g = github.Github(
+            env("GITHUB_ACCESS_TOKEN"),
+        )
         hook_config = {
             "name": "web",
             "config": {
@@ -65,8 +67,10 @@ class Command(BaseCommand):
             if bot.webhook:
                 path = urlparse(bot.webhook).path
                 try:
-                    logger.debug(f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}{path}')}")
+                    logger.debug(
+                        f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}{path}')}"
+                    )
                 except telegram.error.TelegramError as e:
                     raise CommandError(str(e))
 
-        self.stdout.write(self.style.SUCCESS('Done.'))
+        self.stdout.write(self.style.SUCCESS("Done."))

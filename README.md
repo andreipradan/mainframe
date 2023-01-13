@@ -5,9 +5,9 @@
 
 <br>
 
-| NodeJS | NPM | YARN | Status | 
-| --- | --- | --- | --- | 
-| `v16.13.0` | `v8.1.0`   | `v1.22.5` | ✔️ | 
+| NodeJS | NPM | YARN | Status |
+| --- | --- | --- | --- |
+| `v16.13.0` | `v8.1.0`   | `v1.22.5` | ✔️ |
 | `v14.15.0` | `v6.14.8`  | `v1.22.5` | ✔️ |
 | `v12.22.0` | `v6.14.11` | `v1.22.5` | ✔️ |
 
@@ -23,7 +23,7 @@ $ export REACT_APP_BACKEND_SERVER='http://localhost:5001/api/' # Unix/MacOS
 
 ## ✨ Product UI
 
-> **Django React Soft UI Dashboard** - Login 
+> **Django React Soft UI Dashboard** - Login
 
 ![Django React Soft UI Dashboard - Login.](https://user-images.githubusercontent.com/51070104/142403942-3a2228e6-c769-4259-8e78-c000056db7c4.png)
 
