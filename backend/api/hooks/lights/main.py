@@ -1,4 +1,5 @@
 import logging
+import json
 
 import environ
 import telegram
@@ -17,8 +18,7 @@ def lights(request):
     whitelist = config("LIGHTS_WHITELIST")
     bot = telegram.Bot(config("LIGHTS_TOKEN"))
 
-    json = request.json()
-    update = telegram.Update.de_json(json, bot)
+    update = telegram.Update.de_json(json.loads(request.body), bot)
     message = update.message
 
     if update.callback_query:
