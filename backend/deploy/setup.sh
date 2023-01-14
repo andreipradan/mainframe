@@ -1,17 +1,21 @@
 #!/bin/bash
 set -e -o pipefail
 
-virtualenv_dir=${HOME}/.virtualenvs/mainframe
-[[ "$(ls -A "${virtualenv_dir}")" ]] && echo "Virtualenv already exists" || python -m venv "${virtualenv_dir}"
-sudo apt-get -y install libpq-dev
-"${virtualenv_dir}/bin/python" -m pip install -r "${HOME}/projects/mainframe/backend/requirements.txt"
+PROJECT_DIR=${HOME}/projects/mainframe/backend
+VIRTUALENV_DIR=${HOME}/.virtualenvs/mainframe
 
-SERVICES_DIR="${HOME}/projects/mainframe/backend/deploy/services"
+#echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
+echo "Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "Done."
+
+[[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "Virtualenv already exists" || python -m venv "${VIRTUALENV_DIR}"
+"${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/requirements.txt"
+
+SERVICES_DIR="${PROJECT_DIR}/deploy/services"
 sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
-sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system
-sudo systemctl daemon-reload
-SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
-sudo systemctl restart ${SERVICES}
-sudo systemctl enable ${SERVICES}
+echo "Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
+echo "Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Done."
 
+SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
+echo "Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
+echo "Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
 echo "Completed setup! >> ./deploy/show-logs.sh"
