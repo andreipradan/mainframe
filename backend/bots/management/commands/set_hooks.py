@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urlparse
 
 import environ
 import github
@@ -65,10 +64,9 @@ class Command(BaseCommand):
         local_bots = list(Bot.objects.filter(is_external=False))
         for bot in local_bots:
             if bot.webhook:
-                path = urlparse(bot.webhook).path
                 try:
                     logger.debug(
-                        f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}{path}')}"
+                        f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"
                     )
                 except telegram.error.TelegramError as e:
                     raise CommandError(str(e))

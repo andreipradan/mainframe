@@ -1,9 +1,12 @@
+import logging
+
 import telegram
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
+from api import hooks
 from api.bots.serializers import BotSerializer
 from bots.models import Bot
 
@@ -30,14 +33,27 @@ class BotViewSet(viewsets.ModelViewSet):
             self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
-    @action(detail=True, methods=["put"], url_path="sync")
+    @action(detail=True, methods=["put"])
     def sync(self, request, **kwargs):
         instance = self.get_object()
-        context = super().get_serializer_context()
-        context["sync"] = True
         serializer = self.get_serializer(
-            instance, context=context, data={"token": instance.token}, partial=True
+            instance, data={"token": instance.token}, partial=True
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
+
+    @action(detail=True, methods=["put"])
+    def webhook(self, request, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        serializer.is_valid(raise_exception=True)
+
+        bot_hook = getattr(hooks, instance.username, None)
+        if not bot_hook:
+            logging.error(
+                f"Got a webhook call for '{instance.username}' with no associated bot_hook implementation"
+            )
+            return JsonResponse(data={"status": "400"})
+
+        return JsonResponse(data={"status": "200"})

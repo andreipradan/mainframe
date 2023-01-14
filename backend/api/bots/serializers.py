@@ -20,7 +20,7 @@ class BotSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         bot = telegram.Bot(attrs["token"])
 
-        if self.instance and not self.context.get("sync") is True:
+        if self.instance and self.context["view"].action != "sync":
             if list(attrs) == ["token"]:
                 try:
                     bot.get_me()

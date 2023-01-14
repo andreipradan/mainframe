@@ -6,7 +6,7 @@ import telegram
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from api.hooks.telegram import inlines
+from api.bots.hooks import apbaitabot_inlines as inlines
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
