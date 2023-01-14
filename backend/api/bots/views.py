@@ -4,7 +4,7 @@ import telegram
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from api import hooks
 from api.bots.serializers import BotSerializer
@@ -15,6 +15,11 @@ class BotViewSet(viewsets.ModelViewSet):
     queryset = Bot.objects.order_by("full_name")
     serializer_class = BotSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.action == "webhook":
+            return [AllowAny()]
+        return super().get_permissions()
 
     @action(detail=True, methods=["put"], url_path="clear-webhook")
     def clear_webhook(self, request, **kwargs):
@@ -46,9 +51,6 @@ class BotViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["put"])
     def webhook(self, request, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        serializer.is_valid(raise_exception=True)
-
         bot_hook = getattr(hooks, instance.username, None)
         if not bot_hook:
             logging.error(
