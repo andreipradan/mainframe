@@ -36,7 +36,6 @@ DEBUG = int(env("DEBUG", default=0))
 
 if not DEBUG:
     sentry_sdk.init(
-        debug=True,
         dsn=env("SENTRY_DSN"),
         integrations=[
             DjangoIntegration(),
