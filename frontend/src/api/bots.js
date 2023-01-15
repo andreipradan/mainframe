@@ -24,7 +24,7 @@ const handleErrors = async (err, dispatch) => {
       setErrors(
         Object.keys(err.response.data).map((k) => {
           let errors = err.response.data[k];
-          return `${k}: ${errors.length ? err.response.data[k].join(", ") : errors}`;
+          return `${k}: ${Array.isArray(errors) ? err.response.data[k].join(", ") : errors}`;
         })
       )
     );
@@ -80,7 +80,7 @@ class BotsApi {
   static sync = (token, botId) => (dispatch) => {
     dispatch(setLoadingBots(botId));
     axios
-      .put(`${base}${botId}/sync/`, {}, { headers: { Authorization: token } })
+      .post(`${base}${botId}/webhook/`, {}, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(update(response.data));
       })

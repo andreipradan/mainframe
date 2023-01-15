@@ -48,7 +48,7 @@ class BotViewSet(viewsets.ModelViewSet):
         self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
-    @action(detail=True, methods=["put"])
+    @action(detail=True, methods=["post"])
     def webhook(self, request, **kwargs):
         instance = self.get_object()
         bot_hook = getattr(hooks, instance.username, None)
