@@ -1,1 +1,1 @@
-* * * * * mkdir -p $HOME/mainframe-crons/`date +\%Y`/`date +\%m` && cd $HOME/projects/mainframe && /usr/local/bin/poetry run challonge-check >> $HOME/mainframe-crons/`date +\%Y`/`date +\%m`/`date +\%Y-\%m-\%d`.log 2>&1
+* * * * * mkdir -p $HOME/mainframe-crons/`date +\%Y`/`date +\%m` && cd $HOME/projects/mainframe/backend && /home/andreierdna/.virtualenvs/mainframe/bin/python manage.py challonge_check >> $HOME/mainframe-crons/`date +\%Y`/`date +\%m`/`date +\%Y-\%m-\%d`.log 2>&1

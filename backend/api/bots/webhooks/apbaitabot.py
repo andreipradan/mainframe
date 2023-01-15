@@ -2,8 +2,6 @@ import logging
 import operator
 from datetime import datetime
 
-from django.views.decorators.csrf import csrf_exempt
-
 import telegram
 import yeelight
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton

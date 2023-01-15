@@ -52,7 +52,9 @@ class BotViewSet(viewsets.ModelViewSet):
     def webhook(self, request, **kwargs):
         instance = self.get_object()
         try:
-            webhook_module = import_module(f"api.bots.webhooks.{instance.username}")
+            webhook_module = import_module(
+                f"api.bots.webhooks.{instance.username.lower()}"
+            )
         except ModuleNotFoundError:
             logging.error(
                 f"Got a webhook call for '{instance.username}' with no associated bot_hook implementation"
