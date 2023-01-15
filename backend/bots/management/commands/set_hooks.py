@@ -61,14 +61,15 @@ class Command(BaseCommand):
         logger.info(f"Github web hook created successfully: {hook}")
 
         logger.info("Setting telegram webhooks")
-        local_bots = list(Bot.objects.filter(is_external=False))
+        local_bots = Bot.objects.filter(
+            is_external=False, webhook__isnull=False
+        ).exclude(webhook="")
         for bot in local_bots:
-            if bot.webhook:
-                try:
-                    logger.debug(
-                        f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"
-                    )
-                except telegram.error.TelegramError as e:
-                    raise CommandError(str(e))
+            try:
+                logger.debug(
+                    f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"
+                )
+            except telegram.error.TelegramError as e:
+                raise CommandError(str(e))
 
         self.stdout.write(self.style.SUCCESS("Done."))

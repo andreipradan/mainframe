@@ -1,4 +1,5 @@
 import logging
+from importlib import import_module
 
 import telegram
 from django.http import JsonResponse
@@ -6,7 +7,6 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from api import hooks
 from api.bots.serializers import BotSerializer
 from bots.models import Bot
 
@@ -51,11 +51,12 @@ class BotViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def webhook(self, request, **kwargs):
         instance = self.get_object()
-        bot_hook = getattr(hooks, instance.username, None)
-        if not bot_hook:
+        try:
+            webhook_module = import_module(f"api.bots.webhooks.{instance.username}")
+        except ModuleNotFoundError:
             logging.error(
                 f"Got a webhook call for '{instance.username}' with no associated bot_hook implementation"
             )
-            return JsonResponse(data={"status": "400"})
-
+            return JsonResponse(data={"status": "404"})
+        webhook_module.call(request.data, instance)
         return JsonResponse(data={"status": "200"})

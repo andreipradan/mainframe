@@ -80,7 +80,7 @@ class BotsApi {
   static sync = (token, botId) => (dispatch) => {
     dispatch(setLoadingBots(botId));
     axios
-      .post(`${base}${botId}/webhook/`, {}, { headers: { Authorization: token } })
+      .put(`${base}${botId}/sync/`, {}, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(update(response.data));
       })
