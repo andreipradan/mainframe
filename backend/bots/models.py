@@ -1,3 +1,6 @@
+import datetime
+from importlib import import_module
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
@@ -15,6 +18,7 @@ class Bot(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     username = models.CharField(max_length=32)
     webhook = models.URLField(null=True, blank=True)
+    webhook_name = models.CharField(blank=True, max_length=32, null=True)
     whitelist = ArrayField(
         models.CharField(max_length=24),
         blank=True,
@@ -24,3 +28,9 @@ class Bot(models.Model):
 
     def __str__(self):
         return f"{self.full_name} [{self.username}]"
+
+    def call(self, data):
+        webhook_module = import_module(f"api.bots.webhooks.{self.webhook_name}")
+        webhook_module.call(data, self)
+        self.last_called_on = datetime.datetime.now()
+        self.save()

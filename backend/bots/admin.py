@@ -7,10 +7,13 @@ class BotAdmin(admin.ModelAdmin):
     list_display = (
         "full_name",
         "username",
-        "telegram_id",
-        "webhook",
+        "webhook_name",
         "whitelist",
         "last_called_on",
+        "webhook",
+        "telegram_id",
+        "created_at",
+        "updated_at",
     )
 
 
