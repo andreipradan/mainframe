@@ -1,8 +1,8 @@
-import datetime
 from importlib import import_module
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
 
 
 class Bot(models.Model):
@@ -32,5 +32,5 @@ class Bot(models.Model):
     def call(self, data):
         webhook_module = import_module(f"api.bots.webhooks.{self.webhook_name}")
         webhook_module.call(data, self)
-        self.last_called_on = datetime.datetime.now()
+        self.last_called_on = timezone.now()
         self.save()
