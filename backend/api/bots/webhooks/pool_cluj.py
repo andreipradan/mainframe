@@ -8,9 +8,7 @@ import telegram
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def get_stats_from_user(user):
@@ -117,7 +115,7 @@ def call(data, bot):
     tournament = TournamentClient(bot.token)
 
     if base_command == "clear":
-        logger.debug("Clearing participants")
+        logger.info("Clearing participants")
         try:
             results = tournament.clear_participants()
         except requests.exceptions.HTTPError as e:
@@ -139,18 +137,18 @@ def call(data, bot):
             reply(update, error)
             return ""
         msg = f"Destroyed {response['tournament']['url']}"
-        logger.debug(msg)
+        logger.warning(msg)
         reply(update, msg)
         return ""
 
     if base_command == "join":
-        logger.debug(f"{user_text} is trying to join")
+        logger.info(f"{user_text} is trying to join")
         db_results = database.set_stats(
             get_stats_from_user(user),
             collection="participants",
             id=user.id,
         )
-        logger.debug(
+        logger.info(
             " | ".join(
                 f"{key}: {getattr(db_results, key, None)}"
                 for key in ["upserted_id", "modified_count", "matched_count"]
@@ -184,7 +182,7 @@ def call(data, bot):
         return ""
 
     if base_command == "leave":
-        logger.debug(f"{user_text} is trying to leave")
+        logger.info(f"{user_text} is trying to leave")
         if not tournament.get_player_by_telegram_id(user.id):
             logger.warning(f"Player {user_text} not found in tournament")
             reply(update, "You are not registered to this tournament")
@@ -198,12 +196,12 @@ def call(data, bot):
             return ""
 
         msg = f"{results['participant']['name']} {'resigned' if tournament.is_started else 'left'}"
-        logger.debug(msg)
+        logger.info(msg)
         reply(update, msg)
         return ""
 
     if base_command == "populate":
-        logger.debug("Populating participants")
+        logger.info("Populating participants")
         try:
             results = tournament.add_participants()
         except requests.exceptions.HTTPError as e:
@@ -264,9 +262,9 @@ def call(data, bot):
         return ""
 
     if base_command == "score":
-        logger.debug(f"Set score: {command}")
+        logger.info(f"Set score: {command}")
         if not tournament.is_started:
-            logger.debug("Tournament not started")
+            logger.info("Tournament not started")
             reply(update, "Not possible - tournament not started")
             return ""
 
@@ -282,7 +280,7 @@ def call(data, bot):
         return ""
 
     if base_command == "start":
-        logger.debug("Starting tournament")
+        logger.info("Starting tournament")
         try:
             if tournament.is_started:
                 msg = "Tournament already started"

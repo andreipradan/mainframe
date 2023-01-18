@@ -10,9 +10,7 @@ from requests.exceptions import ConnectionError
 
 from bots.models import Bot
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def get_ngrok_url():
@@ -66,7 +64,7 @@ class Command(BaseCommand):
         ).exclude(webhook="")
         for bot in local_bots:
             try:
-                logger.debug(
+                logger.info(
                     f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"
                 )
             except telegram.error.TelegramError as e:

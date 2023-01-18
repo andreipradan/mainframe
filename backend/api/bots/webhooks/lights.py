@@ -6,9 +6,7 @@ import telegram
 import yeelight
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def chunks(lst, width):
@@ -95,7 +93,7 @@ class Inlines:
             logger.error(str(e))
             return ""
 
-        logger.debug(f"Bulb {ip} was toggled. Response: {response}")
+        logger.info(f"Bulb {ip} was toggled. Response: {response}")
         return cls.refresh(update)
 
 
@@ -122,10 +120,10 @@ def call(data, bot):
 
     if message.from_user.username not in bot.whitelist:
         who = message.from_user.username or message.from_user.id
-        return logging.error(f"Ignoring message from: {who}")
+        return logger.error(f"Ignoring message from: {who}")
 
     if not hasattr(message, "text") or not message.text:
-        return logging.warning(f"Got no text")
+        return logger.warning(f"Got no text")
 
     if not message.text.startswith("/"):
         return logger.warning(f"Not a command: {message.text}")

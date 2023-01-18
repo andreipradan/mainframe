@@ -14,17 +14,15 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def run_cmd(cmd, prefix=None):
     prefix = prefix.upper() if prefix else cmd
-    logger.debug(f"[{prefix}] Starting")
+    logger.info(f"[{prefix}] Starting")
     output = subprocess.check_output(cmd.split(" ")).decode("utf-8")
     if output:
-        logger.debug(f"[{prefix}] Output: {str(output)}")
+        logger.info(f"[{prefix}] Output: {str(output)}")
     logger.info(f"[{prefix}] Done.")
     return output
 

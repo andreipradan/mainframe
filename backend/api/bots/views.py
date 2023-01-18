@@ -1,5 +1,4 @@
 import logging
-from importlib import import_module
 
 import telegram
 from django.http import JsonResponse

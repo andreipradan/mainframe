@@ -9,9 +9,7 @@ from django.core.management.base import BaseCommand
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def check_open_matches(client):
@@ -23,7 +21,7 @@ def check_open_matches(client):
     ):
         return
 
-    logger.debug("Checking open matches")
+    logger.info("Checking open matches")
 
     round_date_format = "%d %b %Y"
     deadline_reminder = {
@@ -66,7 +64,7 @@ class Command(BaseCommand):
         tournament = TournamentClient(environ.Env()("CHALLONGE_BOT_TOKEN"))
         try:
             if not tournament.is_started:
-                return logger.debug("Tournament not started. Skipping checks")
+                return logger.info("Tournament not started. Skipping checks")
         except requests.exceptions.HTTPError:
             return ""
 
@@ -95,7 +93,7 @@ class Command(BaseCommand):
                 logger.info("Initial matches setup. Skip sending update.")
 
             results = database.bulk_update(updates).bulk_api_result
-            return logger.debug(results)
+            return logger.info(results)
 
         logger.info(f"No matches updates")
 

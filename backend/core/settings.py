@@ -184,3 +184,28 @@ if CORS_ALLOWED_ORIGINS_ENV:
 
 TESTING = False
 TEST_RUNNER = "core.test_runner.CoreTestRunner"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} - {levelname} - {module}.{name} - {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "root": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

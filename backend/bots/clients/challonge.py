@@ -9,9 +9,7 @@ import telegram
 
 from bots.clients import mongo as database
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 TIME_ZONE = "Europe/Bucharest"
 
@@ -67,7 +65,7 @@ class TournamentClient:
             data=data,
         )
         if 200 <= response.status_code < 300:
-            logger.debug(f"Got: {response.status_code} {response.reason}")
+            logger.info(f"Got: {response.status_code} {response.reason}")
             return response.json()
 
         try:
@@ -149,7 +147,7 @@ class TournamentClient:
         logger.warning(f"Destroying tournament {self._id}")
         response = self._request(f"{self.url}.json", method="DELETE")
         database.get_collection().drop()
-        logger.debug("Dropped matches collection")
+        logger.warning("Dropped matches collection")
         return response
 
     def fetch(self):

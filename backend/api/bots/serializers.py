@@ -4,6 +4,8 @@ import telegram
 from rest_framework import serializers
 from bots.models import Bot
 
+logger = logging.getLogger(__name__)
+
 
 class BotSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
@@ -24,18 +26,25 @@ class BotSerializer(serializers.ModelSerializer):
             if list(attrs) == ["token"]:
                 try:
                     bot.get_me()
-                    logging.info("Setting new token")
+                    logger.info("Setting new token")
                     return attrs
                 except telegram.error.TelegramError as e:
                     raise serializers.ValidationError({"Telegram Error": e.message})
 
             webhook = attrs.get("webhook")
             if webhook != self.instance.webhook:
-                try:
-                    bot.set_webhook(webhook)
-                except telegram.error.TelegramError as e:
-                    raise serializers.ValidationError({"Telegram Error": e.message})
-                logging.info(f"Setting new webhook: {webhook}")
+                if webhook:
+                    try:
+                        logger.info(
+                            f"Set new webhook '{webhook}': {bot.set_webhook(webhook)}"
+                        )
+                    except telegram.error.TelegramError as e:
+                        raise serializers.ValidationError({"Telegram Error": e.message})
+                else:
+                    try:
+                        logger.info(f"Deleted webhook: {bot.delete_webhook()}")
+                    except telegram.error.TelegramError as e:
+                        raise serializers.ValidationError({"Telegram Error": e.message})
 
             return attrs
 
