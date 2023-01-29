@@ -59,9 +59,9 @@ class Command(BaseCommand):
         logger.info(f"Github web hook created successfully: {hook}")
 
         logger.info("Setting telegram webhooks")
-        local_bots = Bot.objects.filter(
-            is_external=False, webhook__isnull=False
-        ).exclude(webhook="")
+        local_bots = Bot.objects.filter(webhook_name__isnull=False).exclude(
+            webhook_name=""
+        )
         for bot in local_bots:
             try:
                 logger.info(

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
+import api.authentication.models.active_session
 from api.authentication.models import ActiveSession
 
 
@@ -52,7 +53,11 @@ class LoginSerializer(serializers.Serializer):
                 raise ValueError
 
             jwt.decode(session.token, settings.SECRET_KEY, algorithms=["HS256"])
-
+        except api.authentication.models.active_session.ActiveSession.MultipleObjectsReturned:
+            ActiveSession.objects.filter(user=user).delete()
+            session = ActiveSession.objects.create(
+                user=user, token=_generate_jwt_token(user)
+            )
         except (ObjectDoesNotExist, ValueError, jwt.ExpiredSignatureError):
             session = ActiveSession.objects.create(
                 user=user, token=_generate_jwt_token(user)

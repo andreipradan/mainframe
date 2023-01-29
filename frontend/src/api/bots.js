@@ -2,13 +2,14 @@ import axios from "./index";
 import {
   add,
   remove,
-  select,
   set,
   setErrors,
   setLoading,
   setLoadingBots,
   update,
 } from "../redux/botsSlice";
+import Cookie from "js-cookie";
+import {logout} from "../redux/authSlice";
 
 const handleErrors = async (err, dispatch) => {
   if (err.response) {
@@ -18,7 +19,12 @@ const handleErrors = async (err, dispatch) => {
   }
   if (err.response?.data) {
     if (err.response.data["msg"] === "User is not logged on.") {
-      localStorage.clear();
+      console.log("user not logged in")
+      Cookie.remove('expires_at');
+      Cookie.remove('token');
+      Cookie.remove('user');
+      dispatch(logout())
+      return dispatch(setErrors(err.response.data))
     }
     dispatch(
       setErrors(
@@ -46,10 +52,7 @@ class BotsApi {
   static delete = (token, botId) => (dispatch) => {
     axios
       .delete(`${base}${botId}/`, { headers: { Authorization: token } })
-      .then(() => {
-        dispatch(remove(botId));
-        dispatch(select(null));
-      })
+      .then(() => {dispatch(remove(botId))})
       .catch((err) => handleErrors(err, dispatch));
   };
   static getList = (token) => (dispatch) => {
@@ -60,20 +63,20 @@ class BotsApi {
       .catch((err) => handleErrors(err, dispatch));
   };
   static postNewBot = (token, data) => (dispatch) => {
+    dispatch(setLoading(true));
     axios
       .post(base, data, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(add(response.data));
-        dispatch(select(null));
       })
       .catch((err) => handleErrors(err, dispatch));
   };
   static updateBot = (token, botId, data) => (dispatch) => {
+    dispatch(setLoadingBots(botId));
     axios
       .patch(`${base}${botId}/`, data, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(update(response.data));
-        dispatch(select(null));
       })
       .catch((err) => handleErrors(err, dispatch));
   };

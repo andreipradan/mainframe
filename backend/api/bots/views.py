@@ -40,9 +40,7 @@ class BotViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["put"])
     def sync(self, request, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data={"token": instance.token}, partial=True
-        )
+        serializer = self.get_serializer(instance, data={}, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return JsonResponse(data=serializer.data)

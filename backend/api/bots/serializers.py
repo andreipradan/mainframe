@@ -20,13 +20,34 @@ class BotSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        bot = telegram.Bot(attrs["token"])
+        action = self.context["view"].action
+        if action == "sync":
+            token = self.instance.token
+            attrs = {"token": token}
+            bot = telegram.Bot(token)
+            try:
+                attrs["webhook"] = bot.get_webhook_info()["url"]
+            except telegram.error.TelegramError as e:
+                raise serializers.ValidationError({"Telegram Error": e.message})
 
-        if self.instance and self.context["view"].action != "sync":
+            bot = bot.bot
+            additional_data = bot.to_dict()
+            attrs["telegram_id"] = additional_data.pop("id")
+            attrs["username"] = additional_data.pop("username")
+            attrs.update(
+                {
+                    field: getattr(bot, field, None)
+                    for field in ["first_name", "full_name", "last_name"]
+                }
+            )
+            attrs["additional_data"] = additional_data
+            return attrs
+
+        if self.instance and action != "sync":
             if list(attrs) == ["token"]:
+                logger.info("Setting new token")
                 try:
                     bot.get_me()
-                    logger.info("Setting new token")
                     return attrs
                 except telegram.error.TelegramError as e:
                     raise serializers.ValidationError({"Telegram Error": e.message})
@@ -45,30 +66,5 @@ class BotSerializer(serializers.ModelSerializer):
                         logger.info(f"Deleted webhook: {bot.delete_webhook()}")
                     except telegram.error.TelegramError as e:
                         raise serializers.ValidationError({"Telegram Error": e.message})
-
-            return attrs
-
-        else:
-            if list(attrs) != ["token"]:
-                raise serializers.ValidationError(f"Only token allowed")
-
-            attrs = {"token": attrs["token"]}
-
-            try:
-                attrs["webhook"] = bot.get_webhook_info()["url"]
-            except telegram.error.TelegramError as e:
-                raise serializers.ValidationError({"Telegram Error": e.message})
-
-            bot = bot.bot
-            additional_data = bot.to_dict()
-            attrs["telegram_id"] = additional_data.pop("id")
-            attrs["username"] = additional_data.pop("username")
-            attrs.update(
-                {
-                    field: getattr(bot, field, None)
-                    for field in ["first_name", "full_name", "last_name"]
-                }
-            )
-            attrs["additional_data"] = additional_data
 
         return attrs

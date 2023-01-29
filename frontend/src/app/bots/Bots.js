@@ -1,0 +1,124 @@
+import React, {useEffect, useState} from 'react'
+import { useDispatch, useSelector } from "react-redux";
+import BotsApi from "../../api/bots";
+import {Audio, ColorRing} from "react-loader-spinner";
+import {select} from "../../redux/botsSlice";
+import EditModal from "./components/EditModal";
+import Alert from "react-bootstrap/Alert";
+
+
+const Bots = () =>  {
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token)
+  const bots = useSelector(state => state.bots.list)
+  const errors = useSelector(state => state.bots.errors)
+  const loading = useSelector(state => state.bots.loading)
+  const loadingBots = useSelector(state => state.bots.loadingBots)
+  const [alertOpen, setAlertOpen] = useState(false)
+
+  useEffect(() => {
+    !bots && dispatch(BotsApi.getList(token));
+  }, []);
+
+  useEffect(() => {errors && setAlertOpen(true)}, [errors])
+
+  return (
+    <div>
+      <div className="page-header">
+        <h3 className="page-title">Telegram Bots</h3>
+        <nav aria-label="breadcrumb">
+          <ol className="breadcrumb">
+            <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Home</a></li>
+            <li className="breadcrumb-item active" aria-current="page">Bots</li>
+          </ol>
+        </nav>
+      </div>
+      <div className="row">
+        <div className="col-lg-12 grid-margin stretch-card">
+          <div className="card">
+            <div className="card-body">
+              <h4 className="card-title">
+                Available bots
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
+                  <i className="mdi mdi-refresh"></i>
+                </button>
+              </h4>
+              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+              <div className="table-responsive">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th> # </th>
+                      <th> Full Name </th>
+                      <th> Username </th>
+                      <th> Webhook Name</th>
+                      <th> Webhook </th>
+                      <th> Last call </th>
+                      <th> Actions </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      loading
+                        ? <tr>
+                            <td colSpan={6}>
+                              <Audio
+                                  width = "100%"
+                                  radius = "9"
+                                  color = 'green'
+                                  wrapperStyle={{width: "100%"}}
+                                />
+                              </td>
+                            </tr>
+                          : bots
+                            ? bots.map((bot, i) => !loadingBots?.includes(bot.id) ? <tr key={i}>
+                                  <td>{i + 1}</td>
+                                  <td>{bot.full_name} {bot.is_external ? "(ext)" : ""}</td>
+                                  <td>{bot.username}</td>
+                                  <td>{bot.webhook_name}</td>
+                                  <td>{bot.webhook}</td>
+                                  <td>{bot.last_called_on}</td>
+                                  <td>
+                                    <div className="btn-group" role="group" aria-label="Basic example">
+                                      <button
+                                          type="button"
+                                          className="btn btn-outline-secondary"
+                                          onClick={() => dispatch(BotsApi.sync(token, bot.id))}
+                                      >
+                                        <i className="mdi mdi-refresh"></i>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() => dispatch(select(bot.id))}
+                                      >
+                                        <i className="mdi mdi-pencil"></i>
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                            : <tr key={i}>
+                              <td colSpan={6}>
+                                <ColorRing
+                                    width = "100%"
+                                    height = "50"
+                                    wrapperStyle={{width: "100%"}}
+                                  />
+                              </td>
+                            </tr>
+                              )
+                            : <tr><td colSpan={6}>No bots available</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <EditModal />
+    </div>
+  )
+}
+
+export default Bots;

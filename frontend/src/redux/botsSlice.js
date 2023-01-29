@@ -14,21 +14,19 @@ export const botsSlice = createSlice({
     add: (state, action) => {
       state.list = state.list ? [...state.list, action.payload] : [action.payload];
       state.errors = null;
+      state.loading = false;
     },
     remove: (state, action) => {
       state.list = state.list.filter((bot) => bot.id !== action.payload);
       state.errors = null;
     },
-    setEditorOpen: (state, action) => {
-      state.editorOpen = action.payload;
+    select: (state, action) => {
+      state.selectedBot = action.payload ? state.list.find(bot => bot.id === action.payload) : null
     },
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
       state.loadingBots = null;
-    },
-    select: (state, action) => {
-      state.selectedBot = action.payload;
     },
     set: (state, action) => {
       state.list = action.payload;
