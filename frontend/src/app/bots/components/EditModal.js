@@ -15,13 +15,14 @@ const EditModal = () => {
   const [isExternal, setIsExternal] = useState(bot?.is_external || false);
   const [webhook, setWebhook] = useState("");
   const [webhookName, setWebhookName] = useState("");
-  // const [whitelist, setWhitelist] = useState(null);
+  const [whitelist, setWhitelist] = useState(null);
 
   useEffect(() => {
     if (bot) {
       setIsExternal(bot.is_external)
       setWebhook(bot.webhook || "")
       setWebhookName(bot.webhook_name || "")
+      setWhitelist(bot.whitelist.join("\n") || "")
     }
   }, [bot]);
 
@@ -57,8 +58,8 @@ const EditModal = () => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Example textarea</Form.Label>
-          <Form.Control as="textarea" rows={3}/>
+          <Form.Label>Whitelist</Form.Label>
+          <Form.Control as="textarea" rows={3} value={whitelist || ""} onChange={e => setWhitelist(e.target.value)}/>
         </Form.Group>
       </Form>
     </Modal.Body>
@@ -71,6 +72,7 @@ const EditModal = () => {
           is_external: isExternal,
           webhook: webhook,
           webhook_name: webhookName,
+          whitelist: whitelist.split("\n"),
         }))
         dispatch(select())
       }}>

@@ -50,7 +50,6 @@ const Bots = () =>  {
                     <tr>
                       <th> # </th>
                       <th> Full Name </th>
-                      <th> Username </th>
                       <th> Webhook Name</th>
                       <th> Webhook </th>
                       <th> Last call </th>
@@ -59,55 +58,64 @@ const Bots = () =>  {
                   </thead>
                   <tbody>
                     {
-                      loading
-                        ? <tr>
-                            <td colSpan={6}>
-                              <Audio
-                                  width = "100%"
-                                  radius = "9"
-                                  color = 'green'
-                                  wrapperStyle={{width: "100%"}}
-                                />
-                              </td>
-                            </tr>
-                          : bots
-                            ? bots.map((bot, i) => !loadingBots?.includes(bot.id) ? <tr key={i}>
-                                  <td>{i + 1}</td>
-                                  <td>{bot.full_name} {bot.is_external ? "(ext)" : ""}</td>
-                                  <td>{bot.username}</td>
-                                  <td>{bot.webhook_name}</td>
-                                  <td>{bot.webhook}</td>
-                                  <td>{bot.last_called_on}</td>
-                                  <td>
-                                    <div className="btn-group" role="group" aria-label="Basic example">
-                                      <button
-                                          type="button"
-                                          className="btn btn-outline-secondary"
-                                          onClick={() => dispatch(BotsApi.sync(token, bot.id))}
-                                      >
-                                        <i className="mdi mdi-refresh"></i>
-                                      </button>
-                                      <button
+                      !loading
+                        ? bots
+                          ? bots.map(
+                            (bot, i) => !loadingBots?.includes(bot.id)
+                              ? <tr key={i}>
+                                <td>{i + 1}</td>
+                                <td>
+                                  {bot.full_name} &nbsp;
+                                  {
+                                    bot.is_external
+                                      ? <i className="mdi mdi-triangle"></i>
+                                      : ""
+                                  }
+                                  <br />
+                                  <small>({bot.username})</small></td>
+                                <td>{bot.webhook_name}</td>
+                                <td>{bot.webhook}</td>
+                                <td>{bot.last_called_on ? new Date(bot.last_called_on).toString() : "-"}</td>
+                                <td>
+                                  <div className="btn-group" role="group" aria-label="Basic example">
+                                    <button
                                         type="button"
                                         className="btn btn-outline-secondary"
-                                        onClick={() => dispatch(select(bot.id))}
-                                      >
-                                        <i className="mdi mdi-pencil"></i>
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                            : <tr key={i}>
-                              <td colSpan={6}>
-                                <ColorRing
-                                    width = "100%"
-                                    height = "50"
-                                    wrapperStyle={{width: "100%"}}
-                                  />
-                              </td>
-                            </tr>
-                              )
-                            : <tr><td colSpan={6}>No bots available</td></tr>
+                                        onClick={() => dispatch(BotsApi.sync(token, bot.id))}
+                                    >
+                                      <i className="mdi mdi-refresh"></i>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn btn-outline-secondary"
+                                      onClick={() => dispatch(select(bot.id))}
+                                    >
+                                      <i className="mdi mdi-pencil"></i>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                          : <tr key={i}>
+                            <td colSpan={6}>
+                              <ColorRing
+                                  width = "100%"
+                                  height = "50"
+                                  wrapperStyle={{width: "100%"}}
+                                />
+                            </td>
+                          </tr>
+                            )
+                          : <tr><td colSpan={6}>No bots available</td></tr>
+                        : <tr>
+                          <td colSpan={6}>
+                            <Audio
+                                width = "100%"
+                                radius = "9"
+                                color = 'green'
+                                wrapperStyle={{width: "100%"}}
+                              />
+                            </td>
+                          </tr>
                     }
                   </tbody>
                 </table>
