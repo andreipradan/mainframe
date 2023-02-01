@@ -11,7 +11,7 @@ import {
 import Cookie from "js-cookie";
 import {logout} from "../redux/authSlice";
 
-const handleErrors = async (err, dispatch) => {
+export const handleErrors = async (err, dispatch) => {
   if (err.response) {
     const contentType = err.response.headers["content-type"];
     if (!contentType.startsWith("application/json"))

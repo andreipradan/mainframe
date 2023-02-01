@@ -1,10 +1,10 @@
 import logging
-import operator
 from datetime import datetime
 
 import telegram
-import yeelight
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+
+from api.lights.client import LightsClient, LightsException
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +15,6 @@ def chunks(lst, width):
         yield [lst[i + j * width] for j in range(width) if i + j * width < len(lst)]
 
 
-def get_bulbs():
-    bulbs = yeelight.discover_bulbs()
-    return sorted(bulbs, key=operator.itemgetter("ip"))
-
-
 def get_markup():
     def verbose_light(light):
         props = light["capabilities"]
@@ -27,7 +22,7 @@ def get_markup():
         status_icon = "💡" if props["power"] == "on" else "🌑"
         return f"{status_icon} {name}"
 
-    items = get_bulbs()
+    items = LightsClient.get_bulbs()
     return InlineKeyboardMarkup(
         [
             [
@@ -86,10 +81,9 @@ class Inlines:
 
     @classmethod
     def toggle(cls, update, ip):
-        bulb = yeelight.Bulb(ip)
         try:
-            response = bulb.toggle()
-        except yeelight.main.BulbException as e:
+            response = LightsClient.toggle(ip)
+        except LightsException as e:
             logger.error(str(e))
             return ""
 
