@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.http import JsonResponse, HttpResponse
@@ -13,6 +14,16 @@ def get_list(request):
     if not request.method == "GET":
         raise MethodNotAllowed(request.method)
     return JsonResponse(data=LightsClient.get_bulbs(), safe=False)
+
+
+@csrf_exempt
+def set_brightness(request, ip):
+    if not request.method == "PATCH":
+        raise MethodNotAllowed(request.method)
+    body = json.loads(request.body)
+    response = LightsClient.set_brightness(ip, body["brightness"])
+    logger.info(response)
+    return HttpResponse(response)
 
 
 @csrf_exempt

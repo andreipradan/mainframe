@@ -14,6 +14,13 @@ export const lightsSlice = createSlice({
       state.errors = null;
       state.loading = false;
     },
+    setBrightness: (state, action) => {
+      state.list = state.list.map((l) => (l.ip !== action.payload.ip
+        ? l
+        : {...l, capabilities: {...l.capabilities, bright: action.payload.brightness}}
+      ));
+      state.errors = null;
+    },
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
@@ -44,5 +51,5 @@ export const lightsSlice = createSlice({
   },
 });
 
-export const { set, setLoading, setLoadingLight, turn_off, turn_on } = lightsSlice.actions;
+export const { set, setBrightness, setLoading, setLoadingLight, turn_off, turn_on } = lightsSlice.actions;
 export default lightsSlice.reducer;

@@ -16,6 +16,14 @@ class LightsClient:
         return sorted(bulbs, key=operator.itemgetter("ip"))
 
     @classmethod
+    def set_brightness(cls, ip, brightness):
+        bulb = yeelight.Bulb(ip)
+        try:
+            return bulb.set_brightness(brightness)
+        except yeelight.main.BulbException as e:
+            raise LightsException(e)
+
+    @classmethod
     def turn_off(cls, ip):
         bulb = yeelight.Bulb(ip)
         try:

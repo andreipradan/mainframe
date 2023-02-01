@@ -1,6 +1,7 @@
 import axios from "./index";
 import {
   set,
+  setBrightness,
   setLoading,
   setLoadingLight,
   turn_off,
@@ -15,6 +16,18 @@ class LightsApi {
     axios
       .get(base, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch));
+  };
+  static setBrightness = (token, lightIp, brightness) => (dispatch) => {
+    dispatch(setLoadingLight(lightIp));
+    axios
+      .patch(`${base}${lightIp}/set-brightness`,
+        {brightness: brightness},
+        {headers: {Authorization: token}},
+      )
+      .then((response) => {
+        dispatch(setBrightness({ip: lightIp, brightness: brightness}));
+      })
       .catch((err) => handleErrors(err, dispatch));
   };
   static turn_off = (token, lightId) => (dispatch) => {

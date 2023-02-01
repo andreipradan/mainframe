@@ -69,11 +69,8 @@ const Dashboard = () => {
     ]
   };
 
-  const COLORS = ["red", "green", "blue"]
-  const [color, setColor] = useState("rgb(127, 127, 127)")
-  const onUpdate = index => (render, handle, value, un, percent) => {
-    COLORS[index] = value[0];
-    setColor(`rgb(${COLORS.join(",")})`)
+  const onUpdate = lightIp => (render, handle, value, un, percent) => {
+		dispatch(LightsApi.setBrightness(token, lightIp, percent[0]));
   };
 
   const transactionHistoryOptions = {
@@ -283,22 +280,16 @@ const Dashboard = () => {
                               </div>
                             </div>
                             <Collapse in={ getExpanded(light.ip) }>
-                              <div className="slider" id="colorpicker" style={{width: "100%", height: "100%"}}>dfs
-                                {COLORS.map((item, index) => (
-                                  <Nouislider
-                                    key={item}
-                                    id={item}
-                                    start={127}
-                                    connect={[true, false]}
-                                    orientation="vertical"
-                                    range={{
-                                      min: 0,
-                                      max: 255
-                                    }}
-                                    onUpdate={onUpdate(index)}
-                                  />
-                                ))}
-                                <div id="result" style={{ background: color, color }} />
+                              <div className="slider" id="colorpicker">
+                                <Nouislider
+                                  id={light.ip}
+                                  connect="lower"
+                                  step={1}
+                                  start={light.capabilities.bright}
+                                  range={{min: 0, max: 100}}
+                                  tooltips={[true]}
+                                  onChange={onUpdate(light.ip)}
+                                />
                               </div>
                             </Collapse>
                           </div>
