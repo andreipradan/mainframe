@@ -4,7 +4,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { TodoListComponent } from '../apps/TodoList'
 import { useDispatch, useSelector } from "react-redux";
 import { VectorMap } from "react-jvectormap"
-import { MagnifyingGlass } from "react-loader-spinner";
+import { BallTriangle, MagnifyingGlass } from "react-loader-spinner";
 import Nouislider from 'nouislider-react';
 import "nouislider/distribute/nouislider.css";
 
@@ -21,10 +21,9 @@ const mapData = {
   "GE": 33.25
 }
 
-const getPercentage = (total, nr) => nr / total * 100
-
 const Dashboard = () => {
   const bots = useSelector(state => state.bots.list)
+  const botsLoading = useSelector(state => state.bots.loading)
   const lights = useSelector(state => state.lights.list)
   const lightsLoading = useSelector(state => state.lights.loading)
   const dispatch = useDispatch();
@@ -58,15 +57,21 @@ const Dashboard = () => {
     }
   }, [lights])
 
-  const lightsData =  {
-    labels: ["On", "Off"],
+  const botsData =  {
+    labels: ["Local", "External"],
     datasets: [{
-        data: [
-          Math.round(getPercentage(lightsTotalCount, lightsOnCount)),
-          Math.round(getPercentage(lightsTotalCount, lightsOffCount))],
-        backgroundColor: ["#00d25b","#ff0000"]
+        data: [botsLocalCount, botsExternalCount],
+        backgroundColor: ["#27d200","#0099ff"]
       }
     ]
+  };
+
+  const lightsData =  {
+    labels: ["Off", "On"],
+    datasets: [{
+      data: [lightsOffCount, lightsOnCount],
+      backgroundColor: ["#ff0000", "#00d25b"],
+    }]
   };
 
   const onUpdate = lightIp => (render, handle, value, un, percent) => {
@@ -92,91 +97,13 @@ const Dashboard = () => {
   return (
     <div>
       <div className="row">
-        <div className="col-xl-3 col-sm-6 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-9">
-                  <div className="d-flex align-items-center align-self-start">
-                    <h3 className="mb-0"><i className="mdi mdi-worker" /> {botsTotalCount}</h3>
-                  </div>
-                </div>
-                <div className="col-3">
-                  <div className="icon icon-box-success ">
-                    <span className="mdi mdi-all-inclusive icon-item"></span>
-                  </div>
-                </div>
-              </div>
-              <h6 className="text-muted font-weight-normal">Total Bots</h6>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-sm-6 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-9">
-                  <div className="d-flex align-items-center align-self-start">
-                    <h3 className="mb-0"><i className="mdi mdi-worker" /> {botsLocalCount}</h3>
-                  </div>
-                </div>
-                <div className="col-3">
-                  <div className="icon icon-box-success">
-                    <span className="mdi mdi-arrow-down icon-item"></span>
-                  </div>
-                </div>
-              </div>
-              <h6 className="text-muted font-weight-normal">Local Bots</h6>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-sm-6 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-9">
-                  <div className="d-flex align-items-center align-self-start">
-                    <h3 className="mb-0"><i className="mdi mdi-worker" /> {botsExternalCount}</h3>
-                  </div>
-                </div>
-                <div className="col-3">
-                  <div className="icon icon-box-danger">
-                    <span className="mdi mdi-arrow-top-right icon-item"></span>
-                  </div>
-                </div>
-              </div>
-              <h6 className="text-muted font-weight-normal">External Bots</h6>
-            </div>
-          </div>
-        </div>
-        <div className="col-xl-3 col-sm-6 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <div className="row">
-                <div className="col-9">
-                  <div className="d-flex align-items-center align-self-start">
-                    <h3 className="mb-0"><i className="mdi mdi-worker" /> {botsNoWebhookCount}</h3>
-                  </div>
-                </div>
-                <div className="col-3">
-                  <div className="icon icon-box-danger">
-                    <span className="mdi mdi-link-off icon-item"></span>
-                  </div>
-                </div>
-              </div>
-              <h6 className="text-muted font-weight-normal">No Webhook</h6>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="row">
         <div className="col-md-3 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">
-                Lights Count
+                Lights
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LightsApi.getList(token))}>
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
               </h4>
               {
@@ -230,7 +157,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className="col-md-9 grid-margin stretch-card">
+        <div className="col-md-6 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
               <div className="d-flex flex-row justify-content-between">
@@ -307,6 +234,73 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-3 grid-margin stretch-card">
+          <div className="card">
+            <div className="card-body">
+              <h4 className="card-title">
+                Bots
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
+                  <i className="mdi mdi-refresh" />
+                </button>
+              </h4>
+              {
+                botsLoading
+                  ? <BallTriangle
+                    visible={true}
+                    width="100%"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{}}
+                    wrapperClass={{}}
+                    color = '#e15b64'
+                  />
+                  : <>
+                    <div className="aligner-wrapper">
+                      <Doughnut data={botsData} options={transactionHistoryOptions} />
+                      <div className="absolute center-content">
+                        <h5 className="font-weight-normal text-white text-center mb-2 text-white">{botsTotalCount}</h5>
+                        <p className="text-small text-muted text-center mb-0">Total</p>
+                      </div>
+                    </div>
+                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
+                      <div className="text-md-center text-xl-left">
+                        <h6 className="mb-1">Total</h6>
+                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
+                      </div>
+                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
+                        <h6 className="font-weight-bold mb-0">{botsTotalCount}</h6>
+                      </div>
+                    </div>
+                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
+                      <div className="text-md-center text-xl-left">
+                        <h6 className="mb-1">Local Bots</h6>
+                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
+                      </div>
+                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
+                        <h6 className="font-weight-bold mb-0">{botsLocalCount}</h6>
+                      </div>
+                    </div>
+                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
+                      <div className="text-md-center text-xl-left">
+                        <h6 className="mb-1">External Bots</h6>
+                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
+                      </div>
+                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
+                        <h6 className="font-weight-bold mb-0">{botsExternalCount}</h6>
+                      </div>
+                    </div>
+                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
+                      <div className="text-md-center text-xl-left">
+                        <h6 className="mb-1">No Webhook</h6>
+                      </div>
+                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
+                        <h6 className="font-weight-bold mb-0">{botsNoWebhookCount}</h6>
+                      </div>
+                    </div>
+                  </>
+              }
             </div>
           </div>
         </div>
