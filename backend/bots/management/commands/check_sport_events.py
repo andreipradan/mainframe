@@ -21,12 +21,16 @@ class Command(BaseCommand):
         results = fetch_all()
         logger.info(f"Sending {len(results)} character message")
         try:
-            return send_message(results)
+            send_message(results)
+            logger.debug("Message sent")
         except telegram.error.BadRequest as e:
             logger.warning(f"Bad request: {e}. Trying to split the message")
             half = int(len(results) / 2)
             send_message(text=results[:half] + " [[1/2 - continued below..]]")
-            return send_message(text="[[2/2]] " + results[half:])
+            send_message(text="[[2/2]] " + results[half:])
+            logger.debug("2/2 messages sent")
+
+        self.stdout.write(self.style.SUCCESS("Done."))
 
 
 def callback(response):
