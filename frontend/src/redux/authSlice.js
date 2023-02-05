@@ -6,7 +6,7 @@ export const authSlice = createSlice({
   initialState: {
     errors: null,
     token: Cookie.get('token') || null,
-	user: Cookie.get("user") ? JSON.parse(Cookie.get('user')) : null,
+	  user: Cookie.get("user") ? JSON.parse(Cookie.get('user')) : null,
   },
   reducers: {
     login: (state, action) => {

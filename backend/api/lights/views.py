@@ -27,6 +27,26 @@ def set_brightness(request, ip):
 
 
 @csrf_exempt
+def set_color_temp(request, ip):
+    if not request.method == "PATCH":
+        raise MethodNotAllowed(request.method)
+    body = json.loads(request.body)
+    response = LightsClient.set_color_temp(ip, body["color_temp"])
+    logger.info(response)
+    return HttpResponse(response)
+
+
+@csrf_exempt
+def set_rgb(request, ip):
+    if not request.method == "PATCH":
+        raise MethodNotAllowed(request.method)
+    body = json.loads(request.body)
+    response = LightsClient.set_rgb(ip, body["rgb"])
+    logger.info(response)
+    return HttpResponse(response)
+
+
+@csrf_exempt
 def turn_off(request, ip):
     if not request.method == "PUT":
         raise MethodNotAllowed(request.method)

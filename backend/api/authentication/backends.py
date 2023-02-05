@@ -46,4 +46,4 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
             msg = {"success": False, "msg": "This user has been deactivated."}
             raise exceptions.AuthenticationFailed(msg)
 
-        return (user, token)
+        return user, token

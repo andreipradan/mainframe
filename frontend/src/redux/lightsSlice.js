@@ -6,7 +6,7 @@ export const lightsSlice = createSlice({
     errors: null,
     list: null,
     loading: false,
-    loadingLights: false,
+    loadingLights: null,
   },
   reducers: {
     set: (state, action) => {
@@ -17,9 +17,18 @@ export const lightsSlice = createSlice({
     setBrightness: (state, action) => {
       state.list = state.list.map((l) => (l.ip !== action.payload.ip
         ? l
-        : {...l, capabilities: {...l.capabilities, bright: action.payload.brightness}}
+        : {...l, capabilities: {...l.capabilities, power: "on", bright: action.payload.brightness}}
       ));
       state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload.ip)
+    },
+    setColorTemp: (state, action) => {
+      state.list = state.list.map((l) => (l.ip !== action.payload.ip
+        ? l
+        : {...l, capabilities: {...l.capabilities, power: "on", ct: action.payload.colorTemp}}
+      ));
+      state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload.ip)
     },
     setErrors: (state, action) => {
       state.errors = action.payload;
@@ -40,6 +49,7 @@ export const lightsSlice = createSlice({
         : {...l, capabilities: {...l.capabilities, power: "off"}}
       ));
       state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
     },
     turn_on: (state, action) => {
       state.list = state.list.map((l) => (l.ip !== action.payload
@@ -47,9 +57,13 @@ export const lightsSlice = createSlice({
         : {...l, capabilities: {...l.capabilities, power: "on"}}
       ));
       state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
+    },
+    unsetLoadingLight: (state, action) => {
+      state.loadingLights = state.loadingLights && state.loadingLights.filter(ip => ip !== action.payload);
     },
   },
 });
 
-export const { set, setBrightness, setLoading, setLoadingLight, turn_off, turn_on } = lightsSlice.actions;
+export const { set, setBrightness, setColorTemp, setLoading, setLoadingLight, turn_off, turn_on, unsetLoadingLight } = lightsSlice.actions;
 export default lightsSlice.reducer;

@@ -4,9 +4,10 @@ import { Doughnut } from 'react-chartjs-2';
 import { TodoListComponent } from '../apps/TodoList'
 import { useDispatch, useSelector } from "react-redux";
 import { VectorMap } from "react-jvectormap"
-import { BallTriangle, MagnifyingGlass } from "react-loader-spinner";
+import {BallTriangle, LineWave, MagnifyingGlass} from "react-loader-spinner";
 import Nouislider from 'nouislider-react';
 import "nouislider/distribute/nouislider.css";
+import { SliderPicker } from 'react-color';
 
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
@@ -25,7 +26,8 @@ const Dashboard = () => {
   const bots = useSelector(state => state.bots.list)
   const botsLoading = useSelector(state => state.bots.loading)
   const lights = useSelector(state => state.lights.list)
-  const lightsLoading = useSelector(state => state.lights.loading)
+  const allLightsLoading = useSelector(state => state.lights.loading)
+  const loadingLights = useSelector(state => state.lights.loadingLights)
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
@@ -40,7 +42,8 @@ const Dashboard = () => {
   const lightsTotalCount = lights?.length
 
   const [lightsExpanded, setLightsExpanded] = useState(null)
-  const getExpanded = ip => lightsExpanded?.find(l => l.ip === ip).expanded
+  const [lightColors, setLightColors] = useState(null)
+  const getExpanded = ip => lightsExpanded?.find(l => l.ip === ip)?.expanded
   const toggleLightExpanded = ip => setLightsExpanded(
     lightsExpanded?.map(l => l.ip === ip ? {...l, expanded: !l.expanded} : l)
   )
@@ -51,34 +54,30 @@ const Dashboard = () => {
   }, []);
 
   useEffect( () => {
-    if (lights && !lightsExpanded) {
-      console.log("setting initial lights expanded false")
-      setLightsExpanded(lights?.map(l => ({ip: l.ip, expanded: false})))
+    if (lights) {
+      if (!lightsExpanded)
+        setLightsExpanded(lights?.map(l => ({ip: l.ip, expanded: false})))
+      setLightColors(lights?.map(l => ({ip: l.ip, color: "#0059ff"})))
     }
   }, [lights])
 
+  const onSlide = (i, isDisplayed) => (render, handle, value, un, percent) => {
+    const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
+    if (tooltip)
+      tooltip.style.display = isDisplayed ? "block": "none"
+  }
+
   const botsData =  {
     labels: ["Local", "External"],
-    datasets: [{
-        data: [botsLocalCount, botsExternalCount],
-        backgroundColor: ["#27d200","#0099ff"]
-      }
-    ]
+    datasets: [{data: [botsLocalCount, botsExternalCount], backgroundColor: ["#27d200","#0099ff"]}]
   };
 
   const lightsData =  {
     labels: ["Off", "On"],
-    datasets: [{
-      data: [lightsOffCount, lightsOnCount],
-      backgroundColor: ["#ff0000", "#00d25b"],
-    }]
+    datasets: [{data: [lightsOffCount, lightsOnCount], backgroundColor: ["#ff0000", "#00d25b"],}]
   };
 
-  const onUpdate = lightIp => (render, handle, value, un, percent) => {
-		dispatch(LightsApi.setBrightness(token, lightIp, percent[0]));
-  };
-
-  const transactionHistoryOptions = {
+  const botsChartOptions = {
     responsive: true,
     maintainAspectRatio: true,
     segmentShowStroke: false,
@@ -88,12 +87,7 @@ const Dashboard = () => {
     tooltips: {enabled: true}
   }
 
-  const sliderSettings = {
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1
-  }
+  const sliderSettings = {infinite: true, speed: 500, slidesToShow: 1, slidesToScroll: 1}
   return (
     <div>
       <div className="row">
@@ -107,7 +101,7 @@ const Dashboard = () => {
                 </button>
               </h4>
               {
-                lightsLoading
+                allLightsLoading
                   ? <MagnifyingGlass
                     visible={true}
                     width="100%"
@@ -119,7 +113,7 @@ const Dashboard = () => {
                   />
                   : <>
                     <div className="aligner-wrapper">
-                      <Doughnut data={lightsData} options={transactionHistoryOptions} />
+                      <Doughnut data={lightsData} options={botsChartOptions} />
                       <div className="absolute center-content">
                         <h5 className="font-weight-normal text-white text-center mb-2 text-white">{lightsTotalCount}</h5>
                         <p className="text-small text-muted text-center mb-0">Total</p>
@@ -168,7 +162,7 @@ const Dashboard = () => {
                 <div className="col-12">
                   <div className="preview-list">
                     {
-                      lightsLoading
+                      allLightsLoading
                         ? <MagnifyingGlass
                           visible={true}
                           width="100%"
@@ -179,51 +173,91 @@ const Dashboard = () => {
                           color = '#e15b64'
                         />
                         : lights
-                          ? lights.map((light, i) => <div key={i}>
-                            <div className="preview-item border-bottom">
-                              <div className="preview-thumbnail">
-                                <Form.Check
-                                  checked={light.capabilities.power === "on"}
-                                  type="switch"
-                                  id={`checkbox-${i}`}
-                                  label=""
-                                  onChange={() => {
-                                    const action = light.capabilities.power === "on" ? LightsApi.turn_off : LightsApi.turn_on
-                                    dispatch(action(token, light.ip))
-                                  }}
-                                />
-                              </div>
-                              <div className="preview-item-content d-sm-flex flex-grow" onClick={() => toggleLightExpanded(light.ip)} style={{cursor: "pointer"}}>
-                                <div className="flex-grow">
-                                  <h6 className="preview-subject">{light.capabilities.name} <i className="mdi mdi-menu-down"></i></h6>
-                                  <p className="text-muted mb-0">{light.ip}</p>
-                                </div>
-                                <div className="mr-auto text-sm-right pt-2 pt-sm-0">
+                          ? lights.map((light, i) =>
+                            <div key={i}>
+                              <div className="preview-item border-bottom">
+                                <div className="preview-thumbnail">
                                   <p className={`text-${light.capabilities.power === "off" ? "danger" : "success"}`}>
                                     <i className={`mdi mdi-lightbulb${light.capabilities.power === "off" ? "-outline" : ""}`} />
                                   </p>
-                                  <p className="text-muted mb-0">Brightness: {light.capabilities.bright}%</p>
+                                </div>
+                                <div className="preview-item-content d-sm-flex flex-grow" onClick={() => toggleLightExpanded(light.ip)} style={{cursor: "pointer"}}>
+                                  <div className="flex-grow">
+                                    <h6 className="preview-subject">{light.capabilities.name} <i className="mdi mdi-menu-down"></i></h6>
+                                    <p className="text-muted mb-0">{light.ip}</p>
+                                  </div>
+                                  <div className="mr-auto text-sm-right pt-2 pt-sm-0">
+                                    <Form.Check
+                                      checked={light.capabilities.power === "on"}
+                                      type="switch"
+                                      id={`checkbox-${i}`}
+                                      label=""
+                                      onChange={() => {
+                                        const action = light.capabilities.power === "on" ? LightsApi.turn_off : LightsApi.turn_on
+                                        dispatch(action(token, light.ip))
+                                      }}
+                                  />
+                                    <p className="text-muted mb-0">Brightness: {light.capabilities.bright}%</p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <Collapse in={ getExpanded(light.ip) }>
-                              <div className="slider" id="colorpicker">
-                                <Nouislider
-                                  id={light.ip}
-                                  connect="lower"
-                                  step={1}
-                                  start={light.capabilities.bright}
-                                  range={{min: 0, max: 100}}
-                                  tooltips={[true]}
-                                  onChange={onUpdate(light.ip)}
-                                />
-                              </div>
-                            </Collapse>
-                          </div>
-                          )
+                              <Collapse in={ getExpanded(light.ip) }>
+                                <div className="slider" id={`slider-${i}`}>
+                                  {loadingLights?.includes(light.ip)
+                                    ? <LineWave
+                                      visible={true}
+                                      width="100%"
+                                      ariaLabel="line-wave-loading"
+                                      wrapperStyle={{}}
+                                      wrapperClass="LineWave-wrapper"
+                                      glassColor='#c0efff'
+                                      color='#e15b64'
+                                      key={i}
+                                    />
+                                    : <>
+                                    <Nouislider
+                                      className="brightness-slider"
+                                      id={light.ip}
+                                      connect="lower"
+                                      step={1}
+                                      start={light.capabilities.bright}
+                                      range={{min: 0, max: 100}}
+                                      onSet={onSlide(i)}
+                                      onChange={(render, handle, value, un, percent) => {
+                                        dispatch(LightsApi.setBrightness(token, light.ip, percent[0]));
+                                      }}
+                                      onSlide={onSlide(i, true)}
+                                      tooltips={true}
+                                    />
+                                      <SliderPicker
+                                        className="mt-4"
+                                        color={ lightColors?.find(c => c.ip === light.ip).color }
+                                        onChange={color =>
+                                          setLightColors(lightColors.map(c => c.ip !== light.ip ? c : {ip: c.ip, color: color.hex}))
+                                        }
+                                        onChangeComplete={color => {
+                                          dispatch(LightsApi.setRgb(token, light.ip, [color.rgb.r || 1, color.rgb.g || 1, color.rgb.b || 1]))
+                                        } }
+                                      />
+                                      <Nouislider
+                                        className="temp-slider mt-4"
+                                        id={`temp-slider-${i}`}
+                                        connect="lower"
+                                        step={1}
+                                        start={light.capabilities.ct}
+                                        range={{min: 1700, max: 6500}}
+                                        onChange={(render, handle, value, un, percent) => {
+                                          dispatch(LightsApi.setColorTemp(token, light.ip, value[0]));
+                                        }}
+                                        tooltips={true}
+                                      />
+                                    </>
+                                    }
+                                  </div>
+                              </Collapse>
+                            </div>)
                           : <div className="preview-item">
-                            <div className="preview-thumbnail">
-                            </div>
+                            <div className="preview-thumbnail"></div>
                             <div className="preview-item-content d-sm-flex flex-grow">
                               <div className="flex-grow">
                                 <h6 className="preview-subject">No lights available</h6>
@@ -258,7 +292,7 @@ const Dashboard = () => {
                   />
                   : <>
                     <div className="aligner-wrapper">
-                      <Doughnut data={botsData} options={transactionHistoryOptions} />
+                      <Doughnut data={botsData} options={botsChartOptions} />
                       <div className="absolute center-content">
                         <h5 className="font-weight-normal text-white text-center mb-2 text-white">{botsTotalCount}</h5>
                         <p className="text-small text-muted text-center mb-0">Total</p>

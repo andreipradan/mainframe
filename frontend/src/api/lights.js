@@ -1,11 +1,11 @@
 import axios from "./index";
 import {
   set,
-  setBrightness,
+  setBrightness, setColorTemp,
   setLoading,
   setLoadingLight,
   turn_off,
-  turn_on,
+  turn_on, unsetLoadingLight,
 } from "../redux/lightsSlice";
 import {handleErrors} from "./bots";
 
@@ -27,6 +27,30 @@ class LightsApi {
       )
       .then((response) => {
         dispatch(setBrightness({ip: lightIp, brightness: brightness}));
+      })
+      .catch((err) => handleErrors(err, dispatch));
+  };
+  static setColorTemp = (token, lightIp, colorTemp) => (dispatch) => {
+    dispatch(setLoadingLight(lightIp));
+    axios
+      .patch(`${base}${lightIp}/set-color-temp`,
+        {color_temp: colorTemp},
+        {headers: {Authorization: token}},
+      )
+      .then((response) => {
+        dispatch(setColorTemp({ip: lightIp, colorTemp: colorTemp}));
+      })
+      .catch((err) => handleErrors(err, dispatch));
+  };
+  static setRgb = (token, lightIp, rgb) => (dispatch) => {
+    dispatch(setLoadingLight(lightIp));
+    axios
+      .patch(`${base}${lightIp}/set-rgb`,
+        {rgb: rgb},
+        {headers: {Authorization: token}},
+      )
+      .then((response) => {
+        dispatch(unsetLoadingLight(lightIp));
       })
       .catch((err) => handleErrors(err, dispatch));
   };
