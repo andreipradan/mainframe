@@ -27,7 +27,12 @@ const EditModal = () => {
   }, [bot]);
 
   return <Modal centered show={!!bot} onHide={() => dispatch(select())}>
-    <Modal.Header closeButton><Modal.Title>Edit {bot?.full_name}</Modal.Title></Modal.Header>
+    <Modal.Header closeButton>
+      <Modal.Title>
+        Edit {bot?.full_name}
+        <p className="text-muted mb-0">{bot?.token}</p>
+      </Modal.Title>
+    </Modal.Header>
     <Modal.Body>
       <Form>
         <Form.Group className="mb-3">
