@@ -1,13 +1,16 @@
 import axios from "./index";
 import {
   set,
-  setBrightness, setColorTemp,
+  setBrightness,
+  setColorTemp,
+  setErrors,
   setLoading,
   setLoadingLight,
   turn_off,
-  turn_on, unsetLoadingLight,
+  turn_on,
+  unsetLoadingLight,
 } from "../redux/lightsSlice";
-import {handleErrors} from "./bots";
+import {handleErrors} from "./errors";
 
 
 class LightsApi {
@@ -16,7 +19,7 @@ class LightsApi {
     axios
       .get(base, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setBrightness = (token, lightIp, brightness) => (dispatch) => {
     dispatch(setLoadingLight(lightIp));
@@ -28,7 +31,7 @@ class LightsApi {
       .then((response) => {
         dispatch(setBrightness({ip: lightIp, brightness: brightness}));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setColorTemp = (token, lightIp, colorTemp) => (dispatch) => {
     dispatch(setLoadingLight(lightIp));
@@ -40,7 +43,7 @@ class LightsApi {
       .then((response) => {
         dispatch(setColorTemp({ip: lightIp, colorTemp: colorTemp}));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setRgb = (token, lightIp, rgb) => (dispatch) => {
     dispatch(setLoadingLight(lightIp));
@@ -52,7 +55,7 @@ class LightsApi {
       .then((response) => {
         dispatch(unsetLoadingLight(lightIp));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_off = (token, lightId) => (dispatch) => {
     dispatch(setLoadingLight(lightId));
@@ -64,7 +67,7 @@ class LightsApi {
       .then((response) => {
         dispatch(turn_off(lightId));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_on = (token, lightId) => (dispatch) => {
     dispatch(setLoadingLight(lightId));
@@ -76,7 +79,7 @@ class LightsApi {
       .then((response) => {
         dispatch(turn_on(lightId));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }
 

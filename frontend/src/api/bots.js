@@ -8,38 +8,8 @@ import {
   setLoadingBots,
   update,
 } from "../redux/botsSlice";
-import Cookie from "js-cookie";
-import {logout} from "../redux/authSlice";
+import {handleErrors} from "./errors";
 
-export const handleErrors = async (err, dispatch) => {
-  if (err.response) {
-    const contentType = err.response.headers["content-type"];
-    if (!contentType.startsWith("application/json"))
-      return dispatch(setErrors([`Unexpected response [${err.response.statusText}]`]));
-  }
-  if (err.response?.data) {
-    if (err.response.data["msg"] === "User is not logged on.") {
-      console.log("user not logged in")
-      Cookie.remove('expires_at');
-      Cookie.remove('token');
-      Cookie.remove('user');
-      dispatch(logout())
-      return dispatch(setErrors(err.response.data))
-    }
-    dispatch(
-      setErrors(
-        Object.keys(err.response.data).map((k) => {
-          let errors = err.response.data[k];
-          return `${k}: ${Array.isArray(errors) ? err.response.data[k].join(", ") : errors}`;
-        })
-      )
-    );
-  } else {
-    dispatch(
-      setErrors([`Something went wrong [${err.response?.status || err.response || err.message}]`])
-    );
-  }
-};
 
 class BotsApi {
   static clearWebhook = (token, botId) => (dispatch) => {
@@ -47,7 +17,7 @@ class BotsApi {
     axios
       .put(`${base}${botId}/clear-webhook/`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(update(response.data)))
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static delete = (token, botId) => (dispatch) => {
     axios
@@ -60,7 +30,7 @@ class BotsApi {
     axios
       .get(base, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static postNewBot = (token, data) => (dispatch) => {
     dispatch(setLoading(true));
@@ -69,7 +39,7 @@ class BotsApi {
       .then((response) => {
         dispatch(add(response.data));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updateBot = (token, botId, data) => (dispatch) => {
     dispatch(setLoadingBots(botId));
@@ -78,7 +48,7 @@ class BotsApi {
       .then((response) => {
         dispatch(update(response.data));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static sync = (token, botId) => (dispatch) => {
     dispatch(setLoadingBots(botId));
@@ -87,7 +57,7 @@ class BotsApi {
       .then((response) => {
         dispatch(update(response.data));
       })
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }
 

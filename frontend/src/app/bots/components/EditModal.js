@@ -72,7 +72,7 @@ const EditModal = () => {
           is_external: isExternal,
           webhook: webhook,
           webhook_name: webhookName,
-          whitelist: whitelist.split("\n"),
+          whitelist: whitelist ? whitelist.split("\n") : [],
         }))
         dispatch(select())
       }}>

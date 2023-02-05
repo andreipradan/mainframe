@@ -20,7 +20,15 @@ const Bots = () =>  {
     !bots && dispatch(BotsApi.getList(token));
   }, []);
 
-  useEffect(() => {errors && setAlertOpen(true)}, [errors])
+  useEffect(() => {setAlertOpen(!!errors)}, [errors])
+
+  const parseURL = str => {
+    if (!str) return
+    const url = new URL(str)
+    let result = url.protocol + "//" + url.hostname
+    result += url.pathname !== "/" ? "/(..)" + url.pathname.substring(url.pathname.length - 10) : url.pathname
+    return result
+  }
 
   return (
     <div>
@@ -50,8 +58,8 @@ const Bots = () =>  {
                     <tr>
                       <th> # </th>
                       <th> Full Name </th>
-                      <th> Webhook Name</th>
-                      <th> Webhook </th>
+                      <th> Webhook</th>
+                      <th> Whitelist </th>
                       <th> Last call </th>
                       <th> Actions </th>
                     </tr>
@@ -73,9 +81,14 @@ const Bots = () =>  {
                                   }
                                   <br />
                                   <small>({bot.username})</small></td>
-                                <td>{bot.webhook_name}</td>
-                                <td>{bot.webhook}</td>
-                                <td>{bot.last_called_on ? new Date(bot.last_called_on).toString() : "-"}</td>
+                                <td>{bot.webhook_name || parseURL(bot.webhook) || "-"}</td>
+                                <td>{bot.whitelist.join(", ")}</td>
+                                <td>{
+                                  bot.last_called_on
+                                    ? new Date(bot.last_called_on).toLocaleDateString("ro-RO") + " " + new Date(bot.last_called_on).toLocaleTimeString("ro-RO")
+                                    : "-"
+                                }
+                                </td>
                                 <td>
                                   <div className="btn-group" role="group" aria-label="Basic example">
                                     <button

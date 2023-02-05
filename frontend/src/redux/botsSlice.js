@@ -32,6 +32,7 @@ export const botsSlice = createSlice({
       state.list = action.payload;
       state.errors = null;
       state.loading = false;
+      state.loadingBots = null;
     },
     setLoading: (state, action) => {
       state.list = null;

@@ -44,6 +44,8 @@ class BotSerializer(serializers.ModelSerializer):
             return attrs
 
         if self.instance and action != "sync":
+            bot = telegram.Bot(self.instance.token)
+
             if list(attrs) == ["token"]:
                 logger.info("Setting new token")
                 try:

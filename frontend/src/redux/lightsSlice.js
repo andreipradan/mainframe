@@ -65,5 +65,5 @@ export const lightsSlice = createSlice({
   },
 });
 
-export const { set, setBrightness, setColorTemp, setLoading, setLoadingLight, turn_off, turn_on, unsetLoadingLight } = lightsSlice.actions;
+export const { set, setBrightness, setColorTemp, setErrors, setLoading, setLoadingLight, turn_off, turn_on, unsetLoadingLight } = lightsSlice.actions;
 export default lightsSlice.reducer;

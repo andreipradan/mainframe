@@ -4,7 +4,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { TodoListComponent } from '../apps/TodoList'
 import { useDispatch, useSelector } from "react-redux";
 import { VectorMap } from "react-jvectormap"
-import {BallTriangle, LineWave, MagnifyingGlass} from "react-loader-spinner";
+import {BallTriangle, InfinitySpin, LineWave} from "react-loader-spinner";
 import Nouislider from 'nouislider-react';
 import "nouislider/distribute/nouislider.css";
 import { SliderPicker } from 'react-color';
@@ -12,6 +12,7 @@ import { SliderPicker } from 'react-color';
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
 import {Collapse, Form} from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
 
 const mapData = {
   "BZ": 75.00,
@@ -23,23 +24,22 @@ const mapData = {
 }
 
 const Dashboard = () => {
-  const bots = useSelector(state => state.bots.list)
-  const botsLoading = useSelector(state => state.bots.loading)
-  const lights = useSelector(state => state.lights.list)
-  const allLightsLoading = useSelector(state => state.lights.loading)
-  const loadingLights = useSelector(state => state.lights.loadingLights)
   const dispatch = useDispatch();
+
   const token = useSelector((state) => state.auth.token)
 
-  const botsExternalCount = bots?.filter(b => b.is_external === true).length
-  const botsLocalCount = bots?.filter(b => b.is_external === false).length
-  const botsNoWebhookCount = bots?.filter(b => !b.webhook).length
-  const botsTotalCount = bots?.length
+  const bots = useSelector(state => state.bots)
 
+  const lights = useSelector(state => state.lights)
 
-  const lightsOnCount = lights?.filter(b => b.capabilities.power === "on").length
-  const lightsOffCount = lights?.filter(b => b.capabilities.power === "off").length
-  const lightsTotalCount = lights?.length
+  const botsExternalCount = bots.list?.filter(b => b.is_external === true).length
+  const botsLocalCount = bots.list?.filter(b => b.is_external === false).length
+  const botsNoWebhookCount = bots.list?.filter(b => !b.webhook).length
+  const botsTotalCount = bots.list?.length
+
+  const lightsOnCount = lights.list?.filter(b => b.capabilities.power === "on").length
+  const lightsOffCount = lights.list?.filter(b => b.capabilities.power === "off").length
+  const lightsTotalCount = lights.list?.length
 
   const [lightsExpanded, setLightsExpanded] = useState(null)
   const [lightColors, setLightColors] = useState(null)
@@ -48,20 +48,26 @@ const Dashboard = () => {
     lightsExpanded?.map(l => l.ip === ip ? {...l, expanded: !l.expanded} : l)
   )
 
+  const [botsAlertOpen, setBotsAlertOpen] = useState(false)
+  const [lightsAlertOpen, setLightsAlertOpen] = useState(false)
+
+  useEffect(() => {setLightsAlertOpen(!!lights.errors)}, [lights.errors])
+  useEffect(() => {bots.errors && setBotsAlertOpen(!!bots.errors)}, [bots.errors])
+
   useEffect(() => {
-    !bots && dispatch(BotsApi.getList(token));
-    !lights && dispatch(LightsApi.getList(token));
+    !bots.list && dispatch(BotsApi.getList(token));
+    !lights.list && dispatch(LightsApi.getList(token));
   }, []);
 
   useEffect( () => {
-    if (lights) {
+    if (lights.list) {
       if (!lightsExpanded)
-        setLightsExpanded(lights?.map(l => ({ip: l.ip, expanded: false})))
-      setLightColors(lights?.map(l => ({ip: l.ip, color: "#0059ff"})))
+        setLightsExpanded(lights.list?.map(l => ({ip: l.ip, expanded: false})))
+      setLightColors(lights.list?.map(l => ({ip: l.ip, color: "#0059ff"})))
     }
-  }, [lights])
+  }, [lights.list])
 
-  const onSlide = (i, isDisplayed) => (render, handle, value, un, percent) => {
+  const onSlide = (i, isDisplayed) => () => {
     const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
     if (tooltip)
       tooltip.style.display = isDisplayed ? "block": "none"
@@ -94,20 +100,15 @@ const Dashboard = () => {
         <div className="col-md-3 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title">
-                Lights
-                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LightsApi.getList(token))}>
-                  <i className="mdi mdi-refresh" />
-                </button>
-              </h4>
+              <h4 className="card-title">Lights</h4>
               {
-                allLightsLoading
-                  ? <MagnifyingGlass
+                lights.loading
+                  ? <InfinitySpin
                     visible={true}
                     width="100%"
-                    ariaLabel="MagnifyingGlass-loading"
+                    ariaLabel="InfinitySpin-loading"
                     wrapperStyle={{}}
-                    wrapperClass="MagnifyingGlass-wrapper"
+                    wrapperClass="InfinitySpin-wrapper"
                     glassColor = '#c0efff'
                     color = '#e15b64'
                   />
@@ -122,7 +123,6 @@ const Dashboard = () => {
                     <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
                       <div className="text-md-center text-xl-left">
                         <h6 className="mb-1">Total</h6>
-                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
                       </div>
                       <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                         <h6 className="font-weight-bold mb-0">{lightsTotalCount}</h6>
@@ -131,7 +131,6 @@ const Dashboard = () => {
                     <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
                       <div className="text-md-center text-xl-left">
                         <h6 className="mb-1">Lights On</h6>
-                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
                       </div>
                       <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                         <h6 className="font-weight-bold mb-0">{lightsOnCount}</h6>
@@ -140,7 +139,6 @@ const Dashboard = () => {
                     <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
                       <div className="text-md-center text-xl-left">
                         <h6 className="mb-1">Lights Off</h6>
-                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
                       </div>
                       <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                         <h6 className="font-weight-bold mb-0">{lightsOffCount}</h6>
@@ -155,25 +153,31 @@ const Dashboard = () => {
           <div className="card">
             <div className="card-body">
               <div className="d-flex flex-row justify-content-between">
-                <h4 className="card-title mb-1">Lights</h4>
+                <h4 className="card-title mb-1">
+                  Lights
+                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LightsApi.getList(token))}>
+                    <i className="mdi mdi-refresh" />
+                  </button>
+                </h4>
                 <p className="text-muted mb-1">Status</p>
               </div>
               <div className="row">
                 <div className="col-12">
+                  {lightsAlertOpen && <Alert variant="danger" dismissible onClose={() => setLightsAlertOpen(false)}>{lights.errors}</Alert>}
                   <div className="preview-list">
                     {
-                      allLightsLoading
-                        ? <MagnifyingGlass
+                      lights.loading
+                        ? <InfinitySpin
                           visible={true}
                           width="100%"
-                          ariaLabel="MagnifyingGlass-loading"
+                          ariaLabel="InfinitySpin-loading"
                           wrapperStyle={{}}
-                          wrapperClass="MagnifyingGlass-wrapper"
+                          wrapperClass="InfinitySpin-wrapper"
                           glassColor = '#c0efff'
                           color = '#e15b64'
                         />
-                        : lights
-                          ? lights.map((light, i) =>
+                        : lights.list
+                          ? lights.list.map((light, i) =>
                             <div key={i}>
                               <div className="preview-item border-bottom">
                                 <div className="preview-thumbnail">
@@ -203,7 +207,7 @@ const Dashboard = () => {
                               </div>
                               <Collapse in={ getExpanded(light.ip) }>
                                 <div className="slider" id={`slider-${i}`}>
-                                  {loadingLights?.includes(light.ip)
+                                  {lights.loadingLights?.includes(light.ip)
                                     ? <LineWave
                                       visible={true}
                                       width="100%"
@@ -280,8 +284,10 @@ const Dashboard = () => {
                   <i className="mdi mdi-refresh" />
                 </button>
               </h4>
+              {botsAlertOpen && <Alert variant="danger" dismissible onClose={() => setBotsAlertOpen(false)}>{bots.errors}</Alert>}
+
               {
-                botsLoading
+                bots.loading
                   ? <BallTriangle
                     visible={true}
                     width="100%"
@@ -310,7 +316,6 @@ const Dashboard = () => {
                     <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
                       <div className="text-md-center text-xl-left">
                         <h6 className="mb-1">Local Bots</h6>
-                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
                       </div>
                       <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                         <h6 className="font-weight-bold mb-0">{botsLocalCount}</h6>
@@ -319,7 +324,6 @@ const Dashboard = () => {
                     <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
                       <div className="text-md-center text-xl-left">
                         <h6 className="mb-1">External Bots</h6>
-                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
                       </div>
                       <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                         <h6 className="font-weight-bold mb-0">{botsExternalCount}</h6>
