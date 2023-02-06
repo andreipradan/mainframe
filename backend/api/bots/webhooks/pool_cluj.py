@@ -42,7 +42,7 @@ def validate_message(message, bot):
         return ""
 
     if str(message.chat_id) not in bot.whitelist:
-        logger.warning("Chat not in whitelist")
+        logger.warning(f"Chat '{message.chat_id}' not in whitelist")
         return ""
 
     text = text.strip()
@@ -50,7 +50,7 @@ def validate_message(message, bot):
         text = text.decode("utf-8")
 
     if len(text) < 1 or not text.startswith("/"):
-        logger.info("Not a command")
+        logger.info(f"Not a command: '{text}'")
         return ""
 
     return text[1:]
