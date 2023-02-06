@@ -96,7 +96,7 @@ class TournamentClient:
 
     @property
     def is_started(self):
-        return self.data["state"] == "underway"
+        return self.data["state"] == "underway" or self.data["completed_at"]
 
     @property
     def matches(self):
