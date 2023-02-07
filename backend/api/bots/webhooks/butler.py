@@ -94,7 +94,7 @@ def call(data, bot):
                 collection="saved-messages",
                 order_by="date",
                 how=1,
-                chat_id=update.message.chat_id,
+                chat_id=update.message.chat_id if not args else args[0],
             )
         )
         if not items:
