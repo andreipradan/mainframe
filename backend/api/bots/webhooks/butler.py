@@ -89,12 +89,15 @@ def call(data, bot):
         return reply(update, text="Saved ✔")
 
     if cmd == "saved":
+        chat_id = update.message.chat_id
+        if args and args[0].isnumeric():
+            chat_id = int(args[0])
         items = list(
             database.get_many(
                 collection="saved-messages",
                 order_by="date",
                 how=1,
-                chat_id=update.message.chat_id if not args else args[0],
+                chat_id=chat_id,
             )
         )
         if not items:
