@@ -33,6 +33,14 @@ class Inlines(BaseInlines):
         self.chat_id = chat_id
 
     def back(self, update):
+        items = list(
+            database.get_many(
+                collection="saved-messages",
+                order_by="date",
+                how=1,
+                chat_id=self.chat_id,
+            )
+        )
         bot = update.callback_query.bot
         message = update.callback_query.message
         try:
@@ -40,7 +48,7 @@ class Inlines(BaseInlines):
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"Welcome back, choose a message",
-                reply_markup=self.get_markup(),
+                reply_markup=self.get_markup(items),
             ).to_json()
         except telegram.error.BadRequest as e:
             return e.message
@@ -111,7 +119,10 @@ def call(data, bot):
             if not len(args) == 1:
                 return logger.error(f"Invalid params for back: {args}")
             return Inlines(args[0]).back(update)
-        return logger.error(f"Unhandled callback: {data}")
+        method = getattr(Inlines, data, None)
+        if not method:
+            return logger.error(f"Unhandled callback: {data}")
+        return getattr(Inlines, data)(update)
 
     if not message or not getattr(message, "chat", None) or not message.chat.id:
         return logger.info(f"No message or chat: {update.to_dict()}")
@@ -268,7 +279,9 @@ def link(item):
 *{item['chat_name']}*
 - de {author}, {date}
 
-{text} (<a href="https://t.me/c/{chat_id}/{message_id}">link</a>)"""
+{text}
+
+Link: https://t.me/c/{chat_id}/{message_id}"""
 
 
 def translate_text(text):
