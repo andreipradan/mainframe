@@ -228,8 +228,8 @@ def translate_text(text):
 
     try:
         translate_client = translate.Client()
-    except DefaultCredentialsError as e:
-        return str(e)
+    except DefaultCredentialsError:
+        return "Couldn't authenticate to google cloud"
 
     if isinstance(text, six.binary_type):
         text = text.decode("utf-8")
@@ -246,8 +246,8 @@ def translate_text(text):
 
     return (
         "💬 Translate\n"
-        f"Source text: {result['input']}"
-        f"Source language: {result['detectedSourceLanguage']}"
+        f"Source text: {result['input']}\n"
+        f"Source language: {result['detectedSourceLanguage']}\n"
         f"Translation: {result['translatedText']}"
     )
 
