@@ -91,7 +91,6 @@ class Inlines(BaseInlines):
                 message_id=message.message_id,
                 text=link(item) if item else "Not found",
                 reply_markup=self.get_markup(),
-                disable_notification=True,
                 disable_web_page_preview=True,
                 parse_mode=telegram.ParseMode.HTML,
             ).to_json()
