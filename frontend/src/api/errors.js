@@ -20,7 +20,16 @@ export const handleErrors = async (err, dispatch, setErrors) => {
       setErrors(
         Object.keys(err.response.data).map((k) => {
           let errors = err.response.data[k];
-          return `${k}: ${Array.isArray(errors) ? errors.join(", ") : errors}`;
+          return `${k}: ${
+            Array.isArray(errors)
+              ? errors.join(", ")
+              : errors.constructor === Object
+                ? Object.keys(errors).map(k => {
+                  const errs = errors[k]
+                  return `${k}: ${Array.isArray(errs) ? errs.join(", ") : errs}`
+                })
+                : errors
+          }`
         })
       )
     );
