@@ -56,7 +56,7 @@ def call(data, bot):
     if not message.text.startswith("/"):
         return logger.warning(f"Invalid command: '{message.text}'. From: {user}")
 
-    cmd, *args = message.text.split(" ")[0]
+    cmd, *args = message.text[1:].split(" ")
 
     if cmd == "translate":
         return reply(update, translate_text(" ".join(args)))
