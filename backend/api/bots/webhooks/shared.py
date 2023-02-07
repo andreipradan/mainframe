@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 def reply(update, text):
     try:
         update.message.reply_text(
-            text[:1000] + "" if len(text) <= 1000 else "[truncated]",
+            text[:1000] + ("" if len(text) <= 1000 else "[truncated]"),
             disable_notification=True,
             disable_web_page_preview=True,
             parse_mode=telegram.ParseMode.HTML,
