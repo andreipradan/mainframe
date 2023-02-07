@@ -246,9 +246,7 @@ def translate_text(text):
 
     return (
         "💬 Translate\n"
-        f"Source text: {result['input']}\n"
-        f"Source language: {result['detectedSourceLanguage']}\n"
-        f"Translation: {result['translatedText']}"
+        f"[{result['detectedSourceLanguage']}]: {result['translatedText']}"
     )
 
 
