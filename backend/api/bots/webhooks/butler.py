@@ -10,7 +10,7 @@ import telegram
 
 from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import translate_v2 as translate
-from google.cloud.exceptions import BadRequest
+from google.cloud.exceptions import BadRequest, DefaultCredentialsError
 
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
@@ -225,7 +225,10 @@ def translate_text(text):
     else:
         target = "en"
 
-    translate_client = translate.Client()
+    try:
+        translate_client = translate.Client()
+    except DefaultCredentialsError as e:
+        return str(e)
 
     if isinstance(text, six.binary_type):
         text = text.decode("utf-8")
