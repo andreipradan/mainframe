@@ -38,9 +38,10 @@ class Inlines(BaseInlines):
                 collection="saved-messages",
                 order_by="date",
                 how=1,
-                chat_id=self.chat_id,
+                chat_id=int(self.chat_id),
             )
         )
+        logger.info(f"Got {len(items)} saved messages")
         bot = update.callback_query.bot
         message = update.callback_query.message
         try:
