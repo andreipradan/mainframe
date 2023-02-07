@@ -2,9 +2,9 @@ import logging
 
 import environ
 import requests.exceptions
-import six
 import telegram
 
+from api.bots.webhooks.shared import validate_message
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
 
@@ -17,43 +17,6 @@ def get_stats_from_user(user):
         "name": user.full_name,
         "username": user.username,
     }
-
-
-def validate_message(message, bot):
-    if not message:
-        logger.warning(f"No message")
-        return ""
-
-    text = message.text
-    if not text:
-        logger.warning("No message text")
-        return ""
-
-    user = message.from_user
-    if user.is_bot:
-        logger.warning(
-            f"Ignoring message from bot({user.username}): "
-            f"{getattr(message, 'text', 'Got no text')}"
-        )
-        return ""
-
-    if not message.chat_id:
-        logger.warning(f"No chat_id in message keys: {list(message)}")
-        return ""
-
-    if str(message.chat_id) not in bot.whitelist:
-        logger.warning(f"Chat '{message.chat_id}' not in whitelist")
-        return ""
-
-    text = text.strip()
-    if isinstance(text, six.binary_type):
-        text = text.decode("utf-8")
-
-    if len(text) < 1 or not text.startswith("/"):
-        logger.info(f"Not a command: '{text}'")
-        return ""
-
-    return text[1:]
 
 
 def reply(update, text):
@@ -74,7 +37,7 @@ def call(data, bot):
     update = telegram.Update.de_json(data, telegram.Bot(bot.token))
     message = update.message
 
-    if not (command := validate_message(message, bot)):
+    if not (command := validate_message(message, bot, logger=logger)):
         new_chat_members = getattr(message, "new_chat_members", None)
         if new_chat_members:
             logger.info(

@@ -52,7 +52,7 @@ const Dashboard = () => {
   const [lightsAlertOpen, setLightsAlertOpen] = useState(false)
 
   useEffect(() => {setLightsAlertOpen(!!lights.errors)}, [lights.errors])
-  useEffect(() => {bots.errors && setBotsAlertOpen(!!bots.errors)}, [bots.errors])
+  useEffect(() => {setBotsAlertOpen(!!bots.errors)}, [bots.errors])
 
   useEffect(() => {
     !bots.list && dispatch(BotsApi.getList(token));
