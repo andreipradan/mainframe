@@ -90,7 +90,7 @@ def call(data, bot):
 
     if cmd == "saved":
         chat_id = update.message.chat_id
-        if args and args[0].isnumeric():
+        if args and args[0].lstrip("-").isnumeric():
             chat_id = int(args[0])
         items = list(
             database.get_many(
