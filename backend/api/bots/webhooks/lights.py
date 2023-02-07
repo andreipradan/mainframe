@@ -4,57 +4,39 @@ from datetime import datetime
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
+from api.bots.webhooks.shared import BaseInlines, chunks
 from api.lights.client import LightsClient, LightsException
 
 logger = logging.getLogger(__name__)
 
 
-def chunks(lst, width):
-    """Yield successive n-sized chunks from lst."""
-    for i in range(width):
-        yield [lst[i + j * width] for j in range(width) if i + j * width < len(lst)]
-
-
-def get_markup():
-    def verbose_light(light):
-        props = light["capabilities"]
-        name = props["name"] or light["ip"]
-        status_icon = "💡" if props["power"] == "on" else "🌑"
-        return f"{status_icon} {name}"
-
-    items = LightsClient.get_bulbs()
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    verbose_light(item), callback_data=f"toggle {item['ip']}"
-                )
-                for item in chunk
-            ]
-            for chunk in chunks(list(items), 5)
-        ]
-        + [
-            [
-                InlineKeyboardButton("✅", callback_data="end"),
-                InlineKeyboardButton("♻", callback_data="refresh"),
-            ]
-        ]
-    )
-
-
-class Inlines:
+class Inlines(BaseInlines):
     @classmethod
-    def end(cls, update):
-        bot = update.callback_query.bot
-        message = update.callback_query.message
-        try:
-            return bot.edit_message_text(
-                chat_id=message.chat_id,
-                message_id=message.message_id,
-                text="See you next time!",
-            ).to_json()
-        except telegram.error.BadRequest as e:
-            return e.message
+    def get_markup(cls, items=None):
+        def verbose_light(light):
+            props = light["capabilities"]
+            name = props["name"] or light["ip"]
+            status_icon = "💡" if props["power"] == "on" else "🌑"
+            return f"{status_icon} {name}"
+
+        items = LightsClient.get_bulbs()
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        verbose_light(item), callback_data=f"toggle {item['ip']}"
+                    )
+                    for item in chunk
+                ]
+                for chunk in chunks(list(items), 5)
+            ]
+            + [
+                [
+                    InlineKeyboardButton("✅", callback_data="end"),
+                    InlineKeyboardButton("♻", callback_data="refresh"),
+                ]
+            ]
+        )
 
     @classmethod
     def refresh(cls, update):
@@ -65,19 +47,10 @@ class Inlines:
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                reply_markup=get_markup(),
+                reply_markup=cls.get_markup(),
             ).to_json()
         except telegram.error.BadRequest as e:
             return e.message
-
-    @classmethod
-    def start(cls, update):
-        user = update.message.from_user
-        logger.info("User %s started the conversation.", user.full_name)
-        return update.message.reply_text(
-            f"Hi {update.message.from_user.full_name}!",
-            reply_markup=get_markup(),
-        ).to_json()
 
     @classmethod
     def toggle(cls, update, ip):

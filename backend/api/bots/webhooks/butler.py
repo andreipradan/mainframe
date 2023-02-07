@@ -1,7 +1,6 @@
 import logging
 import random
 from datetime import datetime
-from time import sleep
 
 import pytz
 import requests
@@ -12,8 +11,9 @@ from google.api_core.exceptions import GoogleAPICallError
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-from api.bots.webhooks.shared import reply
+from api.bots.webhooks.shared import reply, BaseInlines, chunks
 from bots.clients import mongo as database
 
 logger = logging.getLogger(__name__)
@@ -28,9 +28,60 @@ ALLOWED_COMMANDS = [
 ]
 
 
+class Inlines(BaseInlines):
+    @classmethod
+    def get_markup(cls, items=None):
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        f"{item['chat_name']} by {item['author']['full_name']}",
+                        callback_data=f"fetch {item['_id']}",
+                    )
+                    for item in chunk
+                ]
+                for chunk in chunks(list(items), 5)
+            ]
+            + [
+                [
+                    InlineKeyboardButton("✅", callback_data="end"),
+                ]
+            ]
+        )
+
+    @classmethod
+    def fetch(cls, update, _id):
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=link(database.get_stats("saved-messages", _id=_id)),
+                reply_markup=cls.get_markup(),
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            return e.message
+
+
 def call(data, bot):
     update = telegram.Update.de_json(data, telegram.Bot(bot.token))
     message = update.message
+
+    if update.callback_query:
+        data = update.callback_query.data
+        if data.startswith("fetch"):
+            toggle_components = data.split(" ")
+            if not len(toggle_components) == 2:
+                return logger.error(
+                    f"Invalid parameters for fetch: {toggle_components}"
+                )
+            return Inlines.fetch(update, data.split(" ")[1])
+        method = getattr(Inlines, data, None)
+        if not method:
+            return logger.error(f"Unhandled callback: {data}")
+        return getattr(Inlines, data)(update)
+
     if not message or not getattr(message, "chat", None) or not message.chat.id:
         return logger.info(f"No message or chat: {update.to_dict()}")
 
@@ -100,26 +151,13 @@ def call(data, bot):
                 chat_id=chat_id,
             )
         )
+
         if not items:
             return reply(update, text="No saved messages in this chat.")
 
-        messages = []
-        message = ""
         logger.info(f"Got {len(items)} saved messages")
-        for item in items:
-            current_item = f"\n\n{link(item)}"
-            if len(message) + len(current_item) > 4000:
-                messages.append(message)
-                message = ""
-            message += current_item
 
-        if message not in messages:
-            messages.append(message)
-
-        logger.debug(f"Sending {len(messages)} telegram messages")
-        for msg in messages:
-            sleep(0.5)
-            return reply(update, text=msg)
+        return Inlines.start(update, items)
 
     if cmd == "get_chat_id":
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
