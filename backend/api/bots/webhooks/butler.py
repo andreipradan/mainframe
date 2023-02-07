@@ -280,7 +280,7 @@ def link(item):
 *{item['chat_name']}*
 - de {author}, {date}
 
-{text}
+{text or "-"}
 
 Link: https://t.me/c/{chat_id}/{message_id}"""
 
