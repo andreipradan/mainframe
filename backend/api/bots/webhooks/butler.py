@@ -31,7 +31,7 @@ ALLOWED_COMMANDS = [
 def call(data, bot):
     update = telegram.Update.de_json(data, telegram.Bot(bot.token))
     message = update.message
-    if not any((message, getattr(message, "chat"), message.chat.id)):
+    if not any((message, getattr(message, "chat", None), message.chat.id)):
         return logger.info(f"No message or chat: {update.to_dict()}")
 
     if message.new_chat_title:
