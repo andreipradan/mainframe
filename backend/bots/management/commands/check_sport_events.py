@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        logger.info("Checking today's sport events")
         results = fetch_all()
         logger.info(f"Sending {len(results)} character message")
         try:
@@ -42,10 +43,16 @@ def callback(response):
 
 async def fetch(session, sem, url):
     async with sem:
-        async with session.get(url) as response:
-            if response.status != 200:
-                raise ValueError(f"Unable to fetch {url}. Status: {response.status}")
-            return await response.text()
+        try:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    raise ValueError(
+                        f"Unable to fetch {url}. Status: {response.status}"
+                    )
+                return await response.text()
+        except aiohttp.client_exceptions.ClientConnectorError as e:
+            logger.exception(e)
+            return ""
 
 
 def fetch_all():
