@@ -53,11 +53,12 @@ class Inlines(BaseInlines):
     def fetch(cls, update, _id):
         bot = update.callback_query.bot
         message = update.callback_query.message
+        item = database.get_stats("saved-messages", silent=True, _id=_id)
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=link(database.get_stats("saved-messages", _id=_id)),
+                text=link(item) if item else "Not found",
                 reply_markup=cls.get_markup(),
             ).to_json()
         except telegram.error.BadRequest as e:

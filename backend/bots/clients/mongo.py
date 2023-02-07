@@ -1,6 +1,7 @@
 import logging
 
 import environ
+from bson.objectid import ObjectId
 from pymongo import MongoClient, UpdateOne
 
 
@@ -40,6 +41,8 @@ def get_stats(collection, silent=False, **kwargs):
     logger.info(f'Getting stats ({kwargs}) from collection "{collection}"')
     if not kwargs:
         raise ValueError("filter kwargs required")
+    if "_id" in kwargs:
+        kwargs["_id"] = ObjectId(kwargs["_id"])
     stats = get_collection(collection).find_one(kwargs)
     if stats:
         stats.pop("_id")
