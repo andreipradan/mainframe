@@ -29,18 +29,41 @@ ALLOWED_COMMANDS = [
 
 
 class Inlines(BaseInlines):
-    @classmethod
-    def get_markup(cls, items=None):
+    def __init__(self, chat_id):
+        self.chat_id = chat_id
+
+    def back(self, update):
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=f"Welcome back, choose a message",
+                reply_markup=self.get_markup(),
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            return e.message
+
+    def get_markup(self, items=None):
+        if not items:
+            return InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("👈", callback_data=f"back {self.chat_id}"),
+                        InlineKeyboardButton("✅", callback_data="end"),
+                    ]
+                ]
+            )
         return InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         f"{item['chat_name']} by {item['author']['full_name']}",
-                        callback_data=f"fetch {item['_id']}",
+                        callback_data=f"fetch {self.chat_id} {item['_id']}",
                     )
-                    for item in chunk
                 ]
-                for chunk in chunks(list(items), 5)
+                for item in list(items)
             ]
             + [
                 [
@@ -49,8 +72,7 @@ class Inlines(BaseInlines):
             ]
         )
 
-    @classmethod
-    def fetch(cls, update, _id):
+    def fetch(self, update, _id):
         bot = update.callback_query.bot
         message = update.callback_query.message
         item = database.get_stats("saved-messages", silent=True, _id=_id)
@@ -59,10 +81,18 @@ class Inlines(BaseInlines):
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=link(item) if item else "Not found",
-                reply_markup=cls.get_markup(),
+                reply_markup=self.get_markup(),
             ).to_json()
         except telegram.error.BadRequest as e:
             return e.message
+
+    def start(self, update, items=None):
+        user = update.message.from_user
+        logger.info("User %s started the conversation.", user.full_name)
+        return update.message.reply_text(
+            f"Hi {update.message.from_user.full_name}!",
+            reply_markup=self.get_markup(items=items),
+        ).to_json()
 
 
 def call(data, bot):
@@ -71,17 +101,17 @@ def call(data, bot):
 
     if update.callback_query:
         data = update.callback_query.data
-        if data.startswith("fetch"):
-            toggle_components = data.split(" ")
-            if not len(toggle_components) == 2:
-                return logger.error(
-                    f"Invalid parameters for fetch: {toggle_components}"
-                )
-            return Inlines.fetch(update, data.split(" ")[1])
-        method = getattr(Inlines, data, None)
-        if not method:
-            return logger.error(f"Unhandled callback: {data}")
-        return getattr(Inlines, data)(update)
+        callback, *args = data.split(" ")
+        if callback == "fetch":
+            if not len(args) == 2:
+                return logger.error(f"Invalid params for fetch: {args}")
+            return Inlines(args[0]).fetch(update, args[1])
+
+        if callback == "back":
+            if not len(args) == 1:
+                return logger.error(f"Invalid params for back: {args}")
+            return Inlines(args[0]).back(update)
+        return logger.error(f"Unhandled callback: {data}")
 
     if not message or not getattr(message, "chat", None) or not message.chat.id:
         return logger.info(f"No message or chat: {update.to_dict()}")
@@ -158,7 +188,7 @@ def call(data, bot):
 
         logger.info(f"Got {len(items)} saved messages")
 
-        return Inlines.start(update, items)
+        return Inlines(chat_id).start(update, items)
 
     if cmd == "get_chat_id":
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
