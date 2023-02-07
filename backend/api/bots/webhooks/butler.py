@@ -196,7 +196,7 @@ def link(item):
 *{item['chat_name']}*
 - de {author}, {date}
 
-{text} ([link](https://t.me/c/{chat_id}/{message_id}))"""
+{text} (<a href="https://t.me/c/{chat_id}/{message_id}">link</a>)"""
 
 
 def translate_text(text):
