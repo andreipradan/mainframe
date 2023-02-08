@@ -31,7 +31,8 @@ class BotSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"Telegram Error": e.message})
 
             bot = bot.bot
-            additional_data = bot.to_dict()
+            additional_data = self.instance.additional_data
+            additional_data.update(bot.to_dict())
             attrs["telegram_id"] = additional_data.pop("id")
             attrs["username"] = additional_data.pop("username")
             attrs.update(
