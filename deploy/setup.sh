@@ -10,6 +10,15 @@ echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 [[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "Virtualenv already exists" || python -m venv "${VIRTUALENV_DIR}"
 "${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
 
+if [[ $1 == frontend ]]; then
+    echo "Frontend setup"
+    cd "${PROJECT_DIR}/frontend"
+    npm run build
+    npm install --global serve
+else
+    echo "No frontend changes"
+fi
+
 SERVICES_DIR="${PROJECT_DIR}/deploy/services"
 sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
 echo "Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
