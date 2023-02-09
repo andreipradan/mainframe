@@ -112,7 +112,7 @@ def mainframe(request):
         try:
             run_cmd(setup_cmd)
         except subprocess.CalledProcessError as e:
-            bot.send_message(f"[mainframe] Error: {e.output} {e}")
+            bot.send_message(chat_id=chat_id, text=f"[mainframe] Error: {e.output} {e}")
             return HttpResponse("")
 
         bot.send_message(chat_id=chat_id, text=f"[{prefix}] Deployed successfully")
