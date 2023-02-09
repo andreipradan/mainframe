@@ -18,5 +18,5 @@ echo "Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Do
 SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
 echo "Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
 echo "Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
-/home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/manage.py" send_debug_message "[[mainframe]] Completed setup"
+/home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[mainframe]] Completed setup"
 echo "Completed setup! >> ./deploy/show-logs.sh"
