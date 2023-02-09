@@ -12,8 +12,8 @@ echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 if [[ $1 == frontend ]]; then
     echo "Frontend setup"
     cd "${PROJECT_DIR}/frontend"
-    npm run build
-    npm install --global serve
+    /home/andreierdna/.nvm/versions/node/v14.16.1/bin/npm run build
+    /home/andreierdna/.nvm/versions/node/v14.16.1/bin/npm install --global serve
 else
     echo "No frontend changes"
 fi
