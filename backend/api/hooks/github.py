@@ -92,7 +92,7 @@ def mainframe(request):
 
         setup_cmd = "./../deploy/setup.sh"
         msg = "[mainframe] Starting local setup"
-        if b"frontend/" in output.strip():
+        if "frontend/" in output.strip():
             setup_cmd += " frontend"
             msg += " - frontend included"
 
