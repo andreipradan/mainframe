@@ -34,12 +34,9 @@ const Dashboard = () => {
 
   const botsExternalCount = bots.list?.filter(b => b.is_external === true).length
   const botsLocalCount = bots.list?.filter(b => b.is_external === false).length
-  const botsNoWebhookCount = bots.list?.filter(b => !b.webhook).length
-  const botsTotalCount = bots.list?.length
 
   const lightsOnCount = lights.list?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.list?.filter(b => b.capabilities.power === "off").length
-  const lightsTotalCount = lights.list?.length
 
   const [lightsExpanded, setLightsExpanded] = useState(null)
   const [lightColors, setLightColors] = useState(null)
@@ -75,76 +72,76 @@ const Dashboard = () => {
 
   const botsData =  {
     labels: ["Local", "External"],
-    datasets: [{data: [botsLocalCount, botsExternalCount], backgroundColor: ["#27d200","#0099ff"]}]
+    datasets: [{
+      data: [botsLocalCount, botsExternalCount],
+      backgroundColor: [
+        'rgba(54, 162, 235, 0.5)',
+        'rgba(255, 206, 86, 0.5)',
+      ],
+      borderColor: [
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+      ],
+    }]
   };
 
-  const lightsData =  {
-    labels: ["Off", "On"],
-    datasets: [{data: [lightsOffCount, lightsOnCount], backgroundColor: ["#ff0000", "#00d25b"],}]
+  const lightsChartData = {
+    datasets: [{
+      data: [lightsOffCount, lightsOnCount],
+      backgroundColor: [
+        'rgba(75, 192, 192, 0.5)',
+        'rgba(255, 99, 132, 0.5)',
+      ],
+      borderColor: [
+        'rgba(75, 192, 192, 1)',
+        'rgba(255,99,132,1)',
+      ],
+    }],
+
+    // These labels appear in the legend and in the tooltips when hovering different arcs
+    labels: [
+      "On",
+      "Off",
+    ]
   };
 
-  const botsChartOptions = {
+  const doughnutPieOptions = {
     responsive: true,
-    maintainAspectRatio: true,
-    segmentShowStroke: false,
-    cutoutPercentage: 70,
-    elements: {arc: {borderWidth: 0}},
-    legend: {display: false},
-    tooltips: {enabled: true}
-  }
+    animation: {
+      animateScale: true,
+      animateRotate: true
+    }
+  };
 
   const sliderSettings = {infinite: true, speed: 500, slidesToShow: 1, slidesToScroll: 1}
   return (
     <div>
       <div className="row">
-        <div className="col-md-3 grid-margin stretch-card">
+        <div className="col-md-6 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title">Lights</h4>
+              <h5 className="card-title">
+                Bots
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
+                  <i className="mdi mdi-refresh" />
+                </button>
+              </h5>
               {
-                lights.loading
-                  ? <InfinitySpin
+                bots.loading
+                  ? <BallTriangle
                     visible={true}
                     width="100%"
-                    ariaLabel="InfinitySpin-loading"
+                    ariaLabel="ball-triangle-loading"
                     wrapperStyle={{}}
-                    wrapperClass="InfinitySpin-wrapper"
-                    glassColor = '#c0efff'
+                    wrapperClass={{}}
                     color = '#e15b64'
                   />
                   : <>
-                    <div className="aligner-wrapper">
-                      <Doughnut data={lightsData} options={botsChartOptions} />
-                      <div className="absolute center-content">
-                        <h5 className="font-weight-normal text-white text-center mb-2 text-white">{lightsTotalCount}</h5>
-                        <p className="text-small text-muted text-center mb-0">Total</p>
+                      {botsAlertOpen && <Alert variant="danger" dismissible onClose={() => setBotsAlertOpen(false)}>{bots.errors}</Alert>}
+                      <div className="aligner-wrapper">
+                        <Doughnut data={botsData} options={doughnutPieOptions} />
                       </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">Total</h6>
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{lightsTotalCount}</h6>
-                      </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">Lights On</h6>
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{lightsOnCount}</h6>
-                      </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">Lights Off</h6>
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{lightsOffCount}</h6>
-                      </div>
-                    </div>
-                  </>
+                    </>
               }
             </div>
           </div>
@@ -152,15 +149,43 @@ const Dashboard = () => {
         <div className="col-md-6 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
-              <div className="d-flex flex-row justify-content-between">
+              <h5 className="card-title">
+                Lights
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LightsApi.getList(token))}>
+                  <i className="mdi mdi-refresh" />
+                </button>
+              </h5>
+              {
+                lights.loading
+                  ? <InfinitySpin
+                    visible={true}
+                    width="100%"
+                    ariaLabel="infinity-spin-loading"
+                    wrapperStyle={{}}
+                    wrapperClass={{}}
+                    glassColor = '#c0efff'
+                    color = '#e15b64'
+                  />
+                  : <>
+                      <div className="aligner-wrapper">
+                        <Doughnut data={lightsChartData} options={doughnutPieOptions} />
+                      </div>
+                    </>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-12 grid-margin stretch-card">
+          <div className="card">
+            <div className="card-body">
                 <h4 className="card-title mb-1">
                   Lights
                   <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LightsApi.getList(token))}>
                     <i className="mdi mdi-refresh" />
                   </button>
                 </h4>
-                <p className="text-muted mb-1">Status</p>
-              </div>
               <div className="row">
                 <div className="col-12">
                   {lightsAlertOpen && <Alert variant="danger" dismissible onClose={() => setLightsAlertOpen(false)}>{lights.errors}</Alert>}
@@ -235,7 +260,7 @@ const Dashboard = () => {
                                     />
                                       <SliderPicker
                                         className="mt-4"
-                                        color={ lightColors?.find(c => c.ip === light.ip).color }
+                                        color={ lightColors?.find(c => c.ip === light.ip)?.color }
                                         onChange={color =>
                                           setLightColors(lightColors.map(c => c.ip !== light.ip ? c : {ip: c.ip, color: color.hex}))
                                         }
@@ -261,7 +286,7 @@ const Dashboard = () => {
                               </Collapse>
                             </div>)
                           : <div className="preview-item">
-                            <div className="preview-thumbnail"></div>
+                            <div className="preview-thumbnail" />
                             <div className="preview-item-content d-sm-flex flex-grow">
                               <div className="flex-grow">
                                 <h6 className="preview-subject">No lights available</h6>
@@ -272,73 +297,6 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <h4 className="card-title">
-                Bots
-                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
-                  <i className="mdi mdi-refresh" />
-                </button>
-              </h4>
-              {botsAlertOpen && <Alert variant="danger" dismissible onClose={() => setBotsAlertOpen(false)}>{bots.errors}</Alert>}
-
-              {
-                bots.loading
-                  ? <BallTriangle
-                    visible={true}
-                    width="100%"
-                    ariaLabel="ball-triangle-loading"
-                    wrapperStyle={{}}
-                    wrapperClass={{}}
-                    color = '#e15b64'
-                  />
-                  : <>
-                    <div className="aligner-wrapper">
-                      <Doughnut data={botsData} options={botsChartOptions} />
-                      <div className="absolute center-content">
-                        <h5 className="font-weight-normal text-white text-center mb-2 text-white">{botsTotalCount}</h5>
-                        <p className="text-small text-muted text-center mb-0">Total</p>
-                      </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">Total</h6>
-                        {/*<p className="text-muted mb-0">07 Jan 2019, 09:12AM</p>*/}
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{botsTotalCount}</h6>
-                      </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">Local Bots</h6>
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{botsLocalCount}</h6>
-                      </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">External Bots</h6>
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{botsExternalCount}</h6>
-                      </div>
-                    </div>
-                    <div className="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
-                      <div className="text-md-center text-xl-left">
-                        <h6 className="mb-1">No Webhook</h6>
-                      </div>
-                      <div className="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
-                        <h6 className="font-weight-bold mb-0">{botsNoWebhookCount}</h6>
-                      </div>
-                    </div>
-                  </>
-              }
             </div>
           </div>
         </div>
@@ -357,7 +315,7 @@ const Dashboard = () => {
                   <h6 className="text-muted font-weight-normal">11.38% Since last month</h6>
                 </div>
                 <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                  <i className="icon-lg mdi mdi-codepen text-primary ml-auto"></i>
+                  <i className="icon-lg mdi mdi-codepen text-primary ml-auto" />
                 </div>
               </div>
             </div>
