@@ -1,11 +1,11 @@
 [Unit]
 Description=Ngrok public URL service
-After=backend.service
+After=frontend.service
 
 [Service]
 User=andreierdna
 WorkingDirectory=/home/andreierdna/projects/mainframe/backend
-ExecStart=ngrok http 7777
+ExecStart=ngrok http 3000
 ExecStartPost=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py set_hooks
 Restart=always
 
