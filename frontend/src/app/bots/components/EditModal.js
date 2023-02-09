@@ -5,7 +5,13 @@ import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
 import {select} from "../../../redux/botsSlice";
 import BotsApi from "../../../api/bots";
+import 'ace-builds'
+import 'ace-builds/webpack-resolver'
+import AceEditor from "react-ace";
 
+import "ace-builds/src-noconflict/mode-json";
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 const EditModal = () => {
   const dispatch = useDispatch();
@@ -16,6 +22,8 @@ const EditModal = () => {
   const [webhook, setWebhook] = useState("");
   const [webhookName, setWebhookName] = useState("");
   const [whitelist, setWhitelist] = useState(null);
+  const [additionalData, setAdditionalData] = useState(null);
+  const [annotations, setAnnotations] = useState(null);
 
   useEffect(() => {
     if (bot) {
@@ -23,9 +31,21 @@ const EditModal = () => {
       setWebhook(bot.webhook || "")
       setWebhookName(bot.webhook_name || "")
       setWhitelist(bot.whitelist.join("\n") || "")
+      setAdditionalData(JSON.stringify(bot.additional_data, null, "\t"))
     }
   }, [bot]);
 
+  const onAdditionalDataChange = (e, i) => {
+    setAdditionalData(e)
+    try {
+      JSON.parse(e)
+      setAnnotations(null)
+    }
+    catch (error) {
+      const annotation = {...i.end, text: error.message, type: 'error'}
+      setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
+    }
+  }
   return <Modal centered show={!!bot} onHide={() => dispatch(select())}>
     <Modal.Header closeButton>
       <Modal.Title>
@@ -66,14 +86,41 @@ const EditModal = () => {
           <Form.Label>Whitelist</Form.Label>
           <Form.Control as="textarea" rows={3} value={whitelist || ""} onChange={e => setWhitelist(e.target.value)}/>
         </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Additional Data</Form.Label>
+          <AceEditor
+            className={!!annotations ? "form-control is-invalid" : ""}
+            annotations={annotations}
+            placeholder="Additional Data"
+            mode="python"
+            theme="monokai"
+            onChange={onAdditionalDataChange}
+            fontSize={12}
+            showPrintMargin={true}
+            showGutter={true}
+            highlightActiveLine={true}
+            value={additionalData}
+            setOptions={{
+              enableBasicAutocompletion: false,
+              enableLiveAutocompletion: false,
+              enableSnippets: false,
+              showLineNumbers: true,
+              tabSize: 2,
+            }}
+            width="100%"
+            height="150px"
+          />
+
+        </Form.Group>
       </Form>
     </Modal.Body>
     <Modal.Footer>
       <Button variant="secondary" onClick={() => dispatch(select())}>
         Close
       </Button>
-      <Button variant="primary" onClick={() => {
+      <Button variant="primary" disabled={!!annotations} onClick={() => {
         dispatch(BotsApi.updateBot(token, bot.id, {
+          additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
           is_external: isExternal,
           webhook: webhook,
           webhook_name: webhookName,
