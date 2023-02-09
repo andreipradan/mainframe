@@ -8,7 +8,6 @@ echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 # Skipped - only needed to run once - echo "Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "Done."
 
 [[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "Virtualenv already exists" || python -m venv "${VIRTUALENV_DIR}"
-"${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
 
 if [[ $1 == frontend ]]; then
     echo "Frontend setup"
@@ -17,6 +16,11 @@ if [[ $1 == frontend ]]; then
     npm install --global serve
 else
     echo "No frontend changes"
+fi
+
+if [[ $2 == backend ]]; then
+  echo "Installing backend requirements"
+  "${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
 fi
 
 SERVICES_DIR="${PROJECT_DIR}/deploy/services"

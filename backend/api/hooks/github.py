@@ -92,9 +92,20 @@ def mainframe(request):
 
         setup_cmd = "./../deploy/setup.sh"
         msg = "[mainframe] Starting local setup"
+
+        extra = []
         if "frontend/" in output.strip():
             setup_cmd += " frontend"
-            msg += " (+FE)"
+            extra.append("FE")
+        else:
+            setup_cmd += " no-frontend"
+
+        if "requirements.txt" in output.strip():
+            setup_cmd += " backend"
+            extra.append("BE")
+
+        if extra:
+            msg += f" (+ {' & '.join(extra)})"
 
         bot.send_message(chat_id=chat_id, text=msg)
         run_cmd(setup_cmd)
