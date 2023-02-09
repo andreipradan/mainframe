@@ -87,7 +87,7 @@ const Dashboard = () => {
 
   const lightsChartData = {
     datasets: [{
-      data: [lightsOffCount, lightsOnCount],
+      data: [lightsOnCount, lightsOffCount],
       backgroundColor: [
         'rgba(75, 192, 192, 0.5)',
         'rgba(255, 99, 132, 0.5)',
