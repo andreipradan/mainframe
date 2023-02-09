@@ -12,6 +12,7 @@ echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 if [[ $1 == frontend ]]; then
     echo "Frontend setup"
     cd "${PROJECT_DIR}/frontend"
+    sudo ln -s "$(which node)" /usr/bin/node
     /home/andreierdna/.nvm/versions/node/v14.16.1/bin/npm run build
     /home/andreierdna/.nvm/versions/node/v14.16.1/bin/npm install --global serve
 else
