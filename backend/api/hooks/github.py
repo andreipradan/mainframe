@@ -91,7 +91,7 @@ def mainframe(request):
             return HttpResponse("ok")
 
         bot.send_message(chat_id=chat_id, text="[mainframe] Starting local setup")
-        run_cmd("./deploy/setup.sh")
+        run_cmd("./../deploy/setup.sh")
 
         bot.send_message(chat_id=chat_id, text=f"[{prefix}] Deployed successfully")
         return HttpResponse("success")

@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e -o pipefail
 
-PROJECT_DIR=${HOME}/projects/mainframe/backend
+PROJECT_DIR=${HOME}/projects/mainframe
 VIRTUALENV_DIR=${HOME}/.virtualenvs/mainframe
 
 echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 # Skipped - only needed to run once - echo "Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "Done."
 
 [[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "Virtualenv already exists" || python -m venv "${VIRTUALENV_DIR}"
-"${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/requirements.txt"
+"${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
 
 SERVICES_DIR="${PROJECT_DIR}/deploy/services"
 sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
