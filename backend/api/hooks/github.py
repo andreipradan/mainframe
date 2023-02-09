@@ -94,7 +94,7 @@ def mainframe(request):
         msg = "[mainframe] Starting local setup"
         if "frontend/" in output.strip():
             setup_cmd += " frontend"
-            msg += " - frontend included"
+            msg += " (+FE)"
 
         bot.send_message(chat_id=chat_id, text=msg)
         run_cmd(setup_cmd)
