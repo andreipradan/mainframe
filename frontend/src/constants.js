@@ -1,3 +1,3 @@
-export const API_SERVER = process.env.REACT_APP_BACKEND_SERVER
-  ? process.env.REACT_APP_BACKEND_SERVER
+export const API_SERVER = process.env.NODE_ENV === 'production'
+  ? `https://${window.location.hostname}`
   : "http://127.0.0.1:5678/api/";
