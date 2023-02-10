@@ -15,6 +15,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import reply, BaseInlines, chunks
 from bots.clients import mongo as database
+from bots.management.commands.set_hooks import get_ngrok_url
 
 logger = logging.getLogger(__name__)
 
@@ -207,13 +208,14 @@ def call(data, bot):
     if cmd == "get_chat_id":
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
 
+    if cmd == "mainframe":
+        return reply(update, text=get_ngrok_url())
+
     if cmd == "bus":
         if len(args) != 1:
             return reply(update, f"Only 1 bus number allowed, got: {len(args)}")
 
         bus_number = args[0]
-        if not bus_number.isnumeric():
-            return reply(update, f"Invalid number: {bus_number}")
 
         now = datetime.now(pytz.timezone("Europe/Bucharest"))
         weekday = now.weekday()
