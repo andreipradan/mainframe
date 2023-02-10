@@ -12,9 +12,9 @@ echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 if [[ $1 == frontend ]]; then
     echo "Frontend setup"
     cd "${PROJECT_DIR}/frontend"
-    alias node="/usr/bin/node"
-    /home/andreierdna/.nvm/versions/node/v14.16.1/bin/npm run build
-    /home/andreierdna/.nvm/versions/node/v14.16.1/bin/npm install --global serve
+    export PATH="$HOME/.nvm/versions/node/v14.16.1/bin:$PATH"
+    npm run build
+    npm install --global serve
 else
     echo "No frontend changes"
 fi
