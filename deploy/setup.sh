@@ -10,11 +10,11 @@ echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 [[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "Virtualenv already exists" || python -m venv "${VIRTUALENV_DIR}"
 
 if [[ $1 == frontend ]]; then
-    echo "Frontend setup"
-    cd "${PROJECT_DIR}/frontend"
-    export PATH="$HOME/.nvm/versions/node/v14.16.1/bin:$PATH"
-    npm --max-old-space-size=512 run build
-    npm install --global serve
+    echo "Collectstatic"
+#    cd "${PROJECT_DIR}/frontend"
+#    export PATH="$HOME/.nvm/versions/node/v14.16.1/bin:$PATH"
+#    npm --max-old-space-size=512 run build
+    "${VIRTUALENV_DIR}/bin/python" manage.py collectstatic
 else
     echo "No frontend changes"
 fi
