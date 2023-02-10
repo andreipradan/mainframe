@@ -13,7 +13,7 @@ if [[ $1 == frontend ]]; then
     echo "Frontend setup"
     cd "${PROJECT_DIR}/frontend"
     export PATH="$HOME/.nvm/versions/node/v14.16.1/bin:$PATH"
-    npm run build
+    npm --max-old-space-size=512 run build
     npm install --global serve
 else
     echo "No frontend changes"
