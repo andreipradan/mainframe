@@ -1,3 +1,4 @@
 .idea
 venv
 react-ui/.env
+.DS_Store
