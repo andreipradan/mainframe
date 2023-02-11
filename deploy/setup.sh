@@ -14,7 +14,7 @@ if [[ $1 == frontend ]]; then
 #    cd "${PROJECT_DIR}/frontend"
 #    export PATH="$HOME/.nvm/versions/node/v14.16.1/bin:$PATH"
 #    npm --max-old-space-size=512 run build
-    DEBUG=True "${VIRTUALENV_DIR}/bin/python" manage.py collectstatic
+    DEBUG=True "${VIRTUALENV_DIR}/bin/python" manage.py collectstatic --noinput
 else
     echo "No frontend changes"
 fi
