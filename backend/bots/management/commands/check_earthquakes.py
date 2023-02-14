@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta
-from operator import itemgetter
 
 import pytz
 import requests
@@ -9,6 +8,7 @@ from bs4 import BeautifulSoup
 from django.core.management import CommandError, BaseCommand
 
 from bots.models import Bot
+from earthquakes.models import Earthquake
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +29,12 @@ def get_magnitude_icon(magnitude):
 
 def parse_event(event):
     return (
-        f"<b>{get_magnitude_icon(event['magnitude'])} {event['magnitude']}</b>"
-        f" - {event['location']}\n"
-        f"{event['datetime']}\n"
-        f"Depth: {event['depth']}\n"
-        + (f"Intensity: {event['intensity']}\n" if event["intensity"] else "")
-        + f"{event['url']}"
+        f"<b>{get_magnitude_icon(event.magnitude)} {event.magnitude}</b>"
+        f" - {event.location}\n"
+        f"{event.timestamp}\n"
+        f"Depth: {event.depth}\n"
+        + (f"Intensity: {event.intensity}\n" if event.intensity else "")
+        + f"{event.url}"
     )
 
 
@@ -78,23 +78,28 @@ class Command(BaseCommand):
             raise CommandError(str(e))
 
         soup = BeautifulSoup(response.text, features="html.parser")
-        cards = soup.html.body.find_all("div", {"class": "card"})
-        events = [self.parse_card(card) for card in cards]
-        since = (
-            self.get_datetime(earthquake_config["latest"]["datetime"])
-            if earthquake_config.get("latest", {}).get("datetime")
-            else datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
-            - timedelta(minutes=options["minutes"] or 5)
-        )
-        events = [
-            event for event in events if self.get_datetime(event["datetime"]) > since
-        ]
+        earthquakes = soup.html.body.find_all("div", {"class": "card"})
+        events = [self.parse_earthquake(earthquake) for earthquake in earthquakes]
+        since = datetime.now().astimezone(
+            pytz.timezone("Europe/Bucharest")
+        ) - timedelta(minutes=5)
+        if options["minutes"]:
+            since = datetime.now().astimezone(
+                pytz.timezone("Europe/Bucharest")
+            ) - timedelta(minutes=options["minutes"])
+        elif latest := Earthquake.objects.order_by("-timestamp").first():
+            since = latest.timestamp
+        else:
+            logger.info(f"Bulk creating {len(events)}")
+            Earthquake.objects.bulk_create(events)
+
+        events = [event for event in events if event.timestamp > since]
         if min_magnitude := instance.additional_data["earthquake"].get("magnitude"):
             logger.info(f"Filtering by min magnitude: {min_magnitude}")
             events = [
                 event
                 for event in events
-                if float(event["magnitude"]) >= float(min_magnitude)
+                if float(event.magnitude) >= float(min_magnitude)
             ]
         else:
             logger.info("No min magnitude set")
@@ -102,9 +107,10 @@ class Command(BaseCommand):
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
             send_message("\n\n".join(parse_event(event) for event in events))
-            instance.additional_data["earthquake"]["latest"] = events[0]
         else:
-            logger.info(f"No events since {since.strftime(DATETIME_FORMAT)}")
+            logger.info(
+                f"No events since {since.strftime(DATETIME_FORMAT)} (In the last 20 events)"
+            )
 
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
         instance.additional_data["earthquake"]["last_check"] = now.strftime(
@@ -119,7 +125,7 @@ class Command(BaseCommand):
             tzinfo=pytz.timezone(tz)
         )
 
-    def parse_card(self, card):
+    def parse_earthquake(self, card):
         body = card.find("div", {"class": "card-body"})
         text, *rest = body.find_all("p")
         lat = (
@@ -135,14 +141,17 @@ class Command(BaseCommand):
         magnitude, *location = (
             card.find("div", {"class": "card-footer"}).text.strip().split(", ")
         )
-
-        return {
-            "datetime": card.find("div", {"class": "card-header"})
+        timestamp = (
+            card.find("div", {"class": "card-header"})
             .text.replace("Loading...", "")
-            .strip(),
-            "depth": text.text.strip().split("la adâncimea de ")[1][:-1],
-            "intensity": rest[0].text.strip().split()[1] if len(rest) > 1 else "",
-            "location": ",".join(location),
-            "magnitude": magnitude.split()[1],
-            "url": f"https://www.google.com/maps/search/{lat},{long}",
-        }
+            .strip()
+        )
+        return Earthquake(
+            timestamp=self.get_datetime(timestamp),
+            depth=text.text.strip().split("la adâncimea de ")[1][:-1].split(" ")[0],
+            intensity=rest[0].text.strip().split()[1] if len(rest) > 1 else None,
+            latitude=lat,
+            longitude=long,
+            location=",".join(location),
+            magnitude=magnitude.split()[1],
+        )
