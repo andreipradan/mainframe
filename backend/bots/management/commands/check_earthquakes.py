@@ -32,9 +32,9 @@ def parse_event(event):
         f"<b>{get_magnitude_icon(event['magnitude'])} {event['magnitude']}</b>"
         f" - {event['location']}\n"
         f"{event['datetime']}\n"
-        f"Depth: {event['depth']}\n" +
-        (f"Intensity: {event['intensity']}\n" if event['intensity'] else '') +
-        f"{event['url']}"
+        f"Depth: {event['depth']}\n"
+        + (f"Intensity: {event['intensity']}\n" if event["intensity"] else "")
+        + f"{event['url']}"
     )
 
 
@@ -80,30 +80,27 @@ class Command(BaseCommand):
         soup = BeautifulSoup(response.text, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
         events = [self.parse_card(card) for card in cards]
-        since = self.get_datetime(
-            earthquake_config["latest"]["datetime"]
-        ) if earthquake_config.get("latest", {}).get("datetime") else datetime.now().astimezone(
-            pytz.timezone("Europe/Bucharest")
-        ) - timedelta(minutes=options["minutes"] or 5)
+        since = (
+            self.get_datetime(earthquake_config["latest"]["datetime"])
+            if earthquake_config.get("latest", {}).get("datetime")
+            else datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
+            - timedelta(minutes=options["minutes"] or 5)
+        )
         events = [
-            event
-            for event in events
-            if self.get_datetime(event["datetime"]) > since
+            event for event in events if self.get_datetime(event["datetime"]) > since
         ]
 
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
-            send_message(
-                "\n\n".join(parse_event(event)for event in events)
-            )
+            send_message("\n\n".join(parse_event(event) for event in events))
             instance.additional_data["earthquake"]["latest"] = events[0]
         else:
-            logger.info(
-                f"No events since {since.strftime(DATETIME_FORMAT)}"
-            )
+            logger.info(f"No events since {since.strftime(DATETIME_FORMAT)}")
 
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
-        instance.additional_data["earthquake"]["last_check"] = now.strftime(DATETIME_FORMAT)
+        instance.additional_data["earthquake"]["last_check"] = now.strftime(
+            DATETIME_FORMAT
+        )
         instance.save()
         self.stdout.write(self.style.SUCCESS("Done."))
 
@@ -131,10 +128,12 @@ class Command(BaseCommand):
         )
 
         return {
-            "datetime": card.find("div", {"class": "card-header"}).text.replace("Loading...", "").strip(),
+            "datetime": card.find("div", {"class": "card-header"})
+            .text.replace("Loading...", "")
+            .strip(),
             "depth": text.text.strip().split("la adâncimea de ")[1][:-1],
-            "intensity": rest[0].text.strip().split()[1] if len(rest) > 1 else '',
-            "location": ','.join(location),
+            "intensity": rest[0].text.strip().split()[1] if len(rest) > 1 else "",
+            "location": ",".join(location),
             "magnitude": magnitude.split()[1],
-            "url": f"https://www.google.com/maps/search/{lat},{long}"
+            "url": f"https://www.google.com/maps/search/{lat},{long}",
         }

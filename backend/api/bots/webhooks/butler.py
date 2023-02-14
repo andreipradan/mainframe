@@ -213,7 +213,10 @@ def call(data, bot):
         earthquake = bot.additional_data.get("earthquake")
         if not earthquake or not (latest := earthquake.get("latest")):
             return reply(update, text=f"No earthquakes stored")
-        return reply(update, text=f"{parse_event(latest)}\nLast check: {earthquake['last_check']}")
+        return reply(
+            update,
+            text=f"{parse_event(latest)}\nLast check: {earthquake['last_check']}",
+        )
 
     if cmd == "mainframe":
         return reply(update, text=get_ngrok_url())
