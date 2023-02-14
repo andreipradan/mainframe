@@ -14,12 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
-
     def handle(self, *args, **options):
-        now = datetime.now()
-        minutes = options["minutes"] or 1
         logger.info("Checking earthquakes...")
 
         try:
@@ -57,29 +52,31 @@ class Command(BaseCommand):
         soup = BeautifulSoup(response.text, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
         events = [self.parse_card(card) for card in cards]
-        additional_waiting_time = datetime.now() - now + timedelta(minutes=minutes)
         events = [
             event
             for event in events
-            if event["datetime"]
-               >= (now.astimezone(event["datetime"].tzinfo) - additional_waiting_time)
+            if self.get_datetime(event["datetime"])
+               > self.get_datetime(earthquake_config["latest"]["datetime"])
         ]
 
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
             send_message(
                 "\n\n".join(
-                    event["verbose"]
-                    for event in sorted(
-                        events, key=itemgetter("datetime"), reverse=True
-                    )
+                    f"<b>{self.get_magnitude_icon(event['magnitude'])} {event['magnitude']}</b>"
+                    f" - {event['location']}\n"
+                    f"{event['datetime']}\n"
+                    f"Adâncime: {event['depth']}\n" +
+                    (f"Intensitate: {event['intensity']}\n" if event['intensity'] else '') +
+                    f"📍 {event['url']}"
+                    for event in events
                 )
             )
-            instance.additional_data["earthquake"]["latest"] = events[0]["verbose"]
+            instance.additional_data["earthquake"]["latest"] = events[0]
             instance.save()
         else:
             logger.info(
-                f"No events in the past {additional_waiting_time}"
+                f"No events since {earthquake_config['latest']['datetime']}"
             )
 
         self.stdout.write(self.style.SUCCESS("Done."))
@@ -95,10 +92,15 @@ class Command(BaseCommand):
         else:
             return "🔴"
 
+    def get_datetime(self, string):
+        date, time, tz = string.split()
+        return datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S").replace(
+            tzinfo=pytz.timezone(tz)
+        )
+
     def parse_card(self, card):
         body = card.find("div", {"class": "card-body"})
         text, *rest = body.find_all("p")
-        depth = text.text.strip().split("la adâncimea de ")[1][:-1]
         lat = (
             body.find("span", {"title": "Latitudine"})
             .text.strip("\n Latitudine")
@@ -109,30 +111,15 @@ class Command(BaseCommand):
             .text.strip("\n Longitudine")
             .strip(" °E")
         )
-        date, time, tz = (
-            card.find("div", {"class": "card-header"})
-            .text.replace("Loading...", "")
-            .strip()
-            .split()
+        magnitude, *location = (
+            card.find("div", {"class": "card-footer"}).text.strip().split(", ")
         )
-        dt = datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S").replace(
-            tzinfo=pytz.timezone(tz)
-        )
-        mag, *location = (
-            card.find("div", {"class": "card-footer"}).text.strip().split(",")
-        )
-        magnitude = mag.split()[1]
 
-        display_components = [
-            f"<b>{self.get_magnitude_icon(magnitude)} {magnitude}</b> - {', '.join(location)}",
-            f"{date} {time} {tz}",
-            f"Adâncime: {depth}",
-        ]
-        if len(rest) > 1:
-            intensity = rest[0].text.strip().split()[1]
-            display_components.append(f"Intensitate: {intensity}")
-        display_components.append(f"📍https://www.google.com/maps/search/{lat},{long}")
         return {
-            "datetime": dt,
-            "verbose": "\n".join(display_components),
+            "datetime": card.find("div", {"class": "card-header"}).text.replace("Loading...", "").strip(),
+            "depth": text.text.strip().split("la adâncimea de ")[1][:-1],
+            "intensity": rest[0].text.strip().split()[1] if len(rest) > 1 else '',
+            "location": ','.join(location),
+            "magnitude": magnitude.split()[1],
+            "url": f"https://www.google.com/maps/search/{lat},{long}"
         }
