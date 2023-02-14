@@ -46,12 +46,14 @@ class Command(BaseCommand):
         try:
             response = requests.get(earthquake_config["url"], timeout=45)
             response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            logger.error(str(e))
+            send_message(str(e))
+            raise CommandError(str(e))
         except (
-            requests.exceptions.HTTPError,
             requests.exceptions.ConnectionError,
             requests.exceptions.ReadTimeout,
         ) as e:
-            send_message(str(e))
             raise CommandError(str(e))
 
         events = self.get_events(response.text, minutes=minutes)
