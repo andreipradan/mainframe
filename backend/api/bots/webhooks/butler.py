@@ -13,7 +13,7 @@ from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-from api.bots.webhooks.shared import reply, BaseInlines, chunks
+from api.bots.webhooks.shared import reply, BaseInlines
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
 
@@ -29,7 +29,7 @@ ALLOWED_COMMANDS = [
 ]
 
 
-class Inlines(BaseInlines):
+class SavedMessagesInlines(BaseInlines):
     def __init__(self, chat_id):
         self.chat_id = chat_id
 
@@ -117,16 +117,16 @@ def call(data, bot):
         if callback == "fetch":
             if not len(args) == 2:
                 return logger.error(f"Invalid params for fetch: {args}")
-            return Inlines(args[0]).fetch(update, args[1])
+            return SavedMessagesInlines(args[0]).fetch(update, args[1])
 
         if callback == "back":
             if not len(args) == 1:
                 return logger.error(f"Invalid params for back: {args}")
-            return Inlines(args[0]).back(update)
-        method = getattr(Inlines, data, None)
+            return SavedMessagesInlines(args[0]).back(update)
+        method = getattr(SavedMessagesInlines, data, None)
         if not method:
             return logger.error(f"Unhandled callback: {data}")
-        return getattr(Inlines, data)(update)
+        return getattr(SavedMessagesInlines, data)(update)
 
     if not message or not getattr(message, "chat", None) or not message.chat.id:
         return logger.info(f"No message or chat: {update.to_dict()}")
@@ -203,10 +203,16 @@ def call(data, bot):
 
         logger.info(f"Got {len(items)} saved messages")
 
-        return Inlines(chat_id).start(update, items)
+        return SavedMessagesInlines(chat_id).start(update, items)
 
     if cmd == "get_chat_id":
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
+
+    if cmd == "earthquakes":
+        earthquake = bot.additional_data.get("earthquake")
+        if not earthquake or not (latest := earthquake.get("latest")):
+            return reply(update, text=f"No earthquakes stored")
+        return reply(update, text=latest["verbose"])
 
     if cmd == "mainframe":
         return reply(update, text=get_ngrok_url())

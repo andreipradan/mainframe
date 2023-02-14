@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from operator import itemgetter
 
 import pytz
 import requests
@@ -60,7 +61,16 @@ class Command(BaseCommand):
 
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
-            send_message("\n\n".join(event["verbose"] for event in events))
+            send_message(
+                "\n\n".join(
+                    event["verbose"]
+                    for event in sorted(events, key=itemgetter("-datetime"))
+                )
+            )
+            additional_data = instance.additional_data
+            additional_data["earthquake"]["latest"] = events[0]
+            instance.additional_data = additional_data
+            instance.save()
         else:
             logger.info(
                 f"No events in the past {minutes} minute{'s' if minutes > 1 else ''}"
