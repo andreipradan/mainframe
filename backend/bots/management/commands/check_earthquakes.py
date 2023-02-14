@@ -18,10 +18,9 @@ class Command(BaseCommand):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
 
     def handle(self, *args, **options):
+        now = datetime.now()
         minutes = options["minutes"] or 1
-        logger.info(
-            f"Checking earthquakes from the past {minutes} minute{'s' if minutes > 1 else ''}..."
-        )
+        logger.info("Checking earthquakes...")
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
@@ -57,7 +56,18 @@ class Command(BaseCommand):
         ) as e:
             raise CommandError(str(e))
 
-        events = self.get_events(response.text, minutes=minutes)
+        soup = BeautifulSoup(response.text, features="html.parser")
+        cards = soup.html.body.find_all("div", {"class": "card"})
+        events = [self.parse_card(card) for card in cards]
+        logger.info(f"Total events: {len(events)}")
+        additional_waiting_time = datetime.now() - now + timedelta(minutes=minutes)
+        logger.info(f"Total minutes: {additional_waiting_time}")
+        events = [
+            event
+            for event in events
+            if event["datetime"]
+               >= (now.astimezone(event["datetime"].tzinfo) - additional_waiting_time)
+        ]
 
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
@@ -73,22 +83,10 @@ class Command(BaseCommand):
             instance.save()
         else:
             logger.info(
-                f"No events in the past {minutes} minute{'s' if minutes > 1 else ''}"
+                f"No events in the past {additional_waiting_time}"
             )
 
         self.stdout.write(self.style.SUCCESS("Done."))
-
-    def get_events(self, contents, minutes):
-        soup = BeautifulSoup(contents, features="html.parser")
-        cards = soup.html.body.find_all("div", {"class": "card"})
-        events = [self.parse_card(card) for card in cards]
-        now = datetime.now()
-        return [
-            event
-            for event in events
-            if event["datetime"]
-            >= (now.astimezone(event["datetime"].tzinfo) - timedelta(minutes=minutes))
-        ]
 
     def get_magnitude_icon(self, magnitude):
         magnitude = float(magnitude)
@@ -131,7 +129,7 @@ class Command(BaseCommand):
 
         display_components = [
             f"<b>{self.get_magnitude_icon(magnitude)} {magnitude}</b> - {', '.join(location)}",
-            f"Dată: {date} {time} {tz}",
+            f"{date} {time} {tz}",
             f"Adâncime: {depth}",
         ]
         if len(rest) > 1:
