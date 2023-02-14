@@ -137,9 +137,7 @@ class Command(BaseCommand):
         if len(rest) > 1:
             intensity = rest[0].text.strip().split()[1]
             display_components.append(f"Intensitate: {intensity}")
-        display_components.append(
-            f"📍Location [here](https://www.google.com/maps/search/{lat},{long})"
-        )
+        display_components.append(f"📍https://www.google.com/maps/search/{lat},{long}")
         return {
             "datetime": dt,
             "verbose": "\n".join(display_components),
