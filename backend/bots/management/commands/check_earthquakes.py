@@ -39,7 +39,7 @@ class Command(BaseCommand):
                     disable_notification=True,
                     disable_web_page_preview=True,
                     text=text,
-                    parse_mode=telegram.ParseMode.MARKDOWN,
+                    parse_mode=telegram.ParseMode.HTML,
                 )
             except telegram.error.TelegramError as te:
                 logger.error(str(te))
@@ -130,7 +130,7 @@ class Command(BaseCommand):
         magnitude = mag.split()[1]
 
         display_components = [
-            f"*{self.get_magnitude_icon(magnitude)} {magnitude}* - {', '.join(location)}",
+            f"<b>{self.get_magnitude_icon(magnitude)} {magnitude}</b> - {', '.join(location)}",
             f"Dată: {date} {time} {tz}",
             f"Adâncime: {depth}",
         ]
