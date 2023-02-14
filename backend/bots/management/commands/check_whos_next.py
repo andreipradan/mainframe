@@ -14,6 +14,7 @@ class Command(BaseCommand):
         logger.info("Checking who's next")
         bot = Bot.objects.get(additional_data__whos_next__isnull=False)
 
+        whos_next = bot.additional_data["whos_next"]
         if not isinstance(whos_next, dict) or not (chat_id := whos_next.get("chat_id")):
             raise CommandError("chat_id missing from whos_next in bot additional data")
         if not whos_next.get("post_order") or not isinstance(
