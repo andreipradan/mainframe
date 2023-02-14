@@ -58,7 +58,9 @@ class Command(BaseCommand):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
             send_message("\n\n".join(event["verbose"] for event in events))
         else:
-            logger.info("No events in the past minute")
+            logger.info(
+                f"No events in the past {minutes} minute{'s' if minutes > 1 else ''}"
+            )
 
         self.stdout.write(self.style.SUCCESS("Done."))
 
