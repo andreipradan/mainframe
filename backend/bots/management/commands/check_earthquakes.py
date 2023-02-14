@@ -75,11 +75,15 @@ class Command(BaseCommand):
         soup = BeautifulSoup(response.text, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
         events = [self.parse_card(card) for card in cards]
+        since = self.get_datetime(
+            earthquake_config["latest"]["datetime"]
+        ) if earthquake_config.get("latest", {}).get("datetime") else datetime.now().astimezone(
+            pytz.timezone("Europe/Bucharest")
+        ) - timedelta(minutes=5)
         events = [
             event
             for event in events
-            if self.get_datetime(event["datetime"])
-               > self.get_datetime(earthquake_config["latest"]["datetime"])
+            if self.get_datetime(event["datetime"]) > since
         ]
 
         if len(events):
