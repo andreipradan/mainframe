@@ -61,7 +61,7 @@ class Command(BaseCommand):
                     f"*{event['summary']}*\n"
                     f"{event['description']}\n"
                     f"{event['intensity']}"
-                    f"{event['location']}"
+                    f"Location [here]({event['location']})"
                     for event in events
                 )
             )
