@@ -56,15 +56,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.NOTICE(f"Got {len(events)} events. Sending to telegram...")
             )
-            send_message(
-                "\n\n".join(
-                    f"*{event['summary']}*\n"
-                    f"{event['description']}\n"
-                    f"{event['intensity']}"
-                    f"Location [here]({event['location']})"
-                    for event in events
-                )
-            )
+            send_message("\n\n".join(event["verbose"] for event in events))
         else:
             self.stdout.write(self.style.SUCCESS("No events in the past minute"))
 
@@ -81,9 +73,21 @@ class Command(BaseCommand):
             >= (datetime.now().astimezone(event["datetime"].tzinfo) - timedelta(days=1))
         ]
 
+    def get_magnitude_icon(self, magnitude):
+        magnitude = float(magnitude)
+        if magnitude < 4:
+            return "🟢"
+        if magnitude < 5:
+            return "🟡"
+        if magnitude < 6:
+            return "🟠"
+        else:
+            return "🔴"
+
     def parse_card(self, card):
         body = card.find("div", {"class": "card-body"})
         text, *rest = body.find_all("p")
+        depth = text.split("la adâncimea de ")[1][:-1]
         lat = (
             body.find("span", {"title": "Latitudine"})
             .text.strip("\n Latitudine")
@@ -107,10 +111,18 @@ class Command(BaseCommand):
             card.find("div", {"class": "card-footer"}).text.strip().split(",")
         )
         magnitude = mag.split()[1]
+
+        display_components = [
+            f"*{self.get_magnitude_icon(magnitude)}Magnitudine: {magnitude} - {', '.join(location)}*",
+            f"Adâncime: {depth}",
+        ]
+        if len(rest) > 1:
+            intensity = rest[0].text.strip().split()[1]
+            display_components.append(f"Intensitate: {intensity}")
+        display_components.append(
+            f"📍Location [here](https://www.google.com/maps/search/{lat},{long})"
+        )
         return {
             "datetime": dt,
-            "description": text.text.strip(),
-            "intensity": f"*{rest[0].text.strip()}*\n" if len(rest) > 1 else "",
-            "location": f"https://www.google.com/maps/search/{lat},{long}",
-            "summary": f"{'❗' if float(magnitude) > 5 else ''}{magnitude} - {', '.join(location)}",
+            "verbose": "\n".join(display_components),
         }
