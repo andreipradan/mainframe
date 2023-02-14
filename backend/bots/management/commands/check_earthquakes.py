@@ -89,6 +89,15 @@ class Command(BaseCommand):
         events = [
             event for event in events if self.get_datetime(event["datetime"]) > since
         ]
+        if min_magnitude := instance.additional_data["earthquake"].get("magnitude"):
+            logger.info(f"Filtering by min magnitude: {min_magnitude}")
+            events = [
+                event
+                for event in events
+                if float(event["magnitude"]) >= float(min_magnitude)
+            ]
+        else:
+            logger.info("No min magnitude set")
 
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")

@@ -213,6 +213,10 @@ def call(data, bot):
         earthquake = bot.additional_data.get("earthquake")
         if not earthquake or not (latest := earthquake.get("latest")):
             return reply(update, text=f"No earthquakes stored")
+        if len(args) == 2 and args[0] == "set_magnitude":
+            bot.additional_data["earthquake"]["magnitude"] = args[1]
+            bot.save()
+            return reply(update, text=f"Updated min magnitude to {args[1]}")
         return reply(
             update,
             text=f"{parse_event(latest)}\nLast check: {earthquake['last_check']}",
