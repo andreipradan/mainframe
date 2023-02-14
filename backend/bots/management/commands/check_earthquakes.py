@@ -32,7 +32,7 @@ def parse_event(event):
         f"{event['datetime']}\n"
         f"Depth: {event['depth']}\n" +
         (f"Intensity: {event['intensity']}\n" if event['intensity'] else '') +
-        f"📍 {event['url']}"
+        f"{event['url']}"
     )
 
 
