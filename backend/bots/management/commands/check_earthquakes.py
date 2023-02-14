@@ -58,9 +58,10 @@ class Command(BaseCommand):
             )
             send_message(
                 "\n\n".join(
-                    f"{'❗' if event['magnitude'] > 5 else ''} *{event['summary']}*\n{event['description']}\n"
+                    f"*{event['summary']}*\n"
+                    f"{event['description']}\n"
                     f"{event['intensity']}"
-                    f"https://www.google.com/maps/search/{event['lat']},{event['long']}"
+                    f"{event['location']}"
                     for event in events
                 )
             )
@@ -72,7 +73,7 @@ class Command(BaseCommand):
     def get_events(self, contents):
         soup = BeautifulSoup(contents, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
-        events = [self.parse_card(card) for card in cards[:10]]
+        events = [self.parse_card(card) for card in cards]
         return [
             event
             for event in events
@@ -102,14 +103,14 @@ class Command(BaseCommand):
         dt = datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S").replace(
             tzinfo=pytz.timezone(tz)
         )
-        summary = card.find("div", {"class": "card-footer"}).text.strip()
-        magnitude = float(summary.split(",")[0].split()[1])
+        mag, *location = (
+            card.find("div", {"class": "card-footer"}).text.strip().split(",")
+        )
+        magnitude = mag.split()[1]
         return {
             "datetime": dt,
             "description": text.text.strip(),
             "intensity": f"*{rest[0].text.strip()}*\n" if len(rest) > 1 else "",
-            "lat": lat,
-            "long": long,
-            "magnitude": magnitude,
-            "summary": summary,
+            "location": f"https://www.google.com/maps/search/{lat},{long}",
+            "summary": f"{'❗' if float(magnitude) > 5 else ''}{magnitude} - {', '.join(location)}",
         }
