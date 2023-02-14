@@ -58,7 +58,7 @@ class Command(BaseCommand):
             )
             send_message(
                 "\n\n".join(
-                    f"{event['summary']}\n{event['description']}\n"
+                    f"*{event['summary']}*\n{event['description']}\n"
                     f"{event['intensity']}"
                     f"https://www.google.com/maps/search/{event['lat']},{event['long']}"
                     for event in events
@@ -105,7 +105,7 @@ class Command(BaseCommand):
         return {
             "datetime": dt,
             "description": text.text.strip(),
-            "intensity": f"{rest[1].text.strip()}\n" if len(rest) > 1 else "",
+            "intensity": f"{rest[0].text.strip()}\n" if len(rest) > 1 else "",
             "lat": lat,
             "long": long,
             "summary": card.find("div", {"class": "card-footer"}).text.strip(),
