@@ -113,8 +113,8 @@ class Command(BaseCommand):
         magnitude = mag.split()[1]
 
         display_components = [
-            f"*{self.get_magnitude_icon(magnitude)}Magnitudine: {magnitude} - {', '.join(location)}*",
-            f"Adâncime: {depth}",
+            f"*{self.get_magnitude_icon(magnitude)}{magnitude}* - {', '.join(location)}",
+            f"Dată: {date} {time} {tz}" f"Adâncime: {depth}",
         ]
         if len(rest) > 1:
             intensity = rest[0].text.strip().split()[1]
