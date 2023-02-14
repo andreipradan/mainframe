@@ -18,7 +18,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         minutes = options["minutes"] or 1
-        logger.info(f"Checking earthquakes from the past {minutes} minutes...")
+        logger.info(
+            f"Checking earthquakes from the past {minutes} minute{'s' if minutes > 1 else ''}..."
+        )
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
