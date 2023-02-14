@@ -87,7 +87,7 @@ class Command(BaseCommand):
     def parse_card(self, card):
         body = card.find("div", {"class": "card-body"})
         text, *rest = body.find_all("p")
-        depth = text.split("la adâncimea de ")[1][:-1]
+        depth = text.text.strip().split("la adâncimea de ")[1][:-1]
         lat = (
             body.find("span", {"title": "Latitudine"})
             .text.strip("\n Latitudine")
