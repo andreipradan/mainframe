@@ -57,9 +57,7 @@ class Command(BaseCommand):
         soup = BeautifulSoup(response.text, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
         events = [self.parse_card(card) for card in cards]
-        logger.info(f"Total events: {len(events)}")
         additional_waiting_time = datetime.now() - now + timedelta(minutes=minutes)
-        logger.info(f"Total minutes: {additional_waiting_time}")
         events = [
             event
             for event in events
