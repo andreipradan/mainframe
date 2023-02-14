@@ -21,7 +21,7 @@ class Command(BaseCommand):
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
         except Bot.DoesNotExist:
-            return self.stdout.write(self.style.ERROR("No bots with earthquake config"))
+            return logger.error(self.style.ERROR("No bots with earthquake config"))
 
         earthquake_config = instance.additional_data["earthquake"]
 
@@ -53,12 +53,10 @@ class Command(BaseCommand):
         events = self.get_events(response.text)
 
         if len(events):
-            self.stdout.write(
-                self.style.NOTICE(f"Got {len(events)} events. Sending to telegram...")
-            )
+            logger.info(f"Got {len(events)} events. Sending to telegram...")
             send_message("\n\n".join(event["verbose"] for event in events))
         else:
-            self.stdout.write(self.style.SUCCESS("No events in the past minute"))
+            logger.info("No events in the past minute")
 
         self.stdout.write(self.style.SUCCESS("Done."))
 
@@ -66,11 +64,12 @@ class Command(BaseCommand):
         soup = BeautifulSoup(contents, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
         events = [self.parse_card(card) for card in cards]
+        now = datetime.now()
         return [
             event
             for event in events
             if event["datetime"]
-            >= (datetime.now().astimezone(event["datetime"].tzinfo) - timedelta(days=1))
+            >= (now.astimezone(event["datetime"].tzinfo) - timedelta(minutes=1))
         ]
 
     def get_magnitude_icon(self, magnitude):
@@ -113,7 +112,7 @@ class Command(BaseCommand):
         magnitude = mag.split()[1]
 
         display_components = [
-            f"*{self.get_magnitude_icon(magnitude)}{magnitude}* - {', '.join(location)}",
+            f"*{self.get_magnitude_icon(magnitude)} {magnitude}* - {', '.join(location)}",
             f"Dată: {date} {time} {tz}",
             f"Adâncime: {depth}",
         ]
