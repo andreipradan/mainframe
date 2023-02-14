@@ -209,11 +209,11 @@ def call(data, bot):
     if cmd == "get_chat_id":
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
 
-    if cmd == "earthquakes":
+    if cmd == "earthquake":
         earthquake = bot.additional_data.get("earthquake")
         if not earthquake or not (latest := earthquake.get("latest")):
             return reply(update, text=f"No earthquakes stored")
-        return reply(update, text=parse_event(latest))
+        return reply(update, text=f"{latest}\nLast check: {earthquake['last_check']}")
 
     if cmd == "mainframe":
         return reply(update, text=get_ngrok_url())

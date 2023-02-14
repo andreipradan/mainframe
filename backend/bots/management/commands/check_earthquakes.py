@@ -30,8 +30,8 @@ def parse_event(event):
         f"<b>{get_magnitude_icon(event['magnitude'])} {event['magnitude']}</b>"
         f" - {event['location']}\n"
         f"{event['datetime']}\n"
-        f"Adâncime: {event['depth']}\n" +
-        (f"Intensitate: {event['intensity']}\n" if event['intensity'] else '') +
+        f"Depth: {event['depth']}\n" +
+        (f"Intensity: {event['intensity']}\n" if event['intensity'] else '') +
         f"📍 {event['url']}"
     )
 
@@ -88,12 +88,14 @@ class Command(BaseCommand):
                 "\n\n".join(parse_event(event)for event in events)
             )
             instance.additional_data["earthquake"]["latest"] = events[0]
-            instance.save()
         else:
             logger.info(
                 f"No events since {earthquake_config['latest']['datetime']}"
             )
 
+        now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
+        instance.additional_data["earthquake"]["last_check"] = now.strftime("%d.%m.%Y, %H:%M:%S %z")
+        instance.save()
         self.stdout.write(self.style.SUCCESS("Done."))
 
     def get_datetime(self, string):
