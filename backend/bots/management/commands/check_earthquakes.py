@@ -64,7 +64,9 @@ class Command(BaseCommand):
             send_message(
                 "\n\n".join(
                     event["verbose"]
-                    for event in sorted(events, key=itemgetter("-datetime"))
+                    for event in sorted(
+                        events, key=itemgetter("datetime"), reverse=True
+                    )
                 )
             )
             additional_data = instance.additional_data
