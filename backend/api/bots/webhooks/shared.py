@@ -83,7 +83,7 @@ def validate_message(message, bot, logger):
         text = text.decode("utf-8")
 
     if len(text) < 1 or not text.startswith("/"):
-        logger.info(f"Not a command: '{text}'")
+        logger.info(f"Not a command: '{text}' ({user.username or user.full_name})")
         return ""
 
     return text[1:]

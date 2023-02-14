@@ -10,16 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        parser.add_argument("bot_username", type=str)
-
     def handle(self, *args, **options):
         logger.info("Checking who's next")
-        bot = Bot.objects.get(username=options["bot_username"])
+        bot = Bot.objects.get(additional_data__whos_next__isnull=False)
 
-        whos_next = bot.additional_data.get("whos_next")
-        if not whos_next:
-            raise CommandError("whos_next not configured in bot additional data")
         if not isinstance(whos_next, dict) or not (chat_id := whos_next.get("chat_id")):
             raise CommandError("chat_id missing from whos_next in bot additional data")
         if not whos_next.get("post_order") or not isinstance(
