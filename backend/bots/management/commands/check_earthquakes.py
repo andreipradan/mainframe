@@ -69,9 +69,7 @@ class Command(BaseCommand):
                     )
                 )
             )
-            additional_data = instance.additional_data
-            additional_data["earthquake"]["latest"] = events[0]
-            instance.additional_data = additional_data
+            instance.additional_data["earthquake"]["latest"] = events[0]
             instance.save()
         else:
             logger.info(
