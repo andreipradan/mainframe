@@ -17,8 +17,8 @@ class Command(BaseCommand):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
 
     def handle(self, *args, **options):
-        logger.info("Checking earthquakes...")
         minutes = options["minutes"] or 1
+        logger.info(f"Checking earthquakes from the past {minutes} minutes...")
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
