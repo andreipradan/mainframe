@@ -12,6 +12,8 @@ from bots.models import Bot
 
 logger = logging.getLogger(__name__)
 
+DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
+
 
 def get_magnitude_icon(magnitude):
     magnitude = float(magnitude)
@@ -37,6 +39,9 @@ def parse_event(event):
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
+
     def handle(self, *args, **options):
         logger.info("Checking earthquakes...")
 
@@ -79,7 +84,7 @@ class Command(BaseCommand):
             earthquake_config["latest"]["datetime"]
         ) if earthquake_config.get("latest", {}).get("datetime") else datetime.now().astimezone(
             pytz.timezone("Europe/Bucharest")
-        ) - timedelta(minutes=5)
+        ) - timedelta(minutes=options["minutes"] or 5)
         events = [
             event
             for event in events
@@ -94,11 +99,11 @@ class Command(BaseCommand):
             instance.additional_data["earthquake"]["latest"] = events[0]
         else:
             logger.info(
-                f"No events since {earthquake_config['latest']['datetime']}"
+                f"No events since {since.strftime(DATETIME_FORMAT)}"
             )
 
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
-        instance.additional_data["earthquake"]["last_check"] = now.strftime("%d.%m.%Y, %H:%M:%S %z")
+        instance.additional_data["earthquake"]["last_check"] = now.strftime(DATETIME_FORMAT)
         instance.save()
         self.stdout.write(self.style.SUCCESS("Done."))
 
