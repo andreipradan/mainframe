@@ -13,6 +13,29 @@ from bots.models import Bot
 logger = logging.getLogger(__name__)
 
 
+def get_magnitude_icon(magnitude):
+    magnitude = float(magnitude)
+    if magnitude < 4:
+        return "🟢"
+    if magnitude < 5:
+        return "🟡"
+    if magnitude < 6:
+        return "🟠"
+    else:
+        return "🔴"
+
+
+def parse_event(event):
+    return (
+        f"<b>{get_magnitude_icon(event['magnitude'])} {event['magnitude']}</b>"
+        f" - {event['location']}\n"
+        f"{event['datetime']}\n"
+        f"Adâncime: {event['depth']}\n" +
+        (f"Intensitate: {event['intensity']}\n" if event['intensity'] else '') +
+        f"📍 {event['url']}"
+    )
+
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info("Checking earthquakes...")
@@ -62,15 +85,7 @@ class Command(BaseCommand):
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
             send_message(
-                "\n\n".join(
-                    f"<b>{self.get_magnitude_icon(event['magnitude'])} {event['magnitude']}</b>"
-                    f" - {event['location']}\n"
-                    f"{event['datetime']}\n"
-                    f"Adâncime: {event['depth']}\n" +
-                    (f"Intensitate: {event['intensity']}\n" if event['intensity'] else '') +
-                    f"📍 {event['url']}"
-                    for event in events
-                )
+                "\n\n".join(parse_event(event)for event in events)
             )
             instance.additional_data["earthquake"]["latest"] = events[0]
             instance.save()
@@ -80,17 +95,6 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS("Done."))
-
-    def get_magnitude_icon(self, magnitude):
-        magnitude = float(magnitude)
-        if magnitude < 4:
-            return "🟢"
-        if magnitude < 5:
-            return "🟡"
-        if magnitude < 6:
-            return "🟠"
-        else:
-            return "🔴"
 
     def get_datetime(self, string):
         date, time, tz = string.split()

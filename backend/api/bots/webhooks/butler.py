@@ -15,6 +15,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import reply, BaseInlines
 from bots.clients import mongo as database
+from bots.management.commands.check_earthquakes import parse_event
 from bots.management.commands.set_hooks import get_ngrok_url
 
 logger = logging.getLogger(__name__)
@@ -212,7 +213,7 @@ def call(data, bot):
         earthquake = bot.additional_data.get("earthquake")
         if not earthquake or not (latest := earthquake.get("latest")):
             return reply(update, text=f"No earthquakes stored")
-        return reply(update, text=latest)
+        return reply(update, text=parse_event(latest))
 
     if cmd == "mainframe":
         return reply(update, text=get_ngrok_url())
