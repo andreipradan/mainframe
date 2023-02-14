@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from datetime import timezone
 
-import environ
 import pytz
 import requests
 import telegram
@@ -15,8 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
+
     def handle(self, *args, **options):
         logger.info("Checking earthquakes...")
+        minutes = options["minutes"] or 1
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
@@ -50,7 +52,7 @@ class Command(BaseCommand):
             send_message(str(e))
             raise CommandError(str(e))
 
-        events = self.get_events(response.text)
+        events = self.get_events(response.text, minutes=minutes)
 
         if len(events):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
@@ -60,7 +62,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Done."))
 
-    def get_events(self, contents):
+    def get_events(self, contents, minutes):
         soup = BeautifulSoup(contents, features="html.parser")
         cards = soup.html.body.find_all("div", {"class": "card"})
         events = [self.parse_card(card) for card in cards]
@@ -69,7 +71,7 @@ class Command(BaseCommand):
             event
             for event in events
             if event["datetime"]
-            >= (now.astimezone(event["datetime"].tzinfo) - timedelta(minutes=1))
+            >= (now.astimezone(event["datetime"].tzinfo) - timedelta(minutes=minutes))
         ]
 
     def get_magnitude_icon(self, magnitude):
