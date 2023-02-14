@@ -105,8 +105,7 @@ class Command(BaseCommand):
         return {
             "datetime": dt,
             "description": text.text.strip(),
-            "intensity": f"{rest[1]}\n" if len(rest) > 1 else "",
-            "location_verbose": rest[1] if len(rest) > 1 else rest[0],
+            "intensity": f"{rest[1].text.strip()}\n" if len(rest) > 1 else "",
             "lat": lat,
             "long": long,
             "summary": card.find("div", {"class": "card-footer"}).text.strip(),
