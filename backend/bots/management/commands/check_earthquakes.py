@@ -93,7 +93,7 @@ class Command(BaseCommand):
         Earthquake.objects.bulk_create(events, ignore_conflicts=True)
 
         events = [event for event in events if event.timestamp > since]
-        if min_magnitude := instance.additional_data["earthquake"].get("magnitude"):
+        if min_magnitude := instance.additional_data["earthquake"].get("min_magnitude"):
             logger.info(f"Filtering by min magnitude: {min_magnitude}")
             events = [
                 event
