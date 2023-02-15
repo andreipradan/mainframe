@@ -89,9 +89,8 @@ class Command(BaseCommand):
             ) - timedelta(minutes=options["minutes"])
         elif latest := Earthquake.objects.order_by("-timestamp").first():
             since = latest.timestamp
-        else:
-            logger.info(f"Bulk creating {len(events)}")
-            Earthquake.objects.bulk_create(events)
+
+        Earthquake.objects.bulk_create(events, ignore_conflicts=True)
 
         events = [event for event in events if event.timestamp > since]
         if min_magnitude := instance.additional_data["earthquake"].get("magnitude"):
