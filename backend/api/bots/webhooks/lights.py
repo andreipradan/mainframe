@@ -48,16 +48,16 @@ class Inlines(BaseInlines):
         )
 
     @classmethod
-    def refresh(cls, update, msg=""):
+    def refresh(cls, update, state=None):
         bot = update.callback_query.bot
         message = update.callback_query.message
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=msg
+                text=f"State: {state['value']}\nLast updated: {state['last_updated']}"
                 or f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                reply_markup=cls.get_markup(),
+                reply_markup=cls.get_markup(status=state["value"]),
             ).to_json()
         except telegram.error.BadRequest as e:
             return e.message
@@ -81,7 +81,7 @@ class Inlines(BaseInlines):
         bot.save()
 
         logger.info(f"Switched state to '{value}'")
-        return cls.refresh(update, msg=f"State: {value}\nLast updated: {last_updated}")
+        return cls.refresh(update, state=state)
 
 
 def call(data, bot):
