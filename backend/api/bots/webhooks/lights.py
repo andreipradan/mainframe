@@ -25,8 +25,8 @@ class Inlines(BaseInlines):
             [
                 [
                     InlineKeyboardButton(
-                        "Set as Home" if status == "away" else "Away",
-                        callback_data="home",
+                        "Set as Away" if status == "home" else "Set as Home",
+                        callback_data=f"toggle {'away' if status == 'home' else 'home'}",
                     ),
                 ]
             ]
