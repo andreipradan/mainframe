@@ -4,6 +4,8 @@
   "homepage": "https://pradan.dev/",
   "private": true,
   "dependencies": {
+    "@amcharts/amcharts5": "^5.3.3",
+    "@amcharts/amcharts5-geodata": "^5.1.0",
     "@mdi/font": "^4.2.95",
     "@reduxjs/toolkit": "^1.9.1",
     "axios": "^1.2.3",
@@ -29,7 +31,6 @@
     "react-dnd-touch-backend": "^9.4.0",
     "react-dom": "^16.9.0",
     "react-i18next": "^11.1.0",
-    "react-jvectormap": "0.0.13",
     "react-loader-spinner": "^5.3.4",
     "react-redux": "^8.0.5",
     "react-router-dom": "^5.0.1",

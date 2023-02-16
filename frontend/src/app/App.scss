@@ -68,3 +68,11 @@
 @import "../assets/styles/sidebar";
 @import "../assets/styles/footer";
 @import "../assets/styles/layout";
+
+.map {
+  position: relative;
+  height: 500px;
+  svg {
+    height: 500px;
+  }
+}
