@@ -33,7 +33,7 @@ class Inlines(BaseInlines):
             + [
                 [
                     InlineKeyboardButton(
-                        verbose_light(item), callback_data=f"toggle {item['ip']}"
+                        verbose_light(item), callback_data=f"toggle-home {item['ip']}"
                     )
                     for item in chunk
                 ]
