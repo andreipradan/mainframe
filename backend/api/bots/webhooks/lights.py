@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Inlines(BaseInlines):
     @classmethod
-    def get_markup(cls, items=None):
+    def get_markup(cls, status=None):
         def verbose_light(light):
             props = light["capabilities"]
             name = props["name"] or light["ip"]
@@ -23,6 +23,14 @@ class Inlines(BaseInlines):
         items = LightsClient.get_bulbs()
         return InlineKeyboardMarkup(
             [
+                [
+                    InlineKeyboardButton(
+                        "Set as Home" if status == "away" else "Away",
+                        callback_data="home",
+                    ),
+                ]
+            ]
+            + [
                 [
                     InlineKeyboardButton(
                         verbose_light(item), callback_data=f"toggle {item['ip']}"
@@ -40,14 +48,15 @@ class Inlines(BaseInlines):
         )
 
     @classmethod
-    def refresh(cls, update):
+    def refresh(cls, update, extra=""):
         bot = update.callback_query.bot
         message = update.callback_query.message
+        extra = f"\n\n{extra}" if extra else ""
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                text=f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{extra}",
                 reply_markup=cls.get_markup(),
             ).to_json()
         except telegram.error.BadRequest as e:
@@ -64,20 +73,34 @@ class Inlines(BaseInlines):
         logger.info(f"Bulb {ip} was toggled. Response: {response}")
         return cls.refresh(update)
 
+    @classmethod
+    def toggle_home(cls, update, bot, value):
+        last_updated = datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+        state = {"status": value, "last_updated": last_updated}
+        bot.additional_data["state"] = state
+        bot.save()
+
+        logger.info(f"Switched state to '{value}'")
+        return cls.refresh(
+            update, extra=f"State: {value} [Last updated: {last_updated}]"
+        )
+
 
 def call(data, bot):
     update = telegram.Update.de_json(data, telegram.Bot(bot.token))
     message = update.message
 
     if update.callback_query:
-        data = update.callback_query.data
         if data.startswith("toggle"):
             toggle_components = data.split(" ")
             if not len(toggle_components) == 2:
                 return logger.error(
                     f"Invalid parameters for toggle: {toggle_components}"
                 )
-            return Inlines.toggle(update, data.split(" ")[1])
+            _, value = data.split(" ")
+            if data == "toggle-home":
+                return Inlines.toggle_home(update, bot, value)
+            return Inlines.toggle(update, value)
         method = getattr(Inlines, data, None)
         if not method:
             return logger.error(f"Unhandled callback: {data}")
@@ -98,24 +121,28 @@ def call(data, bot):
 
     command = message.text[1:]
     if command == "start":
-        return Inlines.start(update)
+        user = update.message.from_user
+        greeting_message = f"Hi {user.full_name}!"
+        logger.info(greeting_message)
 
-    if command in ["home", "away"]:
-        bot.additional_data["state"] = {
-            "status": command,
-            "last_updated": datetime.now().astimezone(tz=pytz.utc),
-        }
-        return reply(update, f"Updated state to '{command}'")
+        value = bot.additional_data.get("state")
+        if not value:
+            return update.message.reply_text(
+                f"{greeting_message}\nState not set",
+                reply_markup=Inlines.get_markup(),
+            ).to_json()
 
-    if command == "get_state":
-        state = bot.additional_data.get("state")
-        if not state:
-            return reply(update, "State not set")
-        if not (status := state.get("")) or not (
-            last_updated := state.get("last_updated")
+        if not (status := value.get("")) or not (
+            last_updated := value.get("last_updated")
         ):
-            return reply(update, "Couldn't get state")
+            return update.message.reply_text(
+                f"{greeting_message}\nCouldn't get state",
+                reply_markup=Inlines.get_markup(),
+            ).to_json()
 
-        return reply(update, f"State: {status} [Last updated: {last_updated}]")
+        return update.message.reply_text(
+            f"{greeting_message}\nState: {status} [Last updated: {last_updated}]",
+            reply_markup=Inlines.get_markup(status),
+        ).to_json()
 
     return logger.warning(f"Unhandled command: {message.text}")
