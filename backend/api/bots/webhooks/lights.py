@@ -91,6 +91,7 @@ def call(data, bot):
     message = update.message
 
     if update.callback_query:
+        data = update.callback_query.data
         if data.startswith("toggle"):
             toggle_components = data.split(" ")
             if not len(toggle_components) == 2:
