@@ -151,7 +151,7 @@ def call(data, bot):
             ).to_json()
 
         return update.message.reply_text(
-            f"{greeting_message}\nState: {status.title()}\nSince: {last_updated}",
+            f"{greeting_message}\nState: {'🏠' if status == 'home' else '✈️'}{status.title()}\nSince: {last_updated}",
             reply_markup=Inlines.get_markup(status),
         ).to_json()
 

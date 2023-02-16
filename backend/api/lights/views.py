@@ -47,11 +47,27 @@ def set_rgb(request, ip):
 
 
 @csrf_exempt
+def turn_all_off(request):
+    if not request.method == "PUT":
+        raise MethodNotAllowed(request.method)
+    response = LightsClient.turn_all_off()
+    return HttpResponse(response)
+
+
+@csrf_exempt
+def turn_all_on(request):
+    if not request.method == "PUT":
+        raise MethodNotAllowed(request.method)
+    response = LightsClient.turn_all_on()
+    return HttpResponse(response)
+
+
+@csrf_exempt
 def turn_off(request, ip):
     if not request.method == "PUT":
         raise MethodNotAllowed(request.method)
     response = LightsClient.turn_off(ip)
-    logger.info(response)
+    logger.info(f"Turn off {ip}: {response}")
     return HttpResponse(response)
 
 
@@ -60,5 +76,5 @@ def turn_on(request, ip):
     if not request.method == "PUT":
         raise MethodNotAllowed(request.method)
     response = LightsClient.turn_on(ip)
-    logger.info(response)
+    logger.info(f"Turn on {ip}: {response}")
     return HttpResponse(response)

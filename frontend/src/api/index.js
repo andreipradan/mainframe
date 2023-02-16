@@ -8,7 +8,6 @@ const axios = Axios.create({
 
 axios.interceptors.request.use(
   (config) => {
-    console.log(API_SERVER)
     return Promise.resolve(config);
   },
   (error) => Promise.reject(error)

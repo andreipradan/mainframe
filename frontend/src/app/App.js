@@ -17,7 +17,6 @@ const App = () => {
   useEffect(() => {onRouteChanged()}, [location, token])
 
   const onRouteChanged = () => {
-    console.log("route changed" + location.pathname)
     if (!token && !["/login", "/register"].includes(location.pathname)) {
       history.push("/login")
       return

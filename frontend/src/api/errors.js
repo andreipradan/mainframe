@@ -9,7 +9,6 @@ export const handleErrors = async (err, dispatch, setErrors) => {
   }
   if (err.response?.data) {
     if (err.response.data["msg"] === "User is not logged on.") {
-      console.log("user not logged in")
       Cookie.remove('expires_at');
       Cookie.remove('token');
       Cookie.remove('user');

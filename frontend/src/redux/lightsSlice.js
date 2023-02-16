@@ -35,13 +35,22 @@ export const lightsSlice = createSlice({
       state.loading = false;
     },
     setLoading: (state, action) => {
-      state.list = null;
       state.loading = action.payload;
     },
     setLoadingLight: (state, action) => {
       state.loadingLights = !state.loadingLights
         ? [action.payload]
         : [...state.loadingLights, action.payload];
+    },
+    turn_all_off: (state, action) => {
+      state.list = state.list?.map(l => ({...l, capabilities: {...l.capabilities, power: "off"}}));
+      state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
+    },
+    turn_all_on: (state, action) => {
+      state.list = state.list?.map((l) => ({...l, capabilities: {...l.capabilities, power: "on"}}));
+      state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
     },
     turn_off: (state, action) => {
       state.list = state.list.map((l) => (l.ip !== action.payload
@@ -65,5 +74,17 @@ export const lightsSlice = createSlice({
   },
 });
 
-export const { set, setBrightness, setColorTemp, setErrors, setLoading, setLoadingLight, turn_off, turn_on, unsetLoadingLight } = lightsSlice.actions;
+export const {
+  set,
+  setBrightness,
+  setColorTemp,
+  setErrors,
+  setLoading,
+  setLoadingLight,
+  turn_all_off,
+  turn_all_on,
+  turn_off,
+  turn_on,
+  unsetLoadingLight
+} = lightsSlice.actions;
 export default lightsSlice.reducer;

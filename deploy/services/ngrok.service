@@ -1,6 +1,6 @@
 [Unit]
 Description=Ngrok public URL service
-After=frontend.service
+After=backend.service
 
 [Service]
 User=andreierdna

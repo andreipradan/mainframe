@@ -41,6 +41,22 @@ class LightsClient:
             raise LightsException(e)
 
     @classmethod
+    def turn_all_off(cls):
+        for bulb in [yeelight.Bulb(bulb["ip"]) for bulb in cls.get_bulbs()]:
+            try:
+                bulb.turn_off()
+            except yeelight.main.BulbException as e:
+                raise LightsException(e)
+
+    @classmethod
+    def turn_all_on(cls):
+        for bulb in [yeelight.Bulb(bulb["ip"]) for bulb in cls.get_bulbs()]:
+            try:
+                bulb.turn_on()
+            except yeelight.main.BulbException as e:
+                raise LightsException(e)
+
+    @classmethod
     def turn_off(cls, ip):
         bulb = yeelight.Bulb(ip)
         try:
