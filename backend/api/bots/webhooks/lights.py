@@ -102,7 +102,11 @@ def call(data, bot):
             if cmd == "toggle-home":
                 return Inlines.toggle_home(update, bot, state)
             if cmd == "toggle":
+                bot.additional_data.get()
                 return Inlines.toggle(update, state)
+
+        if data == "refresh":
+            return Inlines.refresh(update, bot.additional_data.get("state"))
 
         method = getattr(Inlines, data, None)
         if not method:
@@ -131,7 +135,7 @@ def call(data, bot):
         state = bot.additional_data.get("state")
         if not state:
             return update.message.reply_text(
-                f"{greeting_message}\nState not set",
+                f"{greeting_message}\nState: Not set",
                 reply_markup=Inlines.get_markup(),
             ).to_json()
 
@@ -139,7 +143,7 @@ def call(data, bot):
             last_updated := state.get("last_updated")
         ):
             return update.message.reply_text(
-                f"{greeting_message}\nCouldn't get state",
+                f"{greeting_message}\nState: invalid",
                 reply_markup=Inlines.get_markup(),
             ).to_json()
 
