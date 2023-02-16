@@ -55,9 +55,9 @@ class Inlines(BaseInlines):
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"State: {state['value']}\nLast updated: {state['last_updated']}"
+                text=f"State: {state['status']}\nLast updated: {state['last_updated']}"
                 or f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                reply_markup=cls.get_markup(status=state["value"]),
+                reply_markup=cls.get_markup(status=state["status"]),
             ).to_json()
         except telegram.error.BadRequest as e:
             return e.message
