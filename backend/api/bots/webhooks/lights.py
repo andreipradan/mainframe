@@ -98,10 +98,12 @@ def call(data, bot):
                 return logger.error(
                     f"Invalid parameters for toggle: {toggle_components}"
                 )
-            _, value = data.split(" ")
-            if data == "toggle-home":
+            cmd, value = data.split(" ")
+            if cmd == "toggle-home":
                 return Inlines.toggle_home(update, bot, value)
-            return Inlines.toggle(update, value)
+            if cmd == "toggle":
+                return Inlines.toggle(update, value)
+
         method = getattr(Inlines, data, None)
         if not method:
             return logger.error(f"Unhandled callback: {data}")
