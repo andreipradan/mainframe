@@ -51,13 +51,15 @@ class Inlines(BaseInlines):
     def refresh(cls, update, state=None):
         bot = update.callback_query.bot
         message = update.callback_query.message
+        status = state["status"] if state else ""
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"State: {state['status'].title()}\nLast updated: {state['last_updated']}"
-                or f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-                reply_markup=cls.get_markup(status=state["status"]),
+                text=f"State: {'🏠' if status == 'home' else ''}{status.title()}\nLast updated: {state['last_updated']}"
+                if state
+                else f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                reply_markup=cls.get_markup(status=status),
             ).to_json()
         except telegram.error.BadRequest as e:
             return e.message
