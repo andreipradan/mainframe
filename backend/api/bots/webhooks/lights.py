@@ -51,7 +51,7 @@ class Inlines(BaseInlines):
     def refresh(cls, update, state=None):
         bot = update.callback_query.bot
         message = update.callback_query.message
-        greeting_message = f"Hi {update.message.from_user.full_name}!"
+        greeting_message = f"Hi {update.callback_query.from_user.full_name}!"
         status = state["status"] if state else ""
 
         text = (
