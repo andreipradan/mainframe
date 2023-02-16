@@ -96,11 +96,11 @@ def call(data, bot):
                 return logger.error(
                     f"Invalid parameters for toggle: {toggle_components}"
                 )
-            cmd, value = data.split(" ")
+            cmd, state = data.split(" ")
             if cmd == "toggle-home":
-                return Inlines.toggle_home(update, bot, value)
+                return Inlines.toggle_home(update, bot, state)
             if cmd == "toggle":
-                return Inlines.toggle(update, value)
+                return Inlines.toggle(update, state)
 
         method = getattr(Inlines, data, None)
         if not method:
@@ -126,15 +126,15 @@ def call(data, bot):
         greeting_message = f"Hi {user.full_name}!"
         logger.info(greeting_message)
 
-        value = bot.additional_data.get("state")
-        if not value:
+        state = bot.additional_data.get("state")
+        if not state:
             return update.message.reply_text(
                 f"{greeting_message}\nState not set",
                 reply_markup=Inlines.get_markup(),
             ).to_json()
 
-        if not (status := value.get("")) or not (
-            last_updated := value.get("last_updated")
+        if not (status := state.get("status")) or not (
+            last_updated := state.get("last_updated")
         ):
             return update.message.reply_text(
                 f"{greeting_message}\nCouldn't get state",
