@@ -26,14 +26,14 @@ class Inlines(BaseInlines):
                 [
                     InlineKeyboardButton(
                         "Set as Away" if status == "home" else "Set as Home",
-                        callback_data=f"toggle {'away' if status == 'home' else 'home'}",
+                        callback_data=f"toggle-home {'away' if status == 'home' else 'home'}",
                     ),
                 ]
             ]
             + [
                 [
                     InlineKeyboardButton(
-                        verbose_light(item), callback_data=f"toggle-home {item['ip']}"
+                        verbose_light(item), callback_data=f"toggle {item['ip']}"
                     )
                     for item in chunk
                 ]
