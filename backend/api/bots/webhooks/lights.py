@@ -54,11 +54,9 @@ class Inlines(BaseInlines):
         greeting_message = f"Hi {update.callback_query.from_user.full_name}!"
         status = state["status"] if state else ""
 
-        text = (
-            f"State: {'🏠' if status == 'home' else '✈️'}{status.title()}\nLast updated: {state['last_updated']}"
-            if state
-            else f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        text = f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        if state:
+            text = f"State: {'🏠' if status == 'home' else '✈️'}{status.title()}\nSince: {state['last_updated']}\n{text}"
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
@@ -153,7 +151,7 @@ def call(data, bot):
             ).to_json()
 
         return update.message.reply_text(
-            f"{greeting_message}\nState: {status.title()}\nLast updated: {last_updated}",
+            f"{greeting_message}\nState: {status.title()}\nSince: {last_updated}",
             reply_markup=Inlines.get_markup(status),
         ).to_json()
 
