@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
 
+import pytz
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-from api.bots.webhooks.shared import BaseInlines, chunks
+from api.bots.webhooks.shared import BaseInlines, chunks, reply
 from api.lights.client import LightsClient, LightsException
 
 logger = logging.getLogger(__name__)
@@ -98,5 +99,23 @@ def call(data, bot):
     command = message.text[1:]
     if command == "start":
         return Inlines.start(update)
+
+    if command in ["home", "away"]:
+        bot.additional_data["state"] = {
+            "status": command,
+            "last_updated": datetime.now().astimezone(tz=pytz.utc),
+        }
+        return reply(update, f"Updated state to '{command}'")
+
+    if command == "get_state":
+        state = bot.additional_data.get("state")
+        if not state:
+            return reply(update, "State not set")
+        if not (status := state.get("")) or not (
+            last_updated := state.get("last_updated")
+        ):
+            return reply(update, "Couldn't get state")
+
+        return reply(update, f"State: {status} [Last updated: {last_updated}]")
 
     return logger.warning(f"Unhandled command: {message.text}")

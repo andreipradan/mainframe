@@ -4,6 +4,7 @@ import environ
 import requests.exceptions
 import telegram
 
+from api.bots.webhooks.shared import reply
 from api.bots.webhooks.shared import validate_message
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
@@ -17,19 +18,6 @@ def get_stats_from_user(user):
         "name": user.full_name,
         "username": user.username,
     }
-
-
-def reply(update, text):
-    try:
-        update.message.reply_text(
-            text[:1000] + "" if len(text) <= 1000 else "[truncated]",
-            disable_notification=True,
-            disable_web_page_preview=True,
-            parse_mode=telegram.ParseMode.HTML,
-        )
-    except telegram.error.BadRequest as e:
-        logger.exception(e)
-        return ""
 
 
 def call(data, bot):
@@ -67,11 +55,10 @@ def call(data, bot):
 
     base_command = command.split(" ")[0]
     if base_command not in available_commands:
-        reply(
+        return reply(
             update,
             f"Command not recognized: {command}\nAvailable: {sorted(available_commands)}",
         )
-        return ""
 
     command = command.replace(base_command, "").strip()
 
@@ -83,12 +70,10 @@ def call(data, bot):
             results = tournament.clear_participants()
         except requests.exceptions.HTTPError as e:
             logger.error(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         logger.warning(results["message"])
-        reply(update, results["message"])
-        return ""
+        return reply(update, results["message"])
 
     if base_command == "destroy":
         logger.warning("Destroying tournament")
@@ -97,12 +82,10 @@ def call(data, bot):
         except requests.exceptions.HTTPError as e:
             error = f"[{tournament._id}] {e}"
             logger.error(error)
-            reply(update, error)
-            return ""
+            return reply(update, error)
         msg = f"Destroyed {response['tournament']['url']}"
         logger.warning(msg)
-        reply(update, msg)
-        return ""
+        return reply(update, msg)
 
     if base_command == "join":
         logger.info(f"{user_text} is trying to join")
@@ -122,46 +105,38 @@ def call(data, bot):
             if tournament.is_started:
                 msg = f"Not possible - tournament already started"
                 logger.warning(msg)
-                reply(update, msg)
-                return ""
+                return reply(update, msg)
         except requests.exceptions.HTTPError as e:
             logger.exception(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         try:
             results = tournament.add_participants(id=user.id)
         except requests.exceptions.HTTPError as e:
             logger.warning(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         if results:
             logger.info(f"Added {user_text} to the tournament")
-            reply(update, "You successfully joined the tournament! 🎉")
-            return ""
+            return reply(update, "You successfully joined the tournament! 🎉")
         logger.info(f"Couldn't add {user_text} to the tournament")
-        reply(update, "Couldn't add you to the tournament")
-        return ""
+        return reply(update, "Couldn't add you to the tournament")
 
     if base_command == "leave":
         logger.info(f"{user_text} is trying to leave")
         if not tournament.get_player_by_telegram_id(user.id):
             logger.warning(f"Player {user_text} not found in tournament")
-            reply(update, "You are not registered to this tournament")
-            return ""
+            return reply(update, "You are not registered to this tournament")
 
         try:
             results = tournament.remove_participant(user.id)
         except requests.exceptions.HTTPError as e:
             logger.exception(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         msg = f"{results['participant']['name']} {'resigned' if tournament.is_started else 'left'}"
         logger.info(msg)
-        reply(update, msg)
-        return ""
+        return reply(update, msg)
 
     if base_command == "populate":
         logger.info("Populating participants")
@@ -169,22 +144,19 @@ def call(data, bot):
             results = tournament.add_participants()
         except requests.exceptions.HTTPError as e:
             logger.error(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         if results:
             how_many = len(results)
             logger.info(f"Populated {how_many}")
-            reply(
+            return reply(
                 update,
                 f"{how_many} participant{'s' if how_many > 1 else ''} added: "
                 f"{', '.join(r['participant']['name'] for r in results)}",
             )
-            return ""
 
         logger.warning("No participants added")
-        reply(update, "No participants were added")
-        return ""
+        return reply(update, "No participants were added")
 
     if base_command == "new":
         if command:
@@ -197,8 +169,7 @@ def call(data, bot):
                     f"e.g. /new type=double_elimination"
                 )
                 logger.error(error)
-                reply(update, error)
-                return ""
+                return reply(update, error)
         else:
             kwargs = {}
 
@@ -212,8 +183,7 @@ def call(data, bot):
             kwargs_pretty = "\n".join([f"{k}={v}" for k, v in kwargs.items()])
             error = f"Couldn't create tournament\n{kwargs_pretty}\n{e}"
             logger.exception(error)
-            reply(update, error)
-            return ""
+            return reply(update, error)
 
         msg = (
             f"Created {tournament.data['game_name']} "
@@ -221,26 +191,22 @@ def call(data, bot):
             f"{tournament.get_footer()}"
         )
         logger.info(msg)
-        reply(update, msg)
-        return ""
+        return reply(update, msg)
 
     if base_command == "score":
         logger.info(f"Set score: {command}")
         if not tournament.is_started:
             logger.info("Tournament not started")
-            reply(update, "Not possible - tournament not started")
-            return ""
+            return reply(update, "Not possible - tournament not started")
 
         try:
             response = tournament.update_score(user.id, command)
         except requests.exceptions.HTTPError as e:
             logger.exception(e)
-            reply(update, f"Couldn't update score: {e}")
-            return ""
+            return reply(update, f"Couldn't update score: {e}")
 
         logger.info(response)
-        reply(update, response)
-        return ""
+        return reply(update, response)
 
     if base_command == "start":
         logger.info("Starting tournament")
@@ -248,26 +214,21 @@ def call(data, bot):
             if tournament.is_started:
                 msg = "Tournament already started"
                 logger.warning(msg)
-                reply(update, msg)
-                return ""
+                return reply(update, msg)
         except requests.exceptions.HTTPError as e:
             logger.exception(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         try:
             response = tournament.start()
         except requests.exceptions.HTTPError as e:
             logger.exception(e)
-            reply(update, e.args[0])
-            return ""
+            return reply(update, e.args[0])
 
         logger.info(f"Tournament {response['tournament']['url']} started.")
-        reply(
+        return reply(
             update,
             f"Started tournament 🎉\nGood Luck everyone!\n{tournament.get_footer()}",
         )
-        return ""
 
-    reply(update, f"Unrecognized command: {base_command} {command}")
-    return ""
+    return reply(update, f"Unrecognized command: {base_command} {command}")

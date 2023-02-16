@@ -49,7 +49,7 @@ def reply(update, text):
         )
     except telegram.error.BadRequest as e:
         logger.exception(e)
-        return ""
+    return ""
 
 
 def validate_message(message, bot, logger):
