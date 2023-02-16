@@ -51,7 +51,7 @@ class Inlines(BaseInlines):
     def refresh(cls, update, state=None):
         bot = update.callback_query.bot
         message = update.callback_query.message
-        greeting_message = f"Hi {message.from_user.full_name}!"
+        greeting_message = f"Hi {update.message.from_user.full_name}!"
         status = state["status"] if state else ""
 
         text = (
@@ -153,7 +153,7 @@ def call(data, bot):
             ).to_json()
 
         return update.message.reply_text(
-            f"{greeting_message}\nState: {status}\nLast updated: {last_updated}",
+            f"{greeting_message}\nState: {status.title()}\nLast updated: {last_updated}",
             reply_markup=Inlines.get_markup(status),
         ).to_json()
 
