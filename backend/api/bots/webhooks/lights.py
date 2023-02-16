@@ -25,7 +25,7 @@ class Inlines(BaseInlines):
             [
                 [
                     InlineKeyboardButton(
-                        "Set as Away" if status == "home" else "Set as Home",
+                        "✈️ Set as Away" if status == "home" else "🏠Set as Home",
                         callback_data=f"toggle-home {'away' if status == 'home' else 'home'}",
                     ),
                 ]
@@ -56,7 +56,7 @@ class Inlines(BaseInlines):
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"State: {'🏠' if status == 'home' else ''}{status.title()}\nLast updated: {state['last_updated']}"
+                text=f"State: {'🏠' if status == 'home' else '✈️'}{status.title()}\nLast updated: {state['last_updated']}"
                 if state
                 else f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
                 reply_markup=cls.get_markup(status=status),
