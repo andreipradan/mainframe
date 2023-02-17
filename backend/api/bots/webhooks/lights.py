@@ -105,7 +105,6 @@ def call(data, bot):
             if cmd == "toggle-home":
                 return Inlines.toggle_home(update, bot, state)
             if cmd == "toggle":
-                bot.additional_data.get()
                 return Inlines.toggle(update, state)
 
         if data == "refresh":
