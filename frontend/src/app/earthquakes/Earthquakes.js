@@ -231,7 +231,7 @@ const Earthquakes = () => {
                               </td>
                               <td> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
                               <td>
-                                <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/@${e.latitude},${e.longitude},11.5z`}><i className="mdi mdi-map" /></a>
+                                <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
                               </td>
                               <td className="font-weight-medium"> {e.depth} km </td>
                               <td> {e.source_verbose} </td>

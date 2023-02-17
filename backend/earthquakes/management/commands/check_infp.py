@@ -1,4 +1,5 @@
 import logging
+import operator
 from datetime import datetime, timedelta
 
 import pytz
@@ -39,16 +40,20 @@ def parse_event(event):
 
 
 class Command(BaseCommand):
+    prefix = "[INFP]"
+
     def add_arguments(self, parser):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
 
     def handle(self, *args, **options):
-        logger.info("Checking infp earthquakes...")
+        logger.info(f"{self.prefix} Checking earthquakes...")
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
         except Bot.DoesNotExist:
-            return logger.error(self.style.ERROR("No bots with earthquake config"))
+            return logger.error(
+                self.style.ERROR(f"{self.prefix} No bots with earthquake config")
+            )
 
         earthquake_config = instance.additional_data["earthquake"]
 
@@ -62,7 +67,7 @@ class Command(BaseCommand):
                     parse_mode=telegram.ParseMode.HTML,
                 )
             except telegram.error.TelegramError as te:
-                logger.error(str(te))
+                logger.error(f"{self.prefix} {str(te)}")
 
         try:
             response = requests.get(earthquake_config["url"], timeout=45)
@@ -76,20 +81,25 @@ class Command(BaseCommand):
 
         soup = BeautifulSoup(response.text, features="html.parser")
         earthquakes = soup.html.body.find_all("div", {"class": "card"})
-        events = [self.parse_earthquake(earthquake) for earthquake in earthquakes]
-        since = datetime.now().astimezone(
-            pytz.timezone("Europe/Bucharest")
-        ) - timedelta(minutes=5)
-        if options["minutes"]:
-            since = datetime.now().astimezone(
-                pytz.timezone("Europe/Bucharest")
-            ) - timedelta(minutes=options["minutes"])
-        elif latest := Earthquake.objects.order_by("-timestamp").first():
-            since = latest.timestamp
+        events = sorted(
+            [self.parse_earthquake(earthquake) for earthquake in earthquakes],
+            key=operator.attrgetter("timestamp"),
+            reverse=True,
+        )
+        if not events:
+            return logger.warning(f"{self.prefix} No events found!")
 
+        latest = Earthquake.objects.order_by("-timestamp").first()
+        if latest:
+            events = [e for e in events if e.timestamp > latest.timestamp]
+            if latest.timestamp > events[0].timestamp:
+                return logger.info(f"{self.prefix} No new events.")
+        else:
+            logger.info(f"{self.prefix} No events in db.")
+
+        logger.info(f"f{self.prefix} Saving {len(events)}.")
         Earthquake.objects.bulk_create(events, ignore_conflicts=True)
 
-        events = [event for event in events if event.timestamp > since]
         if min_magnitude := earthquake_config.get("min_magnitude"):
             logger.info(f"Filtering by min magnitude: {min_magnitude}")
             events = [
@@ -104,9 +114,7 @@ class Command(BaseCommand):
             logger.info(f"Got {len(events)} events. Sending to telegram...")
             send_message("\n\n".join(parse_event(event) for event in events))
         else:
-            logger.info(
-                f"No events since {since.strftime(DATETIME_FORMAT)} (In the last 20 events)"
-            )
+            logger.info(f"No new events > {min_magnitude} ML")
 
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
         earthquake_config["last_check"] = now.strftime(DATETIME_FORMAT)
