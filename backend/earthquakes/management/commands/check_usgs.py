@@ -17,14 +17,6 @@ DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
 
 class Command(BaseCommand):
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
-    params = {
-        "format": "geojson",
-        "starttime": datetime.now().astimezone(pytz.utc) - timedelta(days=100),
-        "latitude": 45.94320,
-        "longitude": 24.96680,
-        "maxradiuskm": 386.02,
-        "minmagnitude": 2,
-    }
 
     def add_arguments(self, parser):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
@@ -51,16 +43,6 @@ class Command(BaseCommand):
             except telegram.error.TelegramError as te:
                 logger.error(str(te))
 
-        try:
-            response = requests.get(self.url, params=self.params, timeout=45)
-            response.raise_for_status()
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-            requests.exceptions.ReadTimeout,
-        ) as e:
-            raise CommandError(str(e))
-
         since = datetime.now().astimezone(
             pytz.timezone("Europe/Bucharest")
         ) - timedelta(minutes=5)
@@ -71,9 +53,32 @@ class Command(BaseCommand):
         elif latest := Earthquake.objects.order_by("-timestamp").first():
             since = latest.timestamp
 
+        params = {
+            "format": "geojson",
+            "starttime": since,
+            "latitude": 45.94320,
+            "longitude": 24.96680,
+            "maxradiuskm": 386.02,
+            "minmagnitude": 2,
+        }
+
+        try:
+            response = requests.get(self.url, params=params, timeout=45)
+            response.raise_for_status()
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.HTTPError,
+            requests.exceptions.ReadTimeout,
+        ) as e:
+            raise CommandError(str(e))
+
         events = [self.parse_earthquake(event) for event in response.json()["features"]]
 
-        Earthquake.objects.bulk_create(events, ignore_conflicts=True)
+        if events:
+            logger.info(f"[USGS] saving {len(events)} events")
+            Earthquake.objects.bulk_create(events, ignore_conflicts=True)
+        else:
+            logger.info("[USGS] No new events")
 
         events = [event for event in events if event.timestamp > since]
         if min_magnitude := earthquake_config.get("min_magnitude"):
