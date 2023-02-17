@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "storages",
     "api",
     "api.user",
     "api.authentication",
@@ -145,13 +146,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = "/static/"
 if DEBUG:
     STATICFILES_DIRS = [
         BASE_DIR / "build" / "static",
     ]
 else:
     STATIC_ROOT = BASE_DIR / "static"
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+
+GS_BUCKET_NAME = "mainframe.pradan.dev"
+
+STATIC_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
