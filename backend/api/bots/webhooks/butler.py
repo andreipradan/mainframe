@@ -16,7 +16,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from api.bots.webhooks.shared import reply, BaseInlines
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
-from earthquakes.management.commands.check_infp import parse_event
+from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
 logger = logging.getLogger(__name__)
