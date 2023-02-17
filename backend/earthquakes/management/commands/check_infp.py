@@ -89,32 +89,33 @@ class Command(BaseCommand):
         if not events:
             return logger.warning(f"{self.prefix} No events found!")
 
-        latest = Earthquake.objects.order_by("-timestamp").first()
-        if latest:
+        if latest := Earthquake.objects.order_by("-timestamp").first():
             events = [e for e in events if e.timestamp > latest.timestamp]
             if not events:
                 return logger.info(f"{self.prefix} No new events.")
         else:
             logger.info(f"{self.prefix} No events in db.")
 
-        logger.info(f"f{self.prefix} Saving {len(events)}.")
+        logger.info(f"{self.prefix} Saving {len(events)}.")
         Earthquake.objects.bulk_create(events, ignore_conflicts=True)
 
         if min_magnitude := earthquake_config.get("min_magnitude"):
-            logger.info(f"Filtering by min magnitude: {min_magnitude}")
+            logger.info(f"{self.prefix} Filtering by min magnitude: {min_magnitude}")
             events = [
                 event
                 for event in events
                 if float(event.magnitude) >= float(min_magnitude)
             ]
         else:
-            logger.info("No min magnitude set")
+            logger.info(f"{self.prefix} No min magnitude set")
 
         if len(events):
-            logger.info(f"Got {len(events)} events. Sending to telegram...")
+            logger.info(
+                f"{self.prefix} Got {len(events)} events. Sending to telegram..."
+            )
             send_message("\n\n".join(parse_event(event) for event in events))
         else:
-            logger.info(f"No new events > {min_magnitude} ML")
+            logger.info(f"{self.prefix} No new events > {min_magnitude} ML")
 
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
         earthquake_config["last_check"] = now.strftime(DATETIME_FORMAT)
