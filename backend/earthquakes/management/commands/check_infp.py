@@ -92,7 +92,7 @@ class Command(BaseCommand):
         latest = Earthquake.objects.order_by("-timestamp").first()
         if latest:
             events = [e for e in events if e.timestamp > latest.timestamp]
-            if latest.timestamp > events[0].timestamp:
+            if not events:
                 return logger.info(f"{self.prefix} No new events.")
         else:
             logger.info(f"{self.prefix} No events in db.")
