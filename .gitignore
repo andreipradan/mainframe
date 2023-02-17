@@ -2,3 +2,4 @@
 venv
 react-ui/.env
 .DS_Store
+/pradan-dev-storage.json
