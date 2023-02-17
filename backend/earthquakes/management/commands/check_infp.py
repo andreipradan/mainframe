@@ -43,7 +43,7 @@ class Command(BaseCommand):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
 
     def handle(self, *args, **options):
-        logger.info("Checking earthquakes...")
+        logger.info("Checking infp earthquakes...")
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
@@ -67,12 +67,9 @@ class Command(BaseCommand):
         try:
             response = requests.get(earthquake_config["url"], timeout=45)
             response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            logger.error(str(e))
-            send_message(str(e))
-            raise CommandError(str(e))
         except (
             requests.exceptions.ConnectionError,
+            requests.exceptions.HTTPError,
             requests.exceptions.ReadTimeout,
         ) as e:
             raise CommandError(str(e))
@@ -93,7 +90,7 @@ class Command(BaseCommand):
         Earthquake.objects.bulk_create(events, ignore_conflicts=True)
 
         events = [event for event in events if event.timestamp > since]
-        if min_magnitude := instance.additional_data["earthquake"].get("min_magnitude"):
+        if min_magnitude := earthquake_config.get("min_magnitude"):
             logger.info(f"Filtering by min magnitude: {min_magnitude}")
             events = [
                 event
@@ -112,9 +109,7 @@ class Command(BaseCommand):
             )
 
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
-        instance.additional_data["earthquake"]["last_check"] = now.strftime(
-            DATETIME_FORMAT
-        )
+        earthquake_config["last_check"] = now.strftime(DATETIME_FORMAT)
         instance.save()
         self.stdout.write(self.style.SUCCESS("Done."))
 
@@ -153,4 +148,5 @@ class Command(BaseCommand):
             longitude=long,
             location=",".join(location),
             magnitude=magnitude.split()[1],
+            source=Earthquake.SOURCE_INFP,
         )

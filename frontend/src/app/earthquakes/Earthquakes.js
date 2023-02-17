@@ -10,6 +10,7 @@ import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 
 import EarthquakesApi from "../../api/earthquakes";
 import { Bar } from "react-chartjs-2";
+import BotsApi from "../../api/bots";
 
 const defaultButtonProps = {
   paddingTop: 10,
@@ -23,15 +24,12 @@ const defaultButtonProps = {
 
 const options = {
   scales: {
-    yAxes: [{ticks: {beginAtZero: true}, gridLines: {color: "rgba(204, 204, 204,0.1)"}}],
+    yAxes: [{ticks: {beginAtZero: true, step: 20}, gridLines: {color: "rgba(204, 204, 204,0.1)"}}],
     xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
   },
   elements: {point: {radius: 0}}
 }
 
-const colors = {
-
-}
 
 const Earthquakes = () => {
   const dispatch = useDispatch();
@@ -45,28 +43,44 @@ const Earthquakes = () => {
     datasets: [{
       label: 'Magnitude',
       data: earthquakesList?.map(e => e.magnitude),
-      backgroundColor: earthquakesList?.map(e =>
-          e.magnitude < 2
-              ? 'rgba(75, 192, 192, 0.2)'
-              : e.magnitude < 3
-                  ? 'rgba(54, 162, 235, 0.2)'
-                  : e.magnitude < 4
-                      ? 'rgba(255, 206, 86, 0.2)'
-                      : e.magnitude < 5
-                        ? 'rgba(255, 159, 64, 0.2)'
-                        : 'rgba(255, 99, 132, 0.2)'
-      ),
-      borderColor: earthquakesList?.map(e =>
-          e.magnitude < 2.5
-              ? 'rgba(75, 192, 192, 1)'
-              : e.magnitude < 3
-                  ? 'rgba(54, 162, 235, 1)'
-                  : e.magnitude < 4
-                      ? 'rgba(255, 206, 86, 1)'
-                      : e.magnitude < 5
-                        ? 'rgba(255, 159, 64, 1)'
-                        : 'rgba(255,99,132,1)'
-      ),
+      // backgroundColor: earthquakesList?.map(e =>
+      //     e.magnitude < 2
+      //         ? 'rgba(75, 192, 192, 0.2)'
+      //         : e.magnitude < 3
+      //             ? 'rgba(54, 162, 235, 0.2)'
+      //             : e.magnitude < 4
+      //                 ? 'rgba(255, 206, 86, 0.2)'
+      //                 : e.magnitude < 5
+      //                   ? 'rgba(255, 159, 64, 0.2)'
+      //                   : 'rgba(255, 99, 132, 0.2)'
+      // ),
+      // borderColor: earthquakesList?.map(e =>
+      //     e.magnitude < 2.5
+      //         ? 'rgba(75, 192, 192, 1)'
+      //         : e.magnitude < 3
+      //             ? 'rgba(54, 162, 235, 1)'
+      //             : e.magnitude < 4
+      //                 ? 'rgba(255, 206, 86, 1)'
+      //                 : e.magnitude < 5
+      //                   ? 'rgba(255, 159, 64, 1)'
+      //                   : 'rgba(255,99,132,1)'
+      // ),
+      backgroundColor: context => {
+        const ctx = context.chart.ctx;
+        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, 'rgba(255, 99, 132, 0.2)');
+        gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
+        gradient.addColorStop(1, 'rgba(75,192,126,0.2)');
+        return gradient;
+      },
+      borderColor: context => {
+        const ctx = context.chart.ctx;
+        const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
+        gradient.addColorStop(0, 'rgba(255,99,132,1)');
+        gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
+        gradient.addColorStop(1, 'rgb(75,192,126)');
+        return gradient;
+      },
       borderWidth: 1,
       fill: false
     }]
@@ -217,56 +231,63 @@ const Earthquakes = () => {
         <div className="col-12">
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title">Earthquakes</h4>
-              <div className="row">
-                <div className="col-md-12">
-                  {/*<div id="map" style={{ width: "100%", height: "350px" }}></div>*/}
-                  <Bar data={data} options={options} />
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="table-responsive table-hover">
-                    {
-                       earthquakes.loading ?
-                          <BallTriangle
-                            visible={true}
-                            width="100%"
-                            ariaLabel="ball-triangle-loading"
-                            wrapperStyle={{}}
-                            wrapperClass={{}}
-                            color = '#e15b64'
-                          />
-                        : <table className="table">
-                      <thead>
-                      <tr>
-                        <th> Time </th>
-                        <th> Location </th>
-                        <th> Magnitude </th>
-                        <th> Latitude </th>
-                        <th> Longitude </th>
-                        <th> Depth </th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      {
-                        earthquakes.list?.map((e, i) => <tr key={i}>
-                          <td>
-                            {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
-                          </td>
-                          <td>{e.location}</td>
-                          <td> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
-                          <td> {e.latitude} </td>
-                          <td> {e.longitude} </td>
-                          <td className="font-weight-medium"> {e.depth} km </td>
-                        </tr>)
-                      }
-                      </tbody>
-                    </table>
-                    }
+              <h4 className="card-title">
+                Earthquakes
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(EarthquakesApi.getList(token))}>
+                  <i className="mdi mdi-refresh"></i>
+                </button>
+              </h4>
+              {
+                earthquakes.loading ?
+                  <BallTriangle
+                    visible={true}
+                    width="100%"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{}}
+                    wrapperClass={{}}
+                    color = '#e15b64'
+                  />
+                : <>
+                  <div className="row">
+                    <div className="col-md-12">
+                      {/*<div id="map" style={{ width: "100%", height: "350px" }}></div>*/}
+                      <Bar data={data} options={options} height={100} />
+                    </div>
                   </div>
-                </div>
-              </div>
+                  <div className="row">
+                    <div className="col-md-12">
+                      <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
+                        <table className="table" >
+                          <thead>
+                          <tr style={{position: "sticky", top: 0, zIndex: 1}} className="bg-gray-dark">
+                            <th> Time </th>
+                            <th> Magnitude </th>
+                            <th> Location </th>
+                            <th> Latitude </th>
+                            <th> Longitude </th>
+                            <th> Depth </th>
+                          </tr>
+                          </thead>
+                          <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
+                          {
+                            earthquakes.list?.map((e, i) => <tr key={i}>
+                              <td>
+                                {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
+                              </td>
+                              <td> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
+                              <td>{e.location}</td>
+                              <td> {e.latitude} </td>
+                              <td> {e.longitude} </td>
+                              <td className="font-weight-medium"> {e.depth} km </td>
+                            </tr>)
+                          }
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              }
             </div>
           </div>
         </div>

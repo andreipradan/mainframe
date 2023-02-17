@@ -2,6 +2,9 @@ from django.db import models
 
 
 class Earthquake(models.Model):
+    SOURCE_INFP = "infp"
+    SOURCE_USGS = "usgs"
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -11,6 +14,16 @@ class Earthquake(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     magnitude = models.FloatField()
+    source = models.CharField(
+        max_length=5,
+        choices=(
+            (
+                SOURCE_INFP,
+                "Institutul Naţional de Cercetare-Dezvoltare pentru Fizica Pământului",
+            ),
+            (SOURCE_USGS, "United States Geological Survey"),
+        ),
+    )
     timestamp = models.DateTimeField(unique=True)
 
     def __str__(self):
