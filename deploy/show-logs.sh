@@ -1,1 +1,1 @@
-journalctl --follow -o cat -u backend.service -u ngrok.service
+journalctl --follow -o cat -u backend.service -u frontend.service -u ngrok.service
