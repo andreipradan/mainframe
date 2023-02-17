@@ -105,7 +105,7 @@ class Command(BaseCommand):
         props = event["properties"]
         lat, long, depth = event["geometry"]["coordinates"]
         return Earthquake(
-            timestamp=datetime.fromtimestamp(props["time"]).astimezone(pytz.utc),
+            timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(pytz.utc),
             depth=depth,
             intensity=None,
             latitude=lat,

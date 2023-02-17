@@ -266,6 +266,7 @@ const Earthquakes = () => {
                             <th> Latitude </th>
                             <th> Longitude </th>
                             <th> Depth </th>
+                            <th> Source </th>
                           </tr>
                           </thead>
                           <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
@@ -279,6 +280,7 @@ const Earthquakes = () => {
                               <td> {e.latitude} </td>
                               <td> {e.longitude} </td>
                               <td className="font-weight-medium"> {e.depth} km </td>
+                              <td> {e.source} </td>
                             </tr>)
                           }
                           </tbody>
