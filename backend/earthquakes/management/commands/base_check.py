@@ -50,7 +50,7 @@ class BaseEarthquakeCommand(BaseCommand):
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
         except OperationalError as e:
-            return self.logger.error(e)
+            return self.logger.error(f"{self.prefix} {e}")
         except Bot.DoesNotExist:
             return self.logger.error(
                 self.style.ERROR(f"{self.prefix} No bots with earthquake config")
