@@ -4,6 +4,7 @@ import pytz
 import requests
 import telegram
 from django.core.management import CommandError, BaseCommand
+from django.db import OperationalError
 
 from bots.models import Bot
 from earthquakes.models import Earthquake
@@ -48,6 +49,8 @@ class BaseEarthquakeCommand(BaseCommand):
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
+        except OperationalError as e:
+            return self.logger.error(e)
         except Bot.DoesNotExist:
             return self.logger.error(
                 self.style.ERROR(f"{self.prefix} No bots with earthquake config")
