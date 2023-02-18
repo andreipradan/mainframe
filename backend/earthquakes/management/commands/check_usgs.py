@@ -46,7 +46,7 @@ class Command(BaseEarthquakeCommand):
 
     def parse_earthquake(self, event):
         props = event["properties"]
-        lat, long, depth = event["geometry"]["coordinates"]
+        long, lat, depth = event["geometry"]["coordinates"]
         return Earthquake(
             timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(pytz.utc),
             depth=depth,

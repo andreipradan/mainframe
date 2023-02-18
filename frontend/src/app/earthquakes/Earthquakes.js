@@ -26,7 +26,7 @@ const options = {
     yAxes: [{ticks: {beginAtZero: true, step: 20}, gridLines: {color: "rgba(204, 204, 204,0.1)"}}],
     xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
   },
-  elements: {point: {radius: 0}}
+  elements: {point: {radius: 0}},
 }
 
 
@@ -62,126 +62,126 @@ const Earthquakes = () => {
       fill: false
     }]
   }
-  // const [series, setSeries] = useState(null)
-  // const [root, setRoot] = useState(null)
-  // const [chart, setChart] = useState(null)
+  const [series, setSeries] = useState(null)
+  const [root, setRoot] = useState(null)
+  const [chart, setChart] = useState(null)
 
   useEffect(() => {
     !earthquakes.list && dispatch(EarthquakesApi.getList(token));
   }, []);
 
 
-  // useLayoutEffect(() => {
-  //   const root = am5.Root.new("map")
-  //   setRoot(root)
-  //   root.setThemes([am5themes_Animated.new(root)])
-  //   let chart = root.container.children.push(am5map.MapChart.new(root, {projection: am5map.geoNaturalEarth1()}))
-  //   setChart(chart)
-  //
-  //
-  //   const series = generateSeries(root, chart)
-  //   setSeries(series)
-  //   series.mapPolygons.template.events.on("click", ev => {
-  //     series.zoomToDataItem(ev.target.dataItem)
-  //   })
-  //   createZoomControl(root, chart)
-  //   createHomeButton(root, chart)
-  //
-  //   return () => root.dispose()
-  // }, [])
+  useLayoutEffect(() => {
+    const root = am5.Root.new("map")
+    setRoot(root)
+    root.setThemes([am5themes_Animated.new(root)])
+    let chart = root.container.children.push(am5map.MapChart.new(root, {projection: am5map.geoNaturalEarth1()}))
+    setChart(chart)
 
-  // const createHomeButton = (root, chart) => {
-  //   const homeButton = chart.children.push(am5.Button.new(root, {
-  //     ...defaultButtonProps,
-  //     scale: .75,
-  //     icon: am5.Graphics.new(root, {
-  //       svgPath: "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8",
-  //       fill: am5.color(0xffffff)
-  //     })
-  //   }));
-  //   homeButton.events.on("click", () => chart.goHome())
-  //   homeButton.show()
-  // }
-  //
-  // const createZoomControl = (root, chart) => {
-  //   const zoomControl = am5map.ZoomControl.new(root, {});
-  //   chart.set("zoomControl", zoomControl)
-  //   zoomControl.minusButton.set("scale", .75)
-  //   zoomControl.plusButton.set("scale", .75)
-  // }
-  //
-  // const generateSeries = (root, chart, geoData = null) => {
-  //   const settings = {geoJSON: mapGeodata}
-  //   const series = chart.series.push(am5map.MapPolygonSeries.new(root, settings))
-  //   const template = series.mapPolygons.template
-  //   template.setAll(
-  //     {
-  //       tooltipText: "{name}",
-  //       interactive: true,
-  //       templateField: "columnSettings",
-  //       fill: am5.color("#474D84")
-  //     })
-  //   template.states.create("hover", {fill: am5.color("#354D84")})
-  //
-  //   return series
-  // }
-  //
-  // const zoomToGeoPoint = event => {
-  //
-  //   let pointSeries
-  //   if (chart.series._values.length >= 2)
-  //     chart.series.pop()
-  //
-  //   pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}))
-  //
-  //   let colorSet = am5.ColorSet.new(root, {step:2});
-  //   pointSeries.bullets.push(function(root, series, dataItem) {
-  //     let value = dataItem.dataContext.value;
-  //
-  //     let container = am5.Container.new(root, {});
-  //     let color = colorSet.next();
-  //     let radius = 7 + value;
-  //     container.children.push(am5.Circle.new(root, {
-  //       radius: radius -1,
-  //       fill: color,
-  //       dy: -radius * 2
-  //     }))
-  //
-  //     container.children.push(am5.Line.new(root, {
-  //       stroke: color,
-  //       height: -20,
-  //       strokeGradient: am5.LinearGradient.new(root, {
-  //         stops:[
-  //           { opacity: 1 },
-  //           { opacity: 1 },
-  //           { opacity: 0 }
-  //         ]
-  //       })
-  //     }));
-  //
-  //     container.children.push(am5.Label.new(root, {
-  //       fontSize: radius,
-  //       text: value,
-  //       fill: am5.color(0xffffff),
-  //       centerX: am5.p50,
-  //       centerY: am5.p50,
-  //       dy: -radius * 2
-  //     }))
-  //
-  //     return am5.Bullet.new(root, {
-  //       sprite: container
-  //     });
-  //   });
-  //
-  //   pointSeries.data.push({
-  //     geometry: { type: "Point", coordinates: [event.longitude, event.latitude] },
-  //     title: event.location,
-  //     value: event.magnitude
-  //   });
-  //
-  //   series.chart.zoomToGeoPoint({latitude: event.latitude, longitude: event.longitude}, 2, 1)
-  //
-  // }
+
+    const series = generateSeries(root, chart)
+    setSeries(series)
+    series.mapPolygons.template.events.on("click", ev => {
+      series.zoomToDataItem(ev.target.dataItem)
+    })
+    createZoomControl(root, chart)
+    createHomeButton(root, chart)
+
+    return () => root.dispose()
+  }, [])
+
+  const createHomeButton = (root, chart) => {
+    const homeButton = chart.children.push(am5.Button.new(root, {
+      ...defaultButtonProps,
+      scale: .75,
+      icon: am5.Graphics.new(root, {
+        svgPath: "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8",
+        fill: am5.color(0xffffff)
+      })
+    }));
+    homeButton.events.on("click", () => chart.goHome())
+    homeButton.show()
+  }
+
+  const createZoomControl = (root, chart) => {
+    const zoomControl = am5map.ZoomControl.new(root, {});
+    chart.set("zoomControl", zoomControl)
+    zoomControl.minusButton.set("scale", .75)
+    zoomControl.plusButton.set("scale", .75)
+  }
+
+  const generateSeries = (root, chart, geoData = null) => {
+    const settings = {geoJSON: mapGeodata}
+    const series = chart.series.push(am5map.MapPolygonSeries.new(root, settings))
+    const template = series.mapPolygons.template
+    template.setAll(
+      {
+        tooltipText: "{name}",
+        interactive: true,
+        templateField: "columnSettings",
+        fill: am5.color("#474D84")
+      })
+    template.states.create("hover", {fill: am5.color("#354D84")})
+
+    return series
+  }
+
+  const zoomToGeoPoint = event => {
+
+    let pointSeries
+    if (chart.series._values.length >= 2)
+      chart.series.pop()
+
+    pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}))
+
+    let colorSet = am5.ColorSet.new(root, {step:2});
+    pointSeries.bullets.push(function(root, series, dataItem) {
+      let value = dataItem.dataContext.value;
+
+      let container = am5.Container.new(root, {});
+      let color = colorSet.next();
+      let radius = 7 + value;
+      container.children.push(am5.Circle.new(root, {
+        radius: radius -1,
+        fill: value < 3 ? 'green' : value < 4 ? 'orange' : value < 5 ? 'darkorange' : 'red',
+        dy: -radius * 2
+      }))
+
+      container.children.push(am5.Line.new(root, {
+        stroke: color,
+        height: -20,
+        strokeGradient: am5.LinearGradient.new(root, {
+          stops:[
+            { opacity: 1 },
+            { opacity: 1 },
+            { opacity: 0 }
+          ]
+        })
+      }));
+
+      container.children.push(am5.Label.new(root, {
+        fontSize: radius,
+        text: value,
+        fill: am5.color(0xffffff),
+        centerX: am5.p50,
+        centerY: am5.p50,
+        dy: -radius * 2
+      }))
+
+      return am5.Bullet.new(root, {
+        sprite: container
+      });
+    });
+
+    pointSeries.data.push({
+      geometry: { type: "Point", coordinates: [event.longitude, event.latitude] },
+      title: event.location,
+      value: event.magnitude
+    });
+
+    series.chart.zoomToGeoPoint({latitude: event.latitude, longitude: event.longitude}, 2, 1)
+
+  }
 
   return <div>
     <div className="row">
@@ -207,11 +207,16 @@ const Earthquakes = () => {
                 : <>
                   <div className="row">
                     <div className="col-md-12">
-                      <Bar data={data} options={options} height={100} />
+                      <Bar
+                        data={data}
+                        options={options}
+                        height={100}
+                        onElementsClick={(e) => e?.[0]?._index && zoomToGeoPoint(earthquakesList[e[0]._index])}
+                      />
                     </div>
                   </div>
                   <div className="row">
-                    <div className="col-md-12">
+                    <div className="col-md-7">
                       <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
                         <table className="table" >
                           <thead>
@@ -224,8 +229,8 @@ const Earthquakes = () => {
                           </tr>
                           </thead>
                           <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
-                          {//onClick={() => zoomToGeoPoint(e)}>
-                            earthquakes.list?.map((e, i) => <tr key={i}>
+                          {
+                            earthquakes.list?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
                               <td>
                                 {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
                               </td>
@@ -241,9 +246,9 @@ const Earthquakes = () => {
                         </table>
                       </div>
                     </div>
-                    {/*<div className="col-md-5">*/}
-                    {/*  <div id="map" style={{ width: "100%", height: "350px" }}></div>*/}
-                    {/*</div>*/}
+                    <div className="col-md-5">
+                      <div id="map" style={{ width: "100%", height: "350px" }}></div>
+                    </div>
                   </div>
                 </>
               }
