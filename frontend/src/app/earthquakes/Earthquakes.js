@@ -4,12 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 
 import * as am5 from "@amcharts/amcharts5";
 import * as am5map from "@amcharts/amcharts5/map";
-// import mapGeodata from "@amcharts/amcharts5-geodata/worldHigh";
 import mapGeodata from "@amcharts/amcharts5-geodata/romaniaHigh";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 
 import EarthquakesApi from "../../api/earthquakes";
 import { Bar } from "react-chartjs-2";
+import {API_SERVER} from "../../constants";
 
 const defaultButtonProps = {
   paddingTop: 10,
@@ -68,8 +68,7 @@ const Earthquakes = () => {
 
   useEffect(() => {
     !earthquakes.list && dispatch(EarthquakesApi.getList(token));
-  }, []);
-
+  }, [dispatch, earthquakes.list, token]);
 
   useLayoutEffect(() => {
     const root = am5.Root.new("map")
@@ -78,19 +77,27 @@ const Earthquakes = () => {
     let chart = root.container.children.push(am5map.MapChart.new(root, {projection: am5map.geoNaturalEarth1()}))
     setChart(chart)
 
+    const countySeries = chart.series.push(am5map.MapPolygonSeries.new(root, {visible: false}));
+    countySeries.mapPolygons.template.setAll({
+      tooltipText: "{name}",
+      interactive: true
+    });
+
 
     const series = generateSeries(root, chart)
     setSeries(series)
     series.mapPolygons.template.events.on("click", ev => {
-      series.zoomToDataItem(ev.target.dataItem)
+      series.zoomToDataItem(ev.target.dataItem).waitForStop()
+      am5.net.load(API_SERVER + "earthquakes/map/?id=" + ev.target.dataItem.dataContext.id).then((result) => {
+        countySeries.setAll({geoJSON: am5.JSONParser.parse(result.response)});
+        countySeries.show()
+        series.hide()
+      }).catch(function(result) {
+        console.log("Error loading " + result.xhr.responseURL);
+      });
     })
+
     createZoomControl(root, chart)
-    createHomeButton(root, chart)
-
-    return () => root.dispose()
-  }, [])
-
-  const createHomeButton = (root, chart) => {
     const homeButton = chart.children.push(am5.Button.new(root, {
       ...defaultButtonProps,
       scale: .75,
@@ -99,9 +106,13 @@ const Earthquakes = () => {
         fill: am5.color(0xffffff)
       })
     }));
-    homeButton.events.on("click", () => chart.goHome())
+    homeButton.events.on("click", () => {
+      series.show()
+      chart.goHome()
+    })
     homeButton.show()
-  }
+    return () => root.dispose()
+  }, [])
 
   const createZoomControl = (root, chart) => {
     const zoomControl = am5map.ZoomControl.new(root, {});
@@ -110,7 +121,7 @@ const Earthquakes = () => {
     zoomControl.plusButton.set("scale", .75)
   }
 
-  const generateSeries = (root, chart, geoData = null) => {
+  const generateSeries = (root, chart) => {
     const settings = {geoJSON: mapGeodata}
     const series = chart.series.push(am5map.MapPolygonSeries.new(root, settings))
     const template = series.mapPolygons.template
@@ -129,8 +140,8 @@ const Earthquakes = () => {
   const zoomToGeoPoint = event => {
 
     let pointSeries
-    if (chart.series._values.length >= 2)
-      chart.series.pop()
+    // if (chart.series._values.length >= 2)
+    //   chart.series.pop()
 
     pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}))
 
@@ -179,7 +190,7 @@ const Earthquakes = () => {
       value: event.magnitude
     });
 
-    series.chart.zoomToGeoPoint({latitude: event.latitude, longitude: event.longitude}, 2, 1)
+    series.chart.zoomToGeoPoint({latitude: event.latitude, longitude: event.longitude}, 5, 1)
 
   }
 
@@ -194,6 +205,7 @@ const Earthquakes = () => {
                   <i className="mdi mdi-refresh"></i>
                 </button>
               </h4>
+              <div id="map" style={{ width: "100%", height: "350px" }}></div>
               {
                 earthquakes.loading ?
                   <BallTriangle
@@ -216,7 +228,7 @@ const Earthquakes = () => {
                     </div>
                   </div>
                   <div className="row">
-                    <div className="col-md-7">
+                    <div className="col-md-12">
                       <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
                         <table className="table" >
                           <thead>
@@ -245,9 +257,6 @@ const Earthquakes = () => {
                           </tbody>
                         </table>
                       </div>
-                    </div>
-                    <div className="col-md-5">
-                      <div id="map" style={{ width: "100%", height: "350px" }}></div>
                     </div>
                   </div>
                 </>
