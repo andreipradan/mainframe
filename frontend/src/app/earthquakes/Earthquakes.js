@@ -88,7 +88,9 @@ const Earthquakes = () => {
     setSeries(series)
     series.mapPolygons.template.events.on("click", ev => {
       series.zoomToDataItem(ev.target.dataItem).waitForStop()
-      am5.net.load(API_SERVER + "earthquakes/map/?id=" + ev.target.dataItem.dataContext.id).then((result) => {
+      am5.net.load(
+        API_SERVER + "earthquakes/map/?id=" + ev.target.dataItem.dataContext.id,
+      ).then((result) => {
         countySeries.setAll({geoJSON: am5.JSONParser.parse(result.response)});
         countySeries.show()
         series.hide()
