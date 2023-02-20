@@ -133,5 +133,5 @@ class BaseEarthquakeCommand(BaseCommand):
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
         parsed_now = now.strftime(DATETIME_FORMAT)
         earthquake_config["last_check"] = parsed_now
-        earthquake_config[instance.source]["last_check"] = parsed_now
+        earthquake_config[self.source]["last_check"] = parsed_now
         instance.save()
