@@ -82,11 +82,13 @@ class BaseEarthquakeCommand(BaseCommand):
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
+            self.set_last_check(instance)
             return self.logger.warning(f"{self.prefix} No events found!")
 
         if latest := Earthquake.objects.order_by("-timestamp").first():
             events = [e for e in events if e.timestamp > latest.timestamp]
             if not events:
+                self.set_last_check(instance)
                 return self.logger.info(f"{self.prefix} No new events.")
         else:
             self.logger.info(f"{self.prefix} No events in db.")
@@ -114,9 +116,7 @@ class BaseEarthquakeCommand(BaseCommand):
         else:
             self.logger.info(f"{self.prefix} No new events > {min_magnitude} ML")
 
-        now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
-        earthquake_config[self.source]["last_check"] = now.strftime(DATETIME_FORMAT)
-        instance.save()
+        self.set_last_check(instance)
         self.stdout.write(self.style.SUCCESS(f"{self.prefix} Done."))
 
     def fetch(self, **options):
@@ -127,3 +127,10 @@ class BaseEarthquakeCommand(BaseCommand):
 
     def parse_earthquake(self, card):
         raise NotImplementedError
+
+    def set_last_check(self, instance):
+        now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
+        instance.additional_data["earthquake"]["last_check"] = now.strftime(
+            DATETIME_FORMAT
+        )
+        instance.save()
