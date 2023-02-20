@@ -129,8 +129,9 @@ class BaseEarthquakeCommand(BaseCommand):
         raise NotImplementedError
 
     def set_last_check(self, instance):
+        earthquake_config = instance.additional_data["earthquake"]
         now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
-        instance.additional_data["earthquake"]["last_check"] = now.strftime(
-            DATETIME_FORMAT
-        )
+        parsed_now = now.strftime(DATETIME_FORMAT)
+        earthquake_config["last_check"] = parsed_now
+        earthquake_config[instance.source]["last_check"] = parsed_now
         instance.save()
