@@ -10,10 +10,7 @@ import Alert from "react-bootstrap/Alert";
 const Bots = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const bots = useSelector(state => state.bots.list)
-  const errors = useSelector(state => state.bots.errors)
-  const loading = useSelector(state => state.bots.loading)
-  const loadingBots = useSelector(state => state.bots.loadingBots)
+  const {results: bots, errors, loading, loadingBots} = useSelector(state => state.bots)
   const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {
@@ -51,7 +48,7 @@ const Bots = () =>  {
                   <i className="mdi mdi-refresh"></i>
                 </button>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{bots.errors}</Alert>}
               <div className="table-responsive">
                 <table className="table">
                   <thead>

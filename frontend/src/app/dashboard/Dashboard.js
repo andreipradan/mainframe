@@ -22,8 +22,8 @@ const Dashboard = () => {
 
   const lights = useSelector(state => state.lights)
 
-  const botsExternalCount = bots.list?.filter(b => b.is_external === true).length
-  const botsLocalCount = bots.list?.filter(b => b.is_external === false).length
+  const botsExternalCount = bots.results?.filter(b => b.is_external === true).length
+  const botsLocalCount = bots.results?.filter(b => b.is_external === false).length
 
   const lightsOnCount = lights.list?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.list?.filter(b => b.capabilities.power === "off").length
@@ -42,7 +42,7 @@ const Dashboard = () => {
   useEffect(() => {setBotsAlertOpen(!!bots.errors)}, [bots.errors])
 
   useEffect(() => {
-    !bots.list && dispatch(BotsApi.getList(token));
+    !bots.results && dispatch(BotsApi.getList(token));
     !lights.list && dispatch(LightsApi.getList(token));
   }, []);
 

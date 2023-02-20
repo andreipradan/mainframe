@@ -33,9 +33,8 @@ const options = {
 const Earthquakes = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const earthquakes = useSelector(state => state.earthquakes)
-
-  const earthquakesList = earthquakes.list ? [...earthquakes.list].reverse() : null
+  const {count, loading, next, previous, results: earthquakes} = useSelector(state => state.earthquakes)
+  const earthquakesList = earthquakes ? [...earthquakes].reverse() : null
 
   const data = {
     labels: earthquakesList?.map(e => new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()),
@@ -66,9 +65,10 @@ const Earthquakes = () => {
   const [root, setRoot] = useState(null)
   const [chart, setChart] = useState(null)
 
-  useEffect(() => {
-    !earthquakes.list && dispatch(EarthquakesApi.getList(token));
-  }, [dispatch, earthquakes.list, token]);
+  const currentPage = !previous ? 1 : (parseInt(new URL(previous).searchParams.get("page")) || 1) + 1
+  const lastPage = Math.ceil(count / earthquakes?.length)
+
+  useEffect(() => {!earthquakes && dispatch(EarthquakesApi.getList(token))}, [dispatch, earthquakes, token]);
 
   useLayoutEffect(() => {
     const root = am5.Root.new("map")
@@ -142,11 +142,7 @@ const Earthquakes = () => {
 
   const zoomToGeoPoint = event => {
 
-    let pointSeries
-    // if (chart.series._values.length >= 2)
-    //   chart.series.pop()
-
-    pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}))
+    const pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}))
 
     let colorSet = am5.ColorSet.new(root, {step:2});
     pointSeries.bullets.push(function(root, series, dataItem) {
@@ -210,7 +206,7 @@ const Earthquakes = () => {
               </h4>
               <div id="map" style={{ width: "100%", height: "350px" }}></div>
               {
-                earthquakes.loading ?
+                loading ?
                   <BallTriangle
                     visible={true}
                     width="100%"
@@ -245,7 +241,7 @@ const Earthquakes = () => {
                           </thead>
                           <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
                           {
-                            earthquakes.list?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
+                            earthquakes?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
                               <td>
                                 {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
                               </td>
@@ -259,6 +255,72 @@ const Earthquakes = () => {
                           }
                           </tbody>
                         </table>
+                      </div>
+                      <div className="center-content btn-group mt-4 mr-4" role="group" aria-label="Basic example">
+                        <button
+                          type="button"
+                          className="btn btn-default"
+                          disabled={!previous}
+                          onClick={() => dispatch(EarthquakesApi.getList(token, 1))}
+                        >
+                          <i className="mdi mdi-skip-backward"/>
+                        </button>
+
+                        {
+                          !next && currentPage - 2 > 0 &&
+                          <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 2))}
+                          >
+                            {currentPage - 2}
+                          </button>
+                        }
+                        {
+                          previous &&
+                          <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 1))}
+                          >
+                            {currentPage - 1}
+                          </button>
+                        }
+                        <button
+                          type="button"
+                          className="btn btn-default"
+                          disabled
+                        >
+                          {currentPage}
+                        </button>
+                        {
+                          next &&
+                          <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 1))}
+                          >
+                            {currentPage + 1}
+                          </button>
+                        }
+                        {
+                          !previous && currentPage + 2 < lastPage &&
+                          <button
+                            type="button"
+                            className="btn btn-default"
+                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 2))}
+                          >
+                            {currentPage + 2}
+                          </button>
+                        }
+                        <button
+                          type="button"
+                          className="btn btn-default"
+                          disabled={!next}
+                          onClick={() => dispatch(EarthquakesApi.getList(token, lastPage))}
+                        >
+                          <i className="mdi mdi-skip-forward"/>
+                        </button>
                       </div>
                     </div>
                   </div>
