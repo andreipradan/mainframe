@@ -82,6 +82,8 @@ const Earthquakes = () => {
       tooltipText: "{name}",
       interactive: true
     });
+    countySeries.mapPolygons.template.states.create("hover", {fill: am5.color("#5b76b6")})
+
 
 
     const series = generateSeries(root, chart)
@@ -132,9 +134,8 @@ const Earthquakes = () => {
         tooltipText: "{name}",
         interactive: true,
         templateField: "columnSettings",
-        fill: am5.color("#474D84")
       })
-    template.states.create("hover", {fill: am5.color("#354D84")})
+    template.states.create("hover", {fill: am5.color("#5b76b6")})
 
     return series
   }
