@@ -32,6 +32,13 @@ class BotsApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
+  static getItem = (token, botId) => (dispatch) => {
+    dispatch(setLoadingBots(botId));
+    axios
+      .get(`${base}${botId}/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(update(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
   static postNewBot = (token, data) => (dispatch) => {
     dispatch(setLoading(true));
     axios
@@ -54,9 +61,7 @@ class BotsApi {
     dispatch(setLoadingBots(botId));
     axios
       .put(`${base}${botId}/sync/`, {}, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update(response.data));
-      })
+      .then((response) => dispatch(update(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }

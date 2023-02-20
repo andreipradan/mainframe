@@ -12,11 +12,13 @@ import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
+import {ColorRing} from "react-loader-spinner";
 
 const EditModal = () => {
   const dispatch = useDispatch();
   const bot = useSelector(state => state.bots.selectedBot)
   const token = useSelector((state) => state.auth.token)
+  const loadingBots = useSelector(state => state.bots.loadingBots)
 
   const [isExternal, setIsExternal] = useState(bot?.is_external || false);
   const [webhook, setWebhook] = useState("");
@@ -49,11 +51,25 @@ const EditModal = () => {
   return <Modal centered show={!!bot} onHide={() => dispatch(select())}>
     <Modal.Header closeButton>
       <Modal.Title>
-        Edit {bot?.full_name}
+        <div className="row">
+          <div className="col-lg-12 grid-margin stretch-card">
+            Edit {bot?.full_name}
+            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getItem(token, bot?.id))}>
+              <i className="mdi mdi-refresh"></i>
+            </button>
+          </div>
+        </div>
         <p className="text-muted mb-0">{bot?.token}</p>
       </Modal.Title>
     </Modal.Header>
-    <Modal.Body>
+    {
+      loadingBots?.includes(bot?.id)
+      ? <ColorRing
+          width = "100%"
+          height = "50"
+          wrapperStyle={{width: "100%"}}
+        />
+      : <Modal.Body>
       <Form>
         <Form.Group className="mb-3">
           <Form.Label>Webhook</Form.Label>
@@ -114,6 +130,7 @@ const EditModal = () => {
         </Form.Group>
       </Form>
     </Modal.Body>
+    }
     <Modal.Footer>
       <Button variant="secondary" onClick={() => dispatch(select())}>
         Close
