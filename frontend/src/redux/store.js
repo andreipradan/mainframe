@@ -3,6 +3,7 @@ import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
 import earthquakesReducer from "../redux/earthquakesSlice"
 import lightsReducer from "../redux/lightsSlice";
+import logsReducer from "../redux/logsSlice";
 
 export default configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export default configureStore({
     bots: botReducer,
     earthquakes: earthquakesReducer,
     lights: lightsReducer,
+    logs: logsReducer,
   },
 });

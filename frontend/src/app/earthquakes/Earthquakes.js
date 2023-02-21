@@ -178,10 +178,7 @@ const Earthquakes = () => {
         dy: -radius * 2
       }))
 
-      return am5.Bullet.new(root, {
-        sprite: container
-      });
-    });
+      return am5.Bullet.new(root, {sprite: container})});
 
     pointSeries.data.push({
       geometry: { type: "Point", coordinates: [event.longitude, event.latitude] },
@@ -194,138 +191,147 @@ const Earthquakes = () => {
   }
 
   return <div>
+    <div className="page-header">
+     <h3 className="page-title">Earthquakes</h3>
+     <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Home</a></li>
+          <li className="breadcrumb-item active" aria-current="page">Earthquakes</li>
+        </ol>
+      </nav>
+    </div>
     <div className="row">
         <div className="col-12">
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">
-                Earthquakes
+                Latest Earthquakes
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(EarthquakesApi.getList(token))}>
                   <i className="mdi mdi-refresh"></i>
                 </button>
               </h4>
-              <div id="map" style={{ width: "100%", height: "350px" }}></div>
-              {
-                loading ?
-                  <BallTriangle
-                    visible={true}
-                    width="100%"
-                    ariaLabel="ball-triangle-loading"
-                    wrapperStyle={{}}
-                    wrapperClass={{}}
-                    color = '#e15b64'
-                  />
-                : <>
-                  <div className="row">
-                    <div className="col-md-12">
-                      <Bar
+              <div className="row">
+                <div className="col-md-12">
+                  {
+                    loading ?
+                      <BallTriangle
+                        visible={true}
+                        width="100%"
+                        ariaLabel="ball-triangle-loading"
+                        wrapperStyle={{}}
+                        wrapperClass={{}}
+                        color = '#e15b64'
+                      />
+                    : <Bar
                         data={data}
                         options={options}
                         height={100}
                         onElementsClick={(e) => e?.[0]?._index && zoomToGeoPoint(earthquakesList[e[0]._index])}
                       />
-                    </div>
+                  }
+                </div>
+              </div>
+              <div className="row">
+                <div className="col-md-7">
+                  <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
+                    <table className="table" >
+                      <thead>
+                      <tr style={{position: "sticky", top: 0, zIndex: 1}} className="bg-gray-dark">
+                        <th> Time </th>
+                        <th> Magnitude </th>
+                        <th> Location </th>
+                        <th> Depth </th>
+                        <th> Source </th>
+                      </tr>
+                      </thead>
+                      <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
+                      {
+                        earthquakes?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
+                          <td>
+                            {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
+                          </td>
+                          <td> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
+                          <td>
+                            <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
+                          </td>
+                          <td className="font-weight-medium"> {e.depth} km </td>
+                          <td> {e.source_verbose} </td>
+                        </tr>)
+                      }
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
-                        <table className="table" >
-                          <thead>
-                          <tr style={{position: "sticky", top: 0, zIndex: 1}} className="bg-gray-dark">
-                            <th> Time </th>
-                            <th> Magnitude </th>
-                            <th> Location </th>
-                            <th> Depth </th>
-                            <th> Source </th>
-                          </tr>
-                          </thead>
-                          <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
-                          {
-                            earthquakes?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
-                              <td>
-                                {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
-                              </td>
-                              <td> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
-                              <td>
-                                <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
-                              </td>
-                              <td className="font-weight-medium"> {e.depth} km </td>
-                              <td> {e.source_verbose} </td>
-                            </tr>)
-                          }
-                          </tbody>
-                        </table>
-                      </div>
-                      <div className="center-content btn-group mt-4 mr-4" role="group" aria-label="Basic example">
-                        <button
-                          type="button"
-                          className="btn btn-default"
-                          disabled={!previous}
-                          onClick={() => dispatch(EarthquakesApi.getList(token, 1))}
-                        >
-                          <i className="mdi mdi-skip-backward"/>
-                        </button>
+                  <div className="center-content btn-group mt-4 mr-4" role="group" aria-label="Basic example">
+                    <button
+                      type="button"
+                      className="btn btn-default"
+                      disabled={!previous}
+                      onClick={() => dispatch(EarthquakesApi.getList(token, 1))}
+                    >
+                      <i className="mdi mdi-skip-backward"/>
+                    </button>
 
-                        {
-                          !next && currentPage - 2 > 0 &&
-                          <button
-                            type="button"
-                            className="btn btn-default"
-                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 2))}
-                          >
-                            {currentPage - 2}
-                          </button>
-                        }
-                        {
-                          previous &&
-                          <button
-                            type="button"
-                            className="btn btn-default"
-                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 1))}
-                          >
-                            {currentPage - 1}
-                          </button>
-                        }
-                        <button
-                          type="button"
-                          className="btn btn-default"
-                          disabled
-                        >
-                          {currentPage}
-                        </button>
-                        {
-                          next &&
-                          <button
-                            type="button"
-                            className="btn btn-default"
-                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 1))}
-                          >
-                            {currentPage + 1}
-                          </button>
-                        }
-                        {
-                          !previous && currentPage + 2 < lastPage &&
-                          <button
-                            type="button"
-                            className="btn btn-default"
-                            onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 2))}
-                          >
-                            {currentPage + 2}
-                          </button>
-                        }
-                        <button
-                          type="button"
-                          className="btn btn-default"
-                          disabled={!next}
-                          onClick={() => dispatch(EarthquakesApi.getList(token, lastPage))}
-                        >
-                          <i className="mdi mdi-skip-forward"/>
-                        </button>
-                      </div>
-                    </div>
+                    {
+                      !next && currentPage - 2 > 0 &&
+                      <button
+                        type="button"
+                        className="btn btn-default"
+                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 2))}
+                      >
+                        {currentPage - 2}
+                      </button>
+                    }
+                    {
+                      previous &&
+                      <button
+                        type="button"
+                        className="btn btn-default"
+                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 1))}
+                      >
+                        {currentPage - 1}
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      className="btn btn-default"
+                      disabled
+                    >
+                      {currentPage}
+                    </button>
+                    {
+                      next &&
+                      <button
+                        type="button"
+                        className="btn btn-default"
+                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 1))}
+                      >
+                        {currentPage + 1}
+                      </button>
+                    }
+                    {
+                      !previous && currentPage + 2 < lastPage &&
+                      <button
+                        type="button"
+                        className="btn btn-default"
+                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 2))}
+                      >
+                        {currentPage + 2}
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      className="btn btn-default"
+                      disabled={!next}
+                      onClick={() => dispatch(EarthquakesApi.getList(token, lastPage))}
+                    >
+                      <i className="mdi mdi-skip-forward"/>
+                    </button>
                   </div>
-                </>
-              }
+                </div>
+                <div className="col-md-5">
+                  <div id="map" style={{ width: "100%", height: "350px" }} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
