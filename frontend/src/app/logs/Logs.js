@@ -44,7 +44,7 @@ const Logs = () =>  {
                     }
                     {
                       path?.split("/").filter(i => !!i).map((folder, i) =>
-                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token, folder))}>
+                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token, path.split("/").slice(0, i + 2).join("/")))}>
                           {folder}
                         </li>
                       )
