@@ -8,7 +8,7 @@ LOGS_DIR=${HOME}/mainframe-logs/backend
 echo "Setting crons..." && crontab "${PROJECT_DIR}/deploy/crons" && echo "Done."
 # Skipped - only needed to run once - echo "Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "Done."
 
-[[ "$(ls -A "${LOGS_DIR}")" ]] && echo "Logs dir already exists" || sudo mkdir -p "${LOGS_DIR}" && touch "${LOGS_DIR}/backend.log"
+[[ "$(ls -A "${LOGS_DIR}")" ]] && echo "Logs dir already exists" || sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log"
 
 [[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "Virtualenv already exists" || python -m venv "${VIRTUALENV_DIR}"
 
