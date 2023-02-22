@@ -16,7 +16,7 @@ def get_list(request):
     if not request.method == "GET":
         raise MethodNotAllowed(request.method)
 
-    if not (root := settings.LOGGING["handlers"]["file"]["filename"]):
+    if not (root := Path(settings.LOGGING["handlers"]["file"]["filename"]).parent):
         return JsonResponse(
             status=400, data={"error": "logger file handler - filename is not set"}
         )
