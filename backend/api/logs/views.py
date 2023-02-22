@@ -2,7 +2,7 @@ import logging
 from operator import itemgetter
 from pathlib import Path
 
-import environ
+from django.conf import settings
 from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
@@ -16,8 +16,10 @@ def get_list(request):
     if not request.method == "GET":
         raise MethodNotAllowed(request.method)
 
-    if not (root := environ.Env()("LOGS_PATH", default=None)):
-        return JsonResponse(status=400, data={"error": "LOGS_PATH not set"})
+    if not (root := settings.LOGGING["handlers"]["file"]["filename"]):
+        return JsonResponse(
+            status=400, data={"error": "logger file handler - filename is not set"}
+        )
 
     if filename := request.GET.get("filename"):
         try:

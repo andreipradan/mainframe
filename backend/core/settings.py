@@ -217,3 +217,15 @@ LOGGING = {
         },
     },
 }
+
+if env("ENV") != "local":
+    LOGGING["handlers"]["file"] = {
+        "level": "INFO",
+        "class": "logging.handlers.TimedRotatingFileHandler",
+        "filename": Path.home() / "mainframe-logs" / "backend" / "backend.log",
+        "when": "midnight",  # this specifies the interval
+        "interval": 1,  # defaults to 1, only necessary for other values
+        "backupCount": 10,  # how many backup file to keep, 10 days
+        "formatter": "verbose",
+    }
+    LOGGING["loggers"]["django"]["handlers"].append("file")
