@@ -222,7 +222,7 @@ if env("ENV", default=None) != "local":
     LOGGING["handlers"]["file"] = {
         "level": "INFO",
         "class": "logging.handlers.TimedRotatingFileHandler",
-        "filename": "/var/log/mainframe/backend/backend.log",
+        "filename": ".logs/backend/backend.log",
         "when": "midnight",  # this specifies the interval
         "interval": 1,  # defaults to 1, only necessary for other values
         "backupCount": 10,  # how many backup file to keep, 10 days
