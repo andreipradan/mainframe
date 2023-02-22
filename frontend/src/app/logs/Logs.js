@@ -68,7 +68,7 @@ const Logs = () =>  {
                         dispatch(log.is_file ? LogsApi.getFile(token, log.name) : LogsApi.getList(token, log.name))}
                       >
                         <i className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
-                        {log.name}
+                        {log.name.split("/")[log.name.split("/").length - 1]}
                       </li>
                     )
                 }
