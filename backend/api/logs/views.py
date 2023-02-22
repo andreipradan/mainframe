@@ -3,7 +3,7 @@ from operator import itemgetter
 from pathlib import Path
 
 import environ
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
@@ -16,8 +16,17 @@ def get_list(request):
     if not request.method == "GET":
         raise MethodNotAllowed(request.method)
 
+    if not (root := environ.Env()("LOGS_PATH", default=None)):
+        return JsonResponse(status=400, data={"error": "LOGS_PATH not set"})
+
+    if filename := request.GET.get("filename"):
+        try:
+            with open(root + filename, "r") as file:
+                return FileResponse(file.read())
+        except UnicodeDecodeError as e:
+            return JsonResponse(status=400, data={"Decode Error": str(e)})
+
     path = request.GET.get("path")
-    root = environ.Env()("LOGS_PATH", default=None)
     if not (path or root):
         raise FileNotFoundError
 
@@ -32,7 +41,7 @@ def get_list(request):
                     }
                     for item in Path((root + path) if path else root).iterdir()
                 ],
-                key=itemgetter("name"),
+                key=itemgetter("is_file", "name"),
             ),
         },
         safe=False,

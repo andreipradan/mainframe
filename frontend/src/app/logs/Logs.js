@@ -8,7 +8,7 @@ import Alert from "react-bootstrap/Alert";
 const Logs = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results: logs, errors, loading, path} = useSelector(state => state.logs)
+  const {currentLog, results: logs, errors, loading, path, } = useSelector(state => state.logs)
   const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {!logs && dispatch(LogsApi.getList(token));}, [dispatch, logs, token]);
@@ -27,7 +27,7 @@ const Logs = () =>  {
         </nav>
       </div>
       <div className="row">
-        <div className="col-lg-12 grid-margin stretch-card">
+        <div className={`col-lg-${currentLog ? "4" : "12"} grid-margin stretch-card`}>
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">
@@ -39,7 +39,7 @@ const Logs = () =>  {
                   <ol className="breadcrumb">
                     {
                       path && <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token))}>
-                          /
+                          Home
                         </li>
                     }
                     {
@@ -53,7 +53,7 @@ const Logs = () =>  {
                 </nav>
               </h4>
               {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
-              <ul className="list-arrow">
+              <ul className="list-arrow" style={{maxHeight: "60vh", overflowY: "scroll"}}>
                 {
                   loading ? <BallTriangle
                         visible={true}
@@ -63,12 +63,32 @@ const Logs = () =>  {
                         wrapperClass={{}}
                         color = '#e15b64'
                       />
-                    : logs?.map((log, i) => <li key={i} onClick={() => dispatch(LogsApi.getList(token, log.name))}>{log.name}</li>)
+                    : logs?.map((log, i) =>
+                      <li key={i} style={{cursor: "pointer"}} onClick={() =>
+                        dispatch(log.is_file ? LogsApi.getFile(token, log.name) : LogsApi.getList(token, log.name))}
+                      >
+                        <i className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
+                        {log.name}
+                      </li>
+                    )
                 }
               </ul>
             </div>
           </div>
         </div>
+        {
+          currentLog && <div className="col-lg-8 grid-margin stretch-card">
+            <div className="card">
+              <div className="card-body">
+                <h4 className="card-title">Home/{currentLog.name}</h4>
+                <pre style={{maxHeight: "60vh", overflowY: "scroll"}}>
+                  {currentLog.contents}
+                </pre>
+
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </div>
   )
