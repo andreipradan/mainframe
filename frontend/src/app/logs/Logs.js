@@ -80,7 +80,7 @@ const Logs = () =>  {
           currentLog && <div className="col-lg-8 grid-margin stretch-card">
             <div className="card">
               <div className="card-body">
-                <h4 className="card-title">Home/{currentLog.name}</h4>
+                <h4 className="card-title">Home{currentLog.name}</h4>
                 <pre style={{maxHeight: "60vh", overflowY: "scroll"}}>
                   {currentLog.contents}
                 </pre>
