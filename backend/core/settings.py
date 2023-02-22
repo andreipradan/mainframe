@@ -218,7 +218,7 @@ LOGGING = {
     },
 }
 
-if env("ENV") != "local":
+if env("ENV", default=None) != "local":
     LOGGING["handlers"]["file"] = {
         "level": "INFO",
         "class": "logging.handlers.TimedRotatingFileHandler",
