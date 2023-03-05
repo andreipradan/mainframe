@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Slider from "react-slick";
 import { Doughnut } from 'react-chartjs-2';
-import { TodoListComponent } from '../apps/TodoList'
 import { useDispatch, useSelector } from "react-redux";
 import {BallTriangle, InfinitySpin, LineWave} from "react-loader-spinner";
 import Nouislider from 'nouislider-react';
@@ -106,7 +105,7 @@ const Dashboard = () => {
   const sliderSettings = {infinite: true, speed: 500, slidesToShow: 1, slidesToScroll: 1}
   return <div>
     <div className="row">
-      <div className="col-md-6 grid-margin stretch-card">
+      <div className="col-md-6 col-xl-4 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <h5 className="card-title">
@@ -135,7 +134,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      <div className="col-md-6 grid-margin stretch-card">
+      <div className="col-md-6 col-xl-4 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <h5 className="card-title">
@@ -174,16 +173,19 @@ const Dashboard = () => {
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LightsApi.getList(token))}>
                   <i className="mdi mdi-refresh" />
                 </button>
-                {/*<Form.Check*/}
-                {/*  checked={!!lights?.list?.some(l => l.capabilities.power === "on")}*/}
-                {/*  type="switch"*/}
-                {/*  id="checkbox-toggle"*/}
-                {/*  label=""*/}
-                {/*  onChange={() => {*/}
-                {/*    const action = lights?.list?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on*/}
-                {/*    dispatch(action(token))*/}
-                {/*  }}*/}
-                {/*/>*/}
+                <div className="mr-auto text-sm-right pt-2 pt-sm-0">
+                  <Form.Check
+                    checked={!!lights?.list?.some(l => l.capabilities.power === "on")}
+                    type="switch"
+                    id="checkbox-toggle"
+                    label=""
+                    onChange={() => {
+                      const action = lights?.list?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on
+                      dispatch(action(token))
+                    }}
+                  />
+                  <p className="text-muted mb-0">All lights</p>
+                </div>
               </h4>
             <div className="row">
               <div className="col-12">
@@ -619,14 +621,6 @@ const Dashboard = () => {
             <div className="progress progress-md portfolio-progress">
               <div className="progress-bar bg-success" role="progressbar" style={{width: '50%'}} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="col-md-12 col-xl-4 grid-margin stretch-card">
-        <div className="card">
-          <div className="card-body">
-            <h4 className="card-title">To do list</h4>
-            <TodoListComponent />
           </div>
         </div>
       </div>

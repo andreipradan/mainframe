@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const Logs = lazy(() => import('./logs/Logs'));
+const Todo = lazy(() => import('./apps/TodoList'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
 const Dropdowns = lazy(() => import('./basic-ui/Dropdowns'));
@@ -36,6 +37,7 @@ class AppRoutes extends Component {
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/earthquakes" component={ Earthquakes } />
           <Route exact path="/logs" component={ Logs } />
+          <Route exact path="/todo" component={ Todo } />
 
           <Route path="/basic-ui/buttons" component={ Buttons } />
           <Route path="/basic-ui/dropdowns" component={ Dropdowns } />
