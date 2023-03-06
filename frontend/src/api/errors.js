@@ -13,7 +13,7 @@ export const handleErrors = async (err, dispatch, setErrors) => {
       Cookie.remove('token');
       Cookie.remove('user');
       dispatch(logout())
-      return dispatch(setErrors(err.response.data))
+      return dispatch(setErrors([err.response.data["msg"]]))
     }
     dispatch(
       setErrors(

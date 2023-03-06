@@ -31,9 +31,6 @@ const EditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
             Edit {device?.name || device?.ip }
-            {/*<button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(DeviceApi.getItem(token, bot?.id))}>*/}
-            {/*  <i className="mdi mdi-refresh"></i>*/}
-            {/*</button>*/}
           </div>
         </div>
         <p className="text-muted mb-0">{device?.mac}</p>
@@ -67,6 +64,9 @@ const EditModal = () => {
     </Modal.Body>
     }
     <Modal.Footer>
+      <Button variant="danger" className="float-left" onClick={() => dispatch(DevicesApi.delete(token, device.id))}>
+        Delete
+      </Button>
       <Button variant="secondary" onClick={() => dispatch(select())}>
         Close
       </Button>

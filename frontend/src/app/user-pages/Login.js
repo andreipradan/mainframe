@@ -3,10 +3,11 @@ import {Link, useHistory} from 'react-router-dom';
 import {Button, Form} from 'react-bootstrap';
 import AuthApi from "../../api/auth";
 import { useDispatch, useSelector } from "react-redux";
+import { Dna } from "react-loader-spinner";
 
 const Login = () => {
   const dispatch = useDispatch();
-  const errors = useSelector((state) => state.auth.errors)
+  const auth = useSelector((state) => state.auth)
   const history = useHistory();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,8 +27,8 @@ const Login = () => {
             </div>
             <h4>Hello! let's get started</h4>
             <h6 className="font-weight-light">{
-              errors?.success === "False"
-                ? <p className="text-danger">{errors?.msg}</p>
+              auth.errors?.success === "False"
+                ? <p className="text-danger">{auth.errors?.msg}</p>
                 : "Sign in to continue."
             }</h6>
             <Form className="pt-3" onSubmit={login}>
@@ -40,16 +41,16 @@ const Login = () => {
                   className="h-auto"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  isInvalid={errors?.email}
+                  isInvalid={auth.errors?.email}
                 />
               </Form.Group>
               <ul className="text-danger">
-                {errors?.email?.map((err, i) => <li key={i}>{err}</li>)}
+                {auth.errors?.email?.map((err, i) => <li key={i}>{err}</li>)}
               </ul>
               <Form.Group className="d-flex search-field">
                 <Form.Control
                   className="h-auto"
-                  isInvalid={errors?.password}
+                  isInvalid={auth.errors?.password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Password"
                   required
@@ -59,14 +60,21 @@ const Login = () => {
                 />
               </Form.Group>
               <ul className="text-danger">
-                {errors?.password?.map((err, i) => <li key={i}>{err}</li>)}
+                {auth.errors?.password?.map((err, i) => <li key={i}>{err}</li>)}
               </ul>
               <div className="mt-3">
                 <Button
                   className="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn"
                   type="submit"
                 >
-                  Let's go
+                  {
+                    auth.loading
+                      ? <Dna
+                        width = "100%"
+                        height = "50"
+                        wrapperStyle={{width: "100%"}}
+                      />
+                      : "Let's go " }
                 </Button>
               </div>
               <div className="my-2 d-flex justify-content-between align-items-center">

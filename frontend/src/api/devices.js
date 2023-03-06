@@ -1,5 +1,6 @@
 import axios from "./index";
 import {
+  deleteDevice,
   set,
   setErrors,
   setLoading,
@@ -10,6 +11,15 @@ import {handleErrors} from "./errors";
 
 
 class DevicesApi {
+  static delete = (token, deviceId) => dispatch => {
+    dispatch(setLoadingDevice(deviceId));
+    axios
+      .delete(`${base}${deviceId}/`, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(deleteDevice(deviceId));
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
   static getList = (token, page = null) => (dispatch) => {
     dispatch(setLoading(true));
     axios

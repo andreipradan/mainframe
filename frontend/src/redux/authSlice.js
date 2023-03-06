@@ -5,14 +5,16 @@ export const authSlice = createSlice({
   name: "auth",
   initialState: {
     errors: null,
+    loading: false,
     token: Cookie.get('token') || null,
 	  user: Cookie.get("user") ? JSON.parse(Cookie.get('user')) : null,
   },
   reducers: {
     login: (state, action) => {
+      state.errors = null;
+      state.loading = false;
       state.token = action.payload.token;
       state.user = action.payload.user;
-      state.errors = null;
     },
     logout: (state, action) => {
       state.errors = null;
@@ -22,9 +24,12 @@ export const authSlice = createSlice({
     setErrors: (state, action) => {
       state.errors = action.payload;
     },
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
   },
 });
 
-export const { login, logout, setErrors } = authSlice.actions;
+export const { login, logout, setErrors, setLoading } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -1,7 +1,6 @@
 import axios from "./index";
 import Cookie from 'js-cookie'
-import {login, logout} from "../redux/authSlice";
-import {setErrors} from "../redux/authSlice";
+import { login, logout, setErrors, setLoading } from "../redux/authSlice";
 
 const handleErrors = async (err, dispatch) => {
   if (err.response) {
@@ -23,6 +22,7 @@ const handleErrors = async (err, dispatch) => {
 
 class AuthApi {
   static Login = (data, history) => dispatch => {
+    dispatch(setLoading(true))
     axios.post(`${base}/login`, data)
     .then(response => {
       Cookie.set('token', response.data.token);
