@@ -20,7 +20,14 @@ logger = logging.getLogger(__name__)
 def run_cmd(cmd, prefix=None):
     prefix = prefix.upper() if prefix else cmd
     logger.info(f"[{prefix}] Starting")
-    output = subprocess.check_output(cmd.split(" ")).decode("utf-8")
+    try:
+        output = subprocess.check_output(cmd.split(" ")).decode("utf-8")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(
+            "command '{}' return with error (code {}): {}".format(
+                e.cmd, e.returncode, e.output
+            )
+        )
     if output:
         logger.info(f"[{prefix}] Output: {str(output)}")
     logger.info(f"[{prefix}] Done.")

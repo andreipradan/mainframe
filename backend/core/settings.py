@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "api.user",
     "api.authentication",
     "bots",
+    "devices",
     "earthquakes",
 ]
 
