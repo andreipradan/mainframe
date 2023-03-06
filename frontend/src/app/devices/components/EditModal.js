@@ -47,7 +47,13 @@ const EditModal = () => {
           wrapperStyle={{width: "100%"}}
         />
       : <Modal.Body>
-      <Form>
+      <Form onSubmit={
+        (e) => {
+          e.preventDefault()
+          dispatch(DevicesApi.updateDevice(token, device.id, {name: name}))
+          dispatch(select())
+        }
+      }>
         <Form.Group className="mb-3">
           <Form.Label>Name</Form.Label>
           <Form.Control
