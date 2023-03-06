@@ -6,6 +6,7 @@ class Device(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     ip = models.GenericIPAddressField()
+    is_active = models.BooleanField(default=False)
     mac = models.CharField(max_length=24, unique=True)
     name = models.CharField(max_length=32)
 

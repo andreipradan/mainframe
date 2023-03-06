@@ -50,6 +50,7 @@ const Devices = () =>  {
                     <tr>
                       <th> # </th>
                       <th> Name </th>
+                      <th> Is Active? </th>
                       <th> IP</th>
                       <th> Mac Address </th>
                     </tr>
@@ -63,6 +64,7 @@ const Devices = () =>  {
                               ? <tr key={i}>
                                 <td>{i + 1}</td>
                                 <td>{device.name || "-"} &nbsp;</td>
+                                <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
                                 <td>{device.ip }</td>
                                 <td>{device.mac}</td>
                                 <td>

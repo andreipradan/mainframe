@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
-    queryset = Device.objects.order_by("name", "ip")
+    queryset = Device.objects.order_by("-is_active", "name", "ip")
     serializer_class = DeviceSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -24,8 +24,14 @@ class DeviceViewSet(viewsets.ModelViewSet):
             if not item.strip():
                 continue
             _, ip, __, mac, *junk = item.split()
-            items.append(Device(ip=ip[1:-1], mac=mac))
+            items.append(Device(ip=ip[1:-1], mac=mac, is_active=True))
         if items:
+            Device.objects.update(is_active=False)
             logger.info(f"Creating {len(items)}")
-            Device.objects.bulk_create(items, ignore_conflicts=True)
+            Device.objects.bulk_create(
+                items,
+                update_conflicts=True,
+                update_fields=["is_active", "ip"],
+                unique_fields=["mac"],
+            )
         return super().list(request, **kwargs)
