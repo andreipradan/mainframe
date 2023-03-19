@@ -109,8 +109,9 @@ class SavedMessagesInlines(BaseInlines):
         ).to_json()
 
 
-def call(data, bot):
-    update = telegram.Update.de_json(data, telegram.Bot(bot.token))
+def call(data, instance):
+    bot = telegram.Bot(instance.token)
+    update = telegram.Update.de_json(data, bot)
     message = update.message
 
     if update.callback_query:
@@ -150,7 +151,7 @@ def call(data, bot):
     if not message.text:
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")
 
-    if str(from_user.username or from_user.id) not in bot.whitelist:
+    if str(from_user.username or from_user.id) not in instance.whitelist:
         return logging.error(f"Ignoring message from: {user}")
 
     if not message.text.startswith("/"):
@@ -181,7 +182,7 @@ def call(data, bot):
 
         save_to_db(
             update.message.reply_to_message,
-            text_override=bot.get_chat(update.message.chat_id).description
+            text_override=instance.get_chat(update.message.chat_id).description
             if update.message.reply_to_message.new_chat_title
             else None,
         )
@@ -211,14 +212,14 @@ def call(data, bot):
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
 
     if cmd == "earthquake":
-        earthquake = bot.additional_data.get("earthquake")
+        earthquake = instance.additional_data.get("earthquake")
         if not earthquake or not (
             latest := Earthquake.objects.order_by("-timestamp").first()
         ):
             return reply(update, text=f"No earthquakes stored")
         if len(args) == 2 and args[0] == "set_min_magnitude":
-            bot.additional_data["earthquake"]["min_magnitude"] = args[1]
-            bot.save()
+            instance.additional_data["earthquake"]["min_magnitude"] = args[1]
+            instance.save()
             return reply(update, text=f"Updated min magnitude to {args[1]}")
         return reply(
             update,
