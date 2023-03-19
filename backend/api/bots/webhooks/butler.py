@@ -182,7 +182,7 @@ def call(data, instance):
 
         save_to_db(
             update.message.reply_to_message,
-            text_override=instance.get_chat(update.message.chat_id).description
+            text_override=bot.get_chat(update.message.chat_id).description
             if update.message.reply_to_message.new_chat_title
             else None,
         )
