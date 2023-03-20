@@ -28,8 +28,8 @@ def get_collection(name="matches"):
     return MongoClient(host=url)[env("CHALLONGE_DATABASE_NAME")][name]
 
 
-def get_many(collection, order_by=None, how=-1, silent=True, **kwargs):
-    result = get_collection(collection).find(kwargs)
+def get_many(collection, order_by=None, how=-1, silent=True, skip=0, limit=0, **kwargs):
+    result = get_collection(collection).find(kwargs, skip=skip, limit=limit)
     if order_by:
         return result.sort(order_by, how)
     if not silent and not result:

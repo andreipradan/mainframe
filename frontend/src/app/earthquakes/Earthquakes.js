@@ -214,13 +214,13 @@ const Earthquakes = () => {
               <h4 className="card-title">
                 Latest Earthquakes
                 <button type="button"
-                        className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                        onClick={
-                          () => {
-                            dispatch(EarthquakesApi.getList(token))
-                            dispatch(BotsApi.getList(token))
-                          }
-                        }>
+                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                  onClick={
+                    () => {
+                      dispatch(EarthquakesApi.getList(token))
+                      dispatch(BotsApi.getList(token))
+                    }
+                  }>
                   <i className="mdi mdi-refresh"></i>
                 </button>
               </h4>

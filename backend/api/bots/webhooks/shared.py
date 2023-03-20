@@ -24,12 +24,12 @@ class BaseInlines:
         raise NotImplementedError
 
     @classmethod
-    def start(cls, update, items=None):
+    def start(cls, update):
         user = update.message.from_user
         logger.info("User %s started the conversation.", user.full_name)
         return update.message.reply_text(
             f"Hi {update.message.from_user.full_name}!",
-            reply_markup=cls.get_markup(items=items),
+            reply_markup=cls.get_markup(),
         ).to_json()
 
 
