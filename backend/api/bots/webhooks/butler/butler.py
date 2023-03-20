@@ -41,16 +41,13 @@ def call(data, instance):
         callback, *args = data.split(" ")
         if callback == "end":
             return SavedMessagesInlines.end(update)
-
-        chat_id = args.pop(0)
-        if not chat_id:
+        if not args:
             return logger.error(f"No chat id for callback query data: {data}")
-        saved_inline = SavedMessagesInlines(chat_id)
 
+        saved_inline = SavedMessagesInlines(args.pop(0))
         method = getattr(saved_inline, callback, None)
         if not method:
             return logger.error(f"Unhandled callback: {data}")
-
         return method(update, *args)
 
     if not message or not getattr(message, "chat", None) or not message.chat.id:
@@ -63,7 +60,7 @@ def call(data, instance):
 
     if message.new_chat_members:
         new_members = [u.full_name for u in message.new_chat_members]
-        return f"Welcome {', '.join(new_members)}!", 400
+        return reply(update, f"Welcome {', '.join(new_members)}!")
 
     if message.left_chat_member:
         return reply(update, f"Bye {message.left_chat_member.full_name}! 😢")
