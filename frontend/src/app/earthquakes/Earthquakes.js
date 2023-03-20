@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { BallTriangle } from "react-loader-spinner";
+import { BallTriangle, Circles } from "react-loader-spinner";
 import { useDispatch, useSelector } from "react-redux";
 
 import * as am5 from "@amcharts/amcharts5";
@@ -10,6 +10,7 @@ import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import EarthquakesApi from "../../api/earthquakes";
 import { Bar } from "react-chartjs-2";
 import {API_SERVER} from "../../constants";
+import BotsApi from "../../api/bots";
 
 const defaultButtonProps = {
   paddingTop: 10,
@@ -34,6 +35,7 @@ const Earthquakes = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {count, loading, next, previous, results: earthquakes} = useSelector(state => state.earthquakes)
+  const {results: bots, loading: botsLoading} = useSelector(state => state.bots)
   const earthquakesList = earthquakes ? [...earthquakes].reverse() : null
 
   const data = {
@@ -68,7 +70,10 @@ const Earthquakes = () => {
   const currentPage = !previous ? 1 : (parseInt(new URL(previous).searchParams.get("page")) || 1) + 1
   const lastPage = Math.ceil(count / earthquakes?.length)
 
-  useEffect(() => {!earthquakes && dispatch(EarthquakesApi.getList(token))}, [dispatch, earthquakes, token]);
+  useEffect(() => {
+    !earthquakes && dispatch(EarthquakesApi.getList(token))
+    !bots && dispatch(BotsApi.getList(token))
+  }, [dispatch, earthquakes, token]);
 
   useLayoutEffect(() => {
     const root = am5.Root.new("map")
@@ -190,6 +195,8 @@ const Earthquakes = () => {
 
   }
 
+  const lastCheck = bots?.find(b => !!b.additional_data?.earthquake)?.additional_data.earthquake.last_check
+
   return <div>
     <div className="page-header">
      <h3 className="page-title">Earthquakes</h3>
@@ -206,10 +213,32 @@ const Earthquakes = () => {
             <div className="card-body">
               <h4 className="card-title">
                 Latest Earthquakes
-                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(EarthquakesApi.getList(token))}>
+                <button type="button"
+                        className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                        onClick={
+                          () => {
+                            dispatch(EarthquakesApi.getList(token))
+                            dispatch(BotsApi.getList(token))
+                          }
+                        }>
                   <i className="mdi mdi-refresh"></i>
                 </button>
               </h4>
+              <p className="card-description d-flex">
+                Last check:&nbsp;
+                {botsLoading
+                  ? <Circles
+                      visible={true}
+                      height="15"
+                      width="100%"
+                      ariaLabel="ball-triangle-loading"
+                      wrapperStyle={{}}
+                      wrapperClass={{}}
+                      color='orange'
+                    />
+                  : <span> {lastCheck || "-"}</span>
+                }
+              </p>
               <div className="row">
                 <div className="col-md-12">
                   {

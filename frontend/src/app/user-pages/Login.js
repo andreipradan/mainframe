@@ -26,11 +26,17 @@ const Login = () => {
               <img src={require("../../assets/images/logo.svg")} alt="logo"/>
             </div>
             <h4>Hello! let's get started</h4>
-            <h6 className="font-weight-light">{
-              auth.errors?.success === "False"
-                ? <p className="text-danger">{auth.errors?.msg}</p>
-                : "Sign in to continue."
-            }</h6>
+            <h6 className="font-weight-light">
+              {
+                auth.errors?.length || auth.errors?.success === "False"
+                  ? auth.errors?.msg
+                    ? <p className="text-danger">{auth.errors.msg}</p>
+                    : auth.errors?.length
+                      ? <ul className="text-danger">{auth.errors.map((err, i) => <li key={i}>{err}</li>)}</ul>
+                      : null
+                  : "Sign in to continue."
+              }
+            </h6>
             <Form className="pt-3" onSubmit={login}>
               <Form.Group className="d-flex search-field">
                 <Form.Control

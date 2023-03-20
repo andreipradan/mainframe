@@ -22,7 +22,8 @@ export const authSlice = createSlice({
       state.user = null;
     },
     setErrors: (state, action) => {
-      state.errors = action.payload;
+      state.errors = action.payload
+      state.loading = false
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
