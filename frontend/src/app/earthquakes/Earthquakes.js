@@ -270,6 +270,7 @@ const Earthquakes = () => {
                         <th> Magnitude </th>
                         <th> Location </th>
                         <th> Depth </th>
+                        <th> Location </th>
                         <th> Source </th>
                       </tr>
                       </thead>
@@ -284,6 +285,7 @@ const Earthquakes = () => {
                             <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
                           </td>
                           <td className="font-weight-medium"> {e.depth} km </td>
+                          <td className="font-weight-medium"> {e.location} </td>
                           <td> {e.source_verbose} </td>
                         </tr>)
                       }
