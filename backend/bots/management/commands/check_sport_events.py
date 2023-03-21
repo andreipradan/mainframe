@@ -40,7 +40,7 @@ class Command(BaseCommand):
                 "categories missing from sport_events in bot additional data or not of type list"
             )
 
-        results = fetch_all(categories + ["divizia"])
+        results = fetch_all(categories)
 
         def send_message(text):
             return telegram.Bot(bot.token).send_message(
