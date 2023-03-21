@@ -1,17 +1,19 @@
 import asyncio
 import json
 import logging
+import math
 
 from datetime import datetime
 from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import aiohttp
-import environ
 import telegram
 
 from bs4 import BeautifulSoup
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, CommandError
+
+from bots.models import Bot
 
 logger = logging.getLogger(__name__)
 
@@ -19,43 +21,99 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info("Checking today's sport events")
-        results = fetch_all()
-        logger.info(f"Sending {len(results)} character message")
         try:
-            send_message(results)
-            logger.debug("Message sent")
-        except telegram.error.BadRequest as e:
-            logger.warning(f"Bad request: {e}. Trying to split the message")
-            half = int(len(results) / 2)
-            send_message(text=results[:half] + " [[1/2 - continued below..]]")
-            send_message(text="[[2/2]] " + results[half:])
-            logger.debug("2/2 messages sent")
+            bot = Bot.objects.get(additional_data__sport_events__isnull=False)
+        except Bot.DoesNotExist:
+            raise CommandError(
+                "Bot with sport_events config in additional_data does not exist"
+            )
+
+        events = bot.additional_data["sport_events"]
+        if not isinstance(events, dict) or not (chat_id := events.get("chat_id")):
+            raise CommandError(
+                "chat_id missing from sport_events in bot additional data"
+            )
+        if not (categories := events.get("categories")) or not isinstance(
+            categories, list
+        ):
+            raise CommandError(
+                "categories missing from sport_events in bot additional data or not of type list"
+            )
+
+        results = fetch_all(categories + ["divizia"])
+
+        def send_message(text):
+            return telegram.Bot(bot.token).send_message(
+                chat_id=chat_id,
+                disable_notification=True,
+                disable_web_page_preview=True,
+                text=text,
+                parse_mode=telegram.ParseMode.MARKDOWN,
+            )
+
+        results_size = len(results)
+        max_size = 2000
+        if results_size < max_size:
+            batches_no = 1
+            chunks = [results]
+        else:
+            batches_no = math.ceil(results_size / max_size)
+            chunks = [
+                results[i * max_size : i * max_size + max_size]
+                for i in range(batches_no)
+            ]
+
+        logger.info(
+            f"Got {results_size} characters results. Split in {batches_no} batches."
+        )
+        if batches_no > 10:
+            logger.warning(f"Too many batches: {batches_no}, sending only the first 10")
+            chunks = chunks[:10]
+
+        entity = ""
+        for i, chunk in enumerate(chunks):
+            batch_no = f"[{i + 1}/{batches_no}]"
+            try:
+                send_message(f"{entity}{chunk}\n[{batch_no}]")
+                entity = ""
+            except telegram.error.BadRequest as e:
+                logger.warning(f"{batch_no} Bad request: {e}")
+                if "can't find end of the entity" in str(e):
+                    location = int(e.message.split()[-1])
+                    entity = bytes(chunk, encoding="utf-8")[
+                        location : location + 1
+                    ].decode()
+                    logger.info(f'Fixed entity "{entity}"')
+                    send_message(f"{chunk}{entity}[{batch_no}]")
 
         self.stdout.write(self.style.SUCCESS("Done."))
 
 
-def callback(response):
+def callback(args):
+    response, url, categories = args
+    if not response:
+        return f"No response returned from {url}"
     try:
         return parse_ergast(json.loads(response))
     except json.JSONDecodeError:
-        return parse_flash_score(response)
+        return parse_flash_score(response, categories)
 
 
-async def fetch(session, sem, url):
+async def fetch(session, sem, url, categories):
     async with sem:
         try:
             async with session.get(url) as response:
                 if response.status != 200:
                     raise ValueError(
-                        f"Unable to fetch {url}. Status: {response.status}"
+                        f"Unexpected status for {url}. Status: {response.status}"
                     )
-                return await response.text()
+                return await response.text(), url, categories
         except aiohttp.client_exceptions.ClientConnectorError as e:
             logger.exception(e)
-            return ""
+            return "", url, []
 
 
-def fetch_all():
+def fetch_all(categories):
     events = "".join(
         asyncio.run(
             fetch_many(
@@ -63,23 +121,27 @@ def fetch_all():
                     "https://m.flashscore.ro/",
                     "https://m.flashscore.ro/snooker/",
                     "https://ergast.com/api/f1/current.json",
-                ]
+                ],
+                categories,
             )
         )
     )
     hello = "Neața, "
     hello += "evenimentele de azi" if events else "nu sunt evenimente azi"
 
-    footer = f"*Surse*\n https://flashscore.ro/ (termeni: {environ.Env()('SPORT_EVENTS_CATEGORIES')})"
+    footer = f"*Surse*\n https://flashscore.ro/ (termeni: {', '.join(categories)})"
     footer += "\n https://ergast.com/api/f1/current.json"
     return f"*{hello}*{events}\n\n{footer}"
 
 
-async def fetch_many(urls):
+async def fetch_many(urls, categories):
     sem = asyncio.Semaphore(1000)
     async with aiohttp.ClientSession() as session:
         return map(
-            callback, await asyncio.gather(*[fetch(session, sem, url) for url in urls])
+            callback,
+            await asyncio.gather(
+                *[fetch(session, sem, url, categories) for url in urls]
+            ),
         )
 
 
@@ -142,10 +204,11 @@ def parse_ergast(response):
     return f"\n\n*🏎 Formula 1*{parse_list_details(results)}" if results else ""
 
 
-def parse_flash_score(response):
+def parse_flash_score(response, categories):
     soup = BeautifulSoup(response, features="html.parser")
     results = parse_categories(
-        soup.html.body.find("div", {"id": "score-data"}).children
+        soup.html.body.find("div", {"id": "score-data"}).children,
+        categories,
     )
     sport = soup.html.body.find("h2").text.split(" ")[0]
     if "Snooker" in sport:
@@ -155,11 +218,11 @@ def parse_flash_score(response):
     return f"\n\n*{sport}*{parse_list_details(results)}" if results else ""
 
 
-def parse_categories(contents):
+def parse_categories(contents, categories):
     by_category = {}
     while category := get_next_category(contents):
         found = False
-        for defined_category in environ.Env()("SPORT_EVENTS_CATEGORIES").split(","):
+        for defined_category in categories:
             if len(defined_category.strip()) < 3:
                 break
             if strip_accents(defined_category) in strip_accents(category):
@@ -186,16 +249,6 @@ def parse_list_details(data):
         return ""
     return "\n".join(
         [f"\n_{title}_\n " + "\n ".join(stats) for title, stats in sorted(data.items())]
-    )
-
-
-def send_message(text):
-    return telegram.Bot(environ.Env()("SPORT_EVENTS_BOT_TOKEN")).send_message(
-        chat_id=environ.Env()("SPORT_EVENTS_CHAT_ID"),
-        disable_notification=True,
-        disable_web_page_preview=True,
-        text=text,
-        parse_mode=telegram.ParseMode.MARKDOWN,
     )
 
 
