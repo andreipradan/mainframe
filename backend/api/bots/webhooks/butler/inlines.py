@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class SavedMessagesInlines(BaseInlines):
+    PER_PAGE = 10
+
     def __init__(self, chat_id):
         self.chat_id = int(chat_id)
 
@@ -39,15 +41,14 @@ class SavedMessagesInlines(BaseInlines):
                 )
             )
 
-        per_page = 10
         items = list(
             database.get_many(
                 collection="saved-messages",
                 order_by="date",
                 how=-1,
                 chat_id=self.chat_id,
-                skip=(page - 1) * per_page if page - 1 >= 0 else 0,
-                limit=per_page,
+                skip=(page - 1) * self.PER_PAGE if page - 1 >= 0 else 0,
+                limit=self.PER_PAGE,
             )
         )
 
@@ -87,7 +88,7 @@ class SavedMessagesInlines(BaseInlines):
             {"chat_id": self.chat_id}
         )
         logger.info(f"Counted {count} documents")
-        last_page = math.ceil(count / 5)
+        last_page = math.ceil(count / self.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a message [{page} / {total}]"
 
         if not update.callback_query:
