@@ -43,7 +43,7 @@ class SavedMessagesInlines(BaseInlines):
             database.get_many(
                 collection="saved-messages",
                 order_by="date",
-                how=1,
+                how=-1,
                 chat_id=self.chat_id,
                 skip=(page - 1) * 5 if page - 1 >= 0 else 0,
                 limit=5,
@@ -56,7 +56,8 @@ class SavedMessagesInlines(BaseInlines):
             [
                 [
                     InlineKeyboardButton(
-                        f"{item['chat_name']} by {item['author']['full_name']}",
+                        f"{item['chat_name']} by {item['author']['full_name']}\n"
+                        f"{item['date'].strftime('%d %b %Y %H:%M')}",
                         callback_data=f"fetch {self.chat_id} {item['_id']} {page}",
                     )
                 ]
