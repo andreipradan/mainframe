@@ -39,14 +39,15 @@ class SavedMessagesInlines(BaseInlines):
                 )
             )
 
+        per_page = 10
         items = list(
             database.get_many(
                 collection="saved-messages",
                 order_by="date",
                 how=-1,
                 chat_id=self.chat_id,
-                skip=(page - 1) * 5 if page - 1 >= 0 else 0,
-                limit=5,
+                skip=(page - 1) * per_page if page - 1 >= 0 else 0,
+                limit=per_page,
             )
         )
 
