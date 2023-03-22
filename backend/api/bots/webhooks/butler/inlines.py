@@ -14,7 +14,7 @@ class SavedMessagesInlines(BaseInlines):
     def __init__(self, chat_id):
         self.chat_id = int(chat_id)
 
-    def get_markup(self, page=1, is_top_level=False, last_page=False):
+    def get_markup(self, page=1, is_top_level=False, last_page=None):
         buttons = [[InlineKeyboardButton("✅", callback_data="end")]]
 
         if not is_top_level:
@@ -24,18 +24,18 @@ class SavedMessagesInlines(BaseInlines):
             )
             return InlineKeyboardMarkup(buttons)
 
-        if page > 1:
+        if last_page != 1:
             buttons[0].insert(
                 0,
                 InlineKeyboardButton(
-                    "👈", callback_data=f"start {self.chat_id} {page - 1}"
+                    "👈",
+                    callback_data=f"start {self.chat_id} {page - 1 if page > 1 else last_page}",
                 ),
             )
-
-        if not last_page:
             buttons[0].append(
                 InlineKeyboardButton(
-                    "👉", callback_data=f"start {self.chat_id} {page + 1}"
+                    "👉",
+                    callback_data=f"start {self.chat_id} {page + 1 if page != last_page else 1}",
                 )
             )
 
@@ -56,8 +56,7 @@ class SavedMessagesInlines(BaseInlines):
             [
                 [
                     InlineKeyboardButton(
-                        f"{item['chat_name']} by {item['author']['full_name']}\n"
-                        f"{item['date'].strftime('%d %b %Y %H:%M')}",
+                        f"{item['chat_name']} by {item['author']['full_name']}",
                         callback_data=f"fetch {self.chat_id} {item['_id']} {page}",
                     )
                 ]
@@ -87,8 +86,7 @@ class SavedMessagesInlines(BaseInlines):
             {"chat_id": self.chat_id}
         )
         logger.info(f"Counted {count} documents")
-        total = math.ceil(count / 5)
-        last_page = int(page or 1) == total
+        last_page = math.ceil(count / 5)
         welcome_message = "Welcome {name}\nChoose a message [{page} / {total}]"
 
         if not update.callback_query:
@@ -97,7 +95,7 @@ class SavedMessagesInlines(BaseInlines):
 
             return update.message.reply_text(
                 welcome_message.format(
-                    name=user.full_name, page=1, total=total, count=count
+                    name=user.full_name, page=1, total=last_page, count=count
                 ),
                 reply_markup=self.get_markup(is_top_level=True, last_page=last_page),
             ).to_json()
@@ -110,7 +108,7 @@ class SavedMessagesInlines(BaseInlines):
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=welcome_message.format(
-                    name=user.full_name, page=page, total=total, count=count
+                    name=user.full_name, page=page, total=last_page, count=count
                 ),
                 reply_markup=self.get_markup(
                     page=int(page),
