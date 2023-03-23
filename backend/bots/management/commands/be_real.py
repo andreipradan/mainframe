@@ -42,6 +42,7 @@ def set_cron():
                 logger.info("Cron in future, skip")
                 return
         else:
+            logger.info("No existing cron. Creating new.")
             cmd = cron.new(command=COMMAND)
 
         cmd.setall(expression)
