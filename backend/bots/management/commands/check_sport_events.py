@@ -43,7 +43,7 @@ class Command(BaseCommand):
         results = fetch_all(categories)
 
         def send_message(text):
-            return telegram.Bot(bot.token).send_message(
+            return bot.send_message(
                 chat_id=chat_id,
                 disable_notification=True,
                 disable_web_page_preview=True,

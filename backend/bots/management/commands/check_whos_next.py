@@ -1,7 +1,6 @@
 import logging
 import datetime
 
-import telegram
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
@@ -36,7 +35,7 @@ class Command(BaseCommand):
         msg = f"Se pregătește pentru mâine: {next_person}"
         logger.info(msg)
 
-        telegram.Bot(bot.token).send_message(
+        bot.send_message(
             chat_id=chat_id,
             text=msg,
             disable_notification=True,

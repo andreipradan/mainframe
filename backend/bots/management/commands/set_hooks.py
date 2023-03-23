@@ -57,7 +57,7 @@ def set_telegram_hooks(ngrok_url):
     for bot in Bot.objects.filter(webhook_name__isnull=False).exclude(webhook_name=""):
         try:
             logger.info(
-                f"{bot.full_name}: {telegram.Bot(bot.token).set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"
+                f"{bot.full_name}: {bot.telegram_bot.set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"
             )
         except telegram.error.TelegramError as e:
             raise CommandError(str(e))

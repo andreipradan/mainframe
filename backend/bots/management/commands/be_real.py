@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, timedelta
 from random import randrange
 
-import telegram
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
@@ -50,7 +49,7 @@ class Command(BaseCommand):
             second=0, microsecond=0
         ):
             logger.info("It is! Sending notification!")
-            telegram.Bot(bot.token).send_message(
+            bot.send_message(
                 chat_id=chat_id,
                 text="❗️📷 Ce faci? Bagă o poză acum 📷❗️",
             )
