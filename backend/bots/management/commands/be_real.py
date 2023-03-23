@@ -47,7 +47,7 @@ def set_cron(instance):
         be_real = instance.additional_data["be_real"]
         if not (next_run := (be_real.get("next_run"))) or next_run.get("cron"):
             logger.info("No existing cron in config. Creating new.")
-            be_real["next_run"] = {"cron": expression, "year": tomorrow_run.year}
+            next_run = {"cron": expression, "year": tomorrow_run.year}
             instance.save()
 
         next_run_str = f"{next_run['cron']} {next_run.get('year', tomorrow_run.year)}"
