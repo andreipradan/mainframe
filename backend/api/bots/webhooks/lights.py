@@ -90,7 +90,7 @@ class Inlines(BaseInlines):
 
 
 def call(data, bot):
-    update = telegram.Update.de_json(data, telegram.Bot(bot.token))
+    update = telegram.Update.de_json(data, bot.telegram_bot)
     message = update.message
 
     if update.callback_query:

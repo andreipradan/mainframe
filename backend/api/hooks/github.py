@@ -4,15 +4,14 @@ import logging
 import subprocess
 from ipaddress import ip_address, ip_network
 
-import environ
 import requests
-import telegram
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
+from bots.models import Bot
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +43,8 @@ def mainframe(request):
     client_ip_address = ip_address(forwarded_for)
     whitelist = requests.get("https://api.github.com/meta").json()["hooks"]
 
-    config = environ.Env()
-
-    bot = telegram.Bot(token=config("DEBUG_TOKEN"))
-    chat_id = config("DEBUG_CHAT_ID")
+    bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
+    chat_id = bot.additional_data["debug_chat_id"]
     prefix = "[mainframe][github]"
 
     for valid_ip in whitelist:

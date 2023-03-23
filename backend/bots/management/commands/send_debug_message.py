@@ -23,7 +23,7 @@ class Command(BaseCommand):
             )
 
         chat_id = bot.additional_data["debug_chat_id"]
-        telegram.Bot(bot.token).send_message(
+        bot.send_message(
             chat_id=chat_id,
             disable_notification=True,
             disable_web_page_preview=True,

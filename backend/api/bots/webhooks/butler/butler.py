@@ -32,7 +32,7 @@ ALLOWED_COMMANDS = [
 
 
 def call(data, instance):
-    bot = telegram.Bot(instance.token)
+    bot = instance.telegram_bot
     update = telegram.Update.de_json(data, bot)
     message = update.message
 

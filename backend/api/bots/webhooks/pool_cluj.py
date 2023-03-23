@@ -22,7 +22,7 @@ def get_stats_from_user(user):
 
 def call(data, bot):
     available_commands = ["join", "leave", "score"]
-    update = telegram.Update.de_json(data, telegram.Bot(bot.token))
+    update = telegram.Update.de_json(data, bot.telegram_bot)
     message = update.message
 
     if not (command := validate_message(message, bot, logger=logger)):
