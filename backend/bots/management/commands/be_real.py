@@ -51,7 +51,7 @@ def set_cron(instance):
             instance.save()
 
         next_run_str = next_run["cron"].replace(
-            "*", next_run.get("year", tomorrow_run.year)
+            "*", str(next_run.get("year", tomorrow_run.year))
         )
         if datetime.strptime(next_run_str, f"%M %H %d %m %Y") > now:
             expression = next_run
