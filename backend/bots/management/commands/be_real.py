@@ -54,7 +54,7 @@ def set_cron(instance):
             "*", str(next_run.get("year", tomorrow_run.year))
         )
         if datetime.strptime(next_run_str, f"%M %H %d %m %Y") > now:
-            expression = next_run
+            expression = next_run["cron"]
         else:
             logger.info("Cron in future")
         cmd.setall(expression)
