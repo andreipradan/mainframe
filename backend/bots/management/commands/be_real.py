@@ -53,10 +53,6 @@ class Command(BaseCommand):
             be_real["last_time"] = last_time.strftime("%Y-%m-%d %H:%M")
             bot.save()
             logger.info("Done")
-        else:
-            logger.info("Time already set for today")
-
-        logger.info("Checking if it's time...")
 
         now = datetime.today().replace(second=0, microsecond=0)
         tomorrow = now + timedelta(days=1)
