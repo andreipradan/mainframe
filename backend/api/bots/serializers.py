@@ -24,7 +24,7 @@ class BotSerializer(serializers.ModelSerializer):
         if action == "sync":
             token = self.instance.token
             attrs = {"token": token}
-            bot = telegram.Bot(token)
+            bot = self.instance.telegram_bot
             try:
                 attrs["webhook"] = bot.get_webhook_info()["url"]
             except telegram.error.TelegramError as e:
@@ -45,7 +45,7 @@ class BotSerializer(serializers.ModelSerializer):
             return attrs
 
         if self.instance and action != "sync":
-            bot = telegram.Bot(self.instance.token)
+            bot = self.instance.telegram_bot
 
             if list(attrs) == ["token"]:
                 logger.info("Setting new token")

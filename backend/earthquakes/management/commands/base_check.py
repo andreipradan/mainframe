@@ -58,18 +58,6 @@ class BaseEarthquakeCommand(BaseCommand):
 
         earthquake_config = instance.additional_data["earthquake"]
 
-        bot = telegram.Bot(instance.token)
-
-        def send_message(text):
-            try:
-                bot.send_message(
-                    chat_id=earthquake_config["chat_id"],
-                    text=text,
-                    parse_mode=telegram.ParseMode.HTML,
-                )
-            except telegram.error.TelegramError as te:
-                self.logger.error(f"{self.prefix} {str(te)}")
-
         try:
             response = self.fetch(**options)
             response.raise_for_status()
@@ -112,7 +100,14 @@ class BaseEarthquakeCommand(BaseCommand):
             self.logger.info(
                 f"{self.prefix} Got {len(events)} events. Sending to telegram..."
             )
-            send_message("\n\n".join(parse_event(event) for event in events))
+            try:
+                instance.send_message(
+                    chat_id=earthquake_config["chat_id"],
+                    text="\n\n".join(parse_event(event) for event in events),
+                    parse_mode=telegram.ParseMode.HTML,
+                )
+            except telegram.error.TelegramError as te:
+                self.logger.error(f"{self.prefix} {str(te)}")
         else:
             self.logger.info(f"{self.prefix} No new events > {min_magnitude} ML")
 
