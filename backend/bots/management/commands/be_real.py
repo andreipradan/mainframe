@@ -19,7 +19,7 @@ def set_cron(expression):
                 f"Only 1 cron with 'be_real' term must exist, found: {cmds_no}"
             )
         command = commands[0]
-        command.set_all(expression)
+        command.setall(expression)
     logger.info("Cron set.")
 
 
