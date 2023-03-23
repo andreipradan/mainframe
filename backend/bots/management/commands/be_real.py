@@ -43,7 +43,7 @@ def set_cron():
 
     with CronTab(user="andreierdna") as cron:
         commands = cron.find_command("be_real")
-        if cmds_no := (len(commands := list(commands))) != 1:
+        if (cmds_no := len(commands := list(commands))) != 1:
             raise CommandError(
                 f"Only 1 cron with 'be_real' term must exist, found: {cmds_no}"
             )
