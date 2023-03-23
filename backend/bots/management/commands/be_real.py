@@ -10,25 +10,6 @@ from bots.models import Bot
 logger = logging.getLogger(__name__)
 
 
-def post_deploy():
-    logger.info(f"Getting be_real cron...")
-    with CronTab(user="andreierdna") as cron:
-        commands = cron.find_command("be_real")
-        if cmds_no := (len(commands := list(commands))) > 1:
-            crons = "\n".join(commands)
-            raise CommandError(f"Multiple 'be_real' crons found: {crons}")
-        elif not cmds_no:
-            logger.info("No cron, setting...")
-            set_cron()
-        elif cmds_no == 1:
-            cmd = commands[0]
-            now = datetime.today()
-            date_string = f"{cmd.minute}:{cmd.hour} {now.year}-{cmd.month}-{cmd.day}"
-            if datetime.strptime(date_string, "%M:%H %Y-%m-%d") < now:
-                logger.info("Cron in the past, updating...")
-                set_cron()
-
-
 def random_time() -> datetime:
     tomorrow = datetime.today() + timedelta(days=1)
     start = tomorrow.replace(hour=7, minute=30, second=0, microsecond=0)
@@ -43,10 +24,17 @@ def set_cron():
 
     with CronTab(user="andreierdna") as cron:
         commands = cron.find_command("be_real")
-        if (cmds_no := len(commands := list(commands))) != 1:
-            raise CommandError(
-                f"Only 1 cron with 'be_real' term must exist, found: {cmds_no}"
-            )
+        if (cmds_no := len(commands := list(commands))) > 1:
+            crons = "\n".join(commands)
+            raise CommandError(f"Multiple 'be_real' crons found: {crons}")
+        elif cmds_no == 1:
+            cmd = commands[0]
+            now = datetime.today()
+            date_string = f"{cmd.minute}:{cmd.hour} {now.year}-{cmd.month}-{cmd.day}"
+            if datetime.strptime(date_string, "%M:%H %Y-%m-%d") >= now:
+                logger.info("Cron in future, skip")
+                return
+
         command = commands[0]
         command.setall(expression)
     logger.info(f"Cron set: {expression}")
