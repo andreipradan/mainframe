@@ -10,6 +10,25 @@ from bots.models import Bot
 logger = logging.getLogger(__name__)
 
 
+def post_deploy():
+    logger.info(f"Getting be_real cron...")
+    with CronTab(user="andreierdna") as cron:
+        commands = cron.find_command("be_real")
+        if cmds_no := (len(commands := list(commands))) > 1:
+            crons = "\n".join(commands)
+            raise CommandError(f"Multiple 'be_real' crons found: {crons}")
+        elif not cmds_no:
+            logger.info("No cron, setting...")
+            set_cron()
+        elif cmds_no == 1:
+            cmd = commands[0]
+            now = datetime.today()
+            date_string = f"{cmd.minute}:{cmd.hour} {now.year}-{cmd.month}-{cmd.day}"
+            if datetime.strptime(date_string, "%M:%H %Y-%m-%d") < now:
+                logger.info("Cron in the past, updating...")
+                set_cron()
+
+
 def random_time() -> datetime:
     tomorrow = datetime.today() + timedelta(days=1)
     start = tomorrow.replace(hour=7, minute=30, second=0, microsecond=0)
@@ -17,8 +36,11 @@ def random_time() -> datetime:
     return start + timedelta(seconds=randrange((end - start).seconds))
 
 
-def set_cron(expression):
-    logger.info(f"Setting be_real cron expression '{expression}'")
+def set_cron():
+    logger.info("Updating cron with the next run...")
+    next_run = random_time().replace(second=0, microsecond=0)
+    expression = f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
+
     with CronTab(user="andreierdna") as cron:
         commands = cron.find_command("be_real")
         if cmds_no := (len(commands := list(commands))) != 1:
@@ -27,11 +49,24 @@ def set_cron(expression):
             )
         command = commands[0]
         command.setall(expression)
-    logger.info("Cron set.")
+    logger.info(f"Cron set: {expression}")
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--post-deploy",
+            action="store_true",
+            default=False,
+            dest="post_deploy",
+        )
+
     def handle(self, *args, **options):
+        if options["post_deploy"] is True:
+            logger.info("Initializing be_real...")
+            set_cron()
+            return self.stdout.write(self.style.SUCCESS("Done."))
+
         logger.info("It's time to take a picture...")
 
         try:
@@ -47,7 +82,5 @@ class Command(BaseCommand):
 
         text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
         bot.send_message(chat_id=chat_id, text=text)
-        logger.info("Updating cron with the next run...")
-        next_run = random_time().replace(second=0, microsecond=0)
-        set_cron(f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *")
+        set_cron()
         self.stdout.write(self.style.SUCCESS("Done."))
