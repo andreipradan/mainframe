@@ -9,6 +9,13 @@ from bots.models import Bot
 
 logger = logging.getLogger(__name__)
 
+PATH = "/var/log/mainframe/crons/be-real/"
+COMMAND = (
+    f"mkdir -p {PATH}`date +\%Y` && "
+    "$HOME/.virtualenvs/mainframe/bin/python $HOME/projects/mainframe/backend/manage.py be_real >> "
+    f"{PATH}`date +\%Y`/`date +\%Y-\%m`.log 2>&1"
+)
+
 
 def random_time() -> datetime:
     tomorrow = datetime.today() + timedelta(days=1)
@@ -34,9 +41,10 @@ def set_cron():
             if datetime.strptime(date_string, "%M:%H %Y-%m-%d") >= now:
                 logger.info("Cron in future, skip")
                 return
+        else:
+            cmd = cron.new(command=COMMAND)
 
-        command = commands[0]
-        command.setall(expression)
+        cmd.setall(expression)
     logger.info(f"Cron set: {expression}")
 
 
