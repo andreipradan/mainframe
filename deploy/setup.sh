@@ -27,6 +27,9 @@ if [[ $2 == backend ]]; then
   "${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
 fi
 
+# setting initial cron for be_real
+"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" be_real --initial
+
 SERVICES_DIR="${PROJECT_DIR}/deploy/services"
 sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
 echo "Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
