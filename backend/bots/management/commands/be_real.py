@@ -45,7 +45,7 @@ def set_cron(instance):
             not cmd.enabled and cmd.enable() and logger.info("Disabled. Enabling...")
 
         be_real = instance.additional_data["be_real"]
-        if not (next_run := (be_real.get("next_run"))).get("cron"):
+        if not (next_run := (be_real.get("next_run"))) or next_run.get("cron"):
             logger.info("No existing cron in config. Creating new.")
             be_real["next_run"] = {"cron": expression, "year": tomorrow_run.year}
             instance.save()
