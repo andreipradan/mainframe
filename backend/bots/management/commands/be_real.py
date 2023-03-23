@@ -2,11 +2,25 @@ import logging
 from datetime import datetime, timedelta
 from random import randrange
 
+from crontab import CronTab
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
 
 logger = logging.getLogger(__name__)
+
+
+def set_cron(expression):
+    logger.info(f"Setting be_real cron expression '{expression}'")
+    with CronTab(user="andreierdna") as cron:
+        commands = cron.find_command("be_real")
+        if cmds_no := (len(commands := list(commands))) != 1:
+            raise CommandError(
+                f"Only 1 cron with 'be_real' term must exist, found: {cmds_no}"
+            )
+        command = commands[0]
+        command.set_all(expression)
+    logger.info("Cron set.")
 
 
 def random_time() -> datetime:
@@ -35,25 +49,25 @@ class Command(BaseCommand):
             != datetime.today().date()
         ):
             logger.warning("No trigger time set for today. Setting...")
-            new_time = random_time()
-            be_real["last_time"] = new_time.strftime("%Y-%m-%d %H:%M")
+            last_time = random_time().replace(second=0, microsecond=0)
+            be_real["last_time"] = last_time.strftime("%Y-%m-%d %H:%M")
             bot.save()
-            last_time = new_time
             logger.info("Done")
         else:
             logger.info("Time already set for today")
 
         logger.info("Checking if it's time...")
 
-        if last_time.replace(second=0, microsecond=0) == datetime.today().replace(
-            second=0, microsecond=0
-        ):
+        today = datetime.today().replace(second=0, microsecond=0)
+        if last_time == today:
             logger.info("It is! Sending notification!")
             bot.send_message(
                 chat_id=chat_id,
                 text="❗️📷 Ce faci? Bagă o poză acum 📷❗️",
             )
+            tomorrow = today + timedelta(days=1)
+            set_cron(f"* 07-21 {tomorrow.day} {tomorrow.month} *")
         else:
-            logger.info(f"It's not.\n{last_time}\n{datetime.now()}")
+            logger.info(f"Not yet\n{last_time}\n{today}")
 
         self.stdout.write(self.style.SUCCESS("Done."))
