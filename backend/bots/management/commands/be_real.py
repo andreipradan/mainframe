@@ -4,6 +4,7 @@ from random import randrange
 
 from crontab import CronTab
 from django.core.management.base import BaseCommand, CommandError
+from django.db import OperationalError
 
 from bots.models import Bot
 
@@ -25,25 +26,28 @@ def random_time() -> datetime:
 
 
 def set_cron():
-    logger.info("Updating cron with the next run...")
+    logger.info("Setting cron for the next run...")
     next_run = random_time().replace(second=0, microsecond=0)
     expression = f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
 
     with CronTab(user="andreierdna") as cron:
-        commands = cron.find_command("be_real")
-        if (cmds_no := len(commands := list(commands))) > 1:
+        if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
             crons = "\n".join(commands)
             raise CommandError(f"Multiple 'be_real' crons found: {crons}")
-        elif cmds_no == 1:
+        elif cmds_no < 1:
+            logger.info("No existing cron. Creating new.")
+            cmd = cron.new(command=COMMAND)
+        else:
             cmd = commands[0]
             now = datetime.today()
             date_string = f"{cmd.minute}:{cmd.hour} {now.year}-{cmd.month}-{cmd.day}"
             if datetime.strptime(date_string, "%M:%H %Y-%m-%d") >= now:
-                logger.info("Cron in future, skip")
-                return
-        else:
-            logger.info("No existing cron. Creating new.")
-            cmd = cron.new(command=COMMAND)
+                logger.info("Cron in future")
+                if cmd.enabled:
+                    return logger.info("Skip")
+                logger.info("Disabled. Enabling...")
+                cmd.enable(True)
+                return logger.info("Done")
 
         cmd.setall(expression)
     logger.info(f"Cron set: {expression}")
@@ -68,6 +72,8 @@ class Command(BaseCommand):
 
         try:
             bot = Bot.objects.get(additional_data__be_real__isnull=False)
+        except OperationalError as e:
+            raise CommandError(str(e))
         except Bot.DoesNotExist:
             raise CommandError(
                 "Bot with be_real config in additional_data does not exist"
