@@ -143,7 +143,6 @@ const EditModal = () => {
           webhook_name: webhookName,
           whitelist: whitelist ? whitelist.split("\n") : [],
         }))
-        dispatch(select())
       }}>
         Save Changes
       </Button>
