@@ -54,6 +54,8 @@ def set_cron(instance):
             next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
             be_real["next_run"] = next_run_str
         cmd.setall(expression)
+    instance.save()
+    logger.info(f"Db next_run set {next_run}")
     logger.info(f"Cron set: {expression}")
 
 
@@ -80,6 +82,8 @@ class Command(BaseCommand):
         if not isinstance(be_real, dict) or not (chat_id := be_real.get("chat_id")):
             raise CommandError("chat_id missing from be_real in bot additional data")
 
+        set_cron(instance)
+
         if options["post_deploy"] is True:
             logger.info("Initializing be_real...")
         else:
@@ -87,7 +91,4 @@ class Command(BaseCommand):
             text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
             instance.send_message(chat_id=chat_id, text=text)
 
-        set_cron(instance)
-        instance.save()
-        logger.info(f"Updating be_real to {instance.additional_data['be_real']}")
         return self.stdout.write(self.style.SUCCESS("Done."))
