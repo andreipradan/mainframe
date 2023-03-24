@@ -1,9 +1,12 @@
+import json
 import logging
+import random
 import time
 from datetime import datetime, timedelta
 from random import randrange
 
 from crontab import CronTab
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import OperationalError
 
@@ -64,7 +67,16 @@ class Command(BaseCommand):
 
         if options["post_deploy"] is False:
             logger.info("It's time to take a picture...")
-            text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
+            with open(
+                settings.BASE_DIR
+                / "bots"
+                / "management"
+                / "commands"
+                / "saluturi.json",
+                "r",
+            ) as file:
+                salut = random.choice(json.load(file))
+            text = f"❗️📷 {salut} Bagă o poză acum 📷❗️"
             instance.send_message(chat_id=chat_id, text=text)
         else:
             logger.info("Initializing be_real...")
