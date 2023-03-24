@@ -56,10 +56,13 @@ def set_cron(instance):
             logger.info("No next run set or next_run <= today")
             next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
             be_real["next_run"] = next_run_str
+            logger.info(f"Setting next run to {next_run_str}")
             instance.save()
 
         if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
             logger.info("Got different expression, setting cron")
+            logger.info(f"Previous: {cmd}")
+            logger.info(f"New: {expression}")
             cmd.setall(expression)
         else:
             logger.info("Same cron, no changes required")
