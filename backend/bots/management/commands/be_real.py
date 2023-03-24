@@ -87,6 +87,8 @@ class Command(BaseCommand):
             raise CommandError(
                 "Bot with be_real config in additional_data does not exist"
             )
+        instance.additional_data["be_real"]["caca"] = "maca"
+        instance.save()
 
         be_real = instance.additional_data["be_real"]
         if not isinstance(be_real, dict) or not (chat_id := be_real.get("chat_id")):
