@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta
 from random import randrange
 
@@ -81,6 +82,7 @@ class Command(BaseCommand):
         expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
         cmd.setall(expression)
         cron.write()
+        time.sleep(3)
         instance.additional_data["be_real"]["next_run"] = tomorrow_run_str
         instance.save()
         logger.info(f"Set next run and cron to {tomorrow_run_str}")
