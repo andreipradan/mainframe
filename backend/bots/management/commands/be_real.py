@@ -44,19 +44,25 @@ def set_cron(instance):
 
         be_real = instance.additional_data["be_real"]
         if (next_run := (be_real.get("next_run"))) and (
-            next_run := datetime.strptime(next_run, DATETIME_FORMAT)
-        ) > datetime.today():
+            next_run := datetime.strptime(next_run, DATETIME_FORMAT).replace(
+                second=0, microsecond=0
+            )
+        ) >= datetime.today():
             expression = (
                 f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
             )
             logger.info(f"Cron in future\nnext: {next_run}\nnow: {datetime.today()}")
         else:
+            logger.info("No next run set or next_run <= today")
             next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
             be_real["next_run"] = next_run_str
-        cmd.setall(expression)
-    instance.save()
-    logger.info(f"Db next_run set {next_run}")
-    logger.info(f"Cron set: {expression}")
+            instance.save()
+
+        if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
+            logger.info("Got different expression, setting cron")
+            cmd.setall(expression)
+        else:
+            logger.info("Same cron, no changes required")
 
 
 class Command(BaseCommand):
@@ -82,13 +88,12 @@ class Command(BaseCommand):
         if not isinstance(be_real, dict) or not (chat_id := be_real.get("chat_id")):
             raise CommandError("chat_id missing from be_real in bot additional data")
 
-        set_cron(instance)
-
         if options["post_deploy"] is True:
-            return logger.info("Post deploy done.")
+            logger.info("Initializing be_real...")
+        else:
+            logger.info("It's time to take a picture...")
+            text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
+            instance.send_message(chat_id=chat_id, text=text)
 
-        logger.info("It's time to take a picture...")
-        text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
-        instance.send_message(chat_id=chat_id, text=text)
-
+        set_cron(instance)
         return self.stdout.write(self.style.SUCCESS("Done."))
