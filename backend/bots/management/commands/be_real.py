@@ -42,8 +42,7 @@ def set_cron(instance):
         tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
         expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
 
-        be_real = instance.additional_data["be_real"]
-        if (next_run := (be_real.get("next_run"))) and (
+        if (next_run := (instance.additional_data["be_real"].get("next_run"))) and (
             next_run := datetime.strptime(next_run, DATETIME_FORMAT)
         ) > datetime.today():
             expression = (
@@ -56,8 +55,8 @@ def set_cron(instance):
             logger.info(f"Existing next_run {next_run}")
             next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
             instance.additional_data["be_real"]["next_run"] = next_run_str
-            logger.info(f"Setting next run to {next_run_str}")
             instance.save()
+            logger.info(f"Set next run to {next_run_str}")
 
         if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
             msg = f"New cron: {expression}"
