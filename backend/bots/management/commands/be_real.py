@@ -87,7 +87,7 @@ class Command(BaseCommand):
             raise CommandError(
                 "Bot with be_real config in additional_data does not exist"
             )
-        instance.additional_data["be_real"]["caca"] = "maca"
+        instance.additional_data["be_real"]["caca"] = datetime.now()
         instance.save()
 
         be_real = instance.additional_data["be_real"]
