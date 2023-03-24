@@ -47,7 +47,7 @@ def set_cron(instance):
             next_run := datetime.strptime(next_run, DATETIME_FORMAT).replace(
                 second=0, microsecond=0
             )
-        ) >= datetime.today():
+        ) > datetime.today():
             expression = (
                 f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
             )
@@ -62,9 +62,9 @@ def set_cron(instance):
             instance.save()
 
         if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
-            logger.info("Got different expression, setting cron")
-            logger.info(f"Previous: {' '.join(map(str, cmd.slices))}")
-            logger.info(f"New: {expression}")
+            logger.info(
+                f"New cron: {expression}. Previous: {' '.join(map(str, cmd.slices))}"
+            )
             cmd.setall(expression)
         else:
             logger.info("Same cron, no changes required")
