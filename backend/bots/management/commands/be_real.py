@@ -27,8 +27,6 @@ def get_tomorrow_run() -> datetime:
 
 
 def set_cron(instance):
-    logger.info("Setting cron for the next run...")
-
     with CronTab(user="andreierdna") as cron:
         if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
             crons = "\n".join(commands)
@@ -46,10 +44,9 @@ def set_cron(instance):
         be_real = instance.additional_data["be_real"]
         if not (next_run := (be_real.get("next_run"))):
             logger.info("No existing cron in config. Creating new.")
-            next_run = tomorrow_run.strftime(DATETIME_FORMAT)
+            be_real["next_run"] = tomorrow_run.strftime(DATETIME_FORMAT)
             instance.save()
-
-        if (
+        elif (
             next_run := datetime.strptime(next_run, DATETIME_FORMAT)
         ) > datetime.today():
             expression = (
