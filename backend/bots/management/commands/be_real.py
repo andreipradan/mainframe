@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 DATETIME_FORMAT = "%H:%M %d.%m.%Y"
 PATH = "/var/log/mainframe/crons/be-real/"
 COMMAND = (
-    f"mkdir -p {PATH}`date +\%Y` && "
+    f"mkdir -p {PATH}`date +%Y` && "
     "$HOME/.virtualenvs/mainframe/bin/python $HOME/projects/mainframe/backend/manage.py be_real >> "
-    f"{PATH}`date +\%Y`/`date +\%Y-\%m`.log 2>&1"
+    f"{PATH}`date +%Y`/`date +%Y-%m`.log 2>&1"
 )
 
 
