@@ -36,18 +36,27 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        cron = CronTab(user="andreierdna")
+        if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
+            crons = "\n".join(commands)
+            raise CommandError(f"Multiple 'be_real' crons found: {crons}")
+        if cmds_no < 1:
+            logger.info("No existing cron. Creating...")
+            cmd = cron.new(command=COMMAND)
+        else:
+            cmd = commands[0]
+            not cmd.enabled and cmd.enable() and logger.info("Enabling...")
+
         try:
             instance = Bot.objects.get(additional_data__be_real__isnull=False)
         except OperationalError as e:
             raise CommandError(str(e))
         except Bot.DoesNotExist:
-            raise CommandError(
-                "Bot with be_real config in additional_data does not exist"
-            )
+            raise CommandError("Bot with be_real config in additional_data missing")
 
         be_real = instance.additional_data["be_real"]
         if not isinstance(be_real, dict) or not (chat_id := be_real.get("chat_id")):
-            raise CommandError("chat_id missing from be_real in bot additional data")
+            raise CommandError("Missing chat_id from be_real config")
 
         if options["post_deploy"] is False:
             logger.info("It's time to take a picture...")
@@ -55,42 +64,25 @@ class Command(BaseCommand):
             instance.send_message(chat_id=chat_id, text=text)
         else:
             logger.info("Initializing be_real...")
-
-        with CronTab(user="andreierdna") as cron:
-            if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
-                crons = "\n".join(commands)
-                raise CommandError(f"Multiple 'be_real' crons found: {crons}")
-
-            if cmds_no < 1:
-                logger.info("No existing cron. Creating...")
-                cmd = cron.new(command=COMMAND)
-            else:
-                cmd = commands[0]
-                not cmd.enabled and cmd.enable() and logger.info("Enabling...")
-
-            tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
-            expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
-
             if (next_run := (instance.additional_data["be_real"].get("next_run"))) and (
-                next_run := datetime.strptime(next_run, DATETIME_FORMAT)
-            ) > datetime.today():
-                expression = f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
+                next_run := (datetime.strptime(next_run, DATETIME_FORMAT))
+            ) >= datetime.today():
                 logger.info("Cron in future")
                 logger.info(f"Now: {datetime.today()}")
                 logger.info(f"Next run: {next_run}")
-            else:
-                logger.info(f"Existing next_run {next_run}")
-                next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
-                instance.additional_data["be_real"]["next_run"] = next_run_str
-                instance.save()
-                logger.info(f"Set next run to {next_run_str}")
+                cmd.setall(
+                    f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
+                )
+                cron.write()
+                return logger.info(f"Set cron to {next_run}")
 
-            if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
-                msg = f"New cron: {expression}"
-                if cmds_no:
-                    msg += f" (Previous: {' '.join(map(str, cmd.slices))})"
-                logger.info(msg)
-                cmd.setall(expression)
-            else:
-                logger.info("Same cron, no changes required")
+        tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
+        tomorrow_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
+        expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
+        cmd.setall(expression)
+        cron.write()
+        instance.additional_data["be_real"]["next_run"] = tomorrow_run_str
+        instance.save()
+        logger.info(f"Set next run and cron to {tomorrow_run_str}")
+
         return self.stdout.write(self.style.SUCCESS("Done."))
