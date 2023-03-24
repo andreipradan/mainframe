@@ -10,6 +10,7 @@ from bots.models import Bot
 
 logger = logging.getLogger(__name__)
 
+DATETIME_FORMAT = "%H:%M %d.%m.%Y"
 PATH = "/var/log/mainframe/crons/be-real/"
 COMMAND = (
     f"mkdir -p {PATH}`date +\%Y` && "
@@ -33,10 +34,6 @@ def set_cron(instance):
             crons = "\n".join(commands)
             raise CommandError(f"Multiple 'be_real' crons found: {crons}")
 
-        now = datetime.today()
-        tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
-        expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
-
         if cmds_no < 1:
             logger.info("No existing cron. Creating...")
             cmd = cron.new(command=COMMAND)
@@ -44,19 +41,24 @@ def set_cron(instance):
             cmd = commands[0]
             not cmd.enabled and cmd.enable() and logger.info("Disabled. Enabling...")
 
+        tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
+
         be_real = instance.additional_data["be_real"]
-        if not (next_run := (be_real.get("next_run"))) or next_run.get("cron"):
+        if not (next_run := (be_real.get("next_run"))):
             logger.info("No existing cron in config. Creating new.")
-            next_run = {"cron": expression, "year": tomorrow_run.year}
+            next_run = tomorrow_run.strftime(DATETIME_FORMAT)
             instance.save()
 
-        next_run_str = next_run["cron"].replace(
-            "*", str(next_run.get("year", tomorrow_run.year))
-        )
-        if datetime.strptime(next_run_str, f"%M %H %d %m %Y") > now:
-            expression = next_run["cron"]
-        else:
+        if (
+            next_run := datetime.strptime(next_run, DATETIME_FORMAT)
+        ) > datetime.today():
+            expression = (
+                f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
+            )
             logger.info("Cron in future")
+        else:
+            expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
+            logger.info("Setting cron for tomorrow")
         cmd.setall(expression)
     logger.info(f"Cron set: {expression}")
 
