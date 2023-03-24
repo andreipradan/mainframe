@@ -88,7 +88,7 @@ class Command(BaseCommand):
                 "Bot with be_real config in additional_data does not exist"
             )
         Bot.objects.filter(pk=instance.pk).update(
-            be_real__last_call=datetime.now().isoformat()
+            additional_data__be_real__last_call=datetime.now().isoformat()
         )
 
         be_real = instance.additional_data["be_real"]
