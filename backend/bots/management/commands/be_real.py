@@ -64,7 +64,7 @@ def set_cron(instance):
         if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
             msg = f"New cron: {expression}"
             if cmds_no:
-                msg += " (Previous: {' '.join(map(str, cmd.slices))})"
+                msg += f" (Previous: {' '.join(map(str, cmd.slices))})"
             logger.info(msg)
             cmd.setall(expression)
         else:
