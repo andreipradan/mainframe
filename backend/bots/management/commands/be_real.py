@@ -67,16 +67,12 @@ class Command(BaseCommand):
 
         if options["post_deploy"] is False:
             logger.info("It's time to take a picture...")
-            with open(
-                settings.BASE_DIR
-                / "bots"
-                / "management"
-                / "commands"
-                / "saluturi.json",
-                "r",
-            ) as file:
-                salut = random.choice(json.load(file))
-            text = f"❗️📷 {salut} Bagă o poză acum 📷❗️"
+            data_path = settings.BASE_DIR / "bots" / "management" / "commands" / "data"
+            with open(data_path / "saluturi.json", "r") as salut_file:
+                salut = random.choice(json.load(salut_file))
+            with open(data_path / "actions.json", "r") as actions_file:
+                action = random.choice(json.load(actions_file))
+            text = f"❗️📷 {salut} {action} 📷❗️"
             instance.send_message(chat_id=chat_id, text=text)
         else:
             logger.info("Initializing be_real...")
