@@ -51,7 +51,8 @@ def set_cron(instance):
             )
             logger.info(f"Cron in future\nnext: {next_run}\nnow: {datetime.today()}")
         else:
-            be_real["next_run"] = tomorrow_run.strftime(DATETIME_FORMAT)
+            next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
+            instance.additional_data["be_real"]["next_run"] = next_run_str
             instance.save()
         cmd.setall(expression)
     logger.info(f"Cron set: {expression}")
