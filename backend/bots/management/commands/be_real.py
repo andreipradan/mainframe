@@ -89,7 +89,5 @@ class Command(BaseCommand):
 
         set_cron(instance)
         instance.save()
-        logger.info(
-            f"Set new next_run to {instance.additional_data['be_real']['next_run']}"
-        )
+        logger.info(f"Updating be_real to {instance.additional_data['be_real']}")
         return self.stdout.write(self.style.SUCCESS("Done."))
