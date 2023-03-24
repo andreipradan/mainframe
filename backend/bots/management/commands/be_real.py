@@ -51,6 +51,9 @@ class Command(BaseCommand):
         try:
             instance = Bot.objects.get(additional_data__be_real__isnull=False)
         except OperationalError as e:
+            if options["post_deploy"] is True:
+                cmd.minute = str(int(str(cmd.minute)) + 1)
+                cron.write()
             raise CommandError(str(e))
         except Bot.DoesNotExist:
             raise CommandError("Bot with be_real config in additional_data missing")
