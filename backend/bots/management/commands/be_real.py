@@ -40,6 +40,7 @@ def set_cron(instance):
             not cmd.enabled and cmd.enable() and logger.info("Disabled. Enabling...")
 
         tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
+        expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
 
         be_real = instance.additional_data["be_real"]
         if not (next_run := (be_real.get("next_run"))):
@@ -53,9 +54,6 @@ def set_cron(instance):
                 f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
             )
             logger.info("Cron in future")
-        else:
-            expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
-            logger.info("Setting cron for tomorrow")
         cmd.setall(expression)
     logger.info(f"Cron set: {expression}")
 
