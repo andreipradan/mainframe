@@ -85,10 +85,10 @@ class Command(BaseCommand):
         set_cron(instance)
 
         if options["post_deploy"] is True:
-            logger.info("Initializing be_real...")
-        else:
-            logger.info("It's time to take a picture...")
-            text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
-            instance.send_message(chat_id=chat_id, text=text)
+            return logger.info("Post deploy done.")
+
+        logger.info("It's time to take a picture...")
+        text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
+        instance.send_message(chat_id=chat_id, text=text)
 
         return self.stdout.write(self.style.SUCCESS("Done."))
