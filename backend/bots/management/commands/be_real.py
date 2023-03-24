@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from random import randrange
 
+import telegram
 from crontab import CronTab
 from django.core.management.base import BaseCommand, CommandError
 from django.db import OperationalError
@@ -96,7 +97,8 @@ class Command(BaseCommand):
         else:
             logger.info("It's time to take a picture...")
             text = "❗️📷 Ce faci? Bagă o poză acum 📷❗️"
-            instance.send_message(chat_id=chat_id, text=text)
+            telegram.Bot(instance.token).send_message(chat_id=chat_id, text=text)
+            # instance.send_message(chat_id=chat_id, text=text)
 
         set_cron(instance)
         return self.stdout.write(self.style.SUCCESS("Done."))
