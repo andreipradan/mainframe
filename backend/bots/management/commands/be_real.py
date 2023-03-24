@@ -52,7 +52,11 @@ def set_cron(instance):
             logger.info(f"Cron in future\nnext: {next_run}\nnow: {datetime.today()}")
         else:
             next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
-            instance.additional_data["be_real"]["next_run"] = next_run_str
+            be_real["next_run"] = next_run_str
+            instance.save()
+            logger.info(
+                f"Set new next_run to {instance.additional_data['be_real']['next_run']}"
+            )
         cmd.setall(expression)
     logger.info(f"Cron set: {expression}")
 
@@ -88,5 +92,4 @@ class Command(BaseCommand):
             instance.send_message(chat_id=chat_id, text=text)
 
         set_cron(instance)
-        instance.save()
         return self.stdout.write(self.style.SUCCESS("Done."))
