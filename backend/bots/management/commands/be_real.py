@@ -51,7 +51,9 @@ def set_cron(instance):
             expression = (
                 f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
             )
-            logger.info(f"Cron in future\nnext: {next_run}\nnow: {datetime.today()}")
+            logger.info("Cron in future")
+            logger.info(f"Now: {datetime.today()}")
+            logger.info(f"Next run: {next_run}")
         else:
             logger.info("No next run set or next_run <= today")
             next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
@@ -61,7 +63,7 @@ def set_cron(instance):
 
         if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
             logger.info("Got different expression, setting cron")
-            logger.info(f"Previous: {cmd}")
+            logger.info(f"Previous: {' '.join(cmd.slices)}")
             logger.info(f"New: {expression}")
             cmd.setall(expression)
         else:
