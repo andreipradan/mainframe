@@ -27,50 +27,48 @@ def get_tomorrow_run() -> datetime:
 
 
 def set_cron(instance):
-    cron = CronTab(user="andreierdna")
+    with CronTab(user="andreierdna") as cron:
+        if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
+            crons = "\n".join(commands)
+            raise CommandError(f"Multiple 'be_real' crons found: {crons}")
 
-    if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
-        crons = "\n".join(commands)
-        raise CommandError(f"Multiple 'be_real' crons found: {crons}")
+        if cmds_no < 1:
+            logger.info("No existing cron. Creating...")
+            cmd = cron.new(command=COMMAND)
+        else:
+            cmd = commands[0]
+            not cmd.enabled and cmd.enable() and logger.info("Disabled. Enabling...")
 
-    if cmds_no < 1:
-        logger.info("No existing cron. Creating...")
-        cmd = cron.new(command=COMMAND)
-    else:
-        cmd = commands[0]
-        not cmd.enabled and cmd.enable() and logger.info("Disabled. Enabling...")
+        tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
+        expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
 
-    tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
-    expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
+        be_real = instance.additional_data["be_real"]
+        if (next_run := (be_real.get("next_run"))) and (
+            next_run := datetime.strptime(next_run, DATETIME_FORMAT).replace(
+                second=0, microsecond=0
+            )
+        ) > datetime.today():
+            expression = (
+                f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
+            )
+            logger.info("Cron in future")
+            logger.info(f"Now: {datetime.today()}")
+            logger.info(f"Next run: {next_run}")
+        else:
+            logger.info("No next run set or next_run <= today")
+            next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
+            be_real["next_run"] = next_run_str
+            logger.info(f"Setting next run to {next_run_str}")
+            instance.save()
 
-    be_real = instance.additional_data["be_real"]
-    if (next_run := (be_real.get("next_run"))) and (
-        next_run := datetime.strptime(next_run, DATETIME_FORMAT).replace(
-            second=0, microsecond=0
-        )
-    ) > datetime.today():
-        expression = (
-            f"{next_run.minute} {next_run.hour} {next_run.day} {next_run.month} *"
-        )
-        logger.info("Cron in future")
-        logger.info(f"Now: {datetime.today()}")
-        logger.info(f"Next run: {next_run}")
-    else:
-        logger.info("No next run set or next_run <= today")
-        next_run_str = tomorrow_run.strftime(DATETIME_FORMAT)
-        be_real["next_run"] = next_run_str
-        logger.info(f"Setting next run to {next_run_str}")
-        instance.save()
-
-    if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
-        msg = f"New cron: {expression}"
-        if cmds_no:
-            msg += f" (Previous: {' '.join(map(str, cmd.slices))})"
-        logger.info(msg)
-        cmd.setall(expression)
-        cron.write()
-    else:
-        logger.info("Same cron, no changes required")
+        if expression != f"{cmd.minute} {cmd.hour} {cmd.day} {cmd.month} *":
+            msg = f"New cron: {expression}"
+            if cmds_no:
+                msg += f" (Previous: {' '.join(map(str, cmd.slices))})"
+            logger.info(msg)
+            cmd.setall(expression)
+        else:
+            logger.info("Same cron, no changes required")
 
 
 class Command(BaseCommand):
