@@ -77,7 +77,11 @@ def mainframe(request):
     # Process the GitHub events
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
 
-    bot.send_message(chat_id=chat_id, text=f"{prefix} Got a '{event}' event")
+    bot.send_message(
+        chat_id=chat_id,
+        text=f"{prefix} Got a '{event}' event",
+        disable_notification=True,
+    )
     if event == "ping":
         return HttpResponse("pong")
 
@@ -91,7 +95,9 @@ def mainframe(request):
             return HttpResponse("ok")
 
         if output.strip().startswith("CONFLICT"):
-            bot.send_message(chat_id=chat_id, text=f"[{prefix}] Conflict")
+            bot.send_message(
+                chat_id=chat_id, text=f"[{prefix}] Conflict", disable_notification=True
+            )
             return HttpResponse("ok")
 
         setup_cmd = "./../deploy/setup.sh"
@@ -111,7 +117,7 @@ def mainframe(request):
         if extra:
             msg += f" (+ {' & '.join(extra)})"
 
-        bot.send_message(chat_id=chat_id, text=msg)
+        bot.send_message(chat_id=chat_id, text=msg, disable_notification=True)
 
         try:
             run_cmd(setup_cmd)
@@ -119,7 +125,11 @@ def mainframe(request):
             bot.send_message(chat_id=chat_id, text=f"[mainframe] Error: {e.output}")
             return HttpResponse("")
 
-        bot.send_message(chat_id=chat_id, text=f"[{prefix}] Deployed successfully")
+        bot.send_message(
+            chat_id=chat_id,
+            text=f"[{prefix}] Deployed successfully",
+            disable_notification=True,
+        )
         return HttpResponse("success")
 
     return HttpResponse(status=204)
