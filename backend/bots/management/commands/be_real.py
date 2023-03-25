@@ -26,7 +26,7 @@ COMMAND = (
 def get_tomorrow_run() -> datetime:
     tomorrow = datetime.today() + timedelta(days=1)
     start = tomorrow.replace(hour=9, minute=30, second=0, microsecond=0)
-    end = start + timedelta(hours=14)
+    end = start + timedelta(hours=13)
     return start + timedelta(seconds=randrange((end - start).seconds))
 
 
