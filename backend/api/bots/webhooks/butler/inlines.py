@@ -4,7 +4,7 @@ import math
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-from api.bots.webhooks.shared import BaseInlines
+from api.bots.webhooks.shared import BaseInlines, chunks
 from bots.clients import mongo as database
 from meals.models import Meal
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class MealsInline(BaseInlines):
-    PER_PAGE = 5
+    PER_PAGE = 24
 
     def __init__(self, filters: list):
         meal_filters = {}
@@ -23,13 +23,41 @@ class MealsInline(BaseInlines):
         self.filters = meal_filters
 
     @classmethod
+    def get_meals_markup(cls, day, page, bottom_level=False):
+        buttons = [
+            [
+                InlineKeyboardButton("👆", callback_data=f"meal fetch_day {day} {page}"),
+                InlineKeyboardButton("✅", callback_data="end"),
+            ]
+        ]
+        if bottom_level:
+            return InlineKeyboardMarkup(buttons)
+
+        items = Meal.objects.filter(date=day).order_by("type")
+        logger.info(f"Got {len(items)} meals")
+
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        f"{item.get_type_display()}",
+                        callback_data=f"meal fetch {item.pk} {page}",
+                    )
+                    for item in chunk
+                ]
+                for chunk in chunks(list(items), 5)
+            ]
+            + buttons
+        )
+
+    @classmethod
     def get_markup(cls, page=1, is_top_level=False, last_page=None):
         buttons = [[InlineKeyboardButton("✅", callback_data="end")]]
 
         if not is_top_level:
             buttons[0].insert(
                 0,
-                InlineKeyboardButton("👆", callback_data=f"meal {page}"),
+                InlineKeyboardButton("👆", callback_data=f"meal start {page}"),
             )
             return InlineKeyboardMarkup(buttons)
 
@@ -38,32 +66,53 @@ class MealsInline(BaseInlines):
                 0,
                 InlineKeyboardButton(
                     "👈",
-                    callback_data=f"meal {page - 1 if page > 1 else last_page}",
+                    callback_data=f"meal start {page - 1 if page > 1 else last_page}",
                 ),
             )
             buttons[0].append(
                 InlineKeyboardButton(
                     "👉",
-                    callback_data=f"meal {page + 1 if page != last_page else 1}",
+                    callback_data=f"meal start {page + 1 if page != last_page else 1}",
                 )
             )
 
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
-        items = Meal.objects.order_by("date", "type")[start : start + cls.PER_PAGE]
-        logger.info(f"Got {len(items)} meals")
+        items = Meal.objects.distinct("date").order_by("date", "type")[
+            start : start + cls.PER_PAGE
+        ]
+        logger.info(f"Got {len(items)} dates")
 
         return InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
-                        f"{item.date.isoformat()} - {item.get_type_display()}",
-                        callback_data=f"fetch_meal {item.pk} {page}",
+                        f"{item.date.strftime('%d %b %y')}",
+                        callback_data=f"meal fetch_day {item.date.strftime('%Y-%m-%d')} {page}",
                     )
+                    for item in chunk
                 ]
-                for item in items
+                for chunk in chunks(list(items), 3)
             ]
             + buttons
         )
+
+    @classmethod
+    def fetch_day(cls, update, day, page):
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=day,
+                reply_markup=cls.get_meals_markup(day=day, page=page),
+                disable_web_page_preview=True,
+                parse_mode=telegram.ParseMode.HTML,
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e)
+            return e.message
 
     @classmethod
     def fetch(cls, update, _id, page):
@@ -79,7 +128,9 @@ class MealsInline(BaseInlines):
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=parse_meal(item) if item else "Not found",
-                reply_markup=cls.get_markup(page=page),
+                reply_markup=cls.get_meals_markup(
+                    day=item.date.strftime("%Y-%m-%d"), page=page, bottom_level=True
+                ),
                 disable_web_page_preview=True,
                 parse_mode=telegram.ParseMode.HTML,
             ).to_json()
@@ -89,10 +140,10 @@ class MealsInline(BaseInlines):
 
     @classmethod
     def start(cls, update, page=None):
-        count = Meal.objects.count()
+        count = Meal.objects.distinct("date").count()
         logger.info(f"Counted {count} meals")
         last_page = math.ceil(count / cls.PER_PAGE)
-        welcome_message = "Welcome {name}\nChoose a meal [{page} / {total}]"
+        welcome_message = "Welcome {name}\nChoose a date [{page} / {total}]"
 
         if not update.callback_query:
             user = update.message.from_user

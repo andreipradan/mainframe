@@ -44,9 +44,11 @@ def call(data, instance):
         if not args:
             return logger.error(f"No args for callback query data: {data}")
         if callback == "meal":
-            return MealsInline.start(update, args.pop(0))
-        if callback == "fetch_meal":
-            return MealsInline.fetch(update, *args)
+            try:
+                return getattr(MealsInline, args.pop(0))(update, *args)
+            except (AttributeError, TypeError) as e:
+                logger.error(e)
+                return ""
 
         saved_inline = SavedMessagesInlines(args.pop(0))
         method = getattr(saved_inline, callback, None)
