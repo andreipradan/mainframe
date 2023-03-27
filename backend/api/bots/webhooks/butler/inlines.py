@@ -24,15 +24,17 @@ class MealsInline(BaseInlines):
 
     @classmethod
     def get_meals_markup(cls, day, page, bottom_level=False):
-        buttons = [
-            [
-                InlineKeyboardButton("👆", callback_data=f"meal fetch_day {day} {page}"),
-                InlineKeyboardButton("✅", callback_data="end"),
-            ]
-        ]
+        buttons = [[InlineKeyboardButton("✅", callback_data="end")]]
         if bottom_level:
+            buttons[0].insert(
+                0,
+                InlineKeyboardButton("👆", callback_data=f"meal fetch_day {day} {page}"),
+            )
             return InlineKeyboardMarkup(buttons)
 
+        buttons[0].insert(
+            0, InlineKeyboardButton("👆", callback_data=f"meal start {page}")
+        )
         items = Meal.objects.filter(date=day).order_by("type")
         logger.info(f"Got {len(items)} meals")
 
