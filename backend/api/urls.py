@@ -10,5 +10,6 @@ urlpatterns = [
     path("hooks/", include("api.hooks.urls")),
     path("lights/", include("api.lights.urls")),
     path("logs/", include("api.logs.urls")),
+    path("meals/", include(("meals.routers", "api"), namespace="meals")),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
 ]
