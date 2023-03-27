@@ -12,7 +12,7 @@ from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
 
-from api.bots.webhooks.butler.inlines import SavedMessagesInlines
+from api.bots.webhooks.butler.inlines import SavedMessagesInlines, MealsInline
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
@@ -42,7 +42,11 @@ def call(data, instance):
         if callback == "end":
             return SavedMessagesInlines.end(update)
         if not args:
-            return logger.error(f"No chat id for callback query data: {data}")
+            return logger.error(f"No args for callback query data: {data}")
+        if callback == "meal":
+            return MealsInline.start(update, args.pop(0))
+        if callback == "fetch_meal":
+            return MealsInline.fetch(update, *args)
 
         saved_inline = SavedMessagesInlines(args.pop(0))
         method = getattr(saved_inline, callback, None)
@@ -159,6 +163,9 @@ def call(data, instance):
 
     if cmd == "mainframe":
         return reply(update, text=get_ngrok_url())
+
+    if cmd == "meals":
+        return MealsInline.start(update, page=1)
 
     if cmd == "randomize":
         if len(args) not in range(2, 51):

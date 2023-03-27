@@ -6,8 +6,124 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines
 from bots.clients import mongo as database
+from meals.models import Meal
 
 logger = logging.getLogger(__name__)
+
+
+class MealsInline(BaseInlines):
+    PER_PAGE = 5
+
+    def __init__(self, filters: list):
+        meal_filters = {}
+        while filters:
+            if len(filters) < 2:
+                break
+            meal_filters[filters.pop()] = filters.pop()
+        self.filters = meal_filters
+
+    @classmethod
+    def get_markup(cls, page=1, is_top_level=False, last_page=None):
+        buttons = [[InlineKeyboardButton("✅", callback_data="end")]]
+
+        if not is_top_level:
+            buttons[0].insert(
+                0,
+                InlineKeyboardButton("👆", callback_data=f"meal {page}"),
+            )
+            return InlineKeyboardMarkup(buttons)
+
+        if last_page != 1:
+            buttons[0].insert(
+                0,
+                InlineKeyboardButton(
+                    "👈",
+                    callback_data=f"meal {page - 1 if page > 1 else last_page}",
+                ),
+            )
+            buttons[0].append(
+                InlineKeyboardButton(
+                    "👉",
+                    callback_data=f"meal {page + 1 if page != last_page else 1}",
+                )
+            )
+
+        start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
+        items = Meal.objects.order_by("date", "type")[start : start + cls.PER_PAGE]
+        logger.info(f"Got {len(items)} meals")
+
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        f"{item.date.isoformat()} - {item.get_type_display()}",
+                        callback_data=f"fetch_meal {item.pk} {page}",
+                    )
+                ]
+                for item in items
+            ]
+            + buttons
+        )
+
+    @classmethod
+    def fetch(cls, update, _id, page):
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+        try:
+            item = Meal.objects.get(pk=_id)
+        except Meal.DoesNotExist:
+            item = None
+
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=parse_meal(item) if item else "Not found",
+                reply_markup=cls.get_markup(page=page),
+                disable_web_page_preview=True,
+                parse_mode=telegram.ParseMode.HTML,
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e)
+            return e.message
+
+    @classmethod
+    def start(cls, update, page=None):
+        count = Meal.objects.count()
+        logger.info(f"Counted {count} meals")
+        last_page = math.ceil(count / cls.PER_PAGE)
+        welcome_message = "Welcome {name}\nChoose a meal [{page} / {total}]"
+
+        if not update.callback_query:
+            user = update.message.from_user
+            logger.info("User %s started the conversation.", user.full_name)
+
+            return update.message.reply_text(
+                welcome_message.format(
+                    name=user.full_name, page=1, total=last_page, count=count
+                ),
+                reply_markup=cls.get_markup(is_top_level=True, last_page=last_page),
+            ).to_json()
+
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+        user = update.callback_query.from_user
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=welcome_message.format(
+                    name=user.full_name, page=page, total=last_page, count=count
+                ),
+                reply_markup=cls.get_markup(
+                    page=int(page),
+                    is_top_level=True,
+                    last_page=last_page,
+                ),
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e.message)
+            return e.message
 
 
 class SavedMessagesInlines(BaseInlines):
@@ -136,3 +252,22 @@ def link(item):
 {text or "-"}
 
 Link: https://t.me/c/{chat_id}/{message_id}"""
+
+
+def parse_meal(item: Meal):
+    ingredients = "\n".join(
+        [f"{i + 1}. {ingredient}" for i, ingredient in enumerate(item.ingredients)]
+    )
+    quantities = "\n".join([f"{k} - {v}" for k, v in item.quantities.items()])
+    return f"""
+<b>{item.name}</b>
+{item.date.isoformat()}, {item.get_type_display()}
+
+{item.name or "-"}
+
+Ingredients:
+{ingredients}
+
+Quantity:
+{quantities}
+"""
