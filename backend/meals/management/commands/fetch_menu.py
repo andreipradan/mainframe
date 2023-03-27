@@ -78,7 +78,6 @@ class Command(BaseCommand):
             if row.attrs["class"] == ["row"]:
                 current_date = current_date + timedelta(days=1)
             meal.date = current_date
-            meal.type = TYPE_MAPPING[meal.type.lower()]
             meals.append(meal)
 
         logger.info(f"Got {len(meals)} meals, saving...")
@@ -108,7 +107,7 @@ class Command(BaseCommand):
         nutritional_values = self.parse_nutritional_values(parse("menu-pic").table)
         return Meal(
             name=row.h4.text,
-            type=row.h2.text,
+            type=TYPE_MAPPING[row.h2.text],
             ingredients=ingredients,
             quantities=quantities,
             nutritional_values=nutritional_values,
