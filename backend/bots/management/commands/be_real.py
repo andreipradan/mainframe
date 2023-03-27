@@ -54,7 +54,7 @@ class Command(BaseCommand):
         try:
             instance = Bot.objects.get(additional_data__be_real__isnull=False)
         except OperationalError as e:
-            if options["post_deploy"] is True:
+            if options["post_deploy"] is False:
                 cmd.minute = str(int(str(cmd.minute)) + 1)
                 cron.write()
             raise CommandError(str(e))
