@@ -50,9 +50,9 @@ export const botsSlice = createSlice({
     },
     update: (state, action) => {
       state.errors = null;
-      state.loadingBots = state.loadingBots?.filter((bot) => bot.id === action.payload.id);
+      state.loadingBots = state.loadingBots?.filter((botId) => botId !== action.payload.id);
       state.results = state.results.map((bot) => (bot.id === action.payload.id ? action.payload : bot));
-      state.selectedBot = action.payload.id === state.selectedBot.id ? action.payload : state.selectedBot
+      state.selectedBot = action.payload.id === state.selectedBot?.id ? action.payload : state.selectedBot
     },
   },
 });
