@@ -1,12 +1,11 @@
 from django.db import models
 
+from core.models import TimeStampedModel
 
-class Earthquake(models.Model):
+
+class Earthquake(TimeStampedModel):
     SOURCE_INFP = "infp"
     SOURCE_USGS = "usgs"
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     depth = models.FloatField()
     intensity = models.CharField(blank=True, max_length=16, null=True)

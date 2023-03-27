@@ -6,10 +6,11 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
+from core.models import TimeStampedModel
 
-class Bot(models.Model):
+
+class Bot(TimeStampedModel):
     additional_data = models.JSONField(blank=True, default=dict, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     first_name = models.CharField(max_length=32)
     full_name = models.CharField(max_length=32)
     is_external = models.BooleanField(default=False)
@@ -17,7 +18,6 @@ class Bot(models.Model):
     last_name = models.CharField(blank=True, max_length=32, null=True)
     telegram_id = models.BigIntegerField()
     token = models.CharField(max_length=64, unique=True)
-    updated_at = models.DateTimeField(auto_now=True)
     username = models.CharField(max_length=32)
     webhook = models.URLField(null=True, blank=True)
     webhook_name = models.CharField(blank=True, max_length=32, null=True)

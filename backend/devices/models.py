@@ -1,10 +1,9 @@
 from django.db import models
 
+from core.models import TimeStampedModel
 
-class Device(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
+class Device(TimeStampedModel):
     ip = models.GenericIPAddressField()
     is_active = models.BooleanField(default=False)
     mac = models.CharField(max_length=24, unique=True)
