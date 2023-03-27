@@ -5,9 +5,10 @@ import Spinner from '../app/shared/Spinner';
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
+const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const Logs = lazy(() => import('./logs/Logs'));
-const Devices = lazy(() => import('./devices/Devices'));
+const Meals = lazy(() => import('./meals/Meals'));
 const Todo = lazy(() => import('./apps/TodoList'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
@@ -36,10 +37,11 @@ class AppRoutes extends Component {
         <Switch>
           <Route exact path="/dashboard" component={ Dashboard } />
           <Route exact path="/bots" component={ Bots } />
+          <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />
           <Route exact path="/logs" component={ Logs } />
+          <Route exact path="/meals" component={ Meals } />
           <Route exact path="/todo" component={ Todo } />
-          <Route exact path="/devices" component={ Devices } />
 
           <Route path="/basic-ui/buttons" component={ Buttons } />
           <Route path="/basic-ui/dropdowns" component={ Dropdowns } />

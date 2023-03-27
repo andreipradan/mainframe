@@ -128,6 +128,12 @@ class Sidebar extends Component {
               <span className="menu-title"><Trans>Bots</Trans></span>
             </Link>
           </li>
+          <li className={ this.isPathActive('/devices') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+            <Link className="nav-link" to="/devices">
+              <span className="menu-icon"><i className="mdi mdi-text"></i></span>
+              <span className="menu-title"><Trans>Devices</Trans></span>
+            </Link>
+          </li>
           <li className={ this.isPathActive('/earthquakes') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <Link className="nav-link" to="/earthquakes">
               <span className="menu-icon"><i className="mdi mdi-earth"></i></span>
@@ -140,10 +146,10 @@ class Sidebar extends Component {
               <span className="menu-title"><Trans>Logs</Trans></span>
             </Link>
           </li>
-          <li className={ this.isPathActive('/devices') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-            <Link className="nav-link" to="/devices">
-              <span className="menu-icon"><i className="mdi mdi-text"></i></span>
-              <span className="menu-title"><Trans>Devices</Trans></span>
+          <li className={ this.isPathActive('/meals') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+            <Link className="nav-link" to="/meals">
+              <span className="menu-icon"><i className="mdi mdi-food"></i></span>
+              <span className="menu-title">Meals</span>
             </Link>
           </li>
           <li className={ this.isPathActive('/todo') ? 'nav-item menu-items active' : 'nav-item menu-items' }>

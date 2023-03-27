@@ -5,6 +5,7 @@ import devicesReducer from "../redux/devicesSlice"
 import earthquakesReducer from "../redux/earthquakesSlice"
 import lightsReducer from "../redux/lightsSlice";
 import logsReducer from "../redux/logsSlice";
+import mealsReducer from "../redux/mealsSlice";
 
 export default configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export default configureStore({
     earthquakes: earthquakesReducer,
     lights: lightsReducer,
     logs: logsReducer,
+    meals: mealsReducer,
   },
 });
