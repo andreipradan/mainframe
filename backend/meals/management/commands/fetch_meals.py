@@ -107,7 +107,7 @@ class Command(BaseCommand):
         nutritional_values = self.parse_nutritional_values(parse("menu-pic").table)
         return Meal(
             name=row.h4.text,
-            type=TYPE_MAPPING[row.h2.text],
+            type=TYPE_MAPPING[row.h2.text.lower()],
             ingredients=ingredients,
             quantities=quantities,
             nutritional_values=nutritional_values,

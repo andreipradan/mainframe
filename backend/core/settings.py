@@ -35,15 +35,14 @@ SECRET_KEY = env("SECRET_KEY", default="insecure-S#perS3crEt_007")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(env("DEBUG", default=0))
 
-if not DEBUG:
-    sentry_sdk.init(
-        dsn=env("SENTRY_DSN"),
-        integrations=[
-            DjangoIntegration(),
-        ],
-        traces_sample_rate=1.0,
-        send_default_pii=False,
-    )
+sentry_sdk.init(
+    dsn=env("SENTRY_DSN"),
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=False,
+)
 
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS", default="*").split(" ")
 
