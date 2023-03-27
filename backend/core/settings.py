@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "bots",
     "devices",
     "earthquakes",
+    "meals",
 ]
 
 MIDDLEWARE = [
