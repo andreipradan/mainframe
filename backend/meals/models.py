@@ -6,10 +6,10 @@ from core.models import TimeStampedModel
 
 class Meal(TimeStampedModel):
     TYPE_BREAKFAST = 0
-    TYPE_DINNER = 1
+    TYPE_SNACK_1 = 1
     TYPE_LUNCH = 2
-    TYPE_SNACK_1 = 3
-    TYPE_SNACK_2 = 4
+    TYPE_SNACK_2 = 3
+    TYPE_DINNER = 4
 
     name = models.TextField()
     ingredients = ArrayField(models.CharField(max_length=24), default=list)

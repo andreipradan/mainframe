@@ -1,17 +1,20 @@
 import React, {useEffect, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import MealsApi from "../../api/meals";
 import {Audio, ColorRing} from "react-loader-spinner";
 import {select} from "../../redux/mealsSlice";
 import Alert from "react-bootstrap/Alert";
 import EditModal from "../meals/components/EditModal";
+import MealsApi from "../../api/meals";
 
 
 const Meals = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results: meals, errors, loading, loadingMeals } = useSelector(state => state.meals)
+  const {count, errors, loading, loadingMeals, next, previous, results: meals} = useSelector(state => state.meals)
   const [alertOpen, setAlertOpen] = useState(false)
+
+  const currentPage = !previous ? 1 : (parseInt(new URL(previous).searchParams.get("page")) || 1) + 1
+  const lastPage = Math.ceil(count / meals?.length)
 
   useEffect(() => {
     !meals && dispatch(MealsApi.getList(token));
@@ -98,6 +101,72 @@ const Meals = () =>  {
                     }
                   </tbody>
                 </table>
+              </div>
+              <div className="center-content btn-group mt-4 mr-4" role="group" aria-label="Basic example">
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  disabled={!previous}
+                  onClick={() => dispatch(MealsApi.getList(token, 1))}
+                >
+                  <i className="mdi mdi-skip-backward"/>
+                </button>
+
+                {
+                  !next && currentPage - 2 > 0 &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(MealsApi.getList(token, currentPage - 2))}
+                  >
+                    {currentPage - 2}
+                  </button>
+                }
+                {
+                  previous &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(MealsApi.getList(token, currentPage - 1))}
+                  >
+                    {currentPage - 1}
+                  </button>
+                }
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  disabled
+                >
+                  {currentPage}
+                </button>
+                {
+                  next &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(MealsApi.getList(token, currentPage + 1))}
+                  >
+                    {currentPage + 1}
+                  </button>
+                }
+                {
+                  !previous && currentPage + 2 < lastPage &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(MealsApi.getList(token, currentPage + 2))}
+                  >
+                    {currentPage + 2}
+                  </button>
+                }
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  disabled={!next}
+                  onClick={() => dispatch(MealsApi.getList(token, lastPage))}
+                >
+                  <i className="mdi mdi-skip-forward"/>
+                </button>
               </div>
             </div>
           </div>

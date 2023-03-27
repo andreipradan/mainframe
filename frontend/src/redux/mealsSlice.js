@@ -3,9 +3,12 @@ import { createSlice } from "@reduxjs/toolkit";
 export const mealsSlice = createSlice({
   name: "meals",
   initialState: {
+    count: 0,
     errors: null,
     loading: false,
     loadingMeals: null,
+    next: null,
+    previous: null,
     results: null,
     selectedMeal: null,
   },
@@ -24,9 +27,11 @@ export const mealsSlice = createSlice({
       state.selectedMeal = action.payload ? state.results.find(meal => meal.id === action.payload) : null
     },
     set: (state, action) => {
+      state.count = action.payload.count
       state.errors = null
       state.loading = false
-      state.loadingMeals = null;
+      state.next = action.payload.next
+      state.previous = action.payload.previous
       state.results = action.payload.results;
     },
     setLoading: (state, action) => {state.loading = action.payload},

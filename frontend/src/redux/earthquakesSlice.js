@@ -20,7 +20,6 @@ export const earthquakesSlice = createSlice({
       state.count = action.payload.count
       state.errors = null
       state.loading = false
-      state.loadingBots = null
       state.next = action.payload.next
       state.previous = action.payload.previous
       state.results = action.payload.results;
