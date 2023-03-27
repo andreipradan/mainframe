@@ -78,62 +78,6 @@ def call(data, instance):
 
     cmd, *args = message.text[1:].split(" ")
 
-    if cmd == "translate":
-        return reply(update, translate_text(" ".join(args)))
-
-    if cmd == "randomize":
-        if len(args) not in range(2, 51):
-            return reply(update, "Must contain a list of 2-50 items separated by space")
-        random.shuffle(args)
-        return reply(update, "\n".join(f"{i+1}. {item}" for i, item in enumerate(args)))
-
-    if cmd == "save":
-        if not update.message.reply_to_message:
-            return reply(
-                update,
-                text="This command must be sent as a reply to the message you want to save",
-            )
-        if not (
-            update.message.reply_to_message.text
-            or update.message.reply_to_message.new_chat_title
-        ):
-            return reply(update, text="No text found to save.")
-
-        save_to_db(
-            update.message.reply_to_message,
-            text_override=bot.get_chat(update.message.chat_id).description
-            if update.message.reply_to_message.new_chat_title
-            else None,
-        )
-        return reply(update, text="Saved ✔")
-
-    if cmd == "saved":
-        chat_id = update.message.chat_id
-        if args and args[0].lstrip("-").isnumeric():
-            chat_id = int(args[0])
-        return SavedMessagesInlines(chat_id).start(update, page=1)
-
-    if cmd == "get_chat_id":
-        return reply(update, text=f"Chat ID: {update.message.chat_id}")
-
-    if cmd == "earthquake":
-        earthquake = instance.additional_data.get("earthquake")
-        if not earthquake or not (
-            latest := Earthquake.objects.order_by("-timestamp").first()
-        ):
-            return reply(update, text=f"No earthquakes stored")
-        if len(args) == 2 and args[0] == "set_min_magnitude":
-            instance.additional_data["earthquake"]["min_magnitude"] = args[1]
-            instance.save()
-            return reply(update, text=f"Updated min magnitude to {args[1]}")
-        return reply(
-            update,
-            text=f"{parse_event(latest)}\nLast check: {earthquake['last_check']}",
-        )
-
-    if cmd == "mainframe":
-        return reply(update, text=get_ngrok_url())
-
     if cmd == "bus":
         if len(args) != 1:
             return reply(update, f"Only 1 bus number allowed, got: {len(args)}")
@@ -194,6 +138,63 @@ def call(data, instance):
             f"(Available from: {date_start}) \n{all_rides}"
         )
         return reply(update, text=text)
+
+    if cmd == "earthquake":
+        earthquake = instance.additional_data.get("earthquake")
+        if not earthquake or not (
+            latest := Earthquake.objects.order_by("-timestamp").first()
+        ):
+            return reply(update, text=f"No earthquakes stored")
+        if len(args) == 2 and args[0] == "set_min_magnitude":
+            instance.additional_data["earthquake"]["min_magnitude"] = args[1]
+            instance.save()
+            return reply(update, text=f"Updated min magnitude to {args[1]}")
+        return reply(
+            update,
+            text=f"{parse_event(latest)}\nLast check: {earthquake['last_check']}",
+        )
+
+    if cmd == "get_chat_id":
+        return reply(update, text=f"Chat ID: {update.message.chat_id}")
+
+    if cmd == "mainframe":
+        return reply(update, text=get_ngrok_url())
+
+    if cmd == "randomize":
+        if len(args) not in range(2, 51):
+            return reply(update, "Must contain a list of 2-50 items separated by space")
+        random.shuffle(args)
+        return reply(update, "\n".join(f"{i+1}. {item}" for i, item in enumerate(args)))
+
+    if cmd == "save":
+        if not update.message.reply_to_message:
+            return reply(
+                update,
+                text="This command must be sent as a reply to the message you want to save",
+            )
+        if not (
+            update.message.reply_to_message.text
+            or update.message.reply_to_message.new_chat_title
+        ):
+            return reply(update, text="No text found to save.")
+
+        save_to_db(
+            update.message.reply_to_message,
+            text_override=bot.get_chat(update.message.chat_id).description
+            if update.message.reply_to_message.new_chat_title
+            else None,
+        )
+        return reply(update, text="Saved ✔")
+
+    if cmd == "saved":
+        chat_id = update.message.chat_id
+        if args and args[0].lstrip("-").isnumeric():
+            chat_id = int(args[0])
+        return SavedMessagesInlines(chat_id).start(update, page=1)
+
+    if cmd == "translate":
+        return reply(update, translate_text(" ".join(args)))
+
     logger.error(f"Unhandled: {update.to_dict()}")
 
 
