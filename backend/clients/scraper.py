@@ -12,5 +12,6 @@ def fetch(url, logger):
         requests.exceptions.HTTPError,
         requests.exceptions.ReadTimeout,
     ) as e:
+        logger.error(str(e))
         return e
     return BeautifulSoup(response.content, features="html.parser")

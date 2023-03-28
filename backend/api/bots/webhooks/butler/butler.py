@@ -41,7 +41,7 @@ def call(data, instance: Bot):
             try:
                 return getattr(inline, args.pop(0))(update, *args)
             except (AttributeError, TypeError) as e:
-                logger.error(e)
+                logger.error(f"E: {e}, args: {args}")
                 return ""
 
         saved_inline = SavedMessagesInlines(args.pop(0))
