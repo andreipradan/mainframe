@@ -82,10 +82,11 @@ class BusInline(BaseInlines):
             ]
         ]
 
-        lines = list(
+        lines = sorted(
             Bot.objects.get(additional_data__bus__isnull=False).additional_data["bus"][
                 bus_type
-            ]
+            ],
+            key=itemgetter("name"),
         )
         count = len(lines)
         last_page = math.ceil(count / cls.PER_PAGE)
