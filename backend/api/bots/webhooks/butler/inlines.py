@@ -1,6 +1,6 @@
 import logging
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 from operator import itemgetter
 
 import pytz
@@ -17,7 +17,7 @@ from meals.models import Meal
 logger = logging.getLogger(__name__)
 
 
-def fetch_line(bus_number):
+def fetch_line(bus_number, full_details=False):
     now = datetime.now(pytz.timezone("Europe/Bucharest"))
     weekday = now.weekday()
     if weekday in range(5):
@@ -39,33 +39,86 @@ def fetch_line(bus_number):
         return
 
     lines = [line.strip() for line in resp.text.split("\n")]
-    route = lines.pop(0).split(",")[1]
+    start1, start2 = lines.pop(0).split(",")[1].split(" - ")
     days_of_week = lines.pop(0).split(",")[1]
     date_start = lines.pop(0).split(",")[1]
     lines.pop(0)  # start station
     lines.pop(0)  # stop station
 
-    current_bus_index = None
-    current_bus = lines[0]
-    for i, bus in enumerate(lines):
-        start, *stop = bus.split(",")
-        now_time = now.strftime("%H:%M")
-        if start > now_time or (stop and stop[0] > now_time):
-            current_bus_index = i
-            current_bus = lines[i]
-            break
+    start1_times = []
+    start2_times = []
+    next_start1_index, next_start2_index = None, None
+    for bus in lines:
+        if not bus:
+            continue
+        start1_time, start2_time = bus.split(",")
+        if start1_time:
+            start1_times.append(start1_time)
+        if start2_time:
+            start2_times.append(start2_time)
 
-    if current_bus_index:
-        lines = (
-            lines[current_bus_index - 3 : current_bus_index]
-            + lines[current_bus_index : current_bus_index + 3]
+        now_time = now.strftime("%H:%M")
+        if start1_time and not next_start1_index and start1_time > now_time:
+            next_start1_index = len(start1_times) - 1
+        if start2_time and not next_start2_index and start2_time > now_time:
+            next_start2_index = len(start2_times) - 1
+
+    if not full_details:
+        if not next_start1_index:
+            for i, time in enumerate(reversed(start1_times)):
+                time = datetime.strptime(time, "%H:%M")
+                if now.replace(
+                    hour=time.hour, minute=time.minute, second=0, microsecond=0
+                ) < now - timedelta(minutes=30):
+                    break
+                next_start1_index = len(start1_times) - i - 1
+
+        if not next_start2_index:
+            for i, time in enumerate(reversed(start2_times)):
+                time = datetime.strptime(time, "%H:%M")
+                if now.replace(
+                    hour=time.hour, minute=time.minute, second=0, microsecond=0
+                ) < now - timedelta(minutes=30):
+                    break
+                next_start2_index = len(start2_times) - i - 1
+
+    next_start1_index, next_start2_index = (
+        next_start1_index or 0,
+        next_start2_index or 0,
+    )
+
+    if not full_details:
+        start1_rides = (
+            start1_times[next_start1_index - 2 : next_start1_index]
+            + [f"<b>{start1_times[next_start1_index]}</b>"]
+            + start1_times[next_start1_index + 1 : next_start1_index + 5]
+        )
+        start2_rides = (
+            start2_times[next_start2_index - 2 : next_start2_index]
+            + [f"<b>{start2_times[next_start2_index]}</b>"]
+            + start2_times[next_start2_index + 1 : next_start2_index + 5]
+        )
+    else:
+        start1_rides = (
+            start1_times[:next_start1_index]
+            + [f"<b>{start1_times[next_start1_index]}</b>"]
+            + start1_times[next_start1_index + 1 :]
+        )
+        start2_rides = (
+            start2_times[:next_start2_index]
+            + [f"<b>{start2_times[next_start2_index]}</b>"]
+            + start2_times[next_start2_index + 1 :]
         )
 
-    all_rides = "\n".join(lines)
     return (
-        f"Next <b>{bus_number}</b> "
-        f"at {current_bus}\n\n{route}\n{days_of_week}:\n"
-        f"(Available from: {date_start}) \n{all_rides}"
+        f"<b>[{bus_number}] {start1} - {start2}</b>\n"
+        f"{days_of_week}\n\n"
+        "<b>Next</b>\n"
+        f"{start1}: <b>{start1_times[next_start1_index]}</b>\n"
+        f"{start2}: <b>{start2_times[next_start2_index]}</b>\n\n"
+        f"<b>{start1}</b>\n{' | '.join(start1_rides)}\n"
+        f"<b>{start2}</b>\n{' | '.join(start2_rides)}\n\n"
+        f"{'' if start1_times + start2_times else f'Start date: {date_start}'}"
     )
 
 
@@ -134,29 +187,32 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def get_bottom_markup(cls, bus_type, page):
-        return InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        "👆", callback_data=f"bus fetch_lines {bus_type} {page}"
-                    ),
-                    InlineKeyboardButton("✅", callback_data="end"),
-                ]
-            ]
-        )
+    def get_bottom_markup(cls, bus_type, page, _id, full_details):
+        buttons = [
+            InlineKeyboardButton(
+                "👆", callback_data=f"bus fetch_lines {bus_type} {page}"
+            ),
+            InlineKeyboardButton(
+                "🎯" if full_details else "📜",
+                callback_data=f"bus fetch {_id} {bus_type} {page}{'' if full_details else ' full_details'}",
+            ),
+            InlineKeyboardButton("✅", callback_data="end"),
+        ]
+        return InlineKeyboardMarkup([buttons])
 
     @classmethod
-    def fetch(cls, update, _id, bus_type, page):
+    def fetch(cls, update, _id, bus_type, page, full_details=False):
         bot = update.callback_query.bot
         message = update.callback_query.message
-        text = fetch_line(_id)
+        text = fetch_line(_id, full_details)
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=text or "Not found",
-                reply_markup=cls.get_bottom_markup(bus_type, page=int(page)),
+                reply_markup=cls.get_bottom_markup(
+                    bus_type, int(page), _id, full_details
+                ),
                 disable_web_page_preview=True,
                 parse_mode=telegram.ParseMode.HTML,
             ).to_json()
