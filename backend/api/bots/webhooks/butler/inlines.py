@@ -119,6 +119,7 @@ def fetch_line(bus_number, full_details=False):
         f"<b>{start1}</b>\n{' | '.join(start1_rides)}\n"
         f"<b>{start2}</b>\n{' | '.join(start2_rides)}\n\n"
         f"{'' if start1_times + start2_times else f'Start date: {date_start}'}"
+        f"<a href='https://ctpcj.ro/orare/pdf/orar_{bus_number}.pdf'>PDF version</a>"
     )
 
 
@@ -204,7 +205,7 @@ class BusInline(BaseInlines):
     def fetch(cls, update, _id, bus_type, page, full_details=False):
         bot = update.callback_query.bot
         message = update.callback_query.message
-        text = fetch_line(_id, full_details)
+        text = fetch_line(_id.upper(), full_details)
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
