@@ -1,13 +1,12 @@
 import logging
 from datetime import datetime, timedelta
 
-import requests
-from bs4 import BeautifulSoup
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import OperationalError
 
 from bots.models import Bot
+from clients import scraper
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
@@ -22,19 +21,6 @@ TYPE_MAPPING = {
 
 
 class Command(BaseCommand):
-    def fetch(self, url):
-        logger.info(f"Fetching: {url}")
-        try:
-            response = requests.get(url, timeout=45)
-            response.raise_for_status()
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-            requests.exceptions.ReadTimeout,
-        ) as e:
-            raise CommandError(str(e))
-        return response
-
     def add_arguments(self, parser):
         parser.add_argument("--week", type=int)
 
@@ -55,9 +41,9 @@ class Command(BaseCommand):
         if week := options["week"]:
             url = f"{url}/week-{week}"
 
-        response = self.fetch(url)
-
-        soup = BeautifulSoup(response.content, features="html.parser")
+        soup = scraper.fetch(url, logger)
+        if isinstance(soup, Exception):
+            raise CommandError(str(soup))
 
         week = (
             soup.find("div", {"class": "weekly-buttons"})

@@ -1,9 +1,6 @@
 import logging
 import random
-from datetime import datetime
 
-import pytz
-import requests
 import six
 import telegram
 
@@ -12,7 +9,11 @@ from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
 
-from api.bots.webhooks.butler.inlines import SavedMessagesInlines, MealsInline
+from api.bots.webhooks.butler.inlines import (
+    SavedMessagesInlines,
+    MealsInline,
+    BusInline,
+)
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
@@ -20,15 +21,6 @@ from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
 logger = logging.getLogger(__name__)
-
-ALLOWED_COMMANDS = [
-    "bus",
-    "get_chat_id",
-    "randomize",
-    "save",
-    "saved",
-    "translate",
-]
 
 
 def call(data, instance):
@@ -43,9 +35,10 @@ def call(data, instance):
             return SavedMessagesInlines.end(update)
         if not args:
             return logger.error(f"No args for callback query data: {data}")
-        if callback == "meal":
+        if callback in ["bus", "meal"]:
+            inline = MealsInline if callback == "meal" else BusInline
             try:
-                return getattr(MealsInline, args.pop(0))(update, *args)
+                return getattr(inline, args.pop(0))(update, *args)
             except (AttributeError, TypeError) as e:
                 logger.error(e)
                 return ""
@@ -85,65 +78,7 @@ def call(data, instance):
     cmd, *args = message.text[1:].split(" ")
 
     if cmd == "bus":
-        if len(args) != 1:
-            return reply(update, f"Only 1 bus number allowed, got: {len(args)}")
-
-        bus_number = args[0]
-
-        now = datetime.now(pytz.timezone("Europe/Bucharest"))
-        weekday = now.weekday()
-        if weekday in range(5):
-            day = "lv"
-        elif weekday == 5:
-            day = "s"
-        elif weekday == 6:
-            day = "d"
-        else:
-            logger.error("This shouldn't happen, like ever")
-            return ""
-
-        headers = {"Referer": "https://ctpcj.ro/"}
-        resp = requests.get(
-            f"https://ctpcj.ro/orare/csv/orar_{bus_number}_{day}.csv",
-            headers=headers,
-        )
-        if resp.status_code != 200 or "EROARE" in resp.text:
-            return update.message.reply_text(
-                text=f"Bus {bus_number} not found",
-                parse_mode=telegram.ParseMode.HTML,
-                disable_notification=True,
-            ).to_json()
-
-        lines = [line.strip() for line in resp.text.split("\n")]
-        route = lines.pop(0).split(",")[1]
-        days_of_week = lines.pop(0).split(",")[1]
-        date_start = lines.pop(0).split(",")[1]
-        lines.pop(0)  # start station
-        lines.pop(0)  # stop station
-
-        current_bus_index = None
-        current_bus = lines[0]
-        for i, bus in enumerate(lines):
-            start, *stop = bus.split(",")
-            now_time = now.strftime("%H:%M")
-            if start > now_time or (stop and stop[0] > now_time):
-                current_bus_index = i
-                current_bus = lines[i]
-                break
-
-        if current_bus_index:
-            lines = (
-                lines[current_bus_index - 3 : current_bus_index]
-                + lines[current_bus_index : current_bus_index + 3]
-            )
-
-        all_rides = "\n".join(lines)
-        text = (
-            f"Next <b>{bus_number}</b> "
-            f"at {current_bus}\n\n{route}\n{days_of_week}:\n"
-            f"(Available from: {date_start}) \n{all_rides}"
-        )
-        return reply(update, text=text)
+        return BusInline.start(update)
 
     if cmd == "earthquake":
         earthquake = instance.additional_data.get("earthquake")

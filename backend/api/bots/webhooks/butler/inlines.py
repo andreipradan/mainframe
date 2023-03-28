@@ -1,26 +1,284 @@
 import logging
 import math
+from datetime import datetime
 
+import pytz
+import requests
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines, chunks
 from bots.clients import mongo as database
+from bots.models import Bot
+from clients import scraper
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
 
 
-class MealsInline(BaseInlines):
+def fetch_line(bus_number):
+    now = datetime.now(pytz.timezone("Europe/Bucharest"))
+    weekday = now.weekday()
+    if weekday in range(5):
+        day = "lv"
+    elif weekday == 5:
+        day = "s"
+    elif weekday == 6:
+        day = "d"
+    else:
+        logger.error("This shouldn't happen, like ever")
+        return ""
+
+    headers = {"Referer": "https://ctpcj.ro/"}
+    resp = requests.get(
+        f"https://ctpcj.ro/orare/csv/orar_{bus_number}_{day}.csv",
+        headers=headers,
+    )
+    if resp.status_code != 200 or "EROARE" in resp.text:
+        return
+
+    lines = [line.strip() for line in resp.text.split("\n")]
+    route = lines.pop(0).split(",")[1]
+    days_of_week = lines.pop(0).split(",")[1]
+    date_start = lines.pop(0).split(",")[1]
+    lines.pop(0)  # start station
+    lines.pop(0)  # stop station
+
+    current_bus_index = None
+    current_bus = lines[0]
+    for i, bus in enumerate(lines):
+        start, *stop = bus.split(",")
+        now_time = now.strftime("%H:%M")
+        if start > now_time or (stop and stop[0] > now_time):
+            current_bus_index = i
+            current_bus = lines[i]
+            break
+
+    if current_bus_index:
+        lines = (
+            lines[current_bus_index - 3 : current_bus_index]
+            + lines[current_bus_index : current_bus_index + 3]
+        )
+
+    all_rides = "\n".join(lines)
+    return (
+        f"Next <b>{bus_number}</b> "
+        f"at {current_bus}\n\n{route}\n{days_of_week}:\n"
+        f"(Available from: {date_start}) \n{all_rides}"
+    )
+
+
+class BusInline(BaseInlines):
     PER_PAGE = 24
 
-    def __init__(self, filters: list):
-        meal_filters = {}
-        while filters:
-            if len(filters) < 2:
-                break
-            meal_filters[filters.pop()] = filters.pop()
-        self.filters = meal_filters
+    @classmethod
+    def get_lines_markup(cls, bus_type, page=1):
+        buttons = [
+            [
+                InlineKeyboardButton("♻️", callback_data=f"bus sync {bus_type}"),
+                InlineKeyboardButton("👆", callback_data=f"bus start"),
+                InlineKeyboardButton("✅", callback_data="end"),
+            ]
+        ]
+
+        lines = list(
+            Bot.objects.get(additional_data__bus__isnull=False).additional_data["bus"][
+                bus_type
+            ]
+        )
+        count = len(lines)
+        last_page = math.ceil(count / cls.PER_PAGE)
+        if count > cls.PER_PAGE:
+            buttons[0].insert(
+                0,
+                InlineKeyboardButton(
+                    "👈",
+                    callback_data=f"bus fetch_lines {bus_type} {page - 1 if page > 1 else last_page}",
+                ),
+            )
+            buttons[0].append(
+                InlineKeyboardButton(
+                    "👉",
+                    callback_data=f"bus fetch_lines {bus_type} {page + 1 if page != last_page else 1}",
+                )
+            )
+
+        start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
+        lines = lines[start : start + cls.PER_PAGE]
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        f"Line {line['name']}",
+                        callback_data=f"bus fetch {line['name']} {bus_type} {page}",
+                    )
+                    for line in chunk
+                ]
+                for chunk in chunks(lines, 4)
+            ]
+            + buttons
+        )
+
+    @classmethod
+    def get_start_markup(cls, urban_count, metropolitan_count):
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        f"Urban ({urban_count})", callback_data=f"bus fetch_lines urban"
+                    ),
+                    InlineKeyboardButton(
+                        f"Metropolitan ({metropolitan_count})",
+                        callback_data=f"bus fetch_lines metropolitan",
+                    ),
+                ],
+                [
+                    InlineKeyboardButton("✅", callback_data="end"),
+                ],
+            ]
+        )
+
+    @classmethod
+    def get_bottom_markup(cls, bus_type, page):
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "👆", callback_data=f"bus fetch_lines {bus_type} {page}"
+                    ),
+                    InlineKeyboardButton("✅", callback_data="end"),
+                ]
+            ]
+        )
+
+    @classmethod
+    def fetch(cls, update, _id, bus_type, page):
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+        text = fetch_line(_id)
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=text or "Not found",
+                reply_markup=cls.get_bottom_markup(bus_type, page=int(page)),
+                disable_web_page_preview=True,
+                parse_mode=telegram.ParseMode.HTML,
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e)
+            return e.message
+
+    @classmethod
+    def fetch_lines(cls, update, bus_type, page=1):
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=bus_type.capitalize(),
+                reply_markup=cls.get_lines_markup(bus_type, int(page)),
+                disable_web_page_preview=True,
+                parse_mode=telegram.ParseMode.HTML,
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e)
+            return e.message
+
+    @classmethod
+    def start(cls, update):
+        try:
+            instance = Bot.objects.get(additional_data__bus__isnull=False)
+        except Bot.DoesNotExist:
+            logger.exception("Bot with bus config not found.")
+            return update.message.reply_text("Coming soon")
+
+        bus = instance.additional_data["bus"]
+        if not ("urban" in bus.keys() and "metropolitan" in bus.keys()):
+            logger.error("urban or metropolitan missing from bus lines config")
+            return update.message.reply_text("Coming soon.")
+
+        if not update.callback_query:
+            user = update.message.from_user
+            logger.info("User %s started the conversation.", user.full_name)
+
+            return update.message.reply_text(
+                f"Welcome {user.full_name}\nChoose a bus type",
+                reply_markup=cls.get_start_markup(
+                    len(bus["urban"]), len(bus["metropolitan"])
+                ),
+            ).to_json()
+
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+        user = update.callback_query.from_user
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=f"Hi {user.full_name}, choose a bus type",
+                reply_markup=cls.get_start_markup(
+                    len(bus["urban"]), len(bus["metropolitan"])
+                ),
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e.message)
+            return e.message
+
+    @classmethod
+    def sync(cls, update, bus_type):
+        try:
+            instance = Bot.objects.get(additional_data__bus__isnull=False)
+        except Bot.DoesNotExist:
+            logger.exception("Bot with bus config not found.")
+            return update.message.reply_text("Coming soon")
+        bus = instance.additional_data["bus"]
+        url = bus["urls"]["lines"].format(f"{bus_type}e")
+        soup = scraper.fetch(url, logger)
+        bot = update.callback_query.bot
+        message = update.callback_query.message
+
+        if isinstance(soup, Exception):
+            try:
+                return bot.edit_message_text(
+                    chat_id=message.chat_id,
+                    message_id=message.message_id,
+                    text=str(soup),
+                    reply_markup=cls.get_start_markup(
+                        len(bus["urban"]), len(bus["metropolitan"])
+                    ),
+                ).to_json()
+            except telegram.error.BadRequest as e:
+                logger.error(e.message)
+                return e.message
+        lines = []
+        for item in soup.find_all("div", {"class": "autobuze"}):
+            name = (
+                item.find("h6", {"itemprop": "name"}).text.strip().replace("Linia ", "")
+            )
+            route = item.find("div", {"class": "ruta"}).text.strip()
+            lines.append({"name": name, "route": route})
+        instance.additional_data["bus"][bus_type] = lines
+        instance.save()
+
+        try:
+            return bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text="Synced 👌",
+                reply_markup=cls.get_start_markup(
+                    len(bus["urban"]), len(bus["metropolitan"])
+                ),
+            ).to_json()
+        except telegram.error.BadRequest as e:
+            logger.error(e.message)
+            return e.message
+
+
+class MealsInline(BaseInlines):
+    PER_PAGE = 24
 
     @classmethod
     def get_meals_markup(cls, day, page, bottom_level=False):
