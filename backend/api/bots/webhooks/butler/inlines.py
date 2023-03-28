@@ -79,9 +79,11 @@ class MealsInline(BaseInlines):
             )
 
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
-        items = Meal.objects.distinct("date").order_by("date", "type")[
-            start : start + cls.PER_PAGE
-        ]
+        items = list(
+            Meal.objects.distinct("date").order_by("date", "type")[
+                start : start + cls.PER_PAGE
+            ]
+        )
         logger.info(f"Got {len(items)} dates")
 
         return InlineKeyboardMarkup(
@@ -143,7 +145,7 @@ class MealsInline(BaseInlines):
     @classmethod
     def start(cls, update, page=None):
         count = Meal.objects.distinct("date").count()
-        logger.info(f"Counted {count} meals")
+        logger.info(f"Counted {count} dates")
         last_page = math.ceil(count / cls.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a date [{page} / {total}]"
 
