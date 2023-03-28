@@ -17,13 +17,14 @@ from api.bots.webhooks.butler.inlines import (
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
+from bots.models import Bot
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
 logger = logging.getLogger(__name__)
 
 
-def call(data, instance):
+def call(data, instance: Bot):
     bot = instance.telegram_bot
     update = telegram.Update.de_json(data, bot)
     message = update.message
@@ -76,6 +77,8 @@ def call(data, instance):
         return logger.warning(f"Invalid command: '{message.text}'. From: {user}")
 
     cmd, *args = message.text[1:].split(" ")
+    if "bot_command" in [e.type for e in update.message.entities]:
+        cmd = cmd.replace(f"@{instance.username}", "")
 
     if cmd == "bus":
         return BusInline.start(update)
