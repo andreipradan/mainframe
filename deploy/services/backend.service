@@ -2,12 +2,11 @@
 Description=django backend server
 
 [Service]
-EnvironmentFile=/etc/mainframe/.env
-User=${OS_USER}
-WorkingDirectory=/home/${OS_USER}/projects/mainframe/backend
-ExecStart=/home/${OS_USER}/.virtualenvs/mainframe/bin/python manage.py runserver 7777 --noreload
-ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/${OS_USER}/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[mainframe]] Backend service started"'
-ExecStopPost=/home/${OS_USER}/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[mainframe]] Backend service stopped"
+User=andreierdna
+WorkingDirectory=/home/andreierdna/projects/mainframe/backend
+ExecStart=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py runserver 7777 --noreload
+ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/andreierdna/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[mainframe]] Backend service started"'
+ExecStopPost=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[mainframe]] Backend service stopped"
 Restart=always
 
 [Install]
