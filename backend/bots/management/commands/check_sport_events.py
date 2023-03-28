@@ -109,7 +109,7 @@ async def fetch(session, sem, url, categories):
                     )
                 return await response.text(), url, categories
         except aiohttp.client_exceptions.ClientConnectorError as e:
-            logger.exception(e)
+            logger.error(e)
             return "", url, []
 
 
