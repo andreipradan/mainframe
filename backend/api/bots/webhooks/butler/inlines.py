@@ -45,9 +45,8 @@ class MealsInline(BaseInlines):
                         f"{item.get_type_display()}",
                         callback_data=f"meal fetch {item.pk} {page}",
                     )
-                    for item in chunk
                 ]
-                for chunk in chunks(list(items), 5)
+                for item in items
             ]
             + buttons
         )
@@ -84,8 +83,6 @@ class MealsInline(BaseInlines):
                 start : start + cls.PER_PAGE
             ]
         )
-        logger.info(f"Got {len(items)} dates")
-
         return InlineKeyboardMarkup(
             [
                 [
@@ -95,7 +92,7 @@ class MealsInline(BaseInlines):
                     )
                     for item in chunk
                 ]
-                for chunk in chunks(list(items), 3)
+                for chunk in chunks(items, 3)
             ]
             + buttons
         )

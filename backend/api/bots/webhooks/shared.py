@@ -33,10 +33,10 @@ class BaseInlines:
         ).to_json()
 
 
-def chunks(lst, width):
+def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
-    for i in range(width):
-        yield [lst[i + j * width] for j in range(width) if i + j * width < len(lst)]
+    for i in range(0, len(lst), n):
+        yield lst[i : i + n]
 
 
 def reply(update, text):

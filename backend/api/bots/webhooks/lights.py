@@ -5,7 +5,7 @@ import pytz
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
-from api.bots.webhooks.shared import BaseInlines, chunks, reply
+from api.bots.webhooks.shared import BaseInlines
 from api.lights.client import LightsClient, LightsException
 
 logger = logging.getLogger(__name__)
@@ -35,9 +35,8 @@ class Inlines(BaseInlines):
                     InlineKeyboardButton(
                         verbose_light(item), callback_data=f"toggle {item['ip']}"
                     )
-                    for item in chunk
                 ]
-                for chunk in chunks(list(items), 5)
+                for item in items
             ]
             + [
                 [
