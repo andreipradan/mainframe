@@ -20,7 +20,7 @@ const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const loadingBots = useSelector(state => state.bots.loadingBots)
 
-  const [isExternal, setIsExternal] = useState(bot?.is_external || false);
+  const [isActive, setIsActive] = useState(bot?.is_active || false);
   const [webhook, setWebhook] = useState("");
   const [webhookName, setWebhookName] = useState("");
   const [whitelist, setWhitelist] = useState(null);
@@ -29,7 +29,7 @@ const EditModal = () => {
 
   useEffect(() => {
     if (bot) {
-      setIsExternal(bot.is_external)
+      setIsActive(bot.is_active)
       setWebhook(bot.webhook || "")
       setWebhookName(bot.webhook_name || "")
       setWhitelist(bot.whitelist.join("\n") || "")
@@ -93,9 +93,9 @@ const EditModal = () => {
           <Form.Check
             type="switch"
             id="custom-switch"
-            label="Is External"
-            checked={isExternal}
-            onChange={() => {setIsExternal(!isExternal)}}
+            label="Is Active"
+            checked={isActive}
+            onChange={() => {setIsActive(!isActive)}}
           />
         </Form.Group>
         <Form.Group className="mb-3">
@@ -138,7 +138,7 @@ const EditModal = () => {
       <Button variant="primary" disabled={!!annotations} onClick={() => {
         dispatch(BotsApi.updateBot(token, bot.id, {
           additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
-          is_external: isExternal,
+          is_active: isActive,
           webhook: webhook,
           webhook_name: webhookName,
           whitelist: whitelist ? whitelist.split("\n") : [],

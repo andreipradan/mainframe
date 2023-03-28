@@ -21,8 +21,8 @@ const Dashboard = () => {
 
   const lights = useSelector(state => state.lights)
 
-  const botsExternalCount = bots.results?.filter(b => b.is_external === true).length
-  const botsLocalCount = bots.results?.filter(b => b.is_external === false).length
+  const botsActiveCount = bots.results?.filter(b => b.is_active === true).length
+  const botsInactiveCount = bots.results?.filter(b => b.is_active === false).length
 
   const lightsOnCount = lights.list?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.list?.filter(b => b.capabilities.power === "off").length
@@ -60,9 +60,9 @@ const Dashboard = () => {
   }
 
   const botsData =  {
-    labels: ["Local", "External"],
+    labels: ["Inactive", "Active"],
     datasets: [{
-      data: [botsLocalCount, botsExternalCount],
+      data: [botsInactiveCount, botsActiveCount],
       backgroundColor: [
         'rgba(54, 162, 235, 0.5)',
         'rgba(255, 206, 86, 0.5)',

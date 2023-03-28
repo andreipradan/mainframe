@@ -72,8 +72,8 @@ const Bots = () =>  {
                                 <td>
                                   {bot.full_name} &nbsp;
                                   {
-                                    bot.is_external
-                                      ? <i className="mdi mdi-triangle"></i>
+                                    !bot.is_active
+                                      ? <i className="mdi mdi-exclamation"></i>
                                       : ""
                                   }
                                   <br />

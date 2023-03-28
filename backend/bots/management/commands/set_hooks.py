@@ -54,7 +54,7 @@ def set_github_hook(ngrok_url, access_token, username):
 
 def set_telegram_hooks(ngrok_url):
     logger.info("Setting telegram webhooks")
-    for bot in Bot.objects.filter(webhook_name__isnull=False).exclude(webhook_name=""):
+    for bot in Bot.objects.filter(is_active=True):
         try:
             logger.info(
                 f"{bot.full_name}: {bot.telegram_bot.set_webhook(f'{ngrok_url}/api/bots/{bot.id}/webhook/')}"

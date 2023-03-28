@@ -1,6 +1,7 @@
 import logging
 import math
 from datetime import datetime
+from operator import itemgetter
 
 import pytz
 import requests
@@ -260,7 +261,9 @@ class BusInline(BaseInlines):
             )
             route = item.find("div", {"class": "ruta"}).text.strip()
             lines.append({"name": name, "route": route})
-        instance.additional_data["bus"][bus_type] = lines
+        instance.additional_data["bus"][bus_type] = sorted(
+            lines, key=itemgetter("name")
+        )
         instance.save()
 
         try:
