@@ -113,6 +113,14 @@ def mainframe(request):
         if "requirements.txt" in output.strip():
             setup_cmd += " backend"
             extra.append("BE")
+        else:
+            setup_cmd += " no-backend"
+
+        if "deploy/" in output.strip():
+            setup_cmd += " deploy"
+            extra.append("Restart all services")
+        else:
+            extra.append("Restart backend")
 
         if extra:
             msg += f" (+ {' & '.join(extra)})"

@@ -30,13 +30,21 @@ fi
 # setting initial cron for be_real
 "${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" be_real --post-deploy
 
-SERVICES_DIR="${PROJECT_DIR}/deploy/services"
-sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
-echo "Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
-echo "Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Done."
 
-SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
-echo "Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
-echo "Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
+if [[ $3 == deploy ]]; then
+  echo "Restarting all services"
+  SERVICES_DIR="${PROJECT_DIR}/deploy/services"
+  sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
+  echo "Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
+  echo "Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Done."
+
+  SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
+  echo "Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
+  echo "Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
+else
+  echo "Restarting: ${SERVICES}" && sudo systemctl restart backend && echo "Done."
+fi
+
+
 /home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[mainframe]] Completed setup"
 echo "Completed setup! >> ./deploy/show-logs.sh"
