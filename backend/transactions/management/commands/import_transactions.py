@@ -51,11 +51,16 @@ class Command(BaseCommand):
                     results = Transaction.objects.bulk_create(transactions)
                 except ValidationError as e:
                     logger.error(f"{e}\nFile: {file_name.stem}")
+                    continue
                 except IntegrityError as e:
                     logger.error(f"{e}\nFile: {file_name.stem}")
+                    continue
                 else:
                     results_count = len(results)
                     logger.info(f"{file_name.stem}: {results_count} rows")
                     total += results_count
+
+            logger.info(f"Deleting {file_name.stem}")
+            file_name.unlink()
 
         self.stdout.write(self.style.SUCCESS(f"Imported {total} transactions"))

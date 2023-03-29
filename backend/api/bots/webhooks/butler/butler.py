@@ -1,8 +1,11 @@
 import logging
 import random
+from datetime import datetime, timedelta
 
 import six
 import telegram
+from crontab import CronTab
+from django.conf import settings
 
 from google.api_core.exceptions import GoogleAPICallError
 from google.auth.exceptions import DefaultCredentialsError
@@ -18,6 +21,7 @@ from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
 from bots.models import Bot
+from clients.cron import set_cron
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
@@ -66,6 +70,26 @@ def call(data, instance: Bot):
         return reply(update, f"Bye {message.left_chat_member.full_name}! 😢")
 
     from_user = update.message.from_user
+    if (
+        message.document
+        and from_user.id == instance.additional_data.get("debug_chat_id")
+        and message.document.file_name.endswith(".csv")
+    ):
+        logger.info("Got csv saving...")
+        file_name = message.document.file_name
+        bot.get_file(message.document.file_id).download(
+            settings.BASE_DIR / "transactions" / "data" / file_name
+        )
+        logger.info("Saved")
+
+        python_path = "$HOME/.virtualenvs/mainframe/bin/python"
+        manage_path = "$HOME/projects/mainframe/backend/manage.py"
+        command = f"{python_path} {manage_path} import_transactions"
+        n = datetime.now() + timedelta(minutes=5)
+        expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
+        set_cron(expression, command, logger=logger)
+        return reply(update, f"Saved {file_name}")
+
     user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
     if not message.text:
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")
