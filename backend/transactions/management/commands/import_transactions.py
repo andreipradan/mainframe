@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import IntegrityError
 
 from bots.models import Bot
+from clients.cron import remove_crons
 from transactions.models import Transaction
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,9 @@ class Command(BaseCommand):
                     total += results_count
                     logger.info(f"Import completed - Deleting {file_name.stem}")
                     file_name.unlink()
+
+        remove_crons("import_transactions")
+
         msg = f"Imported {total} transactions"
         if failed_imports:
             msg += f"\nFailed files: {', '.join(failed_imports)}"
