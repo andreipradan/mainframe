@@ -82,9 +82,15 @@ def call(data, instance: Bot):
         )
         logger.info("Saved")
 
-        python_path = "$HOME/.virtualenvs/mainframe/bin/python"
+        logs_path = "/var/log/mainframe/crons/import-transactions/"
         manage_path = "$HOME/projects/mainframe/backend/manage.py"
-        command = f"{python_path} {manage_path} import_transactions"
+        mkdir = f"mkdir -p {logs_path}`date +%Y`"
+        output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
+        python_path = "$HOME/.virtualenvs/mainframe/bin/python"
+
+        command = (
+            f"{mkdir} && {python_path} {manage_path} import_transactions >> {output}"
+        )
         n = datetime.now() + timedelta(minutes=5)
         expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
         set_cron(expression, command, logger=logger)
