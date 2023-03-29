@@ -47,4 +47,4 @@ fi
 
 
 /home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[mainframe]] Completed setup"
-echo "Completed setup! >> ./deploy/show-logs.sh"
+echo "Setup done."
