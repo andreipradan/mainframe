@@ -91,7 +91,7 @@ def call(data, instance: Bot):
         command = (
             f"{mkdir} && {python_path} {manage_path} import_transactions >> {output}"
         )
-        n = datetime.now() + timedelta(minutes=5)
+        n = datetime.now() + timedelta(minutes=1)
         expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
         set_cron(expression, command, logger=logger)
         return reply(update, f"Saved {file_name}")
