@@ -11,5 +11,9 @@ urlpatterns = [
     path("lights/", include("api.lights.urls")),
     path("logs/", include("api.logs.urls")),
     path("meals/", include(("meals.routers", "api"), namespace="meals")),
+    path(
+        "transactions/",
+        include(("transactions.routers", "api"), namespace="transactions"),
+    ),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
 ]
