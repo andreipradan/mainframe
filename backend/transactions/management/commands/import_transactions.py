@@ -37,6 +37,7 @@ def normalize(transaction):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info("Importing transactions")
+        now = datetime.now()
 
         total = 0
         data_path = settings.BASE_DIR / "transactions" / "data"
@@ -53,12 +54,12 @@ class Command(BaseCommand):
                     results = Transaction.objects.bulk_create(transactions)
                 except ValidationError as e:
                     logger.error(f"{e}\nFile: {file_name.stem}")
-                    file_name.rename(f"{data_path}/{file_name.stem}.failed")
+                    file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
                     failed_imports.append(file_name.stem)
                     continue
                 except IntegrityError as e:
                     logger.error(f"{e}\nFile: {file_name.stem}")
-                    file_name.rename(f"{data_path}/{file_name.stem}.failed")
+                    file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
                     failed_imports.append(file_name.stem)
                     continue
                 else:
