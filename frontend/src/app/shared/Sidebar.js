@@ -140,6 +140,22 @@ class Sidebar extends Component {
               <span className="menu-title"><Trans>Earthquakes</Trans></span>
             </Link>
           </li>
+          <li className={ this.isPathActive('/expenses') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+            <div className={ this.state.expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => this.toggleMenuState('expensesMenuOpen') } data-toggle="collapse">
+              <span className="menu-icon">
+                <i className="mdi mdi-chart-bar"></i>
+              </span>
+              <span className="menu-title"><Trans>Expenses</Trans></span>
+              <i className="menu-arrow"></i>
+            </div>
+            <Collapse in={ this.state.expensesMenuOpen }>
+              <div>
+                <ul className="nav flex-column sub-menu">
+                  <li className="nav-item"> <Link className={ this.isPathActive('/expenses') ? 'nav-link active' : 'nav-link' } to="/expenses/all"><Trans>All Expenses</Trans></Link></li>
+                </ul>
+              </div>
+            </Collapse>
+          </li>
           <li className={ this.isPathActive('/logs') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <Link className="nav-link" to="/logs">
               <span className="menu-icon"><i className="mdi mdi-text"></i></span>

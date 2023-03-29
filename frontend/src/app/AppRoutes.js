@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
+const Expenses = lazy(() => import ("./expenses/Expenses"));
 const Logs = lazy(() => import('./logs/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
 const Todo = lazy(() => import('./apps/TodoList'));
@@ -39,6 +40,7 @@ class AppRoutes extends Component {
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />
+          <Route exact path="/expenses/all" component={ Expenses } />
           <Route exact path="/logs" component={ Logs } />
           <Route exact path="/meals" component={ Meals } />
           <Route exact path="/todo" component={ Todo } />
