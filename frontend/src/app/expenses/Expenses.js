@@ -13,6 +13,24 @@ const getColorGradient = (context, border = false) => {
     return gradient;
 }
 
+const getInOutData = (data) => ({
+    labels: ["Money In", "Money Out"],
+    datasets: [{
+      label: '# of Transactions',
+      data: [data.money_in, data.money_out],
+      backgroundColor: [
+        'rgba(75,192,126,0.2)',
+        'rgba(255, 99, 132, 0.2)',
+      ],
+      borderColor: [
+        'rgb(75,192,126)',
+        'rgba(255,99,132)',
+      ],
+      borderWidth: 1,
+      fill: false
+    }]
+})
+
 const Expenses = () => {
     const dispatch = useDispatch();
     const { overview, loading } = useSelector(state => state.transactions)
@@ -28,24 +46,6 @@ const Expenses = () => {
           data: overview?.per_year?.map(y => y.count) || [],
           backgroundColor: context => getColorGradient(context),
           borderColor: context => getColorGradient(context, true),
-          borderWidth: 1,
-          fill: false
-        }]
-    };
-
-    const inOutData = {
-        labels: ["Money In", "Money Out"],
-        datasets: [{
-          label: '# of Transactions',
-          data: [overview?.money_in, overview?.money_out],
-          backgroundColor: [
-            'rgba(75,192,126,0.2)',
-            'rgba(255, 99, 132, 0.2)',
-          ],
-          borderColor: [
-            'rgb(75,192,126)',
-            'rgba(255,99,132)',
-          ],
           borderWidth: 1,
           fill: false
         }]
@@ -123,53 +123,6 @@ const Expenses = () => {
         }
     };
 
-    const perCurrencyData = {
-        labels: overview?.per_currency.map(c => c.currency) || [],
-        datasets: [{
-          label: 'Money in',
-          data: overview?.per_currency.map(c => c.money_in) || [],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1,
-          fill: true, // 3: no fill
-        },
-            {
-          label: 'Money out',
-          data: overview?.per_currency.map(c => c.money_out) || [],
-          backgroundColor: [
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1,
-          fill: true, // 3: no fill
-        }
-        ]
-    };
-
     return (
         <div>
             <div className="page-header">
@@ -201,7 +154,7 @@ const Expenses = () => {
                     />
                   : <>
                     <div className="row">
-                        <div className="col-lg-6 grid-margin stretch-card">
+                        <div className="col-md-6 grid-margin stretch-card">
                         <div className="card">
                             <div className="card-body">
                                 <h4 className="card-title">Transactions per year</h4>
@@ -209,29 +162,25 @@ const Expenses = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="col-lg-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Money In / Money Out</h4>
-                                <Pie data={inOutData} options={doughnutPieOptions} />
+                        {overview?.per_currency.map((c, i) =>
+                            <div key={i} className="col-md-6 grid-margin stretch-card">
+                                <div className="card">
+                                    <div className="card-body">
+                                            <div className="card">
+                                                <div className="card-body">
+                                                    <h4 className="card-title">{c.currency}</h4>
+                                                    <Doughnut data={getInOutData(c)} />
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-lg-6 grid-margin stretch-card">
+                        )}
+                        <div className="col-md-6 grid-margin stretch-card">
                             <div className="card">
                                 <div className="card-body">
                                     <h4 className="card-title">Amount per type</h4>
                                     <Doughnut data={perTypeData} options={doughnutPieOptions} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-md-6 grid-margin stretch-card">
-                            <div className="card">
-                                <div className="card-body">
-                                    <h4 className="card-title">Money in / Out per currency</h4>
-                                    <Bar data={perCurrencyData} />
                                 </div>
                             </div>
                         </div>

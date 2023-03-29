@@ -23,10 +23,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
             .order_by("year")
         )
         per_type = Transaction.objects.values("type").annotate(count=Sum("amount"))
-        in_out = Transaction.objects.aggregate(
-            money_in=Sum("amount", filter=Q(amount__gt=0)),
-            money_out=Sum("amount", filter=Q(amount__lt=0)),
-        )
         per_currency = Transaction.objects.values("currency").annotate(
             money_in=Sum("amount", filter=Q(amount__gt=0)),
             money_out=Sum("amount", filter=Q(amount__lt=0)),
@@ -38,7 +34,5 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 "per_year": [
                     {"year": i["year"].year, "count": i["count"]} for i in per_year
                 ],
-                "money_in": in_out["money_in"],
-                "money_out": in_out["money_out"],
             }
         )
