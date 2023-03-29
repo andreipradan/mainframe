@@ -42,7 +42,7 @@ if [[ $3 == deploy ]]; then
   echo "Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
   echo "Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
 else
-  echo "Restarting: ${SERVICES}" && sudo systemctl restart backend && echo "Done."
+  echo "Restarting backend " && sudo systemctl restart backend && echo "Done."
 fi
 
 
