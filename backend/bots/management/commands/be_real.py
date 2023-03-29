@@ -55,6 +55,7 @@ class Command(BaseCommand):
             instance = Bot.objects.get(additional_data__be_real__isnull=False)
         except OperationalError as e:
             if options["post_deploy"] is False:
+                logger.info("Moving cron 1 minute later for retry")
                 cmd.minute = str(int(str(cmd.minute)) + 1)
                 cron.write()
             raise CommandError(str(e))
@@ -66,10 +67,10 @@ class Command(BaseCommand):
             raise CommandError("Missing chat_id from be_real config")
 
         if be_real.get("paused", False) is True:
-            if cmd.enabled:
+            if cmd.enabled and str(cmd.slices) != "* * * * *":
                 logger.info("Disabling...")
                 cmd.enable(False)
-                cmd.write()
+                cron.write()
             return logger.warning("be_real is paused.")
 
         if options["post_deploy"] is False:
