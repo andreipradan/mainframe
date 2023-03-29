@@ -65,6 +65,9 @@ class Command(BaseCommand):
         if not isinstance(be_real, dict) or not (chat_id := be_real.get("chat_id")):
             raise CommandError("Missing chat_id from be_real config")
 
+        if be_real.get("paused", False) is True:
+            return logger.warning("be_real is paused.")
+
         if options["post_deploy"] is False:
             logger.info("It's time to take a picture...")
             data_path = settings.BASE_DIR / "bots" / "management" / "commands" / "data"
