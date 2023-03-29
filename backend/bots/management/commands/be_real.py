@@ -66,6 +66,10 @@ class Command(BaseCommand):
             raise CommandError("Missing chat_id from be_real config")
 
         if be_real.get("paused", False) is True:
+            if cmd.enabled:
+                logger.info("Disabling...")
+                cmd.enable(False)
+                cmd.write()
             return logger.warning("be_real is paused.")
 
         if options["post_deploy"] is False:
@@ -79,7 +83,7 @@ class Command(BaseCommand):
             instance.send_message(chat_id=chat_id, text=text)
         else:
             logger.info("Initializing be_real...")
-            if (next_run := (instance.additional_data["be_real"].get("next_run"))) and (
+            if (next_run := (be_real.get("next_run"))) and (
                 next_run := (datetime.strptime(next_run, DATETIME_FORMAT))
             ) >= datetime.today():
                 logger.info("Cron in future")
