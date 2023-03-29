@@ -69,7 +69,7 @@ class Command(BaseCommand):
             if cmd.enabled:
                 logger.info("Disabling...")
                 cmd.enable(False)
-                cmd.write()
+                cron.write()
             return logger.warning("be_real is paused.")
 
         if options["post_deploy"] is False:
