@@ -30,10 +30,9 @@ def fetch_line(bus_number, full_details=False):
         logger.error("This shouldn't happen, like ever")
         return ""
 
-    headers = {"Referer": "https://ctpcj.ro/"}
     resp = requests.get(
         f"https://ctpcj.ro/orare/csv/orar_{bus_number}_{day}.csv",
-        headers=headers,
+        headers={"Referer": "https://ctpcj.ro/"},
     )
     if resp.status_code != 200 or "EROARE" in resp.text:
         return
@@ -64,7 +63,7 @@ def fetch_line(bus_number, full_details=False):
             next_start2_index = len(start2_times) - 1
 
     if not full_details:
-        if not next_start1_index:
+        if start1_times != ["Nu circula"] and not next_start1_index:
             for i, time in enumerate(reversed(start1_times)):
                 time = datetime.strptime(time, "%H:%M")
                 if now.replace(
@@ -73,7 +72,7 @@ def fetch_line(bus_number, full_details=False):
                     break
                 next_start1_index = len(start1_times) - i - 1
 
-        if not next_start2_index:
+        if start2_times != ["Nu circula"] and not next_start2_index:
             for i, time in enumerate(reversed(start2_times)):
                 time = datetime.strptime(time, "%H:%M")
                 if now.replace(
