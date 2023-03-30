@@ -63,8 +63,10 @@ def fetch_line(bus_number, full_details=False):
             next_start2_index = len(start2_times) - 1
 
     if not full_details:
-        if start1_times != ["Nu circula"] and not next_start1_index:
+        if not next_start1_index:
             for i, time in enumerate(reversed(start1_times)):
+                if time.strip() == "Nu circula":
+                    continue
                 time = datetime.strptime(time, "%H:%M")
                 if now.replace(
                     hour=time.hour, minute=time.minute, second=0, microsecond=0
@@ -72,8 +74,10 @@ def fetch_line(bus_number, full_details=False):
                     break
                 next_start1_index = len(start1_times) - i - 1
 
-        if start2_times != ["Nu circula"] and not next_start2_index:
+        if not next_start2_index:
             for i, time in enumerate(reversed(start2_times)):
+                if time.strip() == "Nu circula":
+                    continue
                 time = datetime.strptime(time, "%H:%M")
                 if now.replace(
                     hour=time.hour, minute=time.minute, second=0, microsecond=0
