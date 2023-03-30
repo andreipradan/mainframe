@@ -66,14 +66,15 @@ class Command(BaseCommand):
             meal.date = current_date
             meals.append(meal)
 
-        logger.info(f"Got {len(meals)} meals, saving...")
-
         Meal.objects.bulk_create(
             meals,
             update_conflicts=True,
             update_fields=("name", "ingredients", "nutritional_values", "quantities"),
             unique_fields=("date", "type"),
         )
+        msg = f"Fetched {len(meals)} meals"
+        bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
+        bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
 
         self.stdout.write(self.style.SUCCESS("Done."))
 
