@@ -21,11 +21,9 @@ TYPE_MAPPING = {
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        parser.add_argument("--week", type=int)
-
     def handle(self, *args, **options):
-        logger.info("Fetching menu...")
+        logger.info("Fetching menu for the next month")
+
         try:
             instance = Bot.objects.get(additional_data__menu__isnull=False)
         except OperationalError as e:
@@ -38,33 +36,31 @@ class Command(BaseCommand):
         if not isinstance(menu, dict) or not (url := menu.get("url")):
             raise CommandError("url missing from menu config in additional data")
 
-        if week := options["week"]:
-            url = f"{url}/week-{week}"
-
-        soup = scraper.fetch(url, logger)
-        if isinstance(soup, Exception):
-            raise CommandError(str(soup))
-
-        week = (
-            soup.find("div", {"class": "weekly-buttons"})
-            .find("button", {"class": "active"})
-            .text.split("-")[1]
-        )
-        current_date = (
-            datetime.strptime(week, "%d %b").date() - timedelta(days=7)
-        ).replace(year=datetime.today().year)
-
-        rows = soup.select(".slider-menu-for-day > div > .row")
-        if not rows:
-            raise CommandError("No rows found")
-
         meals = []
-        for row in rows:
-            meal = self.parse_meal(row)
-            if row.attrs["class"] == ["row"]:
-                current_date = current_date + timedelta(days=1)
-            meal.date = current_date
-            meals.append(meal)
+        for week_no in range(1, 5):
+            soup = scraper.fetch(f"{url}/week-{week_no}", logger)
+            if isinstance(soup, Exception):
+                return logger.error(f"URL: {url}. Error: {soup}")
+
+            week = (
+                soup.find("div", {"class": "weekly-buttons"})
+                .find("button", {"class": "active"})
+                .text.split("-")[1]
+            )
+            current_date = (
+                datetime.strptime(week, "%d %b").date() - timedelta(days=7)
+            ).replace(year=datetime.today().year)
+
+            rows = soup.select(".slider-menu-for-day > div > .row")
+            if not rows:
+                return logger.error(f"URL: {url}. No rows found")
+
+            for row in rows:
+                meal = self.parse_meal(row)
+                if row.attrs["class"] == ["row"]:
+                    current_date = current_date + timedelta(days=1)
+                meal.date = current_date
+                meals.append(meal)
 
         Meal.objects.bulk_create(
             meals,
@@ -73,6 +69,7 @@ class Command(BaseCommand):
             unique_fields=("date", "type"),
         )
         msg = f"Fetched {len(meals)} meals"
+        logger.info(msg)
         bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
         bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
 
