@@ -8,11 +8,9 @@ from api.authentication.models import ActiveSession
 
 
 class ActiveSessionAuthentication(authentication.BaseAuthentication):
-
     auth_error_message = {"success": False, "msg": "User is not logged on."}
 
     def authenticate(self, request):
-
         request.user = None
 
         auth_header = authentication.get_authorization_header(request)
@@ -25,7 +23,6 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
         return self._authenticate_credentials(token)
 
     def _authenticate_credentials(self, token):
-
         try:
             jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except:

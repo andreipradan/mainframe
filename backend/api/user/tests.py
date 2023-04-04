@@ -10,7 +10,6 @@ class UserViewSetTest(APITestCase):
     data_login = {"password": "12345678", "email": "teast@admin.com"}
 
     def test_edit(self):
-
         # Login to retrieve token
 
         response = self.client.post(f"{self.base_url_login}", data=self.data_login)

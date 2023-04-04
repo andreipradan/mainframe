@@ -53,7 +53,9 @@ class LoginSerializer(serializers.Serializer):
                 raise ValueError
 
             jwt.decode(session.token, settings.SECRET_KEY, algorithms=["HS256"])
-        except api.authentication.models.active_session.ActiveSession.MultipleObjectsReturned:
+        except (
+            api.authentication.models.active_session.ActiveSession.MultipleObjectsReturned
+        ):
             ActiveSession.objects.filter(user=user).delete()
             session = ActiveSession.objects.create(
                 user=user, token=_generate_jwt_token(user)
