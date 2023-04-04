@@ -4,7 +4,6 @@ import json
 import logging
 import subprocess
 from ipaddress import ip_address, ip_network
-import time
 
 import requests
 import telegram
