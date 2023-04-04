@@ -12,7 +12,6 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
 
     def authenticate(self, request):
         request.user = None
-
         auth_header = authentication.get_authorization_header(request)
 
         if not auth_header:
