@@ -28,5 +28,4 @@ class RegisterSerializer(serializers.ModelSerializer):
         raise ValidationError({"success": False, "msg": "Email already taken."})
 
     def create(self, validated_data):
-
         return User.objects.create_user(**validated_data)
