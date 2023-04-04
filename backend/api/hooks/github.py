@@ -125,7 +125,7 @@ def mainframe(request):
         else:
             msg_extra.append("Restart backend")
 
-        msg = "[mainframe] Starting local setup"
+        msg = "[mainframe] Local setup scheduled in ~1 min"
         if msg_extra:
             msg += f" (+ {' & '.join(msg_extra)})"
 

@@ -6,7 +6,6 @@ django-environ==0.9.0
 djangorestframework==3.14.0
 google-cloud-translate==3.10.1  #--no-cache-dir
 gunicorn==20.1.0
-pre-commit==3.0.2
 psycopg2-binary==2.9.5
 pygithub==1.57
 pyjwt==2.6.0
