@@ -6,7 +6,7 @@ import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines
-from api.lights.client import LightsClient, LightsException
+from clients.lights import LightsClient, LightsException
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
-from api.lights.client import LightsClient
+from clients.lights import LightsClient
 
 logger = logging.getLogger(__name__)
 
