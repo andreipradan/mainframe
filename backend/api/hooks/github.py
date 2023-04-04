@@ -1,10 +1,12 @@
 import hashlib
 import hmac
+import json
 import logging
 import subprocess
 from ipaddress import ip_address, ip_network
 
 import requests
+import telegram
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes
@@ -77,15 +79,17 @@ def mainframe(request):
     # Process the GitHub events
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
 
+    branch = json.loads(request.body)["ref"].replace("refs/heads/", "")
     bot.send_message(
         chat_id=chat_id,
-        text=f"{prefix} Got a '{event}' event",
+        text=f"{prefix} Got a '{event}' event on <b>{branch}</b> branch",
         disable_notification=True,
+        parse_mode=telegram.ParseMode.HTML,
     )
     if event == "ping":
         return HttpResponse("pong")
 
-    elif event == "push":
+    elif event == "push" and branch == "main":
         output = run_cmd("git pull origin main")
         if not output:
             bot.send_message(chat_id=chat_id, text=f"{prefix} Could not git pull")
