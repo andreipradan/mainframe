@@ -4,7 +4,17 @@ from api.bots.views import BotViewSet
 
 router = routers.SimpleRouter()
 
-router.register("", BotViewSet, basename="bots")
+router.register(
+  
+  
+  
+  
+  "", BotViewSet,
+  
+  
+  
+  basename="bots"
+)
 
 
 urlpatterns = router.urls
