@@ -66,7 +66,7 @@ class Command(BaseCommand):
             meals,
             update_conflicts=True,
             update_fields=("name", "ingredients", "nutritional_values", "quantities"),
-            unique_fields=("date", "type")
+            unique_fields=("date", "type"),
         )
         msg = f"Fetched {len(meals)} meals"
         logger.info(msg)
