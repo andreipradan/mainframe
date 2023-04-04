@@ -1,6 +1,13 @@
 import logging
+from datetime import datetime, timedelta
 
 from crontab import CronTab
+
+
+def delay(command, minutes=1):
+    n = datetime.now() + timedelta(minutes=minutes)
+    expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
+    set_cron(expression, command)
 
 
 def remove_crons(command, logger=None):

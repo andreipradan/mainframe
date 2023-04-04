@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
 from bots.models import Bot
+from clients import cron
 
 logger = logging.getLogger(__name__)
 
@@ -104,44 +105,38 @@ def mainframe(request):
             )
             return HttpResponse("ok")
 
-        setup_cmd = "./../deploy/setup.sh"
-        msg = "[mainframe] Starting local setup"
-
-        extra = []
+        cmd_params = []
+        msg_extra = []
         if "frontend/" in output.strip():
-            setup_cmd += " frontend"
-            extra.append("FE")
+            cmd_params.append("frontend")
+            msg_extra.append("FE")
         else:
-            setup_cmd += " no-frontend"
+            cmd_params.append("no-frontend")
 
         if "requirements.txt" in output.strip():
-            setup_cmd += " backend"
-            extra.append("BE")
+            cmd_params.append("backend")
+            msg_extra.append("BE")
         else:
-            setup_cmd += " no-backend"
+            cmd_params.append("no-backend")
 
         if "deploy/" in output.strip():
-            setup_cmd += " deploy"
-            extra.append("Restart all services")
+            cmd_params.append("deploy")
+            msg_extra.append("Restart all services")
         else:
-            extra.append("Restart backend")
+            msg_extra.append("Restart backend")
 
-        if extra:
-            msg += f" (+ {' & '.join(extra)})"
+        msg = "[mainframe] Starting local setup"
+        if msg_extra:
+            msg += f" (+ {' & '.join(msg_extra)})"
 
         bot.send_message(chat_id=chat_id, text=msg, disable_notification=True)
 
-        try:
-            run_cmd(setup_cmd)
-        except subprocess.CalledProcessError as e:
-            bot.send_message(chat_id=chat_id, text=f"[mainframe] Error: {e.output}")
-            return HttpResponse("")
+        logs_path = "/var/log/mainframe/crons/deploy/"
+        mkdir = f"mkdir -p {logs_path}`date +%Y`"
+        output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
 
-        bot.send_message(
-            chat_id=chat_id,
-            text=f"[{prefix}] Deployed successfully",
-            disable_notification=True,
-        )
-        return HttpResponse("success")
+        deploy_cmd = f"$HOME/projects/mainframe/deploy/setup.sh {' '.join(cmd_params)}"
+        command = f"{mkdir} && {deploy_cmd} >> {output}"
+        cron.delay(command)
 
     return HttpResponse(status=204)

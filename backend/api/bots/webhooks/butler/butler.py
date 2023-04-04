@@ -1,10 +1,8 @@
 import logging
 import random
-from datetime import datetime, timedelta
 
 import six
 import telegram
-from crontab import CronTab
 from django.conf import settings
 
 from google.api_core.exceptions import GoogleAPICallError
@@ -21,7 +19,7 @@ from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
 from bots.models import Bot
-from clients.cron import set_cron
+from clients import cron
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
@@ -91,9 +89,7 @@ def call(data, instance: Bot):
         command = (
             f"{mkdir} && {python_path} {manage_path} import_transactions >> {output}"
         )
-        n = datetime.now() + timedelta(minutes=1)
-        expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
-        set_cron(expression, command, logger=logger)
+        cron.delay(command)
         return reply(update, f"Saved {file_name}")
 
     user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
