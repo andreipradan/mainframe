@@ -5,28 +5,29 @@ PROJECT_DIR=${HOME}/projects/mainframe
 VIRTUALENV_DIR=${HOME}/.virtualenvs/mainframe
 LOGS_DIR=/var/log/mainframe/backend
 
-echo "[Crons] Setup" && crontab "${PROJECT_DIR}/deploy/crons" && echo "[Crons] Done"
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Starting setup"
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Crons] Setup" && crontab "${PROJECT_DIR}/deploy/crons" && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Crons] Done"
 # Skipped - only needed to run once - echo "Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "Done."
 
-([[ "$(ls -A "${LOGS_DIR}")" ]] && echo "[Logs] Path already exists") || (sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log" && echo "[Logs] Path created")
+([[ "$(ls -A "${LOGS_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path already exists") || (sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log" && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path created")
 
-[[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "[Virtualenv] Already exists" || python -m venv "${VIRTUALENV_DIR}" && echo "[Virtualenv] Created"
+[[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Virtualenv] Already exists" || (python -m venv "${VIRTUALENV_DIR}" && echo "[Virtualenv] Created")
 
 if [[ $1 == frontend ]]; then
-    echo "[Frontend] Setup"
+    echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Frontend] Setup"
 #    cd "${PROJECT_DIR}/frontend"
 #    export PATH="$HOME/.nvm/versions/node/v14.16.1/bin:$PATH"
 #    npm --max-old-space-size=512 run build
 #    DEBUG=True "${VIRTUALENV_DIR}/bin/python" manage.py collectstatic --noinput
-    echo "[Frontend] Done"
+    echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Frontend] Done"
 else
-    echo "[Frontend] No changes"
+    echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Frontend] No changes"
 fi
 
 if [[ $2 == backend ]]; then
-  echo "[Backend] Installing requirements"
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Backend] Installing requirements"
   "${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
-  echo "[Backend] Done"
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done"
 fi
 
 # setting initial cron for be_real
@@ -34,19 +35,19 @@ fi
 
 
 if [[ $3 == deploy ]]; then
-  echo "[Systemd] Restarting all services"
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting all services"
   SERVICES_DIR="${PROJECT_DIR}/deploy/services"
-  sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/${USER}"
-  echo "[Systemd] Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
-  echo "[Systemd] Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Done"
+  sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/andreierdna"
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Done"
 
   SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
-  echo "[Systemd] Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
-  echo "[Systemd] Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
 else
-  echo "[Backend] Restarting " && sudo systemctl restart backend && echo "Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Restarting " && sudo systemctl restart backend && echo "Done."
 fi
 
 
 /home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[mainframe]] Completed setup"
-echo "Setup completed"
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Setup completed"
