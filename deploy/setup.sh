@@ -38,14 +38,14 @@ if [[ $3 == deploy ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting all services"
   SERVICES_DIR="${PROJECT_DIR}/deploy/services"
   sudo echo "pi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/andreierdna"
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "Done."
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "Done"
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Copying services to /etc/systemd/system..." && sudo cp -a "${SERVICES_DIR}/." /etc/systemd/system && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Reloading systemctl daemon..." && sudo systemctl daemon-reload && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Done"
 
   SERVICES=$(ls "${SERVICES_DIR}" | xargs -n 1 basename)
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "Done."
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Enabling services..." && sudo systemctl enable ${SERVICES} && echo "Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting: ${SERVICES}" && sudo systemctl restart ${SERVICES} && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Enabling services..." && sudo systemctl enable ${SERVICES} && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Done."
 else
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Restarting " && sudo systemctl restart backend && echo "Done."
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Restarting " && sudo systemctl restart backend && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done."
 fi
 
 
