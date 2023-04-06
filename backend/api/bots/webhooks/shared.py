@@ -20,7 +20,7 @@ class BaseInlines:
             return e.message
 
     @classmethod
-    def get_markup(cls, items=None):
+    def get_markup(cls, **kwargs):
         raise NotImplementedError
 
     @classmethod
