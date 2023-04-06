@@ -10,11 +10,9 @@ from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
 
-from api.bots.webhooks.butler.inlines import (
-    SavedMessagesInlines,
-    MealsInline,
-    BusInline,
-)
+from api.bots.webhooks.butler.inlines.bus import BusInline
+from api.bots.webhooks.butler.inlines.meals import MealsInline
+from api.bots.webhooks.butler.inlines.saved_messages import SavedMessagesInlines
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
