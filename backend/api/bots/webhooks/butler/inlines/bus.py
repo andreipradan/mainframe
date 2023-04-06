@@ -36,12 +36,12 @@ def parse_schedule(schedule: Schedule, now: str, full_details=False):
         next1_index = terminal1_next_time.index(terminal1_next_time)
         if next1_index < 2:
             next1_index = 2
-        terminal1_times = terminal1_times[next1_index - 2:next1_index+2]
+        terminal1_times = terminal1_times[next1_index - 2 : next1_index + 2]
 
         next2_index = terminal2_times.index(terminal2_next_time)
         if next2_index < 2:
             next2_index = 2
-        terminal2_times = terminal2_times[next2_index - 2:next2_index+2]
+        terminal2_times = terminal2_times[next2_index - 2 : next2_index + 2]
 
     return (
         f"<b>[{schedule.line.name}] {start1} - {start2}</b>\n"
@@ -60,7 +60,14 @@ class BusInline(BaseInlines):
     PER_PAGE = 24
 
     @classmethod
-    def get_lines_markup(cls, line_type: str, lines: List[TransitLine], count: int, last_page: int, page=1):
+    def get_lines_markup(
+        cls,
+        line_type: str,
+        lines: List[TransitLine],
+        count: int,
+        last_page: int,
+        page=1,
+    ):
         buttons = [
             [
                 Button("♻️", callback_data=f"bus sync {line_type}"),
@@ -104,7 +111,9 @@ class BusInline(BaseInlines):
             [
                 [
                     Button("Urban", callback_data=f"bus fetch_lines urban"),
-                    Button("Metropolitan", callback_data=f"bus fetch_lines metropolitan"),
+                    Button(
+                        "Metropolitan", callback_data=f"bus fetch_lines metropolitan"
+                    ),
                 ]
             ]
             + [
@@ -117,9 +126,7 @@ class BusInline(BaseInlines):
     @classmethod
     def get_bottom_markup(cls, line_type, page, _id, full_details):
         buttons = [
-            Button(
-                "👆", callback_data=f"bus fetch_lines {line_type} {page}"
-            ),
+            Button("👆", callback_data=f"bus fetch_lines {line_type} {page}"),
             Button(
                 "🎯" if full_details else "📜",
                 callback_data=f"bus fetch {_id} {line_type} {page}{'' if full_details else ' full_details'}",
@@ -141,23 +148,27 @@ class BusInline(BaseInlines):
         else:
             logger.error("This shouldn't happen, like ever")
             return ""
-        schedule = Schedule.objects.select_related("line").get(line__name=_id.upper(), occurrence=day)
+        schedule = Schedule.objects.select_related("line").get(
+            line__name=_id.upper(), occurrence=day
+        )
         message = update.callback_query.message
         return edit_message(
             update.callback_query.bot,
             message.chat_id,
             message.message_id,
             parse_schedule(schedule, now.strftime("%H:%M"), full_details),
-            reply_markup=cls.get_bottom_markup(
-                line_type, int(page), _id, full_details
-            )
+            reply_markup=cls.get_bottom_markup(line_type, int(page), _id, full_details),
         )
 
     @classmethod
     def fetch_lines(cls, update, line_type, page=1):
         page = int(page)
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
-        lines = list(TransitLine.objects.filter(line_type=LINE_TYPES[line_type]).order_by("name")[start: start + cls.PER_PAGE])
+        lines = list(
+            TransitLine.objects.filter(line_type=LINE_TYPES[line_type]).order_by(
+                "name"
+            )[start : start + cls.PER_PAGE]
+        )
         count = TransitLine.objects.filter(line_type=LINE_TYPES[line_type]).count()
         last_page = math.ceil(count / cls.PER_PAGE)
 
@@ -175,7 +186,6 @@ class BusInline(BaseInlines):
 
     @classmethod
     def start(cls, update):
-
         if not update.callback_query:
             user = update.message.from_user
             logger.info("User %s started the conversation.", user.full_name)

@@ -113,7 +113,9 @@ class CTPClient:
     @classmethod
     def fetch_lines(cls, line_type, commit=True) -> List[TransitLine]:
         if line_type not in LINE_TYPES.keys():
-            raise FetchTransitLinesException(f"Invalid line_type: {line_type}. Must be one of {LINE_TYPES.keys()}")
+            raise FetchTransitLinesException(
+                f"Invalid line_type: {line_type}. Must be one of {LINE_TYPES.keys()}"
+            )
 
         soup = scraper.fetch(cls.LIST_URL.format(f"{line_type}e"), logger)
         if isinstance(soup, Exception) or "EROARE" in soup.text:
