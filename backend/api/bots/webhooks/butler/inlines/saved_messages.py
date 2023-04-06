@@ -127,4 +127,3 @@ def link(item):
 {text or "-"}
 
 Link: https://t.me/c/{chat_id}/{message_id}"""
-

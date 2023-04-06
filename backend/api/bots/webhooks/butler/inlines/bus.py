@@ -159,7 +159,7 @@ class BusInline(BaseInlines):
             [
                 [
                     Button(
-                        line['name'],
+                        line["name"],
                         callback_data=f"bus fetch {line['name']} {bus_type} {page}",
                     )
                     for line in chunk
@@ -192,9 +192,7 @@ class BusInline(BaseInlines):
     @classmethod
     def get_bottom_markup(cls, bus_type, page, _id, full_details):
         buttons = [
-            Button(
-                "👆", callback_data=f"bus fetch_lines {bus_type} {page}"
-            ),
+            Button("👆", callback_data=f"bus fetch_lines {bus_type} {page}"),
             Button(
                 "🎯" if full_details else "📜",
                 callback_data=f"bus fetch {_id} {bus_type} {page}{'' if full_details else ' full_details'}",
@@ -211,14 +209,11 @@ class BusInline(BaseInlines):
             message.chat_id,
             message.message_id,
             fetch_line(_id.upper(), full_details),
-            reply_markup=cls.get_bottom_markup(
-                bus_type, int(page), _id, full_details
-            )
+            reply_markup=cls.get_bottom_markup(bus_type, int(page), _id, full_details),
         )
 
     @classmethod
     def fetch_lines(cls, update, bus_type, page=1):
-
         lines = sorted(
             Bot.objects.get(additional_data__bus__isnull=False).additional_data["bus"][
                 bus_type
@@ -270,7 +265,6 @@ class BusInline(BaseInlines):
             message_id=message.message_id,
             text=f"Hi {user.full_name}, choose a bus type",
             reply_markup=cls.get_markup(bus),
-
         )
 
     @classmethod
