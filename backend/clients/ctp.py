@@ -4,7 +4,7 @@ from datetime import datetime
 
 import aiohttp
 import logging
-from typing import List
+from typing import List, Optional
 
 from clients import scraper
 from transit_lines.models import TransitLine, Schedule
@@ -18,13 +18,13 @@ class FetchTransitLinesException(Exception):
 
 def extract_line_type(class_list):
     if "tramvaie" in class_list:
-        return TransitLine.TYPE_TRAM
+        return TransitLine.CAR_TYPE_TRAM
     if "autobuze" in class_list:
-        return TransitLine.TYPE_BUS
+        return TransitLine.CAR_TYPE_BUS
     if "troleibuze" in class_list:
-        return TransitLine.TYPE_TROLLEYBUS
+        return TransitLine.CAR_TYPE_TROLLEYBUS
     if "microbuze" in class_list:
-        return TransitLine.TYPE_MINIBUS
+        return TransitLine.CAR_TYPE_MINIBUS
 
 
 def extract_terminals(route, separators):
@@ -73,7 +73,7 @@ async def fetch_many(urls):
         )
 
 
-def parse_schedule(args):
+def parse_schedule(args) -> Optional[Schedule]:
     response, line, occ, url = args
     if not response or "<title> 404 Not Found" in response:
         logger.warning(f"No or 404 in response for {url}")
@@ -100,12 +100,23 @@ def parse_schedule(args):
     )
 
 
+LINE_TYPES = {
+    "urban": TransitLine.LINE_TYPE_URBAN,
+    "metropolitan": TransitLine.LINE_TYPE_METROPOLITAN,
+}
+
+
 class CTPClient:
     DETAIL_URL = "https://ctpcj.ro/orare/csv/orar_{}_{}.csv"
     LIST_URL = "https://ctpcj.ro/index.php/ro/orare-linii/linii-{}"
 
     @classmethod
     def fetch_lines(cls, line_type, commit=True) -> List[TransitLine]:
+        if line_type not in LINE_TYPES.keys():
+            raise FetchTransitLinesException(
+                f"Invalid line_type: {line_type}. Must be one of {LINE_TYPES.keys()}"
+            )
+
         soup = scraper.fetch(cls.LIST_URL.format(f"{line_type}e"), logger)
         if isinstance(soup, Exception) or "EROARE" in soup.text:
             raise FetchTransitLinesException(soup)
@@ -121,8 +132,10 @@ class CTPClient:
             route = item.find("div", {"class": "ruta"}).text.strip()
             terminal1, terminal2 = extract_terminals(route, [" - ", "-", "–"])
             transit_line = TransitLine(
-                name=name,
-                type=extract_line_type(item.attrs["class"]),
+                name=name.replace("🚲", ""),
+                car_type=extract_line_type(item.attrs["class"]),
+                line_type=LINE_TYPES[line_type],
+                has_bike_rack="🚲" in name,
                 terminal1=terminal1.strip(),
                 terminal2=terminal2.strip(),
             )
@@ -140,7 +153,7 @@ class CTPClient:
     @classmethod
     def fetch_schedules(
         cls, lines: List[TransitLine] = None, occurrence=None, commit=True
-    ):
+    ) -> List[Schedule]:
         lines = lines or TransitLine.objects.all()
         schedules = []
         for line in lines:

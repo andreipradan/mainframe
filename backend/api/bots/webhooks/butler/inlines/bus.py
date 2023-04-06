@@ -1,127 +1,61 @@
 import logging
 import math
 from operator import itemgetter
+from typing import List
 
 import pytz
-import requests
 from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines, chunks
 from bots.models import Bot
 from clients import scraper
-from datetime import datetime, timedelta
-
 from clients.telegram import edit_message
+from datetime import datetime
+
+from clients.ctp import LINE_TYPES
+from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_line(bus_number, full_details=False):
-    now = datetime.now(pytz.timezone("Europe/Bucharest"))
-    weekday = now.weekday()
-    if weekday in range(5):
-        day = "lv"
-    elif weekday == 5:
-        day = "s"
-    elif weekday == 6:
-        day = "d"
-    else:
-        logger.error("This shouldn't happen, like ever")
-        return ""
+def get_next_time(times: List[str], now):
+    for time in times:
+        if time > now:
+            return time
+    return times[0] if times else None
 
-    resp = requests.get(
-        f"https://ctpcj.ro/orare/csv/orar_{bus_number}_{day}.csv",
-        headers={"Referer": "https://ctpcj.ro/"},
-    )
-    if resp.status_code != 200 or "EROARE" in resp.text:
-        return
 
-    lines = [line.strip() for line in resp.text.split("\n")]
-    start1, start2 = lines.pop(0).split(",")[1].split(" - ")
-    days_of_week = lines.pop(0).split(",")[1]
-    date_start = lines.pop(0).split(",")[1]
-    lines.pop(0)  # start station
-    lines.pop(0)  # stop station
+def parse_schedule(schedule: Schedule, now: str, full_details=False):
+    start1 = schedule.line.terminal1
+    start2 = schedule.line.terminal2
 
-    start1_times = []
-    start2_times = []
-    next_start1_index, next_start2_index = None, None
-    for bus in lines:
-        if not bus:
-            continue
-        start1_time, start2_time = bus.split(",")
-        if start1_time:
-            start1_times.append(start1_time)
-        if start2_time:
-            start2_times.append(start2_time)
+    terminal1_times = schedule.terminal1_schedule
+    terminal2_times = schedule.terminal2_schedule
 
-        now_time = now.strftime("%H:%M")
-        if start1_time and not next_start1_index and start1_time > now_time:
-            next_start1_index = len(start1_times) - 1
-        if start2_time and not next_start2_index and start2_time > now_time:
-            next_start2_index = len(start2_times) - 1
+    terminal1_next_time = get_next_time(terminal1_times, now)
+    terminal2_next_time = get_next_time(terminal2_times, now)
 
     if not full_details:
-        if not next_start1_index:
-            for i, time in enumerate(reversed(start1_times)):
-                if time.strip() == "Nu circula":
-                    continue
-                time = datetime.strptime(time, "%H:%M")
-                if now.replace(
-                    hour=time.hour, minute=time.minute, second=0, microsecond=0
-                ) < now - timedelta(minutes=30):
-                    break
-                next_start1_index = len(start1_times) - i - 1
+        next1_index = terminal1_next_time.index(terminal1_next_time)
+        if next1_index < 2:
+            next1_index = 2
+        terminal1_times = terminal1_times[next1_index - 2 : next1_index + 2]
 
-        if not next_start2_index:
-            for i, time in enumerate(reversed(start2_times)):
-                if time.strip() == "Nu circula":
-                    continue
-                time = datetime.strptime(time, "%H:%M")
-                if now.replace(
-                    hour=time.hour, minute=time.minute, second=0, microsecond=0
-                ) < now - timedelta(minutes=30):
-                    break
-                next_start2_index = len(start2_times) - i - 1
-
-    next_start1_index, next_start2_index = (
-        next_start1_index or 0,
-        next_start2_index or 0,
-    )
-
-    if not full_details:
-        start1_rides = (
-            start1_times[next_start1_index - 2 : next_start1_index]
-            + [f"<b>{start1_times[next_start1_index]}</b>"]
-            + start1_times[next_start1_index + 1 : next_start1_index + 5]
-        )
-        start2_rides = (
-            start2_times[next_start2_index - 2 : next_start2_index]
-            + [f"<b>{start2_times[next_start2_index]}</b>"]
-            + start2_times[next_start2_index + 1 : next_start2_index + 5]
-        )
-    else:
-        start1_rides = (
-            start1_times[:next_start1_index]
-            + [f"<b>{start1_times[next_start1_index]}</b>"]
-            + start1_times[next_start1_index + 1 :]
-        )
-        start2_rides = (
-            start2_times[:next_start2_index]
-            + [f"<b>{start2_times[next_start2_index]}</b>"]
-            + start2_times[next_start2_index + 1 :]
-        )
+        next2_index = terminal2_times.index(terminal2_next_time)
+        if next2_index < 2:
+            next2_index = 2
+        terminal2_times = terminal2_times[next2_index - 2 : next2_index + 2]
 
     return (
-        f"<b>[{bus_number}] {start1} - {start2}</b>\n"
-        f"{days_of_week}\n\n"
+        f"<b>[{schedule.line.name}] {start1} - {start2}</b>\n"
+        f"{schedule.get_occurrence_display()}\n\n"
         "<b>Next</b>\n"
-        f"{start1}: <b>{start1_times[next_start1_index]}</b>\n"
-        f"{start2}: <b>{start2_times[next_start2_index]}</b>\n\n"
-        f"<b>{start1}</b>\n{' | '.join(start1_rides)}\n"
-        f"<b>{start2}</b>\n{' | '.join(start2_rides)}\n\n"
-        f"{'' if start1_times + start2_times else f'Start date: {date_start}'}"
-        f"<a href='https://ctpcj.ro/orare/pdf/orar_{bus_number}.pdf'>PDF version</a>"
+        f"{start1}: <b>{terminal1_next_time}</b>\n"
+        f"{start2}: <b>{terminal2_next_time}</b>\n\n"
+        f"<b>{start1}</b>\n{' | '.join([t if t != terminal1_next_time else f'<b>{t}</b>' for t in terminal1_times])}\n"
+        f"<b>{start2}</b>\n{' | '.join([t if t != terminal2_next_time else f'<b>{t}</b>' for t in terminal2_times])}\n"
+        f"{'' if terminal1_times + terminal2_times else f'Start date: {schedule.schedule_start_date}'}"
+        f"<a href='https://ctpcj.ro/orare/pdf/orar_{schedule.line.name}.pdf'>PDF version</a>"
     )
 
 
@@ -129,10 +63,17 @@ class BusInline(BaseInlines):
     PER_PAGE = 24
 
     @classmethod
-    def get_lines_markup(cls, bus_type, lines, count, last_page, page=1):
+    def get_lines_markup(
+        cls,
+        line_type: str,
+        lines: List[TransitLine],
+        count: int,
+        last_page: int,
+        page=1,
+    ):
         buttons = [
             [
-                Button("♻️", callback_data=f"bus sync {bus_type}"),
+                Button("♻️", callback_data=f"bus sync {line_type}"),
                 Button("👆", callback_data=f"bus start"),
                 Button("✅", callback_data="end"),
             ]
@@ -143,24 +84,22 @@ class BusInline(BaseInlines):
                 0,
                 Button(
                     "👈",
-                    callback_data=f"bus fetch_lines {bus_type} {page - 1 if page > 1 else last_page}",
+                    callback_data=f"bus fetch_lines {line_type} {page - 1 if page > 1 else last_page}",
                 ),
             )
             buttons[0].append(
                 Button(
                     "👉",
-                    callback_data=f"bus fetch_lines {bus_type} {page + 1 if page != last_page else 1}",
+                    callback_data=f"bus fetch_lines {line_type} {page + 1 if page != last_page else 1}",
                 )
             )
 
-        start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
-        lines = lines[start : start + cls.PER_PAGE]
         return Keyboard(
             [
                 [
                     Button(
-                        line["name"],
-                        callback_data=f"bus fetch {line['name']} {bus_type} {page}",
+                        f"{line.name}{' 🚲' if line.has_bike_rack else ''}",
+                        callback_data=f"bus fetch {line.name} {line_type} {page}",
                     )
                     for line in chunk
                 ]
@@ -170,17 +109,15 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def get_markup(cls, bus):
+    def get_markup(cls):
         return Keyboard(
             [
                 [
+                    Button("Urban", callback_data=f"bus fetch_lines urban"),
                     Button(
-                        f"{bus_type.capitalize()} ({len(bus[bus_type])})",
-                        callback_data=f"bus fetch_lines {bus_type}",
-                    )
+                        "Metropolitan", callback_data=f"bus fetch_lines metropolitan"
+                    ),
                 ]
-                for bus_type in bus.keys()
-                if bus_type != "urls"
             ]
             + [
                 [
@@ -190,37 +127,52 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def get_bottom_markup(cls, bus_type, page, _id, full_details):
+    def get_bottom_markup(cls, line_type, page, _id, full_details):
         buttons = [
-            Button("👆", callback_data=f"bus fetch_lines {bus_type} {page}"),
+            Button("👆", callback_data=f"bus fetch_lines {line_type} {page}"),
             Button(
                 "🎯" if full_details else "📜",
-                callback_data=f"bus fetch {_id} {bus_type} {page}{'' if full_details else ' full_details'}",
+                callback_data=f"bus fetch {_id} {line_type} {page}{'' if full_details else ' full_details'}",
             ),
             Button("✅", callback_data="end"),
         ]
         return Keyboard([buttons])
 
     @classmethod
-    def fetch(cls, update, _id, bus_type, page, full_details=False):
+    def fetch(cls, update, _id, line_type, page, full_details=False):
+        now = datetime.now(pytz.timezone("Europe/Bucharest"))
+        weekday = now.weekday()
+        if weekday in range(5):
+            day = "lv"
+        elif weekday == 5:
+            day = "s"
+        elif weekday == 6:
+            day = "d"
+        else:
+            logger.error("This shouldn't happen, like ever")
+            return ""
+        schedule = Schedule.objects.select_related("line").get(
+            line__name=_id.upper(), occurrence=day
+        )
         message = update.callback_query.message
         return edit_message(
             update.callback_query.bot,
             message.chat_id,
             message.message_id,
-            fetch_line(_id.upper(), full_details),
-            reply_markup=cls.get_bottom_markup(bus_type, int(page), _id, full_details),
+            parse_schedule(schedule, now.strftime("%H:%M"), full_details),
+            reply_markup=cls.get_bottom_markup(line_type, int(page), _id, full_details),
         )
 
     @classmethod
-    def fetch_lines(cls, update, bus_type, page=1):
-        lines = sorted(
-            Bot.objects.get(additional_data__bus__isnull=False).additional_data["bus"][
-                bus_type
-            ],
-            key=itemgetter("name"),
+    def fetch_lines(cls, update, line_type, page=1):
+        page = int(page)
+        start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
+        lines = list(
+            TransitLine.objects.filter(line_type=LINE_TYPES[line_type]).order_by(
+                "name"
+            )[start : start + cls.PER_PAGE]
         )
-        count = len(lines)
+        count = TransitLine.objects.filter(line_type=LINE_TYPES[line_type]).count()
         last_page = math.ceil(count / cls.PER_PAGE)
 
         message = update.callback_query.message
@@ -228,33 +180,22 @@ class BusInline(BaseInlines):
             update.callback_query.bot,
             message.chat_id,
             message.message_id,
-            text=f"{bus_type.capitalize()} lines [{page}/{last_page}]",
+            text=f"{line_type.capitalize()} lines [{page}/{last_page}]",
             reply_markup=cls.get_lines_markup(
-                bus_type, lines, count, last_page, int(page)
+                line_type, lines, count, last_page, int(page)
             ),
             logger=logger,
         )
 
     @classmethod
     def start(cls, update):
-        try:
-            instance = Bot.objects.get(additional_data__bus__isnull=False)
-        except Bot.DoesNotExist:
-            logger.exception("Bot with bus config not found.")
-            return update.message.reply_text("Coming soon")
-
-        bus = instance.additional_data["bus"]
-        if not ("urban" in bus.keys() and "metropolitan" in bus.keys()):
-            logger.error("urban or metropolitan missing from bus lines config")
-            return update.message.reply_text("Coming soon.")
-
         if not update.callback_query:
             user = update.message.from_user
             logger.info("User %s started the conversation.", user.full_name)
 
             return update.message.reply_text(
-                f"Welcome {user.full_name}\nChoose a bus type",
-                reply_markup=cls.get_markup(bus),
+                f"Welcome {user.full_name}\nChoose a line type",
+                reply_markup=cls.get_markup(),
             ).to_json()
 
         message = update.callback_query.message
@@ -264,7 +205,7 @@ class BusInline(BaseInlines):
             chat_id=message.chat_id,
             message_id=message.message_id,
             text=f"Hi {user.full_name}, choose a bus type",
-            reply_markup=cls.get_markup(bus),
+            reply_markup=cls.get_markup(),
         )
 
     @classmethod

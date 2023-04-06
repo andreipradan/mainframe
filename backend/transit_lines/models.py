@@ -5,20 +5,30 @@ from core.models import TimeStampedModel
 
 
 class TransitLine(TimeStampedModel):
-    TYPE_BUS = 1
-    TYPE_MINIBUS = 2
-    TYPE_TRAM = 3
-    TYPE_TROLLEYBUS = 4
+    CAR_TYPE_BUS = 1
+    CAR_TYPE_MINIBUS = 2
+    CAR_TYPE_TRAM = 3
+    CAR_TYPE_TROLLEYBUS = 4
+
+    LINE_TYPE_METROPOLITAN = 1
+    LINE_TYPE_URBAN = 2
 
     name = models.CharField(max_length=16, unique=True)
-    type = models.IntegerField(
+    line_type = models.IntegerField(
         choices=(
-            (TYPE_BUS, "Bus"),
-            (TYPE_MINIBUS, "Minibus"),
-            (TYPE_TRAM, "Tram"),
-            (TYPE_TROLLEYBUS, "Trolleybus"),
+            (LINE_TYPE_METROPOLITAN, "Metropolitan"),
+            (LINE_TYPE_URBAN, "Urban"),
         )
     )
+    car_type = models.IntegerField(
+        choices=(
+            (CAR_TYPE_BUS, "Bus"),
+            (CAR_TYPE_MINIBUS, "Minibus"),
+            (CAR_TYPE_TRAM, "Tram"),
+            (CAR_TYPE_TROLLEYBUS, "Trolleybus"),
+        )
+    )
+    has_bike_rack = models.BooleanField(default=False)
 
     terminal1 = models.CharField(max_length=32)
     terminal2 = models.CharField(max_length=32)
