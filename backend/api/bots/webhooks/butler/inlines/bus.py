@@ -1,18 +1,15 @@
 import logging
 import math
-from operator import itemgetter
 from typing import List
 
 import pytz
 from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines, chunks
-from bots.models import Bot
-from clients import scraper
 from clients.telegram import edit_message
 from datetime import datetime
 
-from clients.ctp import LINE_TYPES
+from clients.ctp import LINE_TYPES, CTPClient
 from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
@@ -209,48 +206,15 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def sync(cls, update, bus_type):
-        try:
-            instance = Bot.objects.get(additional_data__bus__isnull=False)
-        except Bot.DoesNotExist:
-            logger.exception("Bot with bus config not found.")
-            return update.message.reply_text("Coming soon")
-        bus = instance.additional_data["bus"]
-        url = bus["urls"]["lines"].format(
-            f"{bus_type}{'e' if bus_type != 'supermarket' else ''}"
-        )
-        bot = update.callback_query.bot
+    def sync(cls, update, line_type):
+        lines = list(TransitLine.objects.filter(line_type=LINE_TYPES[line_type]))
+        CTPClient.fetch_schedules(lines)
         message = update.callback_query.message
 
-        soup = scraper.fetch(url, logger)
-        if isinstance(soup, Exception) or "EROARE" in soup.text:
-            logger.error(soup)
-            return edit_message(
-                bot,
-                chat_id=message.chat_id,
-                message_id=message.message_id,
-                text=str(soup),
-                reply_markup=cls.get_markup(bus),
-            )
-        lines = []
-        for item in soup.find_all("div", {"class": "element"}):
-            name = (
-                item.find("h6", {"itemprop": "name"})
-                .text.strip()
-                .replace("Linia ", "")
-                .replace("Cora ", "")
-            )
-            route = item.find("div", {"class": "ruta"}).text.strip()
-            lines.append({"name": name, "route": route})
-        instance.additional_data["bus"][bus_type] = sorted(
-            lines, key=itemgetter("name")
-        )
-        instance.save()
-
         return edit_message(
-            bot,
+            update.callback_query.bot,
             chat_id=message.chat_id,
             message_id=message.message_id,
-            text="Synced 👌",
-            reply_markup=cls.get_markup(bus),
+            text=f"Synced schedules for {len(lines)} {line_type} lines 👌",
+            reply_markup=cls.get_markup(),
         )

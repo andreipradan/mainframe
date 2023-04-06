@@ -185,7 +185,7 @@ class CTPClient:
                     "terminal2_schedule",
                     "schedule_start_date",
                 ],
-                unique_fields=Schedule._meta.unique_together,
+                unique_fields=list(*Schedule._meta.unique_together),
             )
             logger.info(f"Stored {len(schedules)} schedules in db")
         return schedules
