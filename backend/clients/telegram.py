@@ -3,7 +3,9 @@ import logging
 import telegram
 
 
-def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML", logger=None):
+def edit_message(
+    bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML", logger=None
+):
     logger = logger or logging.getLogger(__name__)
     try:
         return bot.edit_message_text(

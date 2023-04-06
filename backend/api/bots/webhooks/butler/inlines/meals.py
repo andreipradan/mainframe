@@ -90,7 +90,7 @@ class MealsInline(BaseInlines):
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
         items = list(
             Meal.objects.distinct("date").order_by("date", "type")[
-                start: start + cls.PER_PAGE
+                start : start + cls.PER_PAGE
             ]
         )
         return InlineKeyboardMarkup(
@@ -113,7 +113,8 @@ class MealsInline(BaseInlines):
 
         return edit_message(
             update.callback_query.bot,
-            message.chat_id,message.message_id,
+            message.chat_id,
+            message.message_id,
             text=day,
             reply_markup=cls.get_meals_markup(day=day, page=page),
         )
@@ -134,7 +135,6 @@ class MealsInline(BaseInlines):
             reply_markup=cls.get_meals_markup(
                 day=item.date.strftime("%Y-%m-%d"), page=page, bottom_level=True
             ),
-
         )
 
     @classmethod
