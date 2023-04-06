@@ -3,7 +3,7 @@ import logging
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
-from transit_lines.clients import CTPClient, FetchTransitLinesException
+from clients.ctp import CTPClient, FetchTransitLinesException
 from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         TransitLine.objects.bulk_create(
             lines,
             update_conflicts=True,
-            update_fields=["type", "terminal1", "terminal2"],
+            update_fields=["car_type", "line_type", "terminal1", "terminal2"],
             unique_fields=["name"],
         )
 

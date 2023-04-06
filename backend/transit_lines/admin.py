@@ -10,7 +10,8 @@ class ScheduleAdmin(admin.ModelAdmin):
 class TransitLineAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "type",
+        "car_type",
+        "line_type",
         "terminal1",
         "terminal2",
     )
