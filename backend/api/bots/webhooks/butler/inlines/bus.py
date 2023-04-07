@@ -42,7 +42,7 @@ def parse_schedule(schedule: Schedule, now: str, full_details=False):
         terminal2_times = terminal2_times[next2_index - 2 : next2_index + 2]
 
     return (
-        f"<b>[{schedule.line.name}] {start1} - {start2}</b>\n"
+        f"<b>[{schedule.line.name}]{'[🚲]' if schedule.line.has_bike_rack else ''} {start1} - {start2}</b>\n"
         f"{schedule.get_occurrence_display()}\n\n"
         "<b>Next</b>\n"
         f"{start1}: <b>{terminal1_next_time}</b>\n"
