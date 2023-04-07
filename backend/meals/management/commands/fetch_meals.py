@@ -1,12 +1,15 @@
+import asyncio
+import itertools
 import logging
 from datetime import datetime, timedelta
+from typing import List
 
-
+import aiohttp
+from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand, CommandError
-from django.db import OperationalError
+from django.core.signing import Signer
 
 from bots.models import Bot
-from clients import scraper
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
@@ -20,47 +23,108 @@ TYPE_MAPPING = {
 }
 
 
+async def fetch(session, sem, url):
+    async with sem:
+        try:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    msg = f"Unexpected status for {url}. Status: {response.status}"
+                    if response.status == 404:
+                        logger.warning(msg)
+                    else:
+                        raise ValueError(msg)
+                return await response.text(), url
+        except aiohttp.client_exceptions.ClientConnectorError as e:
+            logger.error(e)
+            return "", url
+
+
+async def fetch_many(urls):
+    sem = asyncio.Semaphore(1000)
+    async with aiohttp.ClientSession() as session:
+        return map(
+            parse_week,
+            await asyncio.gather(*[fetch(session, sem, url) for url in urls]),
+        )
+
+
+def parse_ingredients(ingredients_div):
+    list_items = ingredients_div.find_all("li")
+    return [i.text.strip() for i in list_items]
+
+
+def parse_meal(row) -> Meal:
+    def parse(css_class):
+        div = row.find("div", {"class": css_class})
+        if not div:
+            raise CommandError(f"No {css_class} found in {row}")
+        return div
+
+    ingredients = parse_ingredients(parse("recipe-lists"))
+    quantities = parse_quantities(parse("quantity-bar"))
+    nutritional_values = parse_nutritional_values(parse("menu-pic").table)
+    return Meal(
+        name=row.h4.text,
+        type=TYPE_MAPPING[row.h2.text.lower()],
+        ingredients=ingredients,
+        quantities=quantities,
+        nutritional_values=nutritional_values,
+    )
+
+
+def parse_nutritional_values(nutritional_div):
+    results = {}
+    values = [x.text.strip() for x in nutritional_div.find_all("td")][2:]
+    while values:
+        results[values.pop()] = values.pop()
+    return results
+
+
+def parse_quantities(quantities_div):
+    quantities, grams = quantities_div.find_all("ul")
+    quantities = [q.text.strip() for q in quantities if q.text.strip()]
+    grams = [g.text.strip() for g in grams if g.text.strip()]
+    return dict(zip(quantities, grams))
+
+
+def parse_week(args) -> List[Meal]:
+    response_text, url = args
+    soup = BeautifulSoup(response_text, features="html.parser")
+
+    week = (
+        soup.find("div", {"class": "weekly-buttons"})
+        .find("button", {"class": "active"})
+        .text.split("-")[1]
+    )
+    current_date = (
+        datetime.strptime(week, "%d %b").date() - timedelta(days=7)
+    ).replace(year=datetime.today().year)
+
+    rows = soup.select(".slider-menu-for-day > div > .row")
+    if not rows:
+        logger.error(f"URL: {url}. No rows found")
+        return []
+
+    meals = []
+    for row in rows:
+        meal = parse_meal(row)
+        if row.attrs["class"] == ["row"]:
+            current_date = current_date + timedelta(days=1)
+        meal.date = current_date
+        meals.append(meal)
+    return meals
+
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info("Fetching menu for the next month")
 
-        try:
-            instance = Bot.objects.get(additional_data__menu__isnull=False)
-        except OperationalError as e:
-            raise CommandError(str(e))
-        except Bot.DoesNotExist:
-            raise CommandError("Bot with menu config in additional_data missing")
-
-        menu = instance.additional_data["menu"]
-
-        if not isinstance(menu, dict) or not (url := menu.get("url")):
-            raise CommandError("url missing from menu config in additional data")
-
-        meals = []
-        for week_no in range(1, 5):
-            soup = scraper.fetch(f"{url}/week-{week_no}", logger)
-            if isinstance(soup, Exception):
-                return logger.error(f"URL: {url}. Error: {soup}")
-
-            week = (
-                soup.find("div", {"class": "weekly-buttons"})
-                .find("button", {"class": "active"})
-                .text.split("-")[1]
-            )
-            current_date = (
-                datetime.strptime(week, "%d %b").date() - timedelta(days=7)
-            ).replace(year=datetime.today().year)
-
-            rows = soup.select(".slider-menu-for-day > div > .row")
-            if not rows:
-                return logger.error(f"URL: {url}. No rows found")
-
-            for row in rows:
-                meal = self.parse_meal(row)
-                if row.attrs["class"] == ["row"]:
-                    current_date = current_date + timedelta(days=1)
-                meal.date = current_date
-                meals.append(meal)
+        base_url = Signer().unsign_object(
+            "Imh0dHBzOi8vd3d3LmxpZmVib3gucm8vb3B0aW1ib3gtMSI:"
+            "Hhq6D12GLwL3MuG7vmBv7LoXyDQND-lb6wg9QVqh1Sg"
+        )
+        urls = [f"{base_url}/week-{week_no}" for week_no in range(1, 5)]
+        meals = list(itertools.chain.from_iterable(asyncio.run(fetch_many(urls))))
 
         Meal.objects.bulk_create(
             meals,
@@ -74,38 +138,3 @@ class Command(BaseCommand):
         bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
 
         self.stdout.write(self.style.SUCCESS("Done."))
-
-    def parse_ingredients(self, ingredients_div):
-        list_items = ingredients_div.find_all("li")
-        return [i.text.strip() for i in list_items]
-
-    def parse_meal(self, row) -> Meal:
-        def parse(css_class):
-            div = row.find("div", {"class": css_class})
-            if not div:
-                raise CommandError(f"No {css_class} found in {row}")
-            return div
-
-        ingredients = self.parse_ingredients(parse("recipe-lists"))
-        quantities = self.parse_quantities(parse("quantity-bar"))
-        nutritional_values = self.parse_nutritional_values(parse("menu-pic").table)
-        return Meal(
-            name=row.h4.text,
-            type=TYPE_MAPPING[row.h2.text.lower()],
-            ingredients=ingredients,
-            quantities=quantities,
-            nutritional_values=nutritional_values,
-        )
-
-    def parse_nutritional_values(self, nutritional_div):
-        results = {}
-        values = [x.text.strip() for x in nutritional_div.find_all("td")][2:]
-        while values:
-            results[values.pop()] = values.pop()
-        return results
-
-    def parse_quantities(self, quantities_div):
-        quantities, grams = quantities_div.find_all("ul")
-        quantities = [q.text.strip() for q in quantities if q.text.strip()]
-        grams = [g.text.strip() for g in grams if g.text.strip()]
-        return dict(zip(quantities, grams))
