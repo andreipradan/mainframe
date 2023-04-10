@@ -110,7 +110,7 @@ class BusInline(BaseInlines):
             [
                 [Button("Favorites", callback_data=f"bus fetch_lines favorites")],
                 [Button("Urban", callback_data=f"bus fetch_lines urban")],
-                [Button("Metropolitan", callback_data=f"bus fetch_lines metropolitan")]
+                [Button("Metropolitan", callback_data=f"bus fetch_lines metropolitan")],
             ]
             + [[Button("✅", callback_data="end")]]
         )
@@ -169,7 +169,9 @@ class BusInline(BaseInlines):
             message.chat_id,
             message.message_id,
             parse_schedule(schedule, now.strftime("%H:%M"), full_details),
-            reply_markup=cls.get_bottom_markup(line_type, int(page), line_name, full_details),
+            reply_markup=cls.get_bottom_markup(
+                line_type, int(page), line_name, full_details
+            ),
         )
 
     @classmethod
@@ -183,14 +185,14 @@ class BusInline(BaseInlines):
         else:
             qs = qs.filter(line_type=LINE_TYPES[line_type])
 
-        lines = list(qs.order_by("name")[start:start + cls.PER_PAGE])
+        lines = list(qs.order_by("name")[start : start + cls.PER_PAGE])
         count = qs.count()
 
         last_page = math.ceil(count / cls.PER_PAGE)
         message = update.callback_query.message
 
         no_lines_msg = f"\n{'' if lines else f'No {line_type} found'}"
-        pagination = f' [{page}/{last_page}]' if last_page and last_page != 1 else ''
+        pagination = f" [{page}/{last_page}]" if last_page and last_page != 1 else ""
         return edit_message(
             update.callback_query.bot,
             message.chat_id,
