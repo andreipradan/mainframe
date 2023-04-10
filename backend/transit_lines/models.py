@@ -42,7 +42,9 @@ class TransitLine(TimeStampedModel):
     ):
         if self.favorite_of:
             self.favorite_of = sorted(set(self.favorite_of))
-        return super().save(force_insert=False, force_update=False, using=None, update_fields=None)
+        return super().save(
+            force_insert=False, force_update=False, using=None, update_fields=None
+        )
 
     def add_to_favorites(self, who):
         self.favorite_of.append(who)
