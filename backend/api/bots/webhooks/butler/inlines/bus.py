@@ -58,7 +58,7 @@ class BusInline(BaseInlines):
     PER_PAGE = 24
 
     @classmethod
-    def get_lines_markup(
+    def get_markup(
         cls,
         line_type: str,
         lines: List[TransitLine],
@@ -66,27 +66,33 @@ class BusInline(BaseInlines):
         last_page: int,
         page=1,
     ):
-        buttons = [
-            [
-                Button("👆", callback_data=f"bus start"),
-                Button("✅", callback_data="end"),
-            ]
-        ]
+        line_type_buttons = [[]]
+        navigation_buttons = [[Button("✅", callback_data="end")]]
+
         if line_type != "favorites":
-            buttons[0].insert(0, Button("♻️", callback_data=f"bus sync {line_type}"))
+            navigation_buttons[0].insert(
+                0, Button("♻️", callback_data=f"bus sync {line_type}")
+            )
+            line_type_buttons[0].append(Button("⭐️", callback_data=f"bus start"))
+        if line_type != "urban":
+            line_type_buttons[0].append(Button("🚍", callback_data=f"bus start urban"))
+        if line_type != "metropolitan":
+            line_type_buttons[0].append(
+                Button("Ⓜ️", callback_data=f"bus start metropolitan")
+            )
 
         if count > cls.PER_PAGE:
-            buttons[0].insert(
+            navigation_buttons[0].insert(
                 0,
                 Button(
                     "👈",
-                    callback_data=f"bus fetch_lines {line_type} {page - 1 if page > 1 else last_page}",
+                    callback_data=f"bus start {line_type} {page - 1 if page > 1 else last_page}",
                 ),
             )
-            buttons[0].append(
+            navigation_buttons[0].append(
                 Button(
                     "👉",
-                    callback_data=f"bus fetch_lines {line_type} {page + 1 if page != last_page else 1}",
+                    callback_data=f"bus start {line_type} {page + 1 if page != last_page else 1}",
                 )
             )
 
@@ -101,18 +107,8 @@ class BusInline(BaseInlines):
                 ]
                 for chunk in chunks(lines, 4)
             ]
-            + buttons
-        )
-
-    @classmethod
-    def get_markup(cls):
-        return Keyboard(
-            [
-                [Button("Favorites", callback_data=f"bus fetch_lines favorites")],
-                [Button("Urban", callback_data=f"bus fetch_lines urban")],
-                [Button("Metropolitan", callback_data=f"bus fetch_lines metropolitan")],
-            ]
-            + [[Button("✅", callback_data="end")]]
+            + line_type_buttons
+            + navigation_buttons
         )
 
     @classmethod
@@ -125,7 +121,7 @@ class BusInline(BaseInlines):
             favicon = "⭐️"
             fav_method = "add_to_favorites"
         buttons = [
-            Button("👆", callback_data=f"bus fetch_lines {line_type} {page}"),
+            Button("👆", callback_data=f"bus start {line_type} {page}"),
             Button(favicon, callback_data=f"bus {fav_method} {line_name}"),
             Button("🎯" if full_details else "📜", callback_data=callback),
             Button("✅", callback_data="end"),
@@ -138,14 +134,14 @@ class BusInline(BaseInlines):
         user = update.callback_query.from_user
         line = TransitLine.objects.get(name=line_name)
         line.add_to_favorites(user.username or user.id)
-        return cls.fetch_lines(update, line_type="favorites")
+        return cls.start(update)
 
     @classmethod
     def remove_from_favorites(cls, update, line_name):
         user = update.callback_query.from_user
         line = TransitLine.objects.get(name=line_name)
         line.remove_from_favorites(user.username or user.id)
-        return cls.fetch_lines(update, line_type="favorites")
+        return cls.start(update)
 
     @classmethod
     def fetch(cls, update, line_name, line_type, page, full_details=False):
@@ -175,12 +171,17 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def fetch_lines(cls, update, line_type, page=1):
+    def start(cls, update, line_type="favorites", page=1, override_message=None):
+        user = (
+            update.callback_query.from_user
+            if update.callback_query
+            else update.message.from_user
+        )
+
         page = int(page)
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
         qs = TransitLine.objects
         if line_type == "favorites":
-            user = update.callback_query.from_user
             qs = qs.filter(favorite_of__contains=[user.username or user.id])
         else:
             qs = qs.filter(line_type=LINE_TYPES[line_type])
@@ -189,53 +190,33 @@ class BusInline(BaseInlines):
         count = qs.count()
 
         last_page = math.ceil(count / cls.PER_PAGE)
-        message = update.callback_query.message
 
         no_lines_msg = f"\n{'' if lines else f'No {line_type} found'}"
         pagination = f" [{page}/{last_page}]" if last_page and last_page != 1 else ""
+
+        markup = cls.get_markup(line_type, lines, count, last_page, int(page))
+
+        if not update.callback_query:
+            logger.info("User %s started the conversation.", user.full_name)
+            return update.message.reply_text(
+                f"Welcome {user.full_name}\nChoose your favorite line",
+                reply_markup=markup,
+            ).to_json()
+
+        message = update.callback_query.message
         return edit_message(
             update.callback_query.bot,
             message.chat_id,
             message.message_id,
-            text=f"{line_type.capitalize()} lines{pagination}{no_lines_msg}",
-            reply_markup=cls.get_lines_markup(
-                line_type, lines, count, last_page, int(page)
-            ),
+            text=override_message
+            or f"{line_type.capitalize()} lines{pagination}{no_lines_msg}",
+            reply_markup=markup,
             logger=logger,
         )
 
     @classmethod
-    def start(cls, update):
-        if not update.callback_query:
-            user = update.message.from_user
-            logger.info("User %s started the conversation.", user.full_name)
-
-            return update.message.reply_text(
-                f"Welcome {user.full_name}\nChoose a line type",
-                reply_markup=cls.get_markup(),
-            ).to_json()
-
-        message = update.callback_query.message
-        user = update.callback_query.from_user
-        return edit_message(
-            update.callback_query.bot,
-            chat_id=message.chat_id,
-            message_id=message.message_id,
-            text=f"Hi {user.full_name}, choose a bus type",
-            reply_markup=cls.get_markup(),
-        )
-
-    @classmethod
     def sync(cls, update, line_type):
-        return ""
         lines = list(TransitLine.objects.filter(line_type=LINE_TYPES[line_type]))
         CTPClient.fetch_schedules(lines)
-        message = update.callback_query.message
-
-        return edit_message(
-            update.callback_query.bot,
-            chat_id=message.chat_id,
-            message_id=message.message_id,
-            text=f"Synced schedules for {len(lines)} {line_type} lines 👌",
-            reply_markup=cls.get_markup(),
-        )
+        override_message = f"Synced schedules for {len(lines)} {line_type} lines 👌"
+        return cls.start(update, line_type=line_type, override_message=override_message)
