@@ -32,9 +32,25 @@ class TransitLine(TimeStampedModel):
 
     terminal1 = models.CharField(max_length=32)
     terminal2 = models.CharField(max_length=32)
+    favorite_of = ArrayField(models.CharField(max_length=32), default=list, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.terminal1} - {self.terminal2})"
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.favorite_of:
+            self.favorite_of = sorted(set(self.favorite_of))
+        return super().save(force_insert=False, force_update=False, using=None, update_fields=None)
+
+    def add_to_favorites(self, who):
+        self.favorite_of.append(who)
+        return self.save()
+
+    def remove_from_favorites(self, who):
+        self.favorite_of.remove(who)
+        return self.save()
 
 
 class Schedule(TimeStampedModel):
