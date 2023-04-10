@@ -44,9 +44,7 @@ async def fetch_many(urls):
     async with aiohttp.ClientSession() as session:
         return map(
             parse_week,
-            await asyncio.gather(
-                *[fetch(session, sem, url) for url in urls]
-            ),
+            await asyncio.gather(*[fetch(session, sem, url) for url in urls]),
         )
 
 
@@ -94,16 +92,12 @@ def parse_week(args) -> List[Meal]:
     soup = BeautifulSoup(response_text, features="html.parser")
 
     week = (
-        soup.find("div", {
-            "class": "weekly-buttons"
-        })
-        .find("button", {
-            "class": "active"
-        })
+        soup.find("div", {"class": "weekly-buttons"})
+        .find("button", {"class": "active"})
         .text.split("-")[1]
     )
     current_date = (
-            datetime.strptime(week, "%d %b").date() - timedelta(days=7)
+        datetime.strptime(week, "%d %b").date() - timedelta(days=7)
     ).replace(year=datetime.today().year)
 
     rows = soup.select(".slider-menu-for-day > div > .row")

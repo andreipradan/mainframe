@@ -160,7 +160,9 @@ class BusInline(BaseInlines):
             message.chat_id,
             message.message_id,
             parse_schedule(schedule, now.strftime("%H:%M"), full_details),
-            reply_markup=cls.get_bottom_markup(line_type, int(page), line_name, full_details),
+            reply_markup=cls.get_bottom_markup(
+                line_type, int(page), line_name, full_details
+            ),
         )
 
     @classmethod
@@ -175,7 +177,7 @@ class BusInline(BaseInlines):
         else:
             qs = qs.filter(line_type=LINE_TYPES[line_type])
 
-        lines = list(qs.order_by("name")[start:start + cls.PER_PAGE])
+        lines = list(qs.order_by("name")[start : start + cls.PER_PAGE])
         count = qs.count()
 
         last_page = math.ceil(count / cls.PER_PAGE)
