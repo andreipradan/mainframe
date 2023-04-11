@@ -85,9 +85,11 @@ def mainframe(request):
     branch_message = f" on <b>{branch}</b> branch" if branch else ""
     pusher = payload.get("pusher", {}).get("name", "")
     pusher_message = f" from {pusher}" if pusher else ""
+    compare = payload.get("compare", "")
+    compare_message = f" <a target='_blank' href={compare}>compare</a>" if compare else ""
     bot.send_message(
         chat_id=chat_id,
-        text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}",
+        text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
         disable_notification=True,
         parse_mode=telegram.ParseMode.HTML,
     )
