@@ -86,7 +86,9 @@ def mainframe(request):
     pusher = payload.get("pusher", {}).get("name", "")
     pusher_message = f" from {pusher}" if pusher else ""
     compare = payload.get("compare", "")
-    compare_message = f" <a target='_blank' href={compare}>compare</a>" if compare else ""
+    compare_message = (
+        f" <a target='_blank' href={compare}>compare</a>" if compare else ""
+    )
     bot.send_message(
         chat_id=chat_id,
         text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
