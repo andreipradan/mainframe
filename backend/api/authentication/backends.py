@@ -13,12 +13,10 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         request.user = None
         auth_header = authentication.get_authorization_header(request)
-
         if not auth_header:
             return None
 
         token = auth_header.decode("utf-8")
-
         return self._authenticate_credentials(token)
 
     def _authenticate_credentials(self, token):
