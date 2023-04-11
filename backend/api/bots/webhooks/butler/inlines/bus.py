@@ -70,12 +70,16 @@ class BusInline(BaseInlines):
         navigation_buttons = [[Button("✅", callback_data="end")]]
 
         if line_type != "favorites":
-            navigation_buttons[0].insert(0, Button("♻️", callback_data=f"bus sync {line_type}"))
+            navigation_buttons[0].insert(
+                0, Button("♻️", callback_data=f"bus sync {line_type}")
+            )
             line_type_buttons[0].append(Button("⭐️", callback_data=f"bus start"))
         if line_type != "urban":
             line_type_buttons[0].append(Button("🚍", callback_data=f"bus start urban"))
         if line_type != "metropolitan":
-            line_type_buttons[0].append(Button("Ⓜ️", callback_data=f"bus start metropolitan"))
+            line_type_buttons[0].append(
+                Button("Ⓜ️", callback_data=f"bus start metropolitan")
+            )
 
         if count > cls.PER_PAGE:
             navigation_buttons[0].insert(
@@ -103,7 +107,8 @@ class BusInline(BaseInlines):
                 ]
                 for chunk in chunks(lines, 4)
             ]
-            + line_type_buttons + navigation_buttons
+            + line_type_buttons
+            + navigation_buttons
         )
 
     @classmethod
@@ -167,7 +172,11 @@ class BusInline(BaseInlines):
 
     @classmethod
     def start(cls, update, line_type="favorites", page=1, override_message=None):
-        user = update.callback_query.from_user if update.callback_query else update.message.from_user
+        user = (
+            update.callback_query.from_user
+            if update.callback_query
+            else update.message.from_user
+        )
 
         page = int(page)
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
@@ -183,7 +192,7 @@ class BusInline(BaseInlines):
         last_page = math.ceil(count / cls.PER_PAGE)
 
         no_lines_msg = f"\n{'' if lines else f'No {line_type} found'}"
-        pagination = f' [{page}/{last_page}]' if last_page and last_page != 1 else ''
+        pagination = f" [{page}/{last_page}]" if last_page and last_page != 1 else ""
 
         markup = cls.get_markup(line_type, lines, count, last_page, int(page))
 
@@ -199,7 +208,8 @@ class BusInline(BaseInlines):
             update.callback_query.bot,
             message.chat_id,
             message.message_id,
-            text=override_message or f"{line_type.capitalize()} lines{pagination}{no_lines_msg}",
+            text=override_message
+            or f"{line_type.capitalize()} lines{pagination}{no_lines_msg}",
             reply_markup=markup,
             logger=logger,
         )
