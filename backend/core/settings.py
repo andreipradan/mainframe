@@ -38,8 +38,8 @@ SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(env("DEBUG", default=0))
-
-if not DEBUG:
+ENV = env("ENV", default=None)
+if ENV != "local":
     sentry_sdk.init(
         dsn=env("SENTRY_DSN"),
         integrations=[
@@ -231,7 +231,7 @@ LOGGING = {
     },
 }
 
-if env("ENV", default=None) != "local":
+if ENV != "local":
     LOGGING["handlers"]["file"] = {
         "level": "INFO",
         "class": "logging.handlers.TimedRotatingFileHandler",
