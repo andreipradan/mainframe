@@ -33,13 +33,14 @@ def parse_schedule(schedule: Schedule, now: str, full_details=False):
     terminal2_next_time = get_next_time(terminal2_times, now)
 
     if not full_details:
-        if (next1_index := terminal1_times.index(terminal1_next_time)) < 2:
-            next1_index = 2
-        terminal1_times = terminal1_times[next1_index - 2 : next1_index + 2]
-
-        if (next2_index := terminal2_times.index(terminal2_next_time)) < 2:
-            next2_index = 2
-        terminal2_times = terminal2_times[next2_index - 2 : next2_index + 2]
+        if terminal1_times:
+            if (next1_index := terminal1_times.index(terminal1_next_time)) < 2:
+                next1_index = 2
+            terminal1_times = terminal1_times[next1_index - 2 : next1_index + 2]
+        if terminal2_times:
+            if (next2_index := terminal2_times.index(terminal2_next_time)) < 2:
+                next2_index = 2
+            terminal2_times = terminal2_times[next2_index - 2 : next2_index + 2]
 
     return (
         f"<b>[{schedule.line.name}]{'[🚲]' if schedule.line.has_bike_rack else ''} {start1} - {start2}</b>\n"
