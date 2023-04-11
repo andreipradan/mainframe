@@ -87,12 +87,13 @@ def mainframe(request):
     pusher_message = f" from {pusher}" if pusher else ""
     compare = payload.get("compare", "")
     compare_message = (
-        f" <a target='_blank' href={compare}>compare</a>" if compare else ""
+        f" | <a target='_blank' href='{compare}'>diff</a>" if compare else ""
     )
     bot.send_message(
         chat_id=chat_id,
         text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
         disable_notification=True,
+        disable_web_page_preview=True,
         parse_mode=telegram.ParseMode.HTML,
     )
     if event == "ping":
