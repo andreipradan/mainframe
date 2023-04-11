@@ -82,7 +82,7 @@ def mainframe(request):
 
     payload = json.loads(request.body)
     branch = payload.get("ref", "").replace("refs/heads/", "")
-    branch_message = f' on <b>{branch}</b> branch' if branch else ''
+    branch_message = f" on <b>{branch}</b> branch" if branch else ""
     pusher = payload.get("pusher", {}).get("name", "")
     pusher_message = f" from {pusher}" if pusher else ""
     bot.send_message(
