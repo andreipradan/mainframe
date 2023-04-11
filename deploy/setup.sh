@@ -49,5 +49,5 @@ else
 fi
 
 
-/home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[mainframe]] Completed setup"
+/home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[Mainframe]] Completed setup"
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Setup completed"
