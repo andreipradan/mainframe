@@ -48,7 +48,7 @@ def mainframe(request):
 
     bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
     chat_id = bot.additional_data["debug_chat_id"]
-    prefix = "[mainframe][github]"
+    prefix = "[Mainframe][GitHub]"
 
     for valid_ip in whitelist:
         if client_ip_address in ip_network(valid_ip):
@@ -80,10 +80,14 @@ def mainframe(request):
     # Process the GitHub events
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
 
-    branch = json.loads(request.body).get("ref", "").replace("refs/heads/", "")
+    payload = json.loads(request.body)
+    branch = payload.get("ref", "").replace("refs/heads/", "")
+    branch_message = f' on <b>{branch}</b> branch' if branch else ''
+    pusher = payload.get("pusher", {}).get("name", "")
+    pusher_message = f" from {pusher}" if pusher else ""
     bot.send_message(
         chat_id=chat_id,
-        text=f"{prefix} Got a '{event}' event{f' on <b>{branch}</b> branch' if branch else ''}",
+        text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}",
         disable_notification=True,
         parse_mode=telegram.ParseMode.HTML,
     )
@@ -125,7 +129,7 @@ def mainframe(request):
         else:
             msg_extra.append("Restart backend")
 
-        msg = "[mainframe] Local setup scheduled in ~1 min"
+        msg = "[Mainframe] Local setup scheduled in ~1 min"
         if msg_extra:
             msg += f" (+ {' & '.join(msg_extra)})"
 
