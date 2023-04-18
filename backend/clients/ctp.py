@@ -79,7 +79,7 @@ def parse_schedule(args) -> Optional[Schedule]:
         logger.warning(f"No or 404 in response for {url}")
         return
 
-    rows = [row.strip() for row in response.split("\n")]
+    rows = [row.strip() for row in response.split("\n") if row.strip()]
     date_row = rows[2].split(",")[1]
     schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y") if date_row else None
 
