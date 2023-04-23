@@ -3,16 +3,20 @@ import logging
 import random
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 from random import randrange
 
+import environ
 from crontab import CronTab
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import OperationalError
 
 from bots.models import Bot
+from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 DATETIME_FORMAT = "%H:%M %d.%m.%Y"
 PATH = f"{settings.LOGS_DIR}/crons/be-real/"
@@ -40,7 +44,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        cron = CronTab(user="andreierdna")
+        config = environ.Env()
+        cron = CronTab(user=config("USERNAME"))
         if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
             crons = "\n".join(commands)
             raise CommandError(f"Multiple 'be_real' crons found: {crons}")

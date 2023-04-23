@@ -4,6 +4,7 @@ import logging
 import math
 
 from datetime import datetime
+from pathlib import Path
 from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
@@ -14,8 +15,10 @@ from bs4 import BeautifulSoup
 from django.core.management import BaseCommand, CommandError
 
 from bots.models import Bot
+from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 class Command(BaseCommand):

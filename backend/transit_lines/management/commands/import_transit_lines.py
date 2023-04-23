@@ -1,12 +1,15 @@
 import logging
+from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
 from clients.ctp import CTPClient, FetchTransitLinesException
+from core.settings import get_file_handler
 from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
