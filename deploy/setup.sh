@@ -6,7 +6,6 @@ VIRTUALENV_DIR=${HOME}/.virtualenvs/mainframe
 LOGS_DIR=/var/log/mainframe/backend
 
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Starting setup"
-echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Crons] Setup" && crontab "${PROJECT_DIR}/deploy/crons" && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Crons] Done"
 # Skipped - only needed to run once - echo "Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "Done."
 
 ([[ "$(ls -A "${LOGS_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path already exists") || (sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log" && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path created")
@@ -30,9 +29,8 @@ if [[ $2 == backend ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done"
 fi
 
-# setting initial cron for be_real
 "${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" be_real --post-deploy
-
+"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" set_crons
 
 if [[ $3 == deploy ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting all services"
@@ -49,5 +47,5 @@ else
 fi
 
 
-/home/andreierdna/.virtualenvs/mainframe/bin/python "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[Mainframe]] Completed setup"
+"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[Mainframe]] Completed setup"
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Setup completed"

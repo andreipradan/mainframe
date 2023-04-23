@@ -2,6 +2,7 @@ import asyncio
 import itertools
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import List
 
 import aiohttp
@@ -10,9 +11,11 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.signing import Signer
 
 from bots.models import Bot
+from core.settings import get_file_handler
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 TYPE_MAPPING = {
     "mic dejun": Meal.TYPE_BREAKFAST,

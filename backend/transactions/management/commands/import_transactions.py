@@ -5,14 +5,16 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
 from bots.models import Bot
-from clients.cron import remove_crons
+from clients.cron import remove_crons_for_command
+from core.settings import get_file_handler
 from transactions.models import Transaction
 
 logger = logging.getLogger(__name__)
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -69,7 +71,7 @@ class Command(BaseCommand):
                     logger.info(f"Import completed - Deleting {file_name.stem}")
                     file_name.unlink()
 
-        remove_crons("import_transactions")
+        remove_crons_for_command("import_transactions")
 
         msg = f"Imported {total} transactions"
         if failed_imports:

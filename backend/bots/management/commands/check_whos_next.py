@@ -1,11 +1,14 @@
 import logging
 import datetime
+from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
+from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 class Command(BaseCommand):

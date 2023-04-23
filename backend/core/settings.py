@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 import environ
 import os
@@ -27,9 +29,11 @@ env = environ.Env(
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-LOGS_DIR = "/var/log/mainframe"
-
+# SECURITY WARNING: don't run with debug turned on in production!
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+DEBUG = int(env("DEBUG", default=0))
+ENV = env("ENV", default=None)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -38,9 +42,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = env("SECRET_KEY")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(env("DEBUG", default=0))
-ENV = env("ENV", default=None)
 if ENV != "local":
     sentry_sdk.init(
         dsn=env("SENTRY_DSN"),
@@ -50,9 +51,10 @@ if ENV != "local":
         traces_sample_rate=1.0,
         send_default_pii=False,
     )
+    LOGS_DIR = Path("/var/log/mainframe")
 else:
     ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
-# Application definition
+    LOGS_DIR = BASE_DIR / "logs"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -67,6 +69,7 @@ INSTALLED_APPS = [
     "api.user",
     "api.authentication",
     "bots",
+    "crons",
     "devices",
     "earthquakes",
     "meals",
@@ -236,10 +239,27 @@ if ENV != "local":
     LOGGING["handlers"]["file"] = {
         "level": "INFO",
         "class": "logging.handlers.TimedRotatingFileHandler",
-        "filename": f"{LOGS_DIR}/backend/backend.log",
+        "filename": LOGS_DIR / "backend" / "backend.log",
         "when": "midnight",  # this specifies the interval
         "interval": 1,  # defaults to 1, only necessary for other values
         "backupCount": 10,  # how many backup file to keep, 10 days
         "formatter": "verbose",
     }
     LOGGING["loggers"]["django"]["handlers"].append("file")
+
+
+def get_file_handler(name):
+    path = LOGS_DIR / "management" / name
+    Path(path).mkdir(parents=True, exist_ok=True)
+    file_handler = TimedRotatingFileHandler(
+        filename=path / f"{name}.log",
+        when="midnight",
+        interval=1,
+        backupCount=10,
+    )
+    formatter = logging.Formatter(
+        fmt=LOGGING["formatters"]["verbose"]["format"],
+        style="{",
+    )
+    file_handler.setFormatter(formatter)
+    return file_handler
