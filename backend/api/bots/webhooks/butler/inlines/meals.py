@@ -183,4 +183,4 @@ class MealsInline(BaseInlines):
     def sync(cls, update):
         meals = MealsClient.fetch_meals()
         override_message = f"Fetched {len(meals)} meals 👌"
-        return cls.start(update, override_message)
+        return cls.start(update, override_message=override_message)
