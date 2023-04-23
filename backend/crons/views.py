@@ -6,6 +6,6 @@ from crons.serializers import CronSerializer
 
 
 class CronViewSet(viewsets.ModelViewSet):
-    queryset = Cron.objects.order_by("is_active", "command")
+    queryset = Cron.objects.order_by("-is_active", "command")
     serializer_class = CronSerializer
     permission_classes = (IsAuthenticated,)
