@@ -64,10 +64,12 @@ class MealsInline(BaseInlines):
 
     @classmethod
     def get_markup(cls, page=1, is_top_level=False, last_page=None):
-        buttons = [[
-            InlineKeyboardButton("✅", callback_data="end"),
-            InlineKeyboardButton("♻️", callback_data="sync"),
-        ]]
+        buttons = [
+            [
+                InlineKeyboardButton("✅", callback_data="end"),
+                InlineKeyboardButton("♻️", callback_data="sync"),
+            ]
+        ]
 
         if not is_top_level:
             buttons[0].insert(
@@ -155,7 +157,9 @@ class MealsInline(BaseInlines):
             return update.message.reply_text(
                 welcome_message.format(
                     name=user.full_name, page=1, total=last_page, count=count
-                ) if not override_message else override_message,
+                )
+                if not override_message
+                else override_message,
                 reply_markup=cls.get_markup(is_top_level=True, last_page=last_page),
             ).to_json()
 
