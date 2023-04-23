@@ -27,6 +27,6 @@ class Cron(TimeStampedModel):
     @property
     def management_command(self):
         config = environ.Env()
-        python_path = config('PYTHON_PATH')
+        python_path = config("PYTHON_PATH")
         manage_path = settings.BASE_DIR / "manage.py"
         return f"{python_path} {manage_path} {self.command} {' '.join(self.arguments)}"
