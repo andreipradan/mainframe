@@ -78,7 +78,7 @@ def call(data, instance: Bot):
         )
         logger.info("Saved")
 
-        logs_path = "/var/log/mainframe/crons/import-transactions/"
+        logs_path = f"{settings.LOGS_DIR}/crons/import-transactions/"
         manage_path = "$HOME/projects/mainframe/backend/manage.py"
         mkdir = f"mkdir -p {logs_path}`date +%Y`"
         output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"

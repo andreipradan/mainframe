@@ -27,6 +27,7 @@ env = environ.Env(
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+LOGS_DIR = "/var/log/mainframe"
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
@@ -35,6 +36,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
+ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(env("DEBUG", default=0))
@@ -48,9 +50,8 @@ if ENV != "local":
         traces_sample_rate=1.0,
         send_default_pii=False,
     )
-
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
+else:
+    ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
@@ -235,7 +236,7 @@ if ENV != "local":
     LOGGING["handlers"]["file"] = {
         "level": "INFO",
         "class": "logging.handlers.TimedRotatingFileHandler",
-        "filename": "/var/log/mainframe/backend/backend.log",
+        "filename": f"{LOGS_DIR}/backend/backend.log",
         "when": "midnight",  # this specifies the interval
         "interval": 1,  # defaults to 1, only necessary for other values
         "backupCount": 10,  # how many backup file to keep, 10 days
