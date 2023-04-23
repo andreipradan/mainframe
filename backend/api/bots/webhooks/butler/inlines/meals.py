@@ -67,7 +67,7 @@ class MealsInline(BaseInlines):
         buttons = [
             [
                 InlineKeyboardButton("✅", callback_data="end"),
-                InlineKeyboardButton("♻️", callback_data="sync"),
+                InlineKeyboardButton("♻️", callback_data="meal sync"),
             ]
         ]
 
