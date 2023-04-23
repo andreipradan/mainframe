@@ -77,17 +77,7 @@ def call(data, instance: Bot):
             settings.BASE_DIR / "transactions" / "data" / file_name
         )
         logger.info("Saved")
-
-        logs_path = f"{settings.LOGS_DIR}/crons/import-transactions/"
-        manage_path = "$HOME/projects/mainframe/backend/manage.py"
-        mkdir = f"mkdir -p {logs_path}`date +%Y`"
-        output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
-        python_path = "$HOME/.virtualenvs/mainframe/bin/python"
-
-        command = (
-            f"{mkdir} && {python_path} {manage_path} import_transactions >> {output}"
-        )
-        cron.delay(command)
+        cron.delay("import_transactions")
         return reply(update, f"Saved {file_name}")
 
     user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
