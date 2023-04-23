@@ -48,11 +48,6 @@ async def fetch_many(urls):
         )
 
 
-def parse_ingredients(ingredients_div):
-    list_items = ingredients_div.find_all("li")
-    return [i.text.strip() for i in list_items]
-
-
 def parse_meal(row) -> Meal:
     def parse(css_class):
         div = row.find("div", {"class": css_class})
@@ -60,7 +55,7 @@ def parse_meal(row) -> Meal:
             raise CommandError(f"No {css_class} found in {row}")
         return div
 
-    ingredients = parse_ingredients(parse("recipe-lists"))
+    ingredients = [i.text.strip() for i in parse("recipe-lists").find_all("li")]
     quantities = parse_quantities(parse("quantity-bar"))
     nutritional_values = parse_nutritional_values(parse("menu-pic").table)
     return Meal(
@@ -96,6 +91,7 @@ def parse_week(args) -> List[Meal]:
         .find("button", {"class": "active"})
         .text.split("-")[1]
     )
+    week = week.replace(" mai", " may")
     current_date = (
         datetime.strptime(week, "%d %b").date() - timedelta(days=7)
     ).replace(year=datetime.today().year)

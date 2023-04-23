@@ -15,7 +15,7 @@ from bots.models import Bot
 logger = logging.getLogger(__name__)
 
 DATETIME_FORMAT = "%H:%M %d.%m.%Y"
-PATH = "/var/log/mainframe/crons/be-real/"
+PATH = f"{settings.LOGS_DIR}/crons/be-real/"
 COMMAND = (
     f"mkdir -p {PATH}`date +%Y` && "
     "$HOME/.virtualenvs/mainframe/bin/python $HOME/projects/mainframe/backend/manage.py be_real >> "

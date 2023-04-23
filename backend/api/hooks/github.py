@@ -140,7 +140,7 @@ def mainframe(request):
 
         bot.send_message(chat_id=chat_id, text=msg, disable_notification=True)
 
-        logs_path = "/var/log/mainframe/crons/deploy/"
+        logs_path = f"{settings.LOGS_DIR}/crons/deploy/"
         mkdir = f"mkdir -p {logs_path}`date +%Y`"
         output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
 
