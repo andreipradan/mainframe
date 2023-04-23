@@ -14,11 +14,7 @@ logger = logging.getLogger(__name__)
 def delay(command, minutes=1, management=True):
     n = datetime.now() + timedelta(minutes=minutes)
     expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
-    set_crons(
-        [Cron(command=command, expression=expression)],
-        remove_all=False,
-        management=management,
-    )
+    set_crons([Cron(command=command, expression=expression)], remove_all=False, management=management)
 
 
 def remove_crons_for_command(command):
@@ -37,8 +33,6 @@ def set_crons(crons: List[Cron], remove_all=True, management=True):
             logger.warning("Clearing all existing crons")
             crontab.remove_all()
         for i, cron in enumerate(crons):
-            cmd = crontab.new(
-                command=cron.management_command if management else cron.command
-            )
+            cmd = crontab.new(command=cron.management_command if management else cron.command)
             cmd.setall(cron.expression)
     logger.info(f"Set {i + 1} cron{'s' if i else ''}")

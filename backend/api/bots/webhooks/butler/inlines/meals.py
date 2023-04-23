@@ -4,6 +4,7 @@ import math
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines, chunks
+from clients.meals import MealsClient
 from clients.telegram import edit_message
 from meals.models import Meal
 
@@ -63,7 +64,10 @@ class MealsInline(BaseInlines):
 
     @classmethod
     def get_markup(cls, page=1, is_top_level=False, last_page=None):
-        buttons = [[InlineKeyboardButton("✅", callback_data="end")]]
+        buttons = [[
+            InlineKeyboardButton("✅", callback_data="end"),
+            InlineKeyboardButton("♻️", callback_data="sync"),
+        ]]
 
         if not is_top_level:
             buttons[0].insert(
@@ -138,7 +142,7 @@ class MealsInline(BaseInlines):
         )
 
     @classmethod
-    def start(cls, update, page=None):
+    def start(cls, update, page=None, override_message=None):
         count = Meal.objects.distinct("date").count()
         logger.info(f"Counted {count} dates")
         last_page = math.ceil(count / cls.PER_PAGE)
@@ -151,7 +155,7 @@ class MealsInline(BaseInlines):
             return update.message.reply_text(
                 welcome_message.format(
                     name=user.full_name, page=1, total=last_page, count=count
-                ),
+                ) if not override_message else override_message,
                 reply_markup=cls.get_markup(is_top_level=True, last_page=last_page),
             ).to_json()
 
@@ -170,3 +174,9 @@ class MealsInline(BaseInlines):
                 last_page=last_page,
             ),
         )
+
+    @classmethod
+    def sync(cls, update):
+        meals = MealsClient.fetch_meals()
+        override_message = f"Fetched {len(meals)} meals 👌"
+        return cls.start(update, override_message)
