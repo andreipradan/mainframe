@@ -30,9 +30,13 @@ def normalize(transaction):
         transaction["balance"] = None
 
     for time_field in ["started_at", "completed_at"]:
-        transaction[time_field] = datetime.strptime(
-            transaction[time_field], DATETIME_FORMAT
-        ).replace(tzinfo=timezone.utc)
+        transaction[time_field] = (
+            datetime.strptime(transaction[time_field], DATETIME_FORMAT).replace(
+                tzinfo=timezone.utc
+            )
+            if transaction[time_field]
+            else None
+        )
     return transaction
 
 
@@ -53,9 +57,27 @@ class Command(BaseCommand):
                     reader,
                 )
                 try:
-                    results = Transaction.objects.bulk_create(transactions)
+                    results = Transaction.objects.bulk_create(
+                        transactions,
+                        update_conflicts=True,
+                        update_fields=(
+                            "balance",
+                            "completed_at",
+                            "fee",
+                            "product",
+                            "state",
+                        ),
+                        unique_fields=(
+                            "amount",
+                            "currency",
+                            "description",
+                            "type",
+                            "started_at",
+                            "balance",
+                        ),
+                    )
                 except ValidationError as e:
-                    logger.error(f"{e}\nFile: {file_name.stem}")
+                    logger.error(str(e))
                     file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
                     failed_imports.append(file_name.stem)
                     continue
@@ -71,11 +93,14 @@ class Command(BaseCommand):
                     logger.info(f"Import completed - Deleting {file_name.stem}")
                     file_name.unlink()
 
-        remove_crons_for_command("import_transactions")
-
         msg = f"Imported {total} transactions"
         if failed_imports:
             msg += f"\nFailed files: {', '.join(failed_imports)}"
+            logger.error(msg)
+
+        remove_crons_for_command("import_transactions")
+
         bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
         bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
+
         self.stdout.write(self.style.SUCCESS(msg))
