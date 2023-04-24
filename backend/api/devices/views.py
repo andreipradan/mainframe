@@ -1,5 +1,6 @@
 import logging
 
+from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -52,3 +53,12 @@ class DeviceViewSet(viewsets.ModelViewSet):
                 unique_fields=["mac"],
             )
         return super().list(request, **kwargs)
+
+    @action(detail=False, methods=["put"])
+    def reboot(self, request, **kwargs):
+        try:
+            output = run_cmd("sudo reboot")
+        except RuntimeError as e:
+            return JsonResponse(data={"status": "400", "data": str(e)})
+
+        return JsonResponse(data={"status": "200", "data": output})
