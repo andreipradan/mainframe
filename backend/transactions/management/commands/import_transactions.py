@@ -30,9 +30,13 @@ def normalize(transaction):
         transaction["balance"] = None
 
     for time_field in ["started_at", "completed_at"]:
-        transaction[time_field] = datetime.strptime(
-            transaction[time_field], DATETIME_FORMAT
-        ).replace(tzinfo=timezone.utc) if transaction[time_field] else None
+        transaction[time_field] = (
+            datetime.strptime(transaction[time_field], DATETIME_FORMAT).replace(
+                tzinfo=timezone.utc
+            )
+            if transaction[time_field]
+            else None
+        )
     return transaction
 
 
@@ -56,7 +60,13 @@ class Command(BaseCommand):
                     results = Transaction.objects.bulk_create(
                         transactions,
                         update_conflicts=True,
-                        update_fields=("balance", "completed_at", "fee", "product", "state"),
+                        update_fields=(
+                            "balance",
+                            "completed_at",
+                            "fee",
+                            "product",
+                            "state",
+                        ),
                         unique_fields=(
                             "amount",
                             "currency",
