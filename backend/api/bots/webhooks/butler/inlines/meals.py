@@ -170,10 +170,12 @@ class MealsInline(BaseInlines):
             chat_id=message.chat_id,
             message_id=message.message_id,
             text=welcome_message.format(
-                name=user.full_name, page=page, total=last_page, count=count
-            ),
+                name=user.full_name, page=page or 1, total=last_page, count=count
+            )
+            if not override_message
+            else override_message,
             reply_markup=cls.get_markup(
-                page=int(page),
+                page=int(page) if page else 1,
                 is_top_level=True,
                 last_page=last_page,
             ),
