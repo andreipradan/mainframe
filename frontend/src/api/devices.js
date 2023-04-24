@@ -23,21 +23,28 @@ class DevicesApi {
   static getList = (token, page = null) => (dispatch) => {
     dispatch(setLoading(true));
     axios
-      .get(base + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static reboot = token => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/reboot/`, {}, { headers: { Authorization: token } })
+      .then((response) => dispatch(setLoading(false)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static sync = token => dispatch => {
     dispatch(setLoading(true));
     axios
-      .put(`${base}sync/`, {}, { headers: { Authorization: token } })
+      .put(`${base}/sync/`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updateDevice = (token, deviceId, data) => dispatch => {
     dispatch(setLoadingDevice(deviceId));
     axios
-      .patch(`${base}${deviceId}/`, data, { headers: { Authorization: token } })
+      .patch(`${base}/${deviceId}/`, data, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(update(response.data));
       })
@@ -45,6 +52,6 @@ class DevicesApi {
   };
 }
 
-let base = "devices/";
+let base = "devices";
 
 export default DevicesApi;

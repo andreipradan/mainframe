@@ -4,6 +4,7 @@ import {Link, useHistory} from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import AuthApi from "../../api/auth";
 import { useDispatch, useSelector } from "react-redux";
+import DevicesApi from "../../api/devices";
 
 const Navbar = () => {
   const dispatch = useDispatch()
@@ -227,6 +228,22 @@ const Navbar = () => {
                 </Dropdown.Item>
                 <Dropdown.Divider/>
                 <p className="p-3 mb-0 text-center"><Trans>Advanced settings</Trans></p>
+                <Dropdown.Item
+                  href="!#"
+                  onClick={evt => {
+                    evt.preventDefault()
+                    dispatch(DevicesApi.reboot(token))
+                  }}
+                  className="preview-item">
+                <div className="preview-thumbnail">
+                  <div className="preview-icon bg-dark rounded-circle">
+                    <i className="mdi mdi-restart text-danger"></i>
+                  </div>
+                </div>
+                <div className="preview-item-content">
+                  <p className="preview-subject mb-1"><Trans>Reboot</Trans></p>
+                </div>
+              </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </ul>
