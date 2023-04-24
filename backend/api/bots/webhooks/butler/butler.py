@@ -68,7 +68,7 @@ def call(data, instance: Bot):
     from_user = update.message.from_user
     if (
         message.document
-        and from_user.id == instance.additional_data.get("debug_chat_id")
+        # and from_user.id == instance.additional_data.get("debug_chat_id")
         and message.document.file_name.endswith(".csv")
     ):
         logger.info("Got csv saving...")
