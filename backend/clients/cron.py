@@ -29,12 +29,15 @@ def remove_crons_for_command(command):
         cron.remove_all(command=command)
 
 
-def set_crons(crons: List[Cron], replace=True, management=True):
+def set_crons(crons: List[Cron], clear_all=False, replace=True, management=True):
     logger.info(f"Setting crons")
     with CronTab(user=config("USERNAME")) as crontab:
+        if clear_all:
+            logger.warning("Clearing all existing crons")
+            crontab.remove_all()
         for i, cron in enumerate(crons):
             command = cron.management_command if management else cron.command
-            replace and crontab.remove_all(command=command)
+            not clear_all and replace and crontab.remove_all(command=command)
             cmd = crontab.new(command=command)
             cmd.setall(cron.expression)
     logger.info(f"Set {i + 1} cron{'s' if i else ''}")
