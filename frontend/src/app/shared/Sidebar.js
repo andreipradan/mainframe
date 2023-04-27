@@ -128,6 +128,12 @@ class Sidebar extends Component {
               <span className="menu-title"><Trans>Bots</Trans></span>
             </Link>
           </li>
+          <li className={ this.isPathActive('/crons') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+            <Link className="nav-link" to="/crons">
+              <span className="menu-icon"><i className="mdi mdi-timer"></i></span>
+              <span className="menu-title"><Trans>Crons</Trans></span>
+            </Link>
+          </li>
           <li className={ this.isPathActive('/devices') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
             <Link className="nav-link" to="/devices">
               <span className="menu-icon"><i className="mdi mdi-text"></i></span>
