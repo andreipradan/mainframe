@@ -19,6 +19,7 @@ export const cronsSlice = createSlice({
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
+      state.loadingCrons = null;
     },
     select: (state, action) => {
       state.selectedCron = action.payload ? state.results.find(cron => cron.id === action.payload) : null

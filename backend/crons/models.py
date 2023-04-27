@@ -29,4 +29,4 @@ class Cron(TimeStampedModel):
         config = environ.Env()
         python_path = config("PYTHON_PATH")
         manage_path = settings.BASE_DIR / "manage.py"
-        return f"{python_path} {manage_path} {self.command} {' '.join(self.arguments)}"
+        return f"{python_path} {manage_path} {self.command}{' ' if self.arguments else ''}{' '.join(self.arguments)}"
