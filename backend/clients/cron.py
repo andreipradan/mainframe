@@ -15,7 +15,7 @@ def delay(command, minutes=1, management=True):
     n = datetime.now() + timedelta(minutes=minutes)
     expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
     set_crons(
-        [Cron(command=command, expression=expression)],
+        [Cron(command=command, expression=expression, is_active=True)],
         management=management,
     )
 
