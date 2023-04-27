@@ -1,25 +1,19 @@
 import environ
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from core.models import TimeStampedModel
 
 
 class Cron(TimeStampedModel):
-    command = models.CharField(max_length=128)
-    arguments = ArrayField(
-        models.CharField(max_length=32),
-        blank=True,
-        default=list,
-        size=8,
-    )
-    expression = models.CharField(max_length=128)
+    command = models.CharField(max_length=512)
+    expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
+    is_management = models.BooleanField(default=False)
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ("command", "arguments", "expression")
+        unique_together = ("command", "expression")
 
     def __str__(self):
         return f"{self.command} - {self.expression}"
@@ -29,4 +23,4 @@ class Cron(TimeStampedModel):
         config = environ.Env()
         python_path = config("PYTHON_PATH")
         manage_path = settings.BASE_DIR / "manage.py"
-        return f"{python_path} {manage_path} {self.command}{' ' if self.arguments else ''}{' '.join(self.arguments)}"
+        return f"{python_path} {manage_path} {self.command}"

@@ -1,5 +1,6 @@
 import axios from "./index";
 import {
+  create,
   deleteCron,
   set,
   setErrors,
@@ -11,10 +12,19 @@ import {handleErrors} from "./errors";
 
 
 class CronsApi {
+  static create = (token, data) => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .post(`${base}/`, data, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(create(response.data));
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
   static delete = (token, cronId) => dispatch => {
     dispatch(setLoadingCron(cronId));
     axios
-      .delete(`${base}${cronId}/`, { headers: { Authorization: token } })
+      .delete(`${base}/${cronId}/`, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(deleteCron(cronId));
       })

@@ -54,21 +54,17 @@ class LightsApi {
         {rgb: rgb},
         {headers: {Authorization: token}},
       )
-      .then((response) => {
-        dispatch(unsetLoadingLight(lightIp));
-      })
+      .then(() => dispatch(unsetLoadingLight(lightIp)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_all_off = token => (dispatch) => {
-    dispatch(setLoading());
+    dispatch(setLoading(true));
     axios
       .put(`${base}turn-off`,
         {},
         {headers: {Authorization: token}},
       )
-      .then(() => {
-        dispatch(turn_all_off());
-      })
+      .then(() => dispatch(turn_all_off()))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_all_on = token => (dispatch) => {
@@ -78,9 +74,7 @@ class LightsApi {
         {},
         {headers: {Authorization: token}},
       )
-      .then(() => {
-        dispatch(turn_all_on());
-      })
+      .then(() => dispatch(turn_all_on()))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_off = (token, lightId) => (dispatch) => {
@@ -102,9 +96,7 @@ class LightsApi {
         {},
         {headers: {Authorization: token}},
       )
-      .then((response) => {
-        dispatch(turn_on(lightId));
-      })
+      .then(() => dispatch(turn_on(lightId)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }

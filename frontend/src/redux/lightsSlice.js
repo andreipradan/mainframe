@@ -45,12 +45,12 @@ export const lightsSlice = createSlice({
     turn_all_off: (state, action) => {
       state.list = state.list?.map(l => ({...l, capabilities: {...l.capabilities, power: "off"}}));
       state.errors = null;
-      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
+      state.loading = false;
     },
     turn_all_on: (state, action) => {
       state.list = state.list?.map((l) => ({...l, capabilities: {...l.capabilities, power: "on"}}));
       state.errors = null;
-      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
+      state.loading = false;
     },
     turn_off: (state, action) => {
       state.list = state.list.map((l) => (l.ip !== action.payload
