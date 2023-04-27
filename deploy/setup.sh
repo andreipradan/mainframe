@@ -29,7 +29,7 @@ if [[ $2 == backend ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done"
 fi
 
-"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" set_crons
+"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" set_crons --pre-clear
 "${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" be_real --post-deploy
 
 if [[ $3 == deploy ]]; then
