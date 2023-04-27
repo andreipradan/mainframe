@@ -25,11 +25,14 @@ class CronSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Cron, validated_data):
         need_to_update_cron = (
-            instance.command != validated_data.get("command")
-            or instance.expression != validated_data.get("expression")
-            or (
-                (args := validated_data.get("arguments"))
-                and set(instance.arguments) != set(args)
+            validated_data.get("is_active")
+            and (
+                instance.command != validated_data.get("command")
+                or instance.expression != validated_data.get("expression")
+                or (
+                    (args := validated_data.get("arguments"))
+                    and set(instance.arguments) != set(args)
+                )
             )
         )
         instance = super().update(instance, validated_data)
