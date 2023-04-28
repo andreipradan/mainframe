@@ -32,7 +32,9 @@ def get_all_crons() -> List[Cron]:
         manage_path = str(settings.BASE_DIR / "manage.py")
         return list(
             Cron(
-                command=cron.command.replace(f"{settings.PYTHON_PATH} {manage_path} ")
+                command=cron.command.replace(
+                    f"{settings.PYTHON_PATH} {manage_path} ", ""
+                )
                 if manage_path in cron.command
                 else cron.command,
                 expression=str(cron.slices),
