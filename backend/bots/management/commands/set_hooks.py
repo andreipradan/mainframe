@@ -71,4 +71,4 @@ class Command(BaseCommand):
         set_github_hook(ngrok_url, env("GITHUB_ACCESS_TOKEN"), env("GITHUB_USERNAME"))
         set_telegram_hooks(ngrok_url)
         self.stdout.write(self.style.SUCCESS("Done."))
-        call_command("send_debug_message", interactive=False, message="[Mainframe] up")
+        call_command("send_debug_message", "[Mainframe] up", interactive=False)
