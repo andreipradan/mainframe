@@ -99,7 +99,9 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error(msg)
 
-        remove_crons_for_command(Cron(command="import_transactions", is_management=True))
+        remove_crons_for_command(
+            Cron(command="import_transactions", is_management=True)
+        )
 
         bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
         bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
