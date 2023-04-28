@@ -24,10 +24,9 @@ class CronSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance: Cron, validated_data):
-        need_to_update_cron = (
-            instance.command != validated_data.get("command")
-            or instance.expression != validated_data.get("expression")
-        )
+        need_to_update_cron = instance.command != validated_data.get(
+            "command"
+        ) or instance.expression != validated_data.get("expression")
         instance = super().update(instance, validated_data)
         need_to_update_cron and set_crons([instance])
         return instance
