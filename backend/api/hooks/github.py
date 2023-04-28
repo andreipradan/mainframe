@@ -146,6 +146,6 @@ def mainframe(request):
 
         deploy_cmd = f"$HOME/projects/mainframe/deploy/setup.sh {' '.join(cmd_params)}"
         command = f"{mkdir} && {deploy_cmd} >> {output}"
-        cron.delay(command, management=False)
+        cron.delay(command, is_management=False)
 
     return HttpResponse(status=204)

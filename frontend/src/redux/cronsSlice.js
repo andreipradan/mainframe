@@ -6,15 +6,30 @@ export const cronsSlice = createSlice({
     errors: null,
     loading: false,
     loadingCrons: null,
+    modalOpen: false,
     results: null,
     selectedCron: null,
   },
   reducers: {
+    create: (state, action) => {
+      state.errors = null
+      state.loading = false
+      state.results = state.results
+          ? [...state.results, action.payload].sort((a, b) =>
+              b.is_active === a.is_active
+                ? a.command > b.command ? 1 : -1
+                : b.is_active > a.is_active ? 1 : -1
+          )
+          : [action.payload]
+      state.selectedCron = null;
+      state.modalOpen = false;
+    },
     deleteCron: (state, action) => {
       state.errors = null;
       state.loadingCrons = state.loadingCrons?.filter((cron) => cron.id === action.payload);
       state.results = state.results.filter((cron) => cron.id !== action.payload);
       state.selectedCron = null
+      state.modalOpen = false
     },
     setErrors: (state, action) => {
       state.errors = action.payload;
@@ -23,12 +38,16 @@ export const cronsSlice = createSlice({
     },
     select: (state, action) => {
       state.selectedCron = action.payload ? state.results.find(cron => cron.id === action.payload) : null
+      state.modalOpen = !!action.payload
     },
     set: (state, action) => {
       state.errors = null
       state.loading = false
       state.loadingCrons = null;
       state.results = action.payload.results;
+    },
+    setModalOpen: (state, action) => {
+      state.modalOpen = action.payload
     },
     setLoading: (state, action) => {state.loading = action.payload},
     setLoadingCron: (state, action) => {
@@ -45,11 +64,13 @@ export const cronsSlice = createSlice({
             ? a.command > b.command ? 1 : -1
             : b.is_active > a.is_active ? 1 : -1
       );
+      state.selectedCron = null;
+      state.modalOpen = false;
     },
   },
 });
 
-export const { deleteCron, select, set, setErrors, setLoading, setLoadingCron, update } =
+export const { create, deleteCron, select, set, setErrors, setLoading, setLoadingCron, setModalOpen, update } =
   cronsSlice.actions;
 
 export default cronsSlice.reducer;

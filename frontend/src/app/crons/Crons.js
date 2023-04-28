@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import CronsApi from "../../api/crons";
 import {Audio, ColorRing} from "react-loader-spinner";
-import {select} from "../../redux/cronsSlice";
+import {select, setModalOpen} from "../../redux/cronsSlice";
 import Alert from "react-bootstrap/Alert";
 import EditModal from "../crons/components/EditModal";
 
@@ -36,8 +36,19 @@ const Crons = () =>  {
             <div className="card-body">
               <h4 className="card-title">
                 Available crons
-                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CronsApi.getList(token))}>
+                <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                    onClick={() => dispatch(CronsApi.getList(token))}
+                >
                   <i className="mdi mdi-refresh"></i>
+                </button>
+                <button
+                    type="button"
+                    className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
+                    onClick={() => dispatch(setModalOpen(true))}
+                >
+                  <i className="mdi mdi-plus"></i>
                 </button>
               </h4>
               {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
