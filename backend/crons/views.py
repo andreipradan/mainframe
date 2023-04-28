@@ -26,10 +26,14 @@ class CronViewSet(viewsets.ModelViewSet):
         )
         return super().list(request=request, *args, **kwargs)
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        set_crons([instance], replace=False)
+
     def perform_destroy(self, instance):
         remove_crons_for_command(instance.command)
         super().perform_destroy(instance)
 
-    def perform_create(self, serializer):
+    def perform_update(self, serializer):
         instance = serializer.save()
-        set_crons([instance], replace=False)
+        set_crons([instance], replace=True)
