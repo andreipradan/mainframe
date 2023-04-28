@@ -5,7 +5,7 @@ Description=django backend server
 User=andreierdna
 WorkingDirectory=/home/andreierdna/projects/mainframe/backend
 ExecStart=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py runserver 7777 --noreload
-ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/andreierdna/.virtualenvs/mainframe/bin/python manage.py send_healthcheck_ping
+ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/andreierdna/.virtualenvs/mainframe/bin/python manage.py send_healthcheck_ping'
 ExecStopPost=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[Mainframe]] stopped"
 Restart=always
 
