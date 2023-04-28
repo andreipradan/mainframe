@@ -27,12 +27,12 @@ env = environ.Env(
     DEBUG=(bool, False),
 )
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# SECURITY WARNING: don't run with debug turned on in production!
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
 DEBUG = int(env("DEBUG", default=0))
 ENV = env("ENV", default=None)
+PYTHON_PATH = env("PYTHON_PATH")
 
 
 # Quick-start development settings - unsuitable for production

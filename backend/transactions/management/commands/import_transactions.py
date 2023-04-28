@@ -11,6 +11,7 @@ from django.db import IntegrityError
 from bots.models import Bot
 from clients.cron import remove_crons_for_command
 from core.settings import get_file_handler
+from crons.models import Cron
 from transactions.models import Transaction
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error(msg)
 
-        remove_crons_for_command("import_transactions")
+        remove_crons_for_command(Cron(command="import_transactions", is_management=True))
 
         bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
         bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)

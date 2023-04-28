@@ -3,7 +3,6 @@ import logging
 from crontab import CronTab
 from rest_framework import serializers
 
-from clients.cron import set_crons
 from crons.models import Cron
 
 logger = logging.getLogger(__name__)
