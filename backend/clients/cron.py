@@ -4,6 +4,7 @@ from typing import List
 
 import environ
 from crontab import CronTab
+from django.conf import settings
 
 from crons.models import Cron
 
@@ -28,25 +29,29 @@ def delay(command, minutes=1, is_management=True):
 
 def get_all_crons() -> List[Cron]:
     with CronTab(user=config("USERNAME")) as crontab:
+        manage_path = settings.BASE_DIR / "manage.py"
         return list(
             Cron(
-                command=cron.command,
+                command=cron.command.replace(f"{settings.PYTHON_PATH} {manage_path} ")
+                if manage_path in cron.command
+                else cron.command,
                 expression=str(cron.slices),
                 is_active=cron.enabled,
-                is_management="manage.py " in cron.command,
+                is_management=manage_path in cron.command,
                 description=cron.comment,
             )
             for cron in crontab
         )
 
 
-def remove_crons_for_command(command):
-    with CronTab(user=config("USERNAME")) as cron:
-        if not (crons_no := len(list(cron.find_command(command)))):
-            return logger.warning(f"No '{command}' crons found")
+def remove_crons_for_command(cron: Cron) -> None:
+    with CronTab(user=config("USERNAME")) as crontab:
+        command = cron.management_command if cron.is_management else cron.command
+        if not (crons_no := len(list(crontab.find_command(command)))):
+            return logger.warning(f"No '{cron}' crons found")
 
-        logger.warning(f"Cleaning up {crons_no} existing '{command}' crons")
-        cron.remove_all(command=command)
+        logger.warning(f"Cleaning up {crons_no} existing '{cron}' crons")
+        crontab.remove_all(command=command)
 
 
 def set_crons(crons: List[Cron], clear_all=False, replace=True):
@@ -61,4 +66,5 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             cmd = crontab.new(command=command)
             cmd.setall(cron.expression)
             cmd.enable(cron.is_active)
+            cmd.set_comment(cron.description)
     logger.info(f"Set {i + 1} cron{'s' if i else ''}")

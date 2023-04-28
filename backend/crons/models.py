@@ -1,4 +1,3 @@
-import environ
 from django.conf import settings
 from django.db import models
 
@@ -20,7 +19,5 @@ class Cron(TimeStampedModel):
 
     @property
     def management_command(self):
-        config = environ.Env()
-        python_path = config("PYTHON_PATH")
         manage_path = settings.BASE_DIR / "manage.py"
-        return f"{python_path} {manage_path} {self.command}"
+        return f"{settings.PYTHON_PATH} {manage_path} {self.command}"

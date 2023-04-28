@@ -31,7 +31,7 @@ class CronViewSet(viewsets.ModelViewSet):
         set_crons([instance], replace=False)
 
     def perform_destroy(self, instance):
-        remove_crons_for_command(instance.command)
+        remove_crons_for_command(instance)
         super().perform_destroy(instance)
 
     def perform_update(self, serializer):
