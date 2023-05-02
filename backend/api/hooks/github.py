@@ -116,20 +116,14 @@ def mainframe(request):
 
         cmd_params = []
         msg_extra = []
-        if "frontend/" in output.strip():
-            cmd_params.append("frontend")
-            msg_extra.append("FE")
-        else:
-            cmd_params.append("no-frontend")
-
         if "requirements.txt" in output.strip():
-            cmd_params.append("backend")
-            msg_extra.append("BE")
+            cmd_params.append("requirements")
+            msg_extra.append("requirements")
         else:
-            cmd_params.append("no-backend")
+            cmd_params.append("no-requirements")
 
         if "deploy/" in output.strip():
-            cmd_params.append("deploy")
+            cmd_params.append("restart")
             msg_extra.append("Restart all services")
         else:
             msg_extra.append("Restart backend")
