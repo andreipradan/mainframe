@@ -60,6 +60,7 @@ const Crons = () =>  {
                       <th> Command </th>
                       <th> Expression </th>
                       <th> Is Active? </th>
+                      <th> Is Management? </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -73,6 +74,7 @@ const Crons = () =>  {
                                 <td>{cron.command}</td>
                                 <td>{cron.expression}</td>
                                 <td className="center-content"><i className={`mdi mdi-${cron.is_active ? "check text-success" : "alert text-danger"}`} /></td>
+                                <td className="center-content"><i className={`mdi mdi-${cron.is_management ? "check text-success" : "alert text-danger"}`} /></td>
                                 <td>
                                   <div className="btn-group" role="group" aria-label="Basic example">
                                     <button
