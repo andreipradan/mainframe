@@ -3,10 +3,10 @@ Description=Ngrok public URL service
 After=backend.service
 
 [Service]
-User=andreierdna
-WorkingDirectory=/home/andreierdna/projects/mainframe/backend
+User=rpi
+WorkingDirectory=/home/rpi/projects/mainframe/backend
 ExecStart=ngrok http 7777
-ExecStartPost=/home/andreierdna/.virtualenvs/mainframe/bin/python manage.py set_hooks
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_hooks
 Restart=always
 
 [Install]
