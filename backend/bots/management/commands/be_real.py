@@ -47,7 +47,7 @@ class Command(BaseCommand):
         config = environ.Env()
         cron = CronTab(user=config("USERNAME"))
         if (cmds_no := len(commands := list(cron.find_command("be_real")))) > 1:
-            crons = "\n".join(commands)
+            crons = "\n".join(map(str, commands))
             raise CommandError(f"Multiple 'be_real' crons found: {crons}")
         if cmds_no < 1:
             logger.info("No existing cron. Creating...")
