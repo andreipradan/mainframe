@@ -7,7 +7,7 @@ LOGS_DIR=/var/log/mainframe/backend
 
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Starting setup"
 
-([[ "$(ls -A "${LOGS_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path already exists") || (sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log" && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path created")
+([[ "$(ls -A "${LOGS_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path already exists") || (sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log" && sudo chown --recursive rpi ${LOGS_DIR} && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path created")
 
 [[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Virtualenv] Already exists" || (python -m venv "${VIRTUALENV_DIR}" && echo "[Virtualenv] Created")
 
