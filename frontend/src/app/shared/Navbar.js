@@ -1,16 +1,20 @@
-import React  from 'react';
+import React, {useState} from 'react';
 import { Dropdown } from 'react-bootstrap';
 import {Link, useHistory} from 'react-router-dom';
 import { Trans } from 'react-i18next';
 import AuthApi from "../../api/auth";
 import { useDispatch, useSelector } from "react-redux";
 import DevicesApi from "../../api/devices";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 
 const Navbar = () => {
   const dispatch = useDispatch()
   const history = useHistory();
   const token = useSelector(state => state.auth.token)
   const user = useSelector(state => state.auth.user)
+
+ const [modalOpen, setModalOpen] = useState(false)
 
   const toggleOffcanvas = () => {
     document.querySelector('.sidebar-offcanvas').classList.toggle('active');
@@ -228,22 +232,19 @@ const Navbar = () => {
                 </Dropdown.Item>
                 <Dropdown.Divider/>
                 <p className="p-3 mb-0 text-center"><Trans>Advanced settings</Trans></p>
-                <Dropdown.Item
-                  href="!#"
-                  onClick={evt => {
-                    evt.preventDefault()
-                    dispatch(DevicesApi.reboot(token))
-                  }}
-                  className="preview-item">
-                <div className="preview-thumbnail">
-                  <div className="preview-icon bg-dark rounded-circle">
-                    <i className="mdi mdi-restart text-danger"></i>
+                <Dropdown.Item href="!#" onClick={e => {
+                  e.preventDefault()
+                  setModalOpen(true)
+                }} className="preview-item">
+                  <div className="preview-thumbnail">
+                    <div className="preview-icon bg-dark rounded-circle">
+                      <i className="mdi mdi-restart text-danger"></i>
+                    </div>
                   </div>
-                </div>
-                <div className="preview-item-content">
-                  <p className="preview-subject mb-1"><Trans>Reboot</Trans></p>
-                </div>
-              </Dropdown.Item>
+                  <div className="preview-item-content">
+                    <p className="preview-subject mb-1"><Trans>Reboot</Trans></p>
+                  </div>
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </ul>
@@ -252,6 +253,34 @@ const Navbar = () => {
             <span className="mdi mdi-format-line-spacing"></span>
           </button>
         </div>
+        <Modal centered show={modalOpen} onHide={() => setModalOpen(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              <div className="row">
+                <div className="col-lg-12 grid-margin stretch-card">
+                  Are you sure you want to reboot?
+                </div>
+              </div>
+              <p className="text-muted mb-0">This may take a few minutes, please be patient</p>
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            This action is irreversible, another URL will be generated.
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={e => {
+              e.preventDefault()
+              setModalOpen(false)
+            }}>Close</Button>
+            <Button variant="danger" className="float-left" onClick={evt => {
+              evt.preventDefault()
+              dispatch(DevicesApi.reboot(token))
+              setModalOpen(false)
+            }}>
+              Reboot
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </nav>
   );
 }

@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from api.devices.views import DeviceViewSet
+from devices.views import DeviceViewSet
 
 router = routers.SimpleRouter()
 

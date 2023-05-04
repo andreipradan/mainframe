@@ -14,26 +14,33 @@ class MealsApi {
   static delete = (token, mealId) => dispatch => {
     dispatch(setLoadingMeal(mealId));
     axios
-      .delete(`${base}${mealId}/`, { headers: { Authorization: token } })
+      .delete(`${base}/${mealId}/`, { headers: { Authorization: token } })
       .then(() => dispatch(deleteMeal(mealId)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static getList = (token, page = null) => (dispatch) => {
     dispatch(setLoading(true));
     axios
-      .get(base + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(base + `/?page=${page || 1}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static sync = token => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/sync/`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updateMeal = (token, mealId, data) => dispatch => {
     dispatch(setLoadingMeal(mealId));
     axios
-      .patch(`${base}${mealId}/`, data, { headers: { Authorization: token } })
+      .patch(`${base}/${mealId}/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(update(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }
 
-let base = "meals/";
+let base = "meals";
 
 export default MealsApi;
