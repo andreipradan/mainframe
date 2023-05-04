@@ -36,7 +36,9 @@ class Command(BaseCommand):
             action = random.choice(json.load(actions_file))
 
         text = f"❗️📷 {salut} {action} 📷❗️"
-        instance.send_message(chat_id=instance.additional_data['be_real_chat_id'], text=text)
+        instance.send_message(
+            chat_id=instance.additional_data["be_real_chat_id"], text=text
+        )
 
         tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
         expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
@@ -47,6 +49,8 @@ class Command(BaseCommand):
             is_management=True,
         )
         set_crons([cron])
-        logger.info(f"Set next run and cron to {tomorrow_run.strftime('%H:%M %d.%m.%Y')}")
+        logger.info(
+            f"Set next run and cron to {tomorrow_run.strftime('%H:%M %d.%m.%Y')}"
+        )
 
         return self.stdout.write(self.style.SUCCESS("Done."))
