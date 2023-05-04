@@ -1,0 +1,12 @@
+[Unit]
+Description=Picamera service
+
+[Service]
+User=rpi
+WorkingDirectory=/home/rpi/projects/pistreaming
+ExecStart=/usr/local/bin/python server.py
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python /home/rpi/projects/mainframe/backend/manage.py send_debug_message "Started picamera server"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
