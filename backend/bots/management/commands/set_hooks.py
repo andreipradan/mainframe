@@ -14,20 +14,12 @@ from bots.models import Bot
 logger = logging.getLogger(__name__)
 
 
-def get_ngrok_url():
+def get_ngrok_url(name="mainframe"):
     logger.info("Getting ngrok tunnels")
-    try:
-        resp = requests.get("http://localhost:4040/api/tunnels").json()
-    except ConnectionError:
-        raise CommandError("Failed to get ngrok tunnels. Is ngrok running?")
-
+    resp = requests.get("http://localhost:4040/api/tunnels").json()
     for tunnel in resp["tunnels"]:
-        url = tunnel["public_url"]
-        if url.startswith("https://"):
-            logger.info(f"Got ngrok URL: {url}")
-            return url
-
-    raise LookupError("Tunnel URL not found")
+        if tunnel["name"] == name:
+            return tunnel["public_url"]
 
 
 def set_github_hook(ngrok_url, access_token, username):
@@ -67,7 +59,13 @@ def set_telegram_hooks(ngrok_url):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         env = environ.Env()
-        ngrok_url = get_ngrok_url()
+        try:
+            ngrok_url = get_ngrok_url()
+        except ConnectionError:
+            raise CommandError("Failed to get ngrok tunnels. Is ngrok running?")
+        if not ngrok_url:
+            raise CommandError("Tunnel 'mainframe' not found")
+
         set_github_hook(ngrok_url, env("GITHUB_ACCESS_TOKEN"), env("GITHUB_USERNAME"))
         set_telegram_hooks(ngrok_url)
         self.stdout.write(self.style.SUCCESS("Done."))

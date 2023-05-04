@@ -5,7 +5,7 @@ After=backend.service
 [Service]
 User=rpi
 WorkingDirectory=/home/rpi/projects/mainframe/backend
-ExecStart=ngrok http 7777
+ExecStart=/usr/local/bin/ngrok start --all
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_hooks
 Restart=always
 
