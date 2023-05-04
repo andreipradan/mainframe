@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 def call(data, instance: Bot):
     bot = instance.telegram_bot
     update = telegram.Update.de_json(data, bot)
-    message = update.message
 
     if update.callback_query:
         data = update.callback_query.data
@@ -50,6 +49,7 @@ def call(data, instance: Bot):
             return logger.error(f"Unhandled callback: {data}")
         return method(update, *args)
 
+    message = update.message
     if not message or not getattr(message, "chat", None) or not message.chat.id:
         return logger.info(f"No message or chat: {update.to_dict()}")
 
@@ -65,7 +65,6 @@ def call(data, instance: Bot):
     if message.left_chat_member:
         return reply(update, f"Bye {message.left_chat_member.full_name}! 😢")
 
-    from_user = update.message.from_user
     if (
         message.document
         # and from_user.id == instance.additional_data.get("debug_chat_id")
@@ -80,6 +79,7 @@ def call(data, instance: Bot):
         cron.delay("import_transactions")
         return reply(update, f"Saved {file_name}")
 
+    from_user = update.message.from_user
     user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
     if not message.text:
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")
@@ -116,10 +116,15 @@ def call(data, instance: Bot):
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
 
     if cmd == "mainframe":
-        return reply(update, text=get_ngrok_url())
+        url = get_ngrok_url()
+        return reply(update, text=url or "Could not find mainframe URL")
 
     if cmd == "meals":
         return MealsInline.start(update, page=1)
+
+    if cmd == "picamera":
+        url = get_ngrok_url("picamera")
+        return reply(update, text=url or "Could not find picamera URL")
 
     if cmd == "randomize":
         if len(args) not in range(2, 51):

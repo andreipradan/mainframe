@@ -1,0 +1,7 @@
+tunnels:
+  mainframe:
+    addr: 7777
+    proto: http
+  picamera:
+    addr: 8082
+    proto: http
