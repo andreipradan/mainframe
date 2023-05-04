@@ -30,10 +30,19 @@ class BotViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def webhook(self, request, **kwargs):
         instance = self.get_object()
-        if not (user := request.data.get("message", request.data.get("callback_query", {})).get("from", {})):
+        if not (
+            user := request.data.get(
+                "message", request.data.get("callback_query", {})
+            ).get("from", {})
+        ):
             logging.error("No user found in webhook data")
             return JsonResponse(data={"status": "404"})
-        if not any((user.get("username") in instance.whitelist, str(user.get("id")) in instance.whitelist)):
+        if not any(
+            (
+                user.get("username") in instance.whitelist,
+                str(user.get("id")) in instance.whitelist,
+            )
+        ):
             logging.error("User not whitelisted")
             return JsonResponse(data={"status": "404"})
 
