@@ -5,6 +5,7 @@ import {select} from "../../redux/mealsSlice";
 import Alert from "react-bootstrap/Alert";
 import EditModal from "../meals/components/EditModal";
 import MealsApi from "../../api/meals";
+import DevicesApi from "../../api/devices";
 
 
 const Meals = () =>  {
@@ -41,6 +42,9 @@ const Meals = () =>  {
                 Available meals
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(MealsApi.getList(token))}>
                   <i className="mdi mdi-refresh"></i>
+                </button>
+                <button type="button" className="btn btn-outline-primary btn-sm p-0 border-0 bg-transparent" onClick={() => dispatch(MealsApi.sync(token))}>
+                  <i className="mdi mdi-sync-alert"></i>
                 </button>
               </h4>
               {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
