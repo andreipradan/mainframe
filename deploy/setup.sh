@@ -18,7 +18,6 @@ if [[ $1 == requirements ]]; then
 fi
 
 "${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" set_crons --post-deploy
-"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" be_real --post-deploy
 
 if [[ $2 == restart ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting all services"
