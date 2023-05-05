@@ -1,0 +1,14 @@
+[Unit]
+Description=Redis server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=rpi
+ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
+Restart=always
+LimitNOFILE=10032
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target
