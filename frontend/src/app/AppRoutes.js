@@ -5,13 +5,14 @@ import Spinner from '../app/shared/Spinner';
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
+const Livecam = lazy(() => import ("./apps/Livecam"));
+const Expenses = lazy(() => import ("./apps/Expenses"));
+const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
-const Expenses = lazy(() => import ("./expenses/Expenses"));
 const Logs = lazy(() => import('./logs/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
-const Todo = lazy(() => import('./apps/TodoList'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
 const Dropdowns = lazy(() => import('./basic-ui/Dropdowns'));
@@ -38,14 +39,15 @@ class AppRoutes extends Component {
       <Suspense fallback={<Spinner/>}>
         <Switch>
           <Route exact path="/dashboard" component={ Dashboard } />
+          <Route exact path="/apps/livecam" component={ Livecam } />
+          <Route exact path="/apps/expenses" component={ Expenses } />
+          <Route exact path="/apps/todo" component={ Todo } />
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />
-          <Route exact path="/expenses/all" component={ Expenses } />
           <Route exact path="/logs" component={ Logs } />
           <Route exact path="/meals" component={ Meals } />
-          <Route exact path="/todo" component={ Todo } />
 
           <Route path="/basic-ui/buttons" component={ Buttons } />
           <Route path="/basic-ui/dropdowns" component={ Dropdowns } />
