@@ -5,6 +5,7 @@ echo "Installing ohmyzsh" && sh -c "$(curl -fsSL https://raw.githubusercontent.c
 echo "Installing ngrok"
 curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
 echo "Setting ngrok tunnels" && cat "${HOME}/projects/mainframe/deploy/ngrok.yml" >> "${HOME}/.config/ngrok/ngrok.yml"
+echo "Installing redis server" && sudo apt install redis-server
 echo "Installing homebridge"
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
