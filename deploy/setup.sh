@@ -13,7 +13,7 @@ echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Starting setup"
 
 if [[ $1 == requirements ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Backend] Installing requirements"
-  "${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt"
+  "${VIRTUALENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/backend/requirements.txt" --no-cache-dir
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done"
 fi
 
