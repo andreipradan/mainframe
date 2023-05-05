@@ -38,7 +38,7 @@ class CameraConsumer(AsyncWebsocketConsumer):
         )
 
     def video_stream(self, event):
-        self.send(text_data=event['text'])
+        self.send(text_data=event["text"])
 
     def send_video_stream(self):
         # Open a connection to the Raspberry Pi camera
@@ -54,14 +54,14 @@ class CameraConsumer(AsyncWebsocketConsumer):
             while self.stream_running:
                 # Capture a video frame and convert it to a JPEG image
                 stream = io.BytesIO()
-                camera.capture(stream, format='jpeg', use_video_port=True)
+                camera.capture(stream, format="jpeg", use_video_port=True)
                 stream.seek(0)
                 image = Image.open(stream)
 
                 # Convert the JPEG image to a byte array and send it to the WebSocket clients
                 buffer = io.BytesIO()
-                image.save(buffer, format='jpeg')
-                self.video_stream({'text': buffer.getvalue()})
+                image.save(buffer, format="jpeg")
+                self.video_stream({"text": buffer.getvalue()})
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({"message": event["message"]}))

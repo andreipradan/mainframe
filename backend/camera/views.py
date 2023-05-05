@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 class CameraViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def start_streaming(self, request):
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
