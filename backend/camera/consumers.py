@@ -8,13 +8,13 @@ logger = logging.getLogger(__name__)
 
 class CameraConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        if not self.scope["user"].is_authenticated:
-            logger.warning("Unauthenticated, closing connection")
-            return await self.close()
 
         self.room_name = "camera"
         self.room_group_name = "chat_%s" % self.room_name
 
+        if not self.scope["user"].is_authenticated:
+            logger.warning("Unauthenticated, closing connection")
+            return await self.close()
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
