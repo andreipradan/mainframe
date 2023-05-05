@@ -3,7 +3,7 @@ import json
 import logging
 import time
 
-# import picamera
+import picamera
 from channels.generic.websocket import AsyncWebsocketConsumer
 from PIL import Image
 
@@ -22,11 +22,13 @@ class CameraConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
         self.stream_running = True
+        logger.info("stream running set to false")
 
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
         self.stream_running = False
+        logger.info("stream running set to false")
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
@@ -41,18 +43,14 @@ class CameraConsumer(AsyncWebsocketConsumer):
         self.send(text_data=event["text"])
 
     def send_video_stream(self):
-        # Open a connection to the Raspberry Pi camera
         with picamera.PiCamera() as camera:
-            # Set camera resolution and framerate
             camera.resolution = (640, 480)
             camera.framerate = 30
 
             # Allow time for the camera to warm up
             time.sleep(2)
 
-            # Continuously capture video frames and send them to the WebSocket clients
             while self.stream_running:
-                # Capture a video frame and convert it to a JPEG image
                 stream = io.BytesIO()
                 camera.capture(stream, format="jpeg", use_video_port=True)
                 stream.seek(0)
