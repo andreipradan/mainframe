@@ -18,7 +18,6 @@ export const Livecam = () => {
       : `wss://${window.location.hostname}`;
 
     const socket = new WebSocket(`${socketHost}/ws/camera/`);
-    console.log(socket, socketHost)
     socket.onmessage = e => {dispatch(add(JSON.parse(e.data)["message"]))};
     socket.onclose = () => {console.log("socket closed")}
     socket.onopen = () => {console.log("opened socket")}

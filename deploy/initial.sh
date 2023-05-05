@@ -13,4 +13,7 @@ curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /u
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 sudo apt-get install homebridge
 #echo "Installing drivers for picamera" && sudo apt-get install ffmpeg git python3-picamera python3-ws4py
-cd "${HOME}/projects/mainframe/deploy" && ./setup.sh requirements restart
+echo "Setting .env placeholder" && cat "${HOME}/projects/mainframe/deploy/.env" >> "${HOME}/projects/mainframe/backend/.env"
+echo "=== Initial setup Done! ==="
+echo "Please fill out the env vars inside mainframe/backend/.env"
+echo "then do '~/projects/mainframe/deploy/setup.sh requirements restart'"
