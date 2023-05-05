@@ -122,10 +122,6 @@ def call(data, instance: Bot):
     if cmd == "meals":
         return MealsInline.start(update, page=1)
 
-    if cmd == "picamera":
-        url = get_ngrok_url("picamera")
-        return reply(update, text=url or "Could not find picamera URL")
-
     if cmd == "randomize":
         if len(args) not in range(2, 51):
             return reply(update, "Must contain a list of 2-50 items separated by space")
