@@ -17,8 +17,6 @@ if [[ $1 == requirements ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done"
 fi
 
-"${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" set_crons --post-deploy
-
 if [[ $2 == restart ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Systemd] Restarting all services"
   SERVICES_DIR="${PROJECT_DIR}/deploy/services"
@@ -32,7 +30,6 @@ if [[ $2 == restart ]]; then
 else
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Restarting " && sudo systemctl restart backend && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Backend] Done."
 fi
-
 
 "${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[Mainframe]] Completed setup"
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Setup completed"
