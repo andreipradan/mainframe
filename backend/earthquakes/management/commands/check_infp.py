@@ -22,7 +22,7 @@ class Command(BaseEarthquakeCommand):
         return f"[{self.source.upper()}]"
 
     def fetch(self, **options):
-        return requests.get(self.url, timeout=45)
+        return requests.get(self.url, timeout=30)
 
     def fetch_events(self, response):
         soup = BeautifulSoup(response.text, features="html.parser")

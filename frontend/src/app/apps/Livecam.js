@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react'
 import {useDispatch, useSelector} from "react-redux";
 import {add} from "../../redux/livecamSlice";
+import CameraApi from "../../api/camera";
 
 export const Livecam = () => {
   const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token)
   const {results: messages, errors, loading } = useSelector(state => state.livecam)
 
   useEffect(() => {
@@ -41,6 +43,14 @@ export const Livecam = () => {
         <div className="card px-3">
           <div className="card-body">
             <h4 className="card-title">Streaming</h4>
+            <div className="btn-group" role="group" aria-label="Basic example">
+              <button type="button" className="btn btn-inverse-success" onClick={() => dispatch(CameraApi.streaming(token, "start"))}>
+                <i className="mdi mdi-play-outline"></i>
+              </button>
+              <button type="button" className="btn btn-inverse-danger"  onClick={() => dispatch(CameraApi.streaming(token, "stop"))}>
+                <i className="mdi mdi-stop"></i>
+              </button>
+            </div>
             <ul>
               {messages?.map((m, i) => <li key={i}>{m}</li>)}
 

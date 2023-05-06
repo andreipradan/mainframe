@@ -3,7 +3,7 @@ import json
 import logging
 import time
 
-# import picamera
+import picamera
 from channels.generic.websocket import AsyncWebsocketConsumer
 from PIL import Image
 
@@ -14,6 +14,8 @@ class CameraConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = "camera"
         self.room_group_name = "chat_%s" % self.room_name
+        self.stream_running = True
+        logger.info("stream running set to true")
 
         if not self.scope["user"].is_authenticated:
             logger.warning("Unauthenticated, closing connection")
@@ -21,12 +23,12 @@ class CameraConsumer(AsyncWebsocketConsumer):
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
-        self.stream_running = True
 
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
         self.stream_running = False
+        logger.info("stream running set to false")
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
@@ -38,30 +40,26 @@ class CameraConsumer(AsyncWebsocketConsumer):
         )
 
     def video_stream(self, event):
-        self.send(text_data=event['text'])
+        self.send(text_data=event["text"])
 
     def send_video_stream(self):
-        # Open a connection to the Raspberry Pi camera
         with picamera.PiCamera() as camera:
-            # Set camera resolution and framerate
             camera.resolution = (640, 480)
             camera.framerate = 30
 
             # Allow time for the camera to warm up
             time.sleep(2)
 
-            # Continuously capture video frames and send them to the WebSocket clients
             while self.stream_running:
-                # Capture a video frame and convert it to a JPEG image
                 stream = io.BytesIO()
-                camera.capture(stream, format='jpeg', use_video_port=True)
+                camera.capture(stream, format="jpeg", use_video_port=True)
                 stream.seek(0)
                 image = Image.open(stream)
 
                 # Convert the JPEG image to a byte array and send it to the WebSocket clients
                 buffer = io.BytesIO()
-                image.save(buffer, format='jpeg')
-                self.video_stream({'text': buffer.getvalue()})
+                image.save(buffer, format="jpeg")
+                self.video_stream({"text": buffer.getvalue()})
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({"message": event["message"]}))
