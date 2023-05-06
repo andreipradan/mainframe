@@ -3,7 +3,6 @@ import json
 import logging
 import time
 
-import picamera
 from channels.generic.websocket import AsyncWebsocketConsumer
 from PIL import Image
 
@@ -43,6 +42,8 @@ class CameraConsumer(AsyncWebsocketConsumer):
         self.send(text_data=event["text"])
 
     def send_video_stream(self):
+        import picamera
+
         with picamera.PiCamera() as camera:
             camera.resolution = (640, 480)
             camera.framerate = 30
