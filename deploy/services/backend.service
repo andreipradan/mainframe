@@ -7,7 +7,8 @@ WorkingDirectory=/home/rpi/projects/mainframe/backend
 ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py runserver 7777 --noreload
 ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_healthcheck_ping'
 ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_crons --post-deploy'
-ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[Mainframe]] stopped"
+ExecStartPost=/usr/bin/timeout 30 sh -c 'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; do sleep 1; done; /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[backend]] up"'
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[backend]] stopped"
 Restart=always
 
 [Install]
