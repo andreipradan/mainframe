@@ -6,6 +6,8 @@ After=network-online.target
 [Service]
 User=rpi
 ExecStart=/usr/bin/redis-server
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[redis]] up"
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[redis]] down"
 Restart=always
 LimitNOFILE=10032
 NoNewPrivileges=yes
