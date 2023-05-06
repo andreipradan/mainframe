@@ -14,6 +14,8 @@ class CameraConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = "camera"
         self.room_group_name = "chat_%s" % self.room_name
+        self.stream_running = True
+        logger.info("stream running set to false")
 
         if not self.scope["user"].is_authenticated:
             logger.warning("Unauthenticated, closing connection")
@@ -21,8 +23,6 @@ class CameraConsumer(AsyncWebsocketConsumer):
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
-        self.stream_running = True
-        logger.info("stream running set to false")
 
     async def disconnect(self, close_code):
         # Leave room group
