@@ -42,7 +42,7 @@ class Command(BaseEarthquakeCommand):
             "maxradiuskm": 386.02,
             "minmagnitude": 2,
         }
-        return requests.get(self.url, params=params, timeout=45)
+        return requests.get(self.url, params=params, timeout=30)
 
     def fetch_events(self, response):
         return response.json()["features"]

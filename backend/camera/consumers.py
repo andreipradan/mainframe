@@ -15,7 +15,7 @@ class CameraConsumer(AsyncWebsocketConsumer):
         self.room_name = "camera"
         self.room_group_name = "chat_%s" % self.room_name
         self.stream_running = True
-        logger.info("stream running set to false")
+        logger.info("stream running set to true")
 
         if not self.scope["user"].is_authenticated:
             logger.warning("Unauthenticated, closing connection")
