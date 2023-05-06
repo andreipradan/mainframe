@@ -16,7 +16,7 @@ class CameraViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["post"])
     def streaming(self, request):
         consumer = CameraConsumer()
-        consumer.scope = {'type': 'websocket'}
+        consumer.scope = {"type": "websocket"}
         action_type = request.data.get("action")
         if action_type == "start":
             consumer.send_video_stream()
