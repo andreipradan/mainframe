@@ -1,12 +1,15 @@
-import React, { useEffect } from 'react'
+import React, {useEffect, useState} from 'react'
 import {useDispatch, useSelector} from "react-redux";
-import {add} from "../../redux/livecamSlice";
+import {add, setAlertOpen, setErrors, setSocketOpen } from "../../redux/livecamSlice";
 import CameraApi from "../../api/camera";
+import Alert from "react-bootstrap/Alert";
 
 export const Livecam = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results: messages, errors, loading } = useSelector(state => state.livecam)
+  const {results: messages, errors, alertOpen, socketOpen } = useSelector(state => state.livecam)
+
+  useEffect(() => {dispatch(setAlertOpen(!!errors))}, [errors])
 
   useEffect(() => {
     const socket = startSocketConnection()
@@ -21,8 +24,14 @@ export const Livecam = () => {
 
     const socket = new WebSocket(`${socketHost}/ws/camera/`);
     socket.onmessage = e => {dispatch(add(JSON.parse(e.data)["message"]))};
-    socket.onclose = () => {console.log("socket closed")}
-    socket.onopen = () => {console.log("opened socket")}
+    socket.onclose = () => {
+      console.log("socket closed")
+      dispatch(setSocketOpen(false))
+    }
+    socket.onopen = () => {
+      dispatch(setSocketOpen(true))
+      console.log("opened socket")
+    }
     return socket
   };
 
@@ -42,7 +51,12 @@ export const Livecam = () => {
       <div className="col-lg-12">
         <div className="card px-3">
           <div className="card-body">
-            <h4 className="card-title">Streaming</h4>
+            <h4 className="card-title">
+              Streaming <i className={`mdi mdi-${socketOpen ? "check text-success" : "alert text-danger"}`}></i>
+            </h4>
+
+            {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+
             <div className="btn-group" role="group" aria-label="Basic example">
               <button type="button" className="btn btn-inverse-success" onClick={() => dispatch(CameraApi.streaming(token, "start"))}>
                 <i className="mdi mdi-play-outline"></i>
