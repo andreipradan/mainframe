@@ -43,6 +43,7 @@ class CameraConsumer(AsyncWebsocketConsumer):
 
     def send_video_stream(self):
         import picamera
+
         with picamera.PiCamera() as camera:
             camera.resolution = (640, 480)
             camera.framerate = 30
