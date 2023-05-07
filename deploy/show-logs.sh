@@ -1,1 +1,1 @@
-journalctl --follow -o cat -u daphne.service -u gunicorn.service -u ngrok.service
+journalctl --follow -o cat -u daphne.service -u gunicorn.service -u ngrok.service -u redis.service
