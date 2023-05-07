@@ -3,7 +3,6 @@ set -e -o pipefail
 
 PROJECT_DIR=${HOME}/projects/mainframe
 VIRTUALENV_DIR=${HOME}/projects/.virtualenvs/mainframe
-LOGS_DIR=/var/log/mainframe/backend
 
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - Starting setup"
 
