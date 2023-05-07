@@ -4,6 +4,7 @@ echo "sudo apt-get update" && sudo apt-get update
 
 LOGS_DIR=/var/log/mainframe/backend
 NGINX_DIR=/etc/nginx/sites-available
+REDIS_DIR=/etc/redis
 PROJECT_DIR=${HOME}/projects/mainframe
 VIRTUALENV_DIR=${HOME}/projects/.virtualenvs/mainframe
 
@@ -27,6 +28,8 @@ sudo touch ${NGINX_DIR}/mainframe
 sudo chown rpi $NGINX_DIR/mainframe
 cat "${PROJECT_DIR}/deploy/nginx.conf" >> "${NGINX_DIR}/mainframe"
 sudo ln -s "${NGINX_DIR}/mainframe" $NGINX_DIR
+sudo nginx -t
+sudo systemctl restart nginx
 echo "[nginx] Done."
 
 echo "[ngrok] Installing ngrok"
@@ -34,7 +37,12 @@ curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trust
 echo "[ngrok] Setting ngrok tunnels" && cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "${HOME}/.config/ngrok/ngrok.yml"
 echi "[ngrok] Done."
 
-echo "[redis] Installing redis server" && sudo apt install redis-server && echo "[redis] Done."
+echo "[redis] Installing redis server"
+sudo apt install redis-server
+echo "[redis] Setting supervised from no to systemd"
+sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
+sudo systemctl restart redis.service
+echo "[redis] Done."
 
 echo "[homebridge] Installing homebridge"
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
