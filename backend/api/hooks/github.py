@@ -6,6 +6,7 @@ import subprocess
 from ipaddress import ip_address, ip_network
 
 import requests
+import telegram
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
@@ -90,7 +91,7 @@ def mainframe(request):
     )
     send_telegram_message(
         text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
-        parse_mode=None,
+        parse_mode=telegram.ParseMode.HTML,
     )
     if event == "ping":
         return HttpResponse("pong")
