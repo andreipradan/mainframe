@@ -88,6 +88,7 @@ def mainframe(request):
     )
     send_telegram_message(
         text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
+        parse_mode=None,
     )
     if event == "ping":
         return HttpResponse("pong")
