@@ -92,8 +92,9 @@ class Command(BaseCommand):
                 except telegram.error.TelegramError as e:
                     logger.error(str(e))
             logger.info("[Telegram hooks] Done")
+            send_telegram_message(ngrok_url)
         else:
             logger.error(f"Invalid service: {service}")
 
-        send_telegram_message(f"[{service}] up")
+        send_telegram_message(f"[[{service}]] up")
         self.stdout.write(self.style.SUCCESS("[post-deploy] Done."))
