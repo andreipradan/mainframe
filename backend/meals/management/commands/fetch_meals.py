@@ -2,8 +2,8 @@ import logging
 from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
-from bots.models import Bot
 from clients.meals import MealsClient, FetchMealsException
+from clients.telegram import send_telegram_message
 from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,5 @@ class Command(BaseCommand):
 
         msg = f"Fetched {len(meals)} meals"
         logger.info(msg)
-        bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
-        bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
-
+        send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS("Done."))

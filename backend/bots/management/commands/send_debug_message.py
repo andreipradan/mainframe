@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 
 import telegram
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from bots.models import Bot
+from clients.telegram import send_telegram_message
 from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
@@ -19,18 +19,7 @@ class Command(BaseCommand):
         msg = options["message"]
         logger.info(f"[Telegram] message: {msg}")
         try:
-            bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
-        except Bot.DoesNotExist:
-            raise CommandError(
-                "Bot with debug_chat_id in additional data does not exist"
-            )
-
-        chat_id = bot.additional_data["debug_chat_id"]
-        bot.send_message(
-            chat_id=chat_id,
-            disable_notification=True,
-            disable_web_page_preview=True,
-            text=msg,
-            parse_mode=telegram.ParseMode.MARKDOWN,
-        )
+            send_telegram_message(text=msg)
+        except telegram.TelegramError as e:
+            logger.error(str(e))
         self.stdout.write(self.style.SUCCESS("[Telegram] Done."))
