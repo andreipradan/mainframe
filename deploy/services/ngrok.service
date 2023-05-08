@@ -1,13 +1,12 @@
 [Unit]
 Description=Ngrok public URL service
-After=backend.service
-Wants=backend.service
-After=nginx.service
+After=backend.service nginx.service network-online.target
+Wants=backend.service network-online.target
 
 [Service]
 User=rpi
 WorkingDirectory=/home/rpi/projects/mainframe/backend
-ExecStart=/usr/local/bin/ngrok http 80
+ExecStart=/usr/local/bin/ngrok start --all
 ExecStartPost=/usr/bin/timeout 45 sh -c 'while ! ss -H -t -l -n sport = :4040 | grep -q "^LISTEN.*:4040"; do sleep 1; done; /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py post_deploy --service ngrok'
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message "[[ngrok]] down"
 Restart=always
