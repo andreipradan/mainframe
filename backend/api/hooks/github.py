@@ -42,8 +42,7 @@ def mainframe(request):
         raise MethodNotAllowed(request.method)
 
     # Verify if request came from GitHub
-    forwarded_for = "{}".format(request.META.get("HTTP_X_FORWARDED_FOR"))
-    client_ip_address = ip_address(forwarded_for)
+    client_ip_address = ip_address(request.META.get("HTTP_X_FORWARDED_FOR").split(", ")[0])
     whitelist = requests.get("https://api.github.com/meta").json()["hooks"]
 
     prefix = "[GitHub]"
