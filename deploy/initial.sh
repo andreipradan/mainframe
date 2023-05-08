@@ -21,7 +21,6 @@ echo "[postgres] Installing postgres deps..." && sudo apt-get -y install libpq-d
 
 echo "[ngrok] Installing ngrok"
 curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
-echo "[ngrok] Setting ngrok tunnels" && cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "${HOME}/.config/ngrok/ngrok.yml"
 echi "[ngrok] Done."
 
 echo "[redis] Installing redis server"
