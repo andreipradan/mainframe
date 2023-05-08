@@ -1,4 +1,4 @@
 tunnels:
   mainframe:
-    addr: 7777
+    addr: 80
     proto: http
