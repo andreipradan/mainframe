@@ -58,9 +58,7 @@ class BaseEarthquakeCommand(BaseCommand):
         except OperationalError as e:
             return self.logger.error(str(e))
         except Bot.DoesNotExist:
-            return self.logger.error(
-                self.style.ERROR("No bots with earthquake config")
-            )
+            return self.logger.error(self.style.ERROR("No bots with earthquake config"))
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:

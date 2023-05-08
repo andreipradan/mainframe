@@ -37,7 +37,9 @@ class Command(BaseCommand):
             action = random.choice(json.load(actions_file))
 
         text = f"❗️📷 {salut} {action} 📷❗️"
-        send_telegram_message(chat_id=config("BE_REAL_CHAT_ID"), text=text)
+        send_telegram_message(
+            chat_id=config("BE_REAL_CHAT_ID"), text=text, disable_notification=False,
+        )
 
         tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
         expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
