@@ -25,4 +25,4 @@ else
 fi
 
 "${VIRTUALENV_DIR}/bin/python" "${PROJECT_DIR}/backend/manage.py" send_debug_message "[[deploy]] Done."
-echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup] Done."
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup] done."
