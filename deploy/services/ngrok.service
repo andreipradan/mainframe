@@ -1,6 +1,7 @@
 [Unit]
 Description=Ngrok public URL service
 After=backend.service
+After=nginx.service
 Requires=backend.service
 
 [Service]

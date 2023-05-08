@@ -1,6 +1,7 @@
 [Unit]
 Description=django backend server
 After=network.target
+Before=nginx.service
 
 [Service]
 User=rpi
