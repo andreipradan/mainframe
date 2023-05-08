@@ -16,10 +16,6 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 
-    @property
-    def prefix(self):
-        return f"[{self.source.upper()}]"
-
     def add_arguments(self, parser):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
 

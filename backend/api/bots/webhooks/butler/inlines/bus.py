@@ -212,7 +212,6 @@ class BusInline(BaseInlines):
             text=override_message
             or f"{line_type.capitalize()} lines{pagination}{no_lines_msg}",
             reply_markup=markup,
-            logger=logger,
         )
 
     @classmethod

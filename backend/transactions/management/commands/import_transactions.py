@@ -8,8 +8,8 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
-from bots.models import Bot
 from clients.cron import remove_crons_for_command
+from clients.telegram import send_telegram_message
 from core.settings import get_file_handler
 from crons.models import Cron
 from transactions.models import Transaction
@@ -103,7 +103,6 @@ class Command(BaseCommand):
             Cron(command="import_transactions", is_management=True)
         )
 
-        bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
-        bot.send_message(chat_id=bot.additional_data["debug_chat_id"], text=msg)
+        send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
