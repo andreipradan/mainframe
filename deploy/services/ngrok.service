@@ -1,6 +1,7 @@
 [Unit]
 Description=Ngrok public URL service
 After=backend.service
+Requires=backend.service
 
 [Service]
 User=rpi
