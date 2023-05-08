@@ -12,4 +12,4 @@ class Command(BaseCommand):
             response.raise_for_status()
         except HTTPError as e:
             raise CommandError(e)
-        self.stdout.write(self.style.SUCCESS(f"Done. [{response.text}]"))
+        self.stdout.write(self.style.SUCCESS(f"[Healthcheck] Done. [{response.text}]"))

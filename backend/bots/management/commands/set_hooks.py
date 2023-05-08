@@ -5,7 +5,6 @@ import github
 import requests
 import telegram
 from django.conf import settings
-from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from requests.exceptions import ConnectionError
 
@@ -68,5 +67,4 @@ class Command(BaseCommand):
 
         set_github_hook(ngrok_url, env("GITHUB_ACCESS_TOKEN"), env("GITHUB_USERNAME"))
         set_telegram_hooks(ngrok_url)
-        self.stdout.write(self.style.SUCCESS("Done."))
-        call_command("send_debug_message", "[Mainframe] up")
+        self.stdout.write(self.style.SUCCESS("[Hooks] Done."))

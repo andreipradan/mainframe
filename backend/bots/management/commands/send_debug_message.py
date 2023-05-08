@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         msg = options["message"]
-        logger.info(f"Sending debug message: {msg}")
+        logger.info(f"[Telegram] message: {msg}")
         try:
             bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
         except Bot.DoesNotExist:
@@ -33,4 +33,4 @@ class Command(BaseCommand):
             text=msg,
             parse_mode=telegram.ParseMode.MARKDOWN,
         )
-        self.stdout.write(self.style.SUCCESS("Done."))
+        self.stdout.write(self.style.SUCCESS("[Telegram] Done."))
