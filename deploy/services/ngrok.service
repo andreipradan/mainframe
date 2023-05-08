@@ -1,8 +1,7 @@
 [Unit]
 Description=Ngrok public URL service
-After=backend.service
-Wants=backend.service
-After=nginx.service
+After=backend.service nginx.service network-online.target
+Wants=backend.service network-online.target
 
 [Service]
 User=rpi
