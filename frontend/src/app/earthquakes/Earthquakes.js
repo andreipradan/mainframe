@@ -286,7 +286,7 @@ const Earthquakes = () => {
                           </td>
                           <td className="font-weight-medium"> {e.depth} km </td>
                           <td className="font-weight-medium"> {e.location} </td>
-                          <td> {e.source_verbose} </td>
+                          <td> {e.source} </td>
                         </tr>)
                       }
                       </tbody>

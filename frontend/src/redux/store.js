@@ -5,6 +5,7 @@ import cronsReducer from "../redux/cronsSlice"
 import devicesReducer from "../redux/devicesSlice"
 import earthquakesReducer from "../redux/earthquakesSlice"
 import lightsReducer from "../redux/lightsSlice";
+import livecamReducer from "../redux/livecamSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
 import transactionsReducer from "../redux/transactionsSlice";
@@ -17,6 +18,7 @@ export default configureStore({
     devices: devicesReducer,
     earthquakes: earthquakesReducer,
     lights: lightsReducer,
+    livecam: livecamReducer,
     logs: logsReducer,
     meals: mealsReducer,
     transactions: transactionsReducer,

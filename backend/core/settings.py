@@ -57,6 +57,7 @@ else:
     LOGS_DIR = BASE_DIR / "logs"
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -65,11 +66,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
-    "django_extensions",
     "api",
     "api.user",
     "api.authentication",
     "bots",
+    "camera",
     "crons",
     "devices",
     "earthquakes",
@@ -247,6 +248,18 @@ if ENV != "local":
         "formatter": "verbose",
     }
     LOGGING["loggers"]["django"]["handlers"].append("file")
+
+
+# Channels
+ASGI_APPLICATION = "core.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 def get_file_handler(name):

@@ -1,15 +1,13 @@
-import environ
-import requests
 from django.core.management.base import BaseCommand, CommandError
 from requests import HTTPError
+
+from clients import healthchecks
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        config = environ.Env()
-        response = requests.post(url=config("HEALTHCHECKS_URL"))
         try:
-            response.raise_for_status()
+            response = healthchecks.ping()
         except HTTPError as e:
             raise CommandError(e)
-        self.stdout.write(self.style.SUCCESS(f"Done. [{response.text}]"))
+        self.stdout.write(self.style.SUCCESS(f"[Healthcheck] Done. [{response.text}]"))

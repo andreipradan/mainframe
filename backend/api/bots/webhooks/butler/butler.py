@@ -15,7 +15,7 @@ from api.bots.webhooks.butler.inlines.meals import MealsInline
 from api.bots.webhooks.butler.inlines.saved_messages import SavedMessagesInlines
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
-from bots.management.commands.set_hooks import get_ngrok_url
+from bots.management.commands.post_deploy import get_ngrok_url
 from bots.models import Bot
 from clients import cron
 from earthquakes.management.commands.base_check import parse_event
@@ -121,10 +121,6 @@ def call(data, instance: Bot):
 
     if cmd == "meals":
         return MealsInline.start(update, page=1)
-
-    if cmd == "picamera":
-        url = get_ngrok_url("picamera")
-        return reply(update, text=url or "Could not find picamera URL")
 
     if cmd == "randomize":
         if len(args) not in range(2, 51):

@@ -17,12 +17,8 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_INFP
     url = "http://n1.infp.ro/"
 
-    @property
-    def prefix(self):
-        return f"[{self.source.upper()}]"
-
     def fetch(self, **options):
-        return requests.get(self.url, timeout=45)
+        return requests.get(self.url, timeout=30)
 
     def fetch_events(self, response):
         soup = BeautifulSoup(response.text, features="html.parser")

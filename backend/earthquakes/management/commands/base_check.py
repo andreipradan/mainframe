@@ -40,23 +40,8 @@ class BaseEarthquakeCommand(BaseCommand):
     source = NotImplemented
     url = NotImplemented
 
-    @property
-    def prefix(self):
-        raise NotImplementedError
-
     def handle(self, *args, **options):
-        self.logger.info(f"{self.prefix} Checking earthquakes...")
-
-        try:
-            instance = Bot.objects.get(additional_data__earthquake__isnull=False)
-        except OperationalError as e:
-            return self.logger.error(f"{self.prefix} {e}")
-        except Bot.DoesNotExist:
-            return self.logger.error(
-                self.style.ERROR(f"{self.prefix} No bots with earthquake config")
-            )
-
-        earthquake_config = instance.additional_data["earthquake"]
+        self.logger.info(f"Checking...")
 
         try:
             response = self.fetch(**options)
@@ -68,38 +53,42 @@ class BaseEarthquakeCommand(BaseCommand):
         ) as e:
             raise CommandError(str(e))
 
+        try:
+            instance = Bot.objects.get(additional_data__earthquake__isnull=False)
+        except OperationalError as e:
+            return self.logger.error(str(e))
+        except Bot.DoesNotExist:
+            return self.logger.error(self.style.ERROR("No bots with earthquake config"))
+
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
             self.set_last_check(instance)
-            return self.logger.warning(f"{self.prefix} No events found!")
+            return self.logger.warning("No events found!")
 
         if latest := Earthquake.objects.order_by("-timestamp").first():
             events = [e for e in events if e.timestamp > latest.timestamp]
             if not events:
                 self.set_last_check(instance)
-                return self.logger.info(f"{self.prefix} No new events.")
+                return self.logger.info("No new events.")
         else:
-            self.logger.info(f"{self.prefix} No events in db.")
+            self.logger.info("No events in db.")
 
-        self.logger.info(f"{self.prefix} Saving {len(events)}.")
+        self.logger.info(f"Saving {len(events)}.")
         Earthquake.objects.bulk_create(events, ignore_conflicts=True)
 
+        earthquake_config = instance.additional_data["earthquake"]
         if min_magnitude := earthquake_config.get("min_magnitude"):
-            self.logger.info(
-                f"{self.prefix} Filtering by min magnitude: {min_magnitude}"
-            )
+            self.logger.info(f"Filtering by min magnitude: {min_magnitude}")
             events = [
                 event
                 for event in events
                 if float(event.magnitude) >= float(min_magnitude)
             ]
         else:
-            self.logger.info(f"{self.prefix} No min magnitude set")
+            self.logger.info("No min magnitude set")
 
         if len(events):
-            self.logger.info(
-                f"{self.prefix} Got {len(events)} events. Sending to telegram..."
-            )
+            self.logger.info(f"Got {len(events)} events. Sending to telegram...")
             try:
                 instance.send_message(
                     chat_id=earthquake_config["chat_id"],
@@ -107,12 +96,12 @@ class BaseEarthquakeCommand(BaseCommand):
                     parse_mode=telegram.ParseMode.HTML,
                 )
             except telegram.error.TelegramError as te:
-                self.logger.error(f"{self.prefix} {str(te)}")
+                self.logger.error(str(te))
         else:
-            self.logger.info(f"{self.prefix} No new events > {min_magnitude} ML")
+            self.logger.info(f"No new events > {min_magnitude} ML")
 
         self.set_last_check(instance)
-        self.stdout.write(self.style.SUCCESS(f"{self.prefix} Done."))
+        self.stdout.write(self.style.SUCCESS("Done."))
 
     def fetch(self, **options):
         raise NotImplementedError

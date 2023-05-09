@@ -7,14 +7,15 @@ from ipaddress import ip_address, ip_network
 
 import requests
 import telegram
+
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
-from bots.models import Bot
 from clients import cron
+from clients.telegram import send_telegram_message
 
 logger = logging.getLogger(__name__)
 
@@ -42,13 +43,12 @@ def mainframe(request):
         raise MethodNotAllowed(request.method)
 
     # Verify if request came from GitHub
-    forwarded_for = "{}".format(request.META.get("HTTP_X_FORWARDED_FOR"))
-    client_ip_address = ip_address(forwarded_for)
+    client_ip_address = ip_address(
+        request.META.get("HTTP_X_FORWARDED_FOR").split(", ")[0]
+    )
     whitelist = requests.get("https://api.github.com/meta").json()["hooks"]
 
-    bot = Bot.objects.get(additional_data__debug_chat_id__isnull=False)
-    chat_id = bot.additional_data["debug_chat_id"]
-    prefix = "[Mainframe][GitHub]"
+    prefix = "[GitHub]"
 
     for valid_ip in whitelist:
         if client_ip_address in ip_network(valid_ip):
@@ -59,12 +59,12 @@ def mainframe(request):
     # Verify the request signature
     header_signature = request.META.get("HTTP_X_HUB_SIGNATURE")
     if header_signature is None:
-        bot.send_message(chat_id=chat_id, text=f"{prefix} No signature")
+        send_telegram_message(text=f"{prefix} No signature")
         return HttpResponseForbidden("Permission denied.")
 
     sha_name, signature = header_signature.split("=")
     if sha_name != "sha1":
-        bot.send_message(chat_id=chat_id, text=f"{prefix} operation not supported")
+        send_telegram_message(text=f"{prefix} operation not supported")
         return HttpResponseServerError("Operation not supported.", status=501)
 
     mac = hmac.new(
@@ -73,7 +73,7 @@ def mainframe(request):
         digestmod=hashlib.sha1,
     )
     if not hmac.compare_digest(force_bytes(mac.hexdigest()), force_bytes(signature)):
-        bot.send_message(chat_id=chat_id, text=f"{prefix} Permission denied")
+        send_telegram_message(text=f"{prefix} Permission denied")
         return HttpResponseForbidden("Permission denied.")
 
     # If request reached this point we are in a good shape
@@ -89,11 +89,8 @@ def mainframe(request):
     compare_message = (
         f" | <a target='_blank' href='{compare}'>diff</a>" if compare else ""
     )
-    bot.send_message(
-        chat_id=chat_id,
+    send_telegram_message(
         text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
-        disable_notification=True,
-        disable_web_page_preview=True,
         parse_mode=telegram.ParseMode.HTML,
     )
     if event == "ping":
@@ -102,16 +99,14 @@ def mainframe(request):
     elif event == "push" and branch == "main":
         output = run_cmd("git pull origin main")
         if not output:
-            bot.send_message(chat_id=chat_id, text=f"{prefix} Could not git pull")
+            send_telegram_message(text=f"{prefix} Could not git pull")
             return HttpResponse("ok")
         if output.strip() == b"Already up to date.":
-            bot.send_message(chat_id=chat_id, text=f"[{prefix}] Already up to date")
+            send_telegram_message(text=f"[{prefix}] Already up to date")
             return HttpResponse("ok")
 
         if output.strip().startswith("CONFLICT"):
-            bot.send_message(
-                chat_id=chat_id, text=f"[{prefix}] Conflict", disable_notification=True
-            )
+            send_telegram_message(text=f"[{prefix}] Conflict")
             return HttpResponse("ok")
 
         cmd_params = []
@@ -132,7 +127,7 @@ def mainframe(request):
         if msg_extra:
             msg += f" (+ {' & '.join(msg_extra)})"
 
-        bot.send_message(chat_id=chat_id, text=msg, disable_notification=True)
+        send_telegram_message(text=msg)
 
         logs_path = f"{settings.LOGS_DIR}/deploy/"
         mkdir = f"mkdir -p {logs_path}`date +%Y`"
