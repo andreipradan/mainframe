@@ -51,7 +51,7 @@ if ENV != "local":
         traces_sample_rate=1.0,
         send_default_pii=False,
     )
-    LOGS_DIR = Path("/var/log/mainframe")
+    LOGS_DIR = BASE_DIR.parent / "logs"
 else:
     ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
     LOGS_DIR = BASE_DIR / "logs"
