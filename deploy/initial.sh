@@ -9,10 +9,34 @@ VIRTUALENV_DIR=${HOME}/projects/.virtualenvs/mainframe
 
 /bin/bash "${PROJECT_DIR}/deploy/setup/zsh.sh"
 
-#echo "Installing drivers for picamera" && sudo apt-get install ffmpeg git python3-picamera python3-ws4py
-echo "[env] Setting .env placeholder" && cat "${PROJECT_DIR}/deploy/.env" >> "${PROJECT_DIR}/backend/.env"
-([[ "$(ls -A "${LOGS_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path already exists") || (sudo mkdir -p "${LOGS_DIR}" && sudo touch "${LOGS_DIR}/backend.log" && sudo chown --recursive rpi ${LOGS_DIR} && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Logs] Path created")
-[[ "$(ls -A "${VIRTUALENV_DIR}")" ]] && echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [Virtualenv] Already exists" || (python -m venv "${VIRTUALENV_DIR}" && echo "[Virtualenv] Created")
+echo "Installing drivers for picamera" && sudo apt-get install ffmpeg git python3-picamera python3-ws4py
+
+echo "[env] Setting .env placeholder" &&
+ENV_FILE="${PROJECT_DIR}/backend/.env"
+if [ -f "$ENV_FILE" ]; then
+  echo "env file already exists";
+else
+  cat "${PROJECT_DIR}/deploy/.env" >> "$ENV_FILE";
+fi
+
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path and backend.log file"
+if [ "$(ls -A "${LOGS_DIR}")" ]; then
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path already exists";
+else
+  sudo su
+  mkdir -p "${LOGS_DIR}";
+  touch "${LOGS_DIR}/backend.log";
+  chown --recursive rpi.rpi ${LOGS_DIR}
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path created"
+fi
+
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Creating venv"
+if [ "$(ls -A "${VIRTUALENV_DIR}")" ]; then
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Already exists"
+else
+  python -m venv "${VIRTUALENV_DIR}";
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Created"
+fi
 echo "[env] Done."
 
 echo "[postgres] Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "[postgres] Done."
