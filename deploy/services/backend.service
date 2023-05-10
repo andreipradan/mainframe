@@ -4,7 +4,7 @@ Description=django backend server
 [Service]
 User=rpi
 WorkingDirectory=/home/rpi/projects/mainframe/backend
-ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python runserver 0:7777
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py runserver 0:7777
 #ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/daphne -p 7777 core.asgi:application
 ExecStartPost=/usr/bin/timeout 45 sh -c \
     'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; \
