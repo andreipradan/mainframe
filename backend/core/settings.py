@@ -262,18 +262,18 @@ CHANNEL_LAYERS = {
 }
 
 
-def get_file_handler(name):
-    path = LOGS_DIR / "management" / name
-    Path(path).mkdir(parents=True, exist_ok=True)
-    file_handler = TimedRotatingFileHandler(
-        filename=path / f"{name}.log",
-        when="midnight",
-        interval=1,
-        backupCount=10,
-    )
-    formatter = logging.Formatter(
-        fmt=LOGGING["formatters"]["verbose"]["format"],
-        style="{",
-    )
-    file_handler.setFormatter(formatter)
-    return file_handler
+# def get_file_handler(name):
+#     path = LOGS_DIR / "management" / name
+#     Path(path).mkdir(parents=True, exist_ok=True)
+#     file_handler = TimedRotatingFileHandler(
+#         filename=path / f"{name}.log",
+#         when="midnight",
+#         interval=1,
+#         backupCount=10,
+#     )
+#     formatter = logging.Formatter(
+#         fmt=LOGGING["formatters"]["verbose"]["format"],
+#         style="{",
+#     )
+#     file_handler.setFormatter(formatter)
+#     return file_handler

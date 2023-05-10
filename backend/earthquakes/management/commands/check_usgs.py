@@ -5,14 +5,14 @@ from pathlib import Path
 import pytz
 import requests
 
-from core.settings import get_file_handler
+# from core.settings import get_file_handler
 from earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand):
     logger = logging.getLogger(__name__)
-    logger.addHandler(get_file_handler(Path(__file__).stem))
+    # logger.addHandler(get_file_handler(Path(__file__).stem))
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 
