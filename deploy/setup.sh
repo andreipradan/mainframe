@@ -14,7 +14,7 @@ fi
 
 if [[ $2 == restart ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup][services] Restarting all"
-  sudo echo "rpi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/rpi"
+#  sudo echo "rpi ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart backend" | sudo tee "/etc/sudoers.d/rpi"
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup][services] Copying to /etc/systemd/system"
   sudo cp -a "${PROJECT_DIR}/deploy/services/." /etc/systemd/system
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup][services] Reloading daemon"
