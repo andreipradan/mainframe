@@ -9,10 +9,10 @@ from django.core.management.base import BaseCommand
 
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
-from core.settings import get_file_handler
+# from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+# logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 def check_open_matches(client):

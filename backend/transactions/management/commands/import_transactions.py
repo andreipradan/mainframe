@@ -10,12 +10,12 @@ from django.db import IntegrityError
 
 from clients.cron import remove_crons_for_command
 from clients.telegram import send_telegram_message
-from core.settings import get_file_handler
+# from core.settings import get_file_handler
 from crons.models import Cron
 from transactions.models import Transaction
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+# logger.addHandler(get_file_handler(Path(__file__).stem))
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 

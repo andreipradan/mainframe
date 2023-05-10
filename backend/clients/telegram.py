@@ -4,10 +4,10 @@ from pathlib import Path
 import environ
 import telegram
 
-from core.settings import get_file_handler
+# from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+# logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML"):

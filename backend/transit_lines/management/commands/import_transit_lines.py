@@ -5,11 +5,11 @@ from django.core.management.base import BaseCommand, CommandError
 
 from clients.ctp import CTPClient, FetchTransitLinesException
 from clients.telegram import send_telegram_message
-from core.settings import get_file_handler
+# from core.settings import get_file_handler
 from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+# logger.addHandler(get_file_handler(Path(__file__).stem))
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
