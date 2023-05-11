@@ -85,6 +85,13 @@ def parse_quantities(quantities_div):
 
 
 def parse_week(args) -> List[Meal]:
+    months = {
+        "ian": "jan",
+        "mai": "may",
+        "iun": "jun",
+        "iul": "jul",
+        "noi": "nov",
+    }
     response_text, url = args
     soup = BeautifulSoup(response_text, features="html.parser")
 
@@ -93,7 +100,9 @@ def parse_week(args) -> List[Meal]:
         .find("button", {"class": "active"})
         .text.split("-")[1]
     )
-    week = week.replace(" mai", " may")
+    for k, v in months.items():
+        week = week.replace(f" {k}", f" {v}")
+
     current_date = (
         datetime.strptime(week, "%d %b").date() - timedelta(days=7)
     ).replace(year=datetime.today().year)

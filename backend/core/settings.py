@@ -57,7 +57,7 @@ else:
     LOGS_DIR = BASE_DIR / "logs"
 
 INSTALLED_APPS = [
-    "daphne",
+    # "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

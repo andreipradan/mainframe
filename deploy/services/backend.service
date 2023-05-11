@@ -11,8 +11,7 @@ ExecStartPost=/usr/bin/timeout 45 sh -c \
         do sleep 1; \
         echo "waiting for port 7777"; \
     done; \
-    echo "got it, waiting 5s"; \
-    sleep 5; \
+    echo "got it"; \
     /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py post_deploy --service backend'
 ExecStopPost=/bin/sh -c "/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message '[[backend]] down'"
 Restart=always
