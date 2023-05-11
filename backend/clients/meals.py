@@ -114,14 +114,13 @@ def parse_week(args) -> List[Meal]:
 
 
 class MealsClient:
-    URL = Signer().unsign_object(
-        "Imh0dHBzOi8vd3d3LmxpZmVib3gucm8vb3B0aW1ib3gtMSI:"
-        "Hhq6D12GLwL3MuG7vmBv7LoXyDQND-lb6wg9QVqh1Sg"
-    )
-
     @classmethod
     def fetch_meals(cls) -> List[Meal]:
-        urls = [f"{cls.URL}/week-{week_no}" for week_no in range(1, 5)]
+        url = Signer().unsign_object(
+            "Imh0dHBzOi8vd3d3LmxpZmVib3gucm8vb3B0aW1ib3gtMSI:"
+            "Hhq6D12GLwL3MuG7vmBv7LoXyDQND-lb6wg9QVqh1Sg"
+        )
+        urls = [f"{url}/week-{week_no}" for week_no in range(1, 5)]
         meals = list(itertools.chain.from_iterable(asyncio.run(fetch_many(urls))))
 
         Meal.objects.bulk_create(
