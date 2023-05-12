@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 
 from core.models import TimeStampedModel
@@ -16,8 +15,3 @@ class Cron(TimeStampedModel):
 
     def __str__(self):
         return f"{self.command} - {self.expression}"
-
-    @property
-    def management_command(self):
-        manage_path = settings.BASE_DIR / "manage.py"
-        return f"{settings.PYTHON_PATH} {manage_path} {self.command}"

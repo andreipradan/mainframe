@@ -32,7 +32,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 DEBUG = int(env("DEBUG", default=0))
 ENV = env("ENV", default=None)
-PYTHON_PATH = env("PYTHON_PATH")
 
 
 # Quick-start development settings - unsuitable for production

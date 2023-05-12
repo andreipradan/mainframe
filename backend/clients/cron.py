@@ -28,12 +28,13 @@ def delay(command, minutes=1, is_management=True):
 
 
 def get_all_crons() -> List[Cron]:
+    python_path = config("PYTHON_PATH")
     with CronTab(user=config("USERNAME")) as crontab:
         manage_path = str(settings.BASE_DIR / "manage.py")
         return list(
             Cron(
                 command=cron.command.replace(
-                    f"{settings.PYTHON_PATH} {manage_path} ", ""
+                    f"{python_path} {manage_path} ", ""
                 )
                 if manage_path in cron.command
                 else cron.command,
@@ -46,9 +47,17 @@ def get_all_crons() -> List[Cron]:
         )
 
 
+def prepare_command(cron: Cron):
+    if not cron.is_management:
+        return cron.command
+    python_path = config("PYTHON_PATH")
+    manage_path = settings.BASE_DIR / "manage.py"
+    return f"{python_path} {manage_path} {cron.command}"
+
+
 def remove_crons_for_command(cron: Cron) -> None:
     with CronTab(user=config("USERNAME")) as crontab:
-        command = cron.management_command if cron.is_management else cron.command
+        command = prepare_command(cron)
         if not (crons_no := len(list(crontab.find_command(command)))):
             return logger.warning(f"No '{cron}' crons found")
 
@@ -63,7 +72,7 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             logger.warning("Clearing all existing crons")
             crontab.remove_all()
         for i, cron in enumerate(crons):
-            command = cron.management_command if cron.is_management else cron.command
+            command = prepare_command(cron)
             not clear_all and replace and crontab.remove_all(command=command)
             cmd = crontab.new(command=command)
             cmd.setall(cron.expression)
