@@ -3,7 +3,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from clients.meals import MealsClient, FetchMealsException
-from clients.telegram import send_telegram_message
+from clients.chat import send_telegram_message
 from core.settings import get_file_handler
 
 logger = logging.getLogger(__name__)

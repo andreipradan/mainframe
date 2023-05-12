@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Key
 
 from api.bots.webhooks.shared import BaseInlines
 from bots.clients import mongo as database
-from clients.telegram import edit_message
+from clients.chat import edit_message
 
 logger = logging.getLogger(__name__)
 

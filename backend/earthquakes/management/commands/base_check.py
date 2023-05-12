@@ -65,16 +65,20 @@ class BaseEarthquakeCommand(BaseCommand):
             self.set_last_check(instance)
             return self.logger.warning("No events found!")
 
-        if latest := Earthquake.objects.order_by("-timestamp").first():
-            events = [e for e in events if e.timestamp > latest.timestamp]
-            if not events:
-                self.set_last_check(instance)
-                return self.logger.info("No new events.")
-        else:
-            self.logger.info("No events in db.")
-
         self.logger.info(f"Saving {len(events)}.")
-        Earthquake.objects.bulk_create(events, ignore_conflicts=True)
+        Earthquake.objects.bulk_create(
+            events,
+            update_conflicts=True,
+            update_fields=[
+                "depth",
+                "intensity",
+                "location",
+                "latitude",
+                "longitude",
+                "magnitude",
+            ],
+            unique_fields=["timestamp"],
+        )
 
         earthquake_config = instance.additional_data["earthquake"]
         if min_magnitude := earthquake_config.get("min_magnitude"):

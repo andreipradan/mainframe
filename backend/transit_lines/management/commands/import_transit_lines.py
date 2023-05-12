@@ -4,7 +4,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from clients.ctp import CTPClient, FetchTransitLinesException
-from clients.telegram import send_telegram_message
+from clients.chat import send_telegram_message
 from core.settings import get_file_handler
 from transit_lines.models import TransitLine, Schedule
 

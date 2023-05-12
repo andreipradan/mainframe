@@ -6,7 +6,7 @@ import pytz
 from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines, chunks
-from clients.telegram import edit_message
+from clients.chat import edit_message
 from datetime import datetime
 
 from clients.ctp import LINE_TYPES, CTPClient
