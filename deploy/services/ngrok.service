@@ -7,7 +7,7 @@ User=rpi
 WorkingDirectory=/home/rpi/projects/mainframe/backend
 ExecStart=/usr/local/bin/ngrok start --all
 ExecStartPost=/usr/bin/timeout 60 sh -c \
-    'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:4040"; \
+    'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; \
         do sleep 1; \
         echo "waiting for port 7777"; \
     done; \
