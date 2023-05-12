@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from camera.consumers import CameraConsumer
+# from camera.consumers import CameraConsumer
 
 logger = logging.getLogger(__name__)
 
