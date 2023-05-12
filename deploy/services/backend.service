@@ -7,7 +7,8 @@ WorkingDirectory=/home/rpi/projects/mainframe/backend
 ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/gunicorn -b 0:7777 core.wsgi
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py post_deploy --service backend
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[backend]] down
-Restart=always
+Restart=on-success
+TimeoutSec=900
 
 [Install]
 WantedBy=multi-user.target
