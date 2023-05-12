@@ -39,7 +39,7 @@ def set_github_hook(ngrok_url, access_token, username):
             "content_type": "json",
             "secret": settings.SECRET_KEY,
         },
-        "events": ["push"],
+        "events": ["push", "workflow_run"],
         "active": True,
     }
     repository = g.get_repo(f"{username}/mainframe")
