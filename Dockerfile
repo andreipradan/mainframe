@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend .
 
-CMD ["daphne", "-p", "${PORT}", "core.asgi:application"]
+CMD ["daphne", "-p", "$PORT", "core.asgi:application"]
