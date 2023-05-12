@@ -11,11 +11,11 @@ from django.core.management.base import BaseCommand
 
 from clients.cron import set_crons
 from clients.chat import send_telegram_message
-# from core.settings import get_file_handler
+from core.settings import get_file_handler
 from crons.models import Cron
 
 logger = logging.getLogger(__name__)
-# logger.addHandler(get_file_handler(Path(__file__).stem))
+logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 def get_tomorrow_run() -> datetime:
