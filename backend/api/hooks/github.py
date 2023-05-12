@@ -96,6 +96,15 @@ def mainframe(request):
     if event == "ping":
         return HttpResponse("pong")
 
+    elif event == "workflow_run":
+        wf_run = payload["workflow_run"]
+        conclusion = wf_run["conclusion"]
+        url = wf_run["html_url"]
+        send_telegram_message(
+            text=f"{prefix} {payload['action']} | {conclusion} | <a href='{url}'>Details</a>",
+            parse_mode=telegram.ParseMode.HTML,
+        )
+
     elif event == "push" and branch == "main":
         output = run_cmd("git pull origin main")
         if not output:
