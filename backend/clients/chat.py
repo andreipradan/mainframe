@@ -1,13 +1,10 @@
 import logging
-from pathlib import Path
+import sys
 
-import environ
+import dotenv
 import telegram
 
-# from core.settings import get_file_handler
-
 logger = logging.getLogger(__name__)
-# logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML"):
@@ -26,13 +23,19 @@ def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="
 
 
 def send_telegram_message(text, **kwargs):
-    config = environ.Env()
+    config = dotenv.dotenv_values()
     bot_kwargs = {
-        "chat_id": kwargs.get("chat_id", config("TELEGRAM_DEBUG_CHAT_ID")),
+        "chat_id": kwargs.get("chat_id", config["TELEGRAM_DEBUG_CHAT_ID"]),
         "disable_notification": True,
         "disable_web_page_preview": True,
         "parse_mode": telegram.ParseMode.MARKDOWN,
     }
     bot_kwargs.update(kwargs)
-    bot = telegram.Bot(config("TELEGRAM_DEBUG_TOKEN"))
+    bot = telegram.Bot(config["TELEGRAM_DEBUG_TOKEN"])
     return bot.send_message(text=text, **bot_kwargs)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        raise ValueError("Text missing")
+    send_telegram_message(" ".join(sys.argv[1:]))

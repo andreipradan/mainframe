@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
 from clients.cron import remove_crons_for_command
-from clients.telegram import send_telegram_message
+from clients.chat import send_telegram_message
 # from core.settings import get_file_handler
 from crons.models import Cron
 from transactions.models import Transaction

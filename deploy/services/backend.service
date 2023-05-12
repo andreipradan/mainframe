@@ -6,14 +6,8 @@ User=rpi
 WorkingDirectory=/home/rpi/projects/mainframe/backend
 ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py runserver 0:7777
 #ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/daphne -p 7777 core.asgi:application
-ExecStartPost=/usr/bin/timeout 45 sh -c \
-    'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; \
-        do sleep 1; \
-        echo "waiting for port 7777"; \
-    done; \
-    echo "got it"; \
-    /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py post_deploy --service backend'
-ExecStopPost=/bin/sh -c "/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py send_debug_message '[[backend]] down'"
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py post_deploy --service backend
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[backend]] down
 Restart=always
 
 [Install]

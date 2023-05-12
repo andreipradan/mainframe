@@ -12,7 +12,7 @@ from requests.exceptions import ConnectionError
 from bots.models import Bot
 from clients import healthchecks
 from clients.cron import set_crons
-from clients.telegram import send_telegram_message
+from clients.chat import send_telegram_message
 # from core.settings import get_file_handler
 from crons.models import Cron
 

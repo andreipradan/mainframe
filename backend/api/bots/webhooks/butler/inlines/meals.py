@@ -5,7 +5,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines, chunks
 from clients.meals import MealsClient
-from clients.telegram import edit_message
+from clients.chat import edit_message
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)

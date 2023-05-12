@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from clients.cron import set_crons
-from clients.telegram import send_telegram_message
+from clients.chat import send_telegram_message
 # from core.settings import get_file_handler
 from crons.models import Cron
 

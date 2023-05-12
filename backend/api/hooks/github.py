@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
 from clients import cron
-from clients.telegram import send_telegram_message
+from clients.chat import send_telegram_message
 
 logger = logging.getLogger(__name__)
 
