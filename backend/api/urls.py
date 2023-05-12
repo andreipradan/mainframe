@@ -2,7 +2,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path("bots/", include(("api.bots.routers", "api"), namespace="bots")),
-    path("camera/", include(("camera.routing", "api"), namespace="camera")),
     path("crons/", include(("crons.routers", "api"), namespace="crons")),
     path("devices/", include(("devices.routers", "api"), namespace="devices")),
     path(
