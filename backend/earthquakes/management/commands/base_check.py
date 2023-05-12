@@ -69,7 +69,14 @@ class BaseEarthquakeCommand(BaseCommand):
         Earthquake.objects.bulk_create(
             events,
             update_conflicts=True,
-            update_fields=["depth", "intensity", "location", "latitude", "longitude", "magnitude"],
+            update_fields=[
+                "depth",
+                "intensity",
+                "location",
+                "latitude",
+                "longitude",
+                "magnitude",
+            ],
             unique_fields=["timestamp"],
         )
 

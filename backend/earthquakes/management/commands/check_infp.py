@@ -29,7 +29,9 @@ class Command(BaseEarthquakeCommand):
         timestamp = datetime.strptime(card.attrs["data-time"], "%Y-%m-%d %H:%M:%S")
         return Earthquake(
             timestamp=timestamp.replace(tzinfo=pytz.utc),
-            depth=card.find("span", {"title": "labels.depth"}).text.strip().replace("km", ""),
+            depth=card.find("span", {"title": "labels.depth"})
+            .text.strip()
+            .replace("km", ""),
             intensity=intensity.text.strip() if intensity else None,
             latitude=card.attrs["data-lat"],
             longitude=card.attrs["data-lon"],
