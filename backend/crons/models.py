@@ -22,3 +22,12 @@ class Cron(TimeStampedModel):
         flock = f"/usr/bin/flock -n /tmp/{self.command}.lockfile"
         manage_path = settings.BASE_DIR / "manage.py"
         return f"{flock} {settings.PYTHON_PATH} {manage_path} {self.command}"
+
+    @classmethod
+    def unparse(cls, cmd):
+        manage_path = settings.BASE_DIR / "manage.py"
+        if ".lockfile " in cmd:
+            cmd = cmd.split(".lockfile")[1]
+        if manage_path in cmd:
+            cmd = cmd.replace(f"{settings.PYTHON_PATH} {manage_path} ", "")
+        return cmd
