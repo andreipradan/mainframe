@@ -30,4 +30,4 @@ class Cron(TimeStampedModel):
             cmd = cmd.split(".lockfile")[1]
         if manage_path in cmd:
             cmd = cmd.replace(f"{settings.PYTHON_PATH} {manage_path} ", "")
-        return cmd
+        return cmd.strip()
