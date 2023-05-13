@@ -98,10 +98,10 @@ def mainframe(request):
 
     elif event == "workflow_run":
         wf_run = payload["workflow_run"]
-        conclusion = wf_run["conclusion"]
+        conclusion = f" | {wf_run['conclusion']}" if wf_run['conclusion'] else ""
         url = wf_run["html_url"]
         send_telegram_message(
-            text=f"{prefix} {payload['action']} | {conclusion} | <a href='{url}'>Details</a>",
+            text=f"{prefix} {payload['action']}{conclusion} | <a href='{url}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
 
