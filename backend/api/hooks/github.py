@@ -103,7 +103,7 @@ def mainframe(request):
         conclusion = f" - {wf_run['conclusion']}" if wf_run["conclusion"] else ""
         url = wf_run["html_url"]
         send_telegram_message(
-            text=f"{prefix}[workflow] {action}{conclusion.title()} | <a href='{url}'>Details</a>",
+            text=f"{prefix}[workflow][{wf_run['name']} #{wf_run['run_number']}] {action}{conclusion.title()} on {wf_run['head_branch']} | <a href='{url}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
 
