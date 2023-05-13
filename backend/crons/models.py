@@ -25,7 +25,7 @@ class Cron(TimeStampedModel):
 
     @classmethod
     def unparse(cls, cmd):
-        manage_path = settings.BASE_DIR / "manage.py"
+        manage_path = str(settings.BASE_DIR / "manage.py")
         if ".lockfile " in cmd:
             cmd = cmd.split(".lockfile")[1]
         if manage_path in cmd:
