@@ -1,6 +1,26 @@
 #!/bin/bash
 set -e -o pipefail
 
+PROJECT_DIR=${HOME}/projects/mainframe
+
+if [ "$1" == "--continue" ]; then
+
+  cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "$HOME/.config/ngrok/ngrok.yml"
+
+  REDIS_DIR=/etc/redis
+  echo "[redis] Installing redis server"
+  sudo apt install -y redis-server
+  echo "[redis] Setting supervised from no to systemd"
+  sudo sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
+  sudo systemctl restart redis.service
+  echo "[redis] Done."
+
+  echo "=== Initial setup Done! ==="
+  echo "Please fill out the env vars inside mainframe/backend/.env"
+  echo "then do '~/projects/mainframe/deploy/setup.sh requirements restart'"
+  exit 0
+fi
+
 echo "[homebridge] Installing homebridge"
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
@@ -8,7 +28,6 @@ echo "sudo apt-get update" && sudo apt-get update
 sudo apt-get install -y homebridge
 echo "[homebridge] Done."
 
-PROJECT_DIR=${HOME}/projects/mainframe
 echo "[zsh] Installing zsh" && sudo apt-get install -y zsh
 echo "[zsh] Installing ohmyzsh" && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 echo "[zsh] Setting .zshrc aliases" && cat "${PROJECT_DIR}/deploy/.zshrc" >> "${HOME}/.zshrc"
@@ -68,21 +87,10 @@ echo "[nginx] Done."
 
 echo "[ngrok] Installing ngrok"
 curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
-cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "$HOME/.config/ngrok/ngrok.yml"
 
 echo "[ngrok] Done."
-echo "[ngrok] Log into your ngrok account and copy add your auth token here by doing:"
+echo "[ngrok] Log into your ngrok account https://dashboard.ngrok.com/get-started/your-authtoken"
+echo "and copy add your auth token here by doing:"
 echo "ngrok config add-authtoken <your auth token here>"
-exit 1
-
-REDIS_DIR=/etc/redis
-echo "[redis] Installing redis server"
-sudo apt install -y redis-server
-echo "[redis] Setting supervised from no to systemd"
-sudo sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
-sudo systemctl restart redis.service
-echo "[redis] Done."
-
-echo "=== Initial setup Done! ==="
-echo "Please fill out the env vars inside mainframe/backend/.env"
-echo "then do '~/projects/mainframe/deploy/setup.sh requirements restart'"
+echo "then continue with ./deploy/initial.sh --continue"
+exit 0
