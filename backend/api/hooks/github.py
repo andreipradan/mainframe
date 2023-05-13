@@ -89,19 +89,21 @@ def mainframe(request):
     compare_message = (
         f" | <a target='_blank' href='{compare}'>diff</a>" if compare else ""
     )
-    send_telegram_message(
-        text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
-        parse_mode=telegram.ParseMode.HTML,
-    )
+    if event != "workflow_run":
+        send_telegram_message(
+            text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
+            parse_mode=telegram.ParseMode.HTML,
+        )
     if event == "ping":
         return HttpResponse("pong")
 
     elif event == "workflow_run":
+        action = " ".join(payload['action'].split("_")).title()
         wf_run = payload["workflow_run"]
-        conclusion = f" | {wf_run['conclusion']}" if wf_run['conclusion'] else ""
+        conclusion = f" - {wf_run['conclusion']}" if wf_run['conclusion'] else ""
         url = wf_run["html_url"]
         send_telegram_message(
-            text=f"{prefix} {payload['action']}{conclusion} | <a href='{url}'>Details</a>",
+            text=f"{prefix}[workflow] {action}{conclusion.title()} | <a href='{url}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
 
