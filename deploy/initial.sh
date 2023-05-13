@@ -44,7 +44,7 @@ else
   cat "${PROJECT_DIR}/deploy/.env" >> "$ENV_FILE";
 fi
 
-LOGS_DIR=/home/rpi/projects/logs/mainframe/backend
+LOGS_DIR=/home/rpi/projects/logs/mainframe
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path and backend.log file"
 if [ -d "${LOGS_DIR}" ]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path already exists";
