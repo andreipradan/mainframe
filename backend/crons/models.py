@@ -14,10 +14,10 @@ class Cron(TimeStampedModel):
     class Meta:
         unique_together = ("command", "expression")
 
-    def __str__(self):
+    def __repr__(self):
         return f"{self.command} - {self.expression}"
 
     @property
     def management_command(self):
         manage_path = settings.BASE_DIR / "manage.py"
-        return f"{settings.PYTHON_PATH} {manage_path} {self.command}"
+        return f"/usr/bin/flock -n /tmp/{self}.lockfile {settings.PYTHON_PATH} {manage_path} {self.command}"
