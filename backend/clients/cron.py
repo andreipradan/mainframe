@@ -32,7 +32,7 @@ def get_all_crons() -> List[Cron]:
         manage_path = str(settings.BASE_DIR / "manage.py")
         return list(
             Cron(
-                command=cron.unparse(),
+                command=Cron.unparse(cron.command),
                 expression=str(cron.slices),
                 is_active=cron.enabled,
                 is_management=manage_path in cron.command,
