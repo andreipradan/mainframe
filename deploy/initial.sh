@@ -51,6 +51,7 @@ if [ -d "${LOGS_DIR}" ]; then
 else
   sudo mkdir -p "${LOGS_DIR}/backend";
   sudo touch "${LOGS_DIR}/backend/backend.log";
+  sudo touch "${LOGS_DIR}/server.log";
   sudo chown -R rpi.rpi ${LOGS_DIR}
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path created"
 fi
