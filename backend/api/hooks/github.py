@@ -98,9 +98,9 @@ def mainframe(request):
         return HttpResponse("pong")
 
     elif event == "workflow_run":
-        action = " ".join(payload['action'].split("_")).title()
+        action = " ".join(payload["action"].split("_")).title()
         wf_run = payload["workflow_run"]
-        conclusion = f" - {wf_run['conclusion']}" if wf_run['conclusion'] else ""
+        conclusion = f" - {wf_run['conclusion']}" if wf_run["conclusion"] else ""
         url = wf_run["html_url"]
         send_telegram_message(
             text=f"{prefix}[workflow] {action}{conclusion.title()} | <a href='{url}'>Details</a>",
