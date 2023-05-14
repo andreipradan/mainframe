@@ -221,28 +221,18 @@ LOGGING = {
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+        "mainframe": {"class": "clients.logs.MainframeHandler", "formatter": "verbose"},
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "mainframe"],
             "propagate": False,
+            "level": "INFO",
         },
         "root": {
-            "handlers": ["console"],
+            "handlers": ["console", "mainframe"],
             "level": "INFO",
             "propagate": False,
         },
     },
 }
-
-if ENV != "local":
-    LOGGING["handlers"]["file"] = {
-        "level": "INFO",
-        "class": "logging.handlers.TimedRotatingFileHandler",
-        "filename": LOGS_DIR / "backend" / "backend.log",
-        "when": "midnight",  # this specifies the interval
-        "interval": 1,  # defaults to 1, only necessary for other values
-        "backupCount": 10,  # how many backup file to keep, 10 days
-        "formatter": "verbose",
-    }
-    LOGGING["loggers"]["django"]["handlers"].append("file")

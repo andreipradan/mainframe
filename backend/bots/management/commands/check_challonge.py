@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
-from clients.logs import get_handler
+from clients.logs import ManagementCommandsHandler
 
 
 def check_open_matches(client, logger):
@@ -61,7 +61,7 @@ def check_open_matches(client, logger):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler("management"))
+        logger.addHandler(ManagementCommandsHandler())
         tournament = TournamentClient(environ.Env()("CHALLONGE_BOT_TOKEN"))
         try:
             if not tournament.is_started:

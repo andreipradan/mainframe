@@ -10,7 +10,7 @@ from django.db import IntegrityError
 
 from clients.cron import remove_crons_for_command
 from clients.chat import send_telegram_message
-from clients.logs import get_handler
+from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 from transactions.models import Transaction
 
@@ -42,7 +42,7 @@ def normalize(transaction):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler("management"))
+        logger.addHandler(ManagementCommandsHandler())
 
         logger.info("Importing transactions")
         now = datetime.now()

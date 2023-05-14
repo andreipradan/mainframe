@@ -10,10 +10,10 @@ from requests.exceptions import ConnectionError
 
 from bots.models import Bot
 from clients.chat import send_telegram_message
-from clients.logs import get_handler
+from clients.logs import ManagementCommandsHandler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_handler("management"))
+logger.addHandler(ManagementCommandsHandler())
 
 
 def get_ngrok_url(name="mainframe"):
