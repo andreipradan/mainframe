@@ -22,6 +22,7 @@ logger.addHandler(get_handler("management"))
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+
         logger.info("Checking today's sport events")
         try:
             bot = Bot.objects.get(additional_data__sport_events__isnull=False)
