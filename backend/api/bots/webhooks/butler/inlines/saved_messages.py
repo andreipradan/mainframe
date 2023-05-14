@@ -1,6 +1,7 @@
 import logging
 import math
 
+from pymongo.errors import ConfigurationError
 from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines
@@ -79,9 +80,13 @@ class SavedMessagesInlines(BaseInlines):
         )
 
     def start(self, update, page=None):
-        count = database.get_collection("saved-messages").count_documents(
-            {"chat_id": self.chat_id}
-        )
+        try:
+            count = database.get_collection("saved-messages").count_documents(
+                {"chat_id": self.chat_id}
+            )
+        except ConfigurationError as e:
+            return update.message.reply_text(f"Got an error: {str(e)}")
+
         logger.info(f"Counted {count} documents")
         last_page = math.ceil(count / self.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a message [{page} / {total}]"
