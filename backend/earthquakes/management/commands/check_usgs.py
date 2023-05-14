@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 import pytz
 import requests
 
-from clients.logs import get_handler
+from clients.logs import ManagementCommandsHandler
 from earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand):
     logger = logging.getLogger(__name__)
-    logger.addHandler(get_handler("management"))
+    logger.addHandler(ManagementCommandsHandler())
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 

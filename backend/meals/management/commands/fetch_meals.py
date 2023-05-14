@@ -1,7 +1,7 @@
 import logging
 from django.core.management.base import BaseCommand, CommandError
 
-from clients.logs import get_handler
+from clients.logs import ManagementCommandsHandler
 from clients.meals import MealsClient, FetchMealsException
 from clients.chat import send_telegram_message
 
@@ -9,7 +9,7 @@ from clients.chat import send_telegram_message
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler("management"))
+        logger.addHandler(ManagementCommandsHandler())
 
         logger.info("Fetching menu for the next month")
         try:
