@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(get_handler("management"))
 
 
-def get_ngrok_url(name):
+def get_ngrok_url(name="mainframe"):
     logger.info("Getting ngrok tunnels")
     resp = requests.get("http://localhost:4040/api/tunnels").json()
     for tunnel in resp["tunnels"]:
