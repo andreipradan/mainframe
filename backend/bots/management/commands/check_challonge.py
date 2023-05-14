@@ -9,13 +9,10 @@ from django.core.management.base import BaseCommand
 
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
-from core.settings import get_file_handler
-
-logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+from clients.logs import get_handler
 
 
-def check_open_matches(client):
+def check_open_matches(client, logger):
     timezone = pytz.timezone("Europe/Bucharest")
     now = datetime.now().astimezone(timezone)
     if (now.weekday(), now.astimezone(timezone).strftime("%H:%M")) != (
@@ -64,6 +61,9 @@ def check_open_matches(client):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+
+        logger = logging.getLogger(__name__)
+        logger.addHandler(get_handler(Path(__file__).stem))
         tournament = TournamentClient(environ.Env()("CHALLONGE_BOT_TOKEN"))
         try:
             if not tournament.is_started:
@@ -71,7 +71,7 @@ class Command(BaseCommand):
         except requests.exceptions.HTTPError:
             return ""
 
-        check_open_matches(tournament)
+        check_open_matches(tournament, logger)
 
         db_matches = {
             m["id"]: m for m in database.filter_by_ids(list(tournament.matches))

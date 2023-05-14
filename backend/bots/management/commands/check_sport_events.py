@@ -15,14 +15,15 @@ from bs4 import BeautifulSoup
 from django.core.management import BaseCommand, CommandError
 
 from bots.models import Bot
-from core.settings import get_file_handler
+from clients.logs import get_handler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+logger.addHandler(get_handler(Path(__file__).stem))
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+
         logger.info("Checking today's sport events")
         try:
             bot = Bot.objects.get(additional_data__sport_events__isnull=False)

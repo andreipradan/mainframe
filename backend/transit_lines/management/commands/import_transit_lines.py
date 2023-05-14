@@ -5,17 +5,17 @@ from django.core.management.base import BaseCommand, CommandError
 
 from clients.ctp import CTPClient, FetchTransitLinesException
 from clients.chat import send_telegram_message
-from core.settings import get_file_handler
+from clients.logs import get_handler
 from transit_lines.models import TransitLine, Schedule
-
-logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        logger = logging.getLogger(__name__)
+        logger.addHandler(get_handler(Path(__file__).stem))
+
         logger.info("Importing transit lines")
 
         lines = []

@@ -5,14 +5,14 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
-from core.settings import get_file_handler
-
-logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+from clients.logs import get_handler
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        logger = logging.getLogger(__name__)
+        logger.addHandler(get_handler(Path(__file__).stem))
+
         logger.info("Checking who's next")
         bot = Bot.objects.get(additional_data__whos_next__isnull=False)
 

@@ -2,16 +2,16 @@ import logging
 from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
+from clients.logs import get_handler
 from clients.meals import MealsClient, FetchMealsException
 from clients.chat import send_telegram_message
-from core.settings import get_file_handler
-
-logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        logger = logging.getLogger(__name__)
+        logger.addHandler(get_handler(Path(__file__).stem))
+
         logger.info("Fetching menu for the next month")
         try:
             meals = MealsClient.fetch_meals()
