@@ -2,7 +2,6 @@ import json
 import logging
 import random
 from datetime import datetime, timedelta
-from pathlib import Path
 from random import randrange
 
 import environ
@@ -25,7 +24,7 @@ def get_tomorrow_run() -> datetime:
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler(Path(__file__).stem))
+        logger.addHandler(get_handler("management"))
 
         config = environ.Env()
         logger.info("It's time to take a picture...")

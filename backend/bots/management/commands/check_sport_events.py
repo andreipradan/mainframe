@@ -4,7 +4,6 @@ import logging
 import math
 
 from datetime import datetime
-from pathlib import Path
 from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
@@ -18,7 +17,7 @@ from bots.models import Bot
 from clients.logs import get_handler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_handler(Path(__file__).stem))
+logger.addHandler(get_handler("management"))
 
 
 class Command(BaseCommand):

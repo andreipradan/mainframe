@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from pathlib import Path
 
 import pytz
 import requests
@@ -13,7 +12,7 @@ from earthquakes.models import Earthquake
 
 class Command(BaseEarthquakeCommand):
     logger = logging.getLogger(__name__)
-    logger.addHandler(get_handler(Path(__file__).stem))
+    logger.addHandler(get_handler("management"))
     source = Earthquake.SOURCE_INFP
     url = "https://dataportal.infp.ro/?proximityMax=2"
 

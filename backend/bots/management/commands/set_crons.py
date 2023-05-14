@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from django.core.management.base import BaseCommand
 
@@ -13,7 +12,7 @@ from crons.models import Cron
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler(Path(__file__).stem))
+        logger.addHandler(get_handler("management"))
 
         logger.info(f"[Crons] Setting")
         crons = Cron.objects.filter(is_active=True)

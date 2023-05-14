@@ -42,7 +42,7 @@ def normalize(transaction):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler(Path(__file__).stem))
+        logger.addHandler(get_handler("management"))
 
         logger.info("Importing transactions")
         now = datetime.now()
