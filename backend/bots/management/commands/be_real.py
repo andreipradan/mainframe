@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 
 from clients.cron import set_crons
 from clients.chat import send_telegram_message
-from clients.logs import get_handler
+from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 
 
@@ -24,7 +24,7 @@ def get_tomorrow_run() -> datetime:
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler("management"))
+        logger.addHandler(ManagementCommandsHandler())
 
         config = environ.Env()
         logger.info("It's time to take a picture...")
