@@ -14,7 +14,7 @@ ExecStartPost=/usr/bin/timeout 60 sh -c \
     echo "Success"; \
     /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_hooks'
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[ngrok]] down
-Restart=on-success
+Restart=on-failure
 TimeoutSec=900
 
 [Install]
