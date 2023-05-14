@@ -16,7 +16,7 @@ def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="
             parse_mode=getattr(telegram.ParseMode, parse_mode, "HTML"),
         ).to_json()
     except telegram.error.BadRequest as e:
-        logging.exception(e)
+        logging.error(e)
         return e.message
 
 
