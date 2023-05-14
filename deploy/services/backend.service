@@ -1,5 +1,7 @@
 [Unit]
 Description=django backend server
+StartLimitBurst=5
+StartLimitIntervalSec=1d
 
 [Service]
 User=rpi

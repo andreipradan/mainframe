@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from pathlib import Path
 
 import environ
 import pytz
@@ -62,7 +61,7 @@ def check_open_matches(client, logger):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler(Path(__file__).stem))
+        logger.addHandler(get_handler("management"))
         tournament = TournamentClient(environ.Env()("CHALLONGE_BOT_TOKEN"))
         try:
             if not tournament.is_started:

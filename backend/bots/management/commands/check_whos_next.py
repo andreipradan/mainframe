@@ -1,6 +1,5 @@
 import logging
 import datetime
-from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -11,7 +10,7 @@ from clients.logs import get_handler
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler(Path(__file__).stem))
+        logger.addHandler(get_handler("management"))
 
         logger.info("Checking who's next")
         bot = Bot.objects.get(additional_data__whos_next__isnull=False)

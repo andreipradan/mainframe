@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -14,7 +13,7 @@ DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        logger.addHandler(get_handler(Path(__file__).stem))
+        logger.addHandler(get_handler("management"))
 
         logger.info("Importing transit lines")
 

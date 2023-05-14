@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 import environ
 import github
@@ -14,7 +13,7 @@ from clients.chat import send_telegram_message
 from clients.logs import get_handler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_handler(Path(__file__).stem))
+logger.addHandler(get_handler("management"))
 
 
 def get_ngrok_url(name):

@@ -1,6 +1,8 @@
 [Unit]
-Description=Ngrok public URL service
 After=backend.service
+Description=Ngrok public URL service
+StartLimitBurst=5
+StartLimitIntervalSec=1d
 
 [Service]
 User=rpi
