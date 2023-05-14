@@ -230,7 +230,7 @@ LOGGING = {
             "level": "INFO",
         },
         "root": {
-            "handlers": ["console"],
+            "handlers": ["console", "mainframe"],
             "level": "INFO",
             "propagate": False,
         },
