@@ -3,8 +3,10 @@ import logging
 import telegram
 from rest_framework import serializers
 from bots.models import Bot
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class BotSerializer(serializers.ModelSerializer):

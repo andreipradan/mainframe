@@ -10,9 +10,11 @@ from clients.chat import edit_message
 from datetime import datetime
 
 from clients.ctp import LINE_TYPES, CTPClient
+from clients.logs import MainframeHandler
 from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def get_next_time(times: List[str], now):

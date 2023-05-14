@@ -7,6 +7,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from api.bots.serializers import BotSerializer
 from bots.models import Bot
+from clients.logs import MainframeHandler
+
+logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class BotViewSet(viewsets.ModelViewSet):

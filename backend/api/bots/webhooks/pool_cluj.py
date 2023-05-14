@@ -8,8 +8,10 @@ from api.bots.webhooks.shared import reply
 from api.bots.webhooks.shared import validate_message
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def get_stats_from_user(user):

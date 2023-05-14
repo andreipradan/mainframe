@@ -18,10 +18,12 @@ from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
 from bots.models import Bot
 from clients import cron
+from clients.logs import MainframeHandler
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def call(data, instance: Bot):
