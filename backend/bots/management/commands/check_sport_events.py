@@ -23,7 +23,6 @@ logger.addHandler(get_handler(Path(__file__).stem))
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
         logger.info("Checking today's sport events")
         try:
             bot = Bot.objects.get(additional_data__sport_events__isnull=False)
