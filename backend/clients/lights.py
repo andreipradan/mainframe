@@ -1,8 +1,5 @@
-import logging
 import operator
 import yeelight
-
-logger = logging.getLogger(__name__)
 
 
 class LightsException(Exception):
@@ -34,7 +31,6 @@ class LightsClient:
     @classmethod
     def set_rgb(cls, ip, rgb):
         bulb = yeelight.Bulb(ip, auto_on=True)
-        logger.info(f"setting rgb to: {rgb}")
         try:
             return bulb.set_rgb(*rgb)
         except yeelight.main.BulbException as e:

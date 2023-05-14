@@ -4,8 +4,10 @@ import environ
 from bson.objectid import ObjectId
 from pymongo import MongoClient, UpdateOne
 
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def bulk_update(requests, collection="matches"):

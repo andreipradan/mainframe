@@ -1,9 +1,6 @@
-import logging
-
 from rest_framework import serializers
-from meals.models import Meal
 
-logger = logging.getLogger(__name__)
+from meals.models import Meal
 
 
 class MealSerializer(serializers.ModelSerializer):

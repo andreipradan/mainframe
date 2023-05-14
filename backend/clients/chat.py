@@ -4,7 +4,10 @@ import sys
 import dotenv
 import telegram
 
+from clients.logs import MainframeHandler
+
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML"):

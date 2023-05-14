@@ -7,6 +7,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from api.bots.serializers import BotSerializer
 from bots.models import Bot
+from clients.logs import MainframeHandler
+
+logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class BotViewSet(viewsets.ModelViewSet):
@@ -35,7 +39,7 @@ class BotViewSet(viewsets.ModelViewSet):
                 "message", request.data.get("callback_query", {})
             ).get("from", {})
         ):
-            logging.error("No user found in webhook data")
+            logger.error("No user found in webhook data")
             return JsonResponse(data={"status": "404"})
         if not any(
             (
@@ -43,13 +47,13 @@ class BotViewSet(viewsets.ModelViewSet):
                 str(user.get("id")) in instance.whitelist,
             )
         ):
-            logging.error("User not whitelisted")
+            logger.error("User not whitelisted")
             return JsonResponse(data={"status": "404"})
 
         try:
             instance.call(request.data)
         except ModuleNotFoundError:
-            logging.error(
+            logger.error(
                 f"Got a webhook call for '{instance}' with no associated webhook implementation"
             )
             return JsonResponse(data={"status": "404"})

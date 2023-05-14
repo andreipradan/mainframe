@@ -51,10 +51,8 @@ if ENV != "local":
         traces_sample_rate=1.0,
         send_default_pii=False,
     )
-    LOGS_DIR = Path(f"/home/{env('USERNAME')}/projects/logs/mainframe")
 else:
     ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
-    LOGS_DIR = BASE_DIR / "logs"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -225,7 +223,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "mainframe"],
+            "handlers": ["console"],
             "propagate": False,
             "level": "INFO",
         },
@@ -236,3 +234,5 @@ LOGGING = {
         },
     },
 }
+if ENV != "local":
+    LOGGING["loggers"]["django"]["handlers"].append("mainframe")

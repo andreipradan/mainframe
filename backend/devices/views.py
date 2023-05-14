@@ -6,10 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from api.hooks.github import run_cmd
+from clients.logs import MainframeHandler
 from devices.models import Device
 from devices.serializers import DeviceSerializer
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def add_zeros_to_mac(mac):

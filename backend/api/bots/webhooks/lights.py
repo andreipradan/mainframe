@@ -7,8 +7,10 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines
 from clients.lights import LightsClient, LightsException
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class Inlines(BaseInlines):

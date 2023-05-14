@@ -2,7 +2,10 @@ import logging
 import six
 import telegram
 
+from clients.logs import MainframeHandler
+
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class BaseInlines:

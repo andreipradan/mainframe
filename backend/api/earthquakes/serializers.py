@@ -1,9 +1,6 @@
-import logging
-
 from rest_framework import serializers
-from earthquakes.models import Earthquake
 
-logger = logging.getLogger(__name__)
+from earthquakes.models import Earthquake
 
 
 class EarthquakeSerializer(serializers.ModelSerializer):

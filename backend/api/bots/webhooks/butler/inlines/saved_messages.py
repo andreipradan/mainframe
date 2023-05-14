@@ -7,8 +7,10 @@ from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Key
 from api.bots.webhooks.shared import BaseInlines
 from bots.clients import mongo as database
 from clients.chat import edit_message
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class SavedMessagesInlines(BaseInlines):

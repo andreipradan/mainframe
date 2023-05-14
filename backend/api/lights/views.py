@@ -6,8 +6,10 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
 from clients.lights import LightsClient
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def get_list(request):

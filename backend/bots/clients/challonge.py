@@ -8,8 +8,10 @@ import requests
 import telegram
 
 from bots.clients import mongo as database
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 TIME_ZONE = "Europe/Bucharest"
 

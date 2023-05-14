@@ -18,10 +18,12 @@ from bots.clients import mongo as database
 from bots.management.commands.set_hooks import get_ngrok_url
 from bots.models import Bot
 from clients import cron
+from clients.logs import MainframeHandler
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def call(data, instance: Bot):
@@ -85,7 +87,7 @@ def call(data, instance: Bot):
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")
 
     if str(from_user.username or from_user.id) not in instance.whitelist:
-        return logging.error(f"Ignoring message from: {user}")
+        return logger.error(f"Ignoring message from: {user}")
 
     if not message.text.startswith("/"):
         return logger.warning(f"Invalid command: '{message.text}'. From: {user}")
