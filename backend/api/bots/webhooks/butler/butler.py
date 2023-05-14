@@ -87,7 +87,7 @@ def call(data, instance: Bot):
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")
 
     if str(from_user.username or from_user.id) not in instance.whitelist:
-        return logging.error(f"Ignoring message from: {user}")
+        return logger.error(f"Ignoring message from: {user}")
 
     if not message.text.startswith("/"):
         return logger.warning(f"Invalid command: '{message.text}'. From: {user}")

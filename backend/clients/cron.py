@@ -6,10 +6,12 @@ import environ
 from crontab import CronTab
 from django.conf import settings
 
+from clients.logs import MainframeHandler
 from crons.models import Cron
 
 config = environ.Env()
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def delay(command, minutes=1, is_management=True):

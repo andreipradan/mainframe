@@ -16,8 +16,10 @@ from rest_framework.exceptions import MethodNotAllowed
 
 from clients import cron
 from clients.chat import send_telegram_message
+from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def run_cmd(cmd, prefix=None):

@@ -1,11 +1,7 @@
-import logging
-
 from crontab import CronTab
 from rest_framework import serializers
 
 from crons.models import Cron
-
-logger = logging.getLogger(__name__)
 
 
 class CronSerializer(serializers.ModelSerializer):

@@ -4,11 +4,13 @@ import math
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 from api.bots.webhooks.shared import BaseInlines, chunks
+from clients.logs import MainframeHandler
 from clients.meals import MealsClient
 from clients.chat import edit_message
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def parse_meal(item: Meal):

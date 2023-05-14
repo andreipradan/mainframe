@@ -1,9 +1,6 @@
-import logging
-
 from rest_framework import serializers
-from transactions.models import Transaction
 
-logger = logging.getLogger(__name__)
+from transactions.models import Transaction
 
 
 class TransactionSerializer(serializers.ModelSerializer):

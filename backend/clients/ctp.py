@@ -7,9 +7,11 @@ import logging
 from typing import List, Optional
 
 from clients import scraper
+from clients.logs import MainframeHandler
 from transit_lines.models import TransitLine, Schedule
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class FetchTransitLinesException(Exception):

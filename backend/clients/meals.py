@@ -8,9 +8,11 @@ import aiohttp
 from bs4 import BeautifulSoup
 from django.core.signing import Signer
 
+from clients.logs import MainframeHandler
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 TYPE_MAPPING = {
     "mic dejun": Meal.TYPE_BREAKFAST,
