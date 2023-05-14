@@ -6,14 +6,14 @@ import pytz
 import requests
 from bs4 import BeautifulSoup
 
-from core.settings import get_file_handler
+from clients.logs import get_handler
 from earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand):
     logger = logging.getLogger(__name__)
-    logger.addHandler(get_file_handler(Path(__file__).stem))
+    logger.addHandler(get_handler(Path(__file__).stem))
     source = Earthquake.SOURCE_INFP
     url = "https://dataportal.infp.ro/?proximityMax=2"
 

@@ -116,7 +116,7 @@ def call(data, instance: Bot):
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
 
     if cmd == "mainframe":
-        url = get_ngrok_url()
+        url = get_ngrok_url(cmd)
         return reply(update, text=url or "Could not find mainframe URL")
 
     if cmd == "meals":

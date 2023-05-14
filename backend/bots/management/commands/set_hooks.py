@@ -10,17 +10,14 @@ from django.core.management.base import BaseCommand, CommandError
 from requests.exceptions import ConnectionError
 
 from bots.models import Bot
-from clients import healthchecks
-from clients.cron import set_crons
 from clients.chat import send_telegram_message
-from core.settings import get_file_handler
-from crons.models import Cron
+from clients.logs import get_handler
 
 logger = logging.getLogger(__name__)
-logger.addHandler(get_file_handler(Path(__file__).stem))
+logger.addHandler(get_handler(Path(__file__).stem))
 
 
-def get_ngrok_url(name="mainframe"):
+def get_ngrok_url(name):
     logger.info("Getting ngrok tunnels")
     resp = requests.get("http://localhost:4040/api/tunnels").json()
     for tunnel in resp["tunnels"]:
