@@ -61,7 +61,6 @@ def check_open_matches(client, logger):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-
         logger = logging.getLogger(__name__)
         logger.addHandler(get_handler(Path(__file__).stem))
         tournament = TournamentClient(environ.Env()("CHALLONGE_BOT_TOKEN"))
