@@ -25,14 +25,16 @@ def get_magnitude_icon(magnitude):
         return "🔴"
 
 
-def parse_event(event):
+def parse_event(event: Earthquake):
+    icon = get_magnitude_icon(event.magnitude)
+    intensity = f"Intensity: {event.intensity}" if event.intensity else ""
     return (
-        f"<b>{get_magnitude_icon(event.magnitude)} {event.magnitude}</b>"
-        f" - {event.location}\n"
-        f"{event.timestamp}\n"
-        f"Depth: {event.depth}\n"
-        + (f"Intensity: {event.intensity}\n" if event.intensity else "")
-        + f"{event.url}"
+        f"{icon} <b>Earthquake alert</b>\n"
+        f"Magnitude: <b>{event.magnitude}</b>\n"
+        f"Location: <a href='{event.url}'>{event.location}</a>\n\n"
+        f"Depth: {event.depth} km\n"
+        f"{intensity}\n"
+        f"Time: {event.timestamp}"
     )
 
 
