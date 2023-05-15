@@ -58,14 +58,13 @@ class Command(BaseCommand):
         if not ngrok_url:
             raise CommandError("Tunnel 'mainframe' not found")
 
-        logger.info("[Hooks][GitHub] Setting hook")
+        set_github_hook(ngrok_url)
         logger.info(f"[Hooks][GitHub] Done")
-        logger.info("[Hooks][Telegram] Setting hooks")
         for bot in Bot.objects.filter(is_active=True):
             url = f"{ngrok_url}/api/bots/{bot.id}/webhook/"
             try:
                 response = bot.telegram_bot.set_webhook(url)
-                logger.info(f"[Hooks][Telegram] {bot.full_name}: {response}")
+                logger.info(f"[Hooks][Telegram] {bot.full_name}: {'✅' if response else '❌'}")
             except telegram.error.TelegramError as e:
                 logger.error(str(e))
         logger.info("[Hooks] Done")

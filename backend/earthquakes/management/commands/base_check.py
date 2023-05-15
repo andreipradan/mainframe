@@ -7,6 +7,7 @@ from django.core.management import CommandError, BaseCommand
 from django.db import OperationalError
 
 from bots.models import Bot
+from clients.chat import send_telegram_message
 from earthquakes.models import Earthquake
 
 DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
@@ -41,8 +42,6 @@ class BaseEarthquakeCommand(BaseCommand):
     url = NotImplemented
 
     def handle(self, *args, **options):
-        self.logger.info(f"Checking...")
-
         try:
             response = self.fetch(**options)
             response.raise_for_status()
@@ -63,9 +62,8 @@ class BaseEarthquakeCommand(BaseCommand):
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
             self.set_last_check(instance)
-            return self.logger.warning("No events found!")
+            return self.logger.info("No events found!")
 
-        self.logger.info(f"Saving {len(events)}.")
         Earthquake.objects.bulk_create(
             events,
             update_conflicts=True,
@@ -81,30 +79,22 @@ class BaseEarthquakeCommand(BaseCommand):
         )
 
         earthquake_config = instance.additional_data["earthquake"]
-        if min_magnitude := earthquake_config.get("min_magnitude"):
-            self.logger.info(f"Filtering by min magnitude: {min_magnitude}")
-            events = [
-                event
-                for event in events
-                if float(event.magnitude) >= float(min_magnitude)
-            ]
-        else:
-            self.logger.info("No min magnitude set")
+        min_magnitude = earthquake_config["min_magnitude"]
+        events = [
+            event
+            for event in events
+            if float(event.magnitude) >= float(min_magnitude)
+        ]
 
+        self.logger.info(f"Got {len(events)} events with magnitude >= {min_magnitude}")
         if len(events):
-            self.logger.info(f"Got {len(events)} events. Sending to telegram...")
-            try:
-                instance.send_message(
-                    chat_id=earthquake_config["chat_id"],
-                    text="\n\n".join(parse_event(event) for event in events),
-                    parse_mode=telegram.ParseMode.HTML,
-                )
-            except telegram.error.TelegramError as te:
-                self.logger.error(str(te))
-        else:
-            self.logger.info(f"No new events > {min_magnitude} ML")
+            send_telegram_message(
+                text="\n\n".join(parse_event(event) for event in events),
+                parse_mode=telegram.ParseMode.HTML,
+            )
 
         self.set_last_check(instance)
+        self.logger.info(f"Done")
         self.stdout.write(self.style.SUCCESS("Done."))
 
     def fetch(self, **options):
