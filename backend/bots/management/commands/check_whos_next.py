@@ -35,8 +35,6 @@ class Command(BaseCommand):
         next_person = post_order[(tomorrow - start_date).days % 3]
 
         msg = f"Se pregătește pentru mâine: {next_person}"
-        logger.info(msg)
-
         bot.send_message(
             chat_id=chat_id,
             text=msg,
