@@ -4,11 +4,6 @@ import sys
 import dotenv
 import telegram
 
-from clients.logs import MainframeHandler
-
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
-
 
 def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML"):
     try:
@@ -21,7 +16,7 @@ def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="
             parse_mode=getattr(telegram.ParseMode, parse_mode, "HTML"),
         ).to_json()
     except telegram.error.BadRequest as e:
-        logger.error(e)
+        logging.error(e)
         return e.message
 
 
@@ -38,7 +33,7 @@ def send_telegram_message(text, **kwargs):
     try:
         return bot.send_message(text=text, **bot_kwargs)
     except telegram.error.TelegramError as e:
-        logger.error(str(e))
+        logging.error(str(e))
 
 
 if __name__ == "__main__":
