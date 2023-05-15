@@ -43,12 +43,14 @@ class CameraViewSet(viewsets.ViewSet):
         path = request.GET.get("path")
         kwargs = {}
         if path:
-            kwargs.update({
-                "prefix": path,
-                "delimiter": "/",
-            })
+            kwargs.update(
+                {
+                    "prefix": path,
+                    "delimiter": "/",
+                }
+            )
         blobs = storage_client.list_blobs(config("GOOGLE_STORAGE_BUCKET"), **kwargs)
-        results = (sorted(
+        results = sorted(
             [
                 {
                     "name": blob.name,
@@ -57,7 +59,7 @@ class CameraViewSet(viewsets.ViewSet):
                 for blob in blobs
             ],
             key=itemgetter("name"),
-        ))
+        )
         return JsonResponse(
             {
                 "path": path or "/",
@@ -74,7 +76,7 @@ class CameraViewSet(viewsets.ViewSet):
         camera = PiCamera()
         camera.start_preview()
         sleep(2)
-        camera.capture(my_stream, 'jpeg')
+        camera.capture(my_stream, "jpeg")
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         upload_blob_from_stream(my_stream, filename)
         return JsonResponse(status=201, data={"filename": filename})
