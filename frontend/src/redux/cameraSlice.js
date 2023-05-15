@@ -1,19 +1,33 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-export const livecamSlice = createSlice({
+export const cameraSlice = createSlice({
   name: "livecam",
   initialState: {
     alertOpen: false,
+    currentFile: null,
     errors: null,
     loading: false,
+    path: null,
     results: null,
   },
   reducers: {
     add: (state, action) => {
       state.results = state.results ? [...state.results, action.payload] : [action.payload]
     },
+    set: (state, action) => {
+      state.currentFile = null
+      state.errors = null
+      state.loading = false
+      state.path = action.payload.path;
+      state.results = action.payload.results;
+    },
     setAlertOpen: (state, action) => {
       state.alertOpen = action.payload
+    },
+    setCurrentFile: (state, action) => {
+      state.errors = null
+      state.loading = false
+      state.currentFile = action.payload
     },
     setErrors: (state, action) => {
       state.errors = action.payload;
@@ -26,7 +40,7 @@ export const livecamSlice = createSlice({
   },
 });
 
-export const { add, setAlertOpen, setErrors, setLoading, setSocketOpen } =
-  livecamSlice.actions;
+export const { add, set, setAlertOpen, setCurrentFile, setErrors, setLoading } =
+  cameraSlice.actions;
 
-export default livecamSlice.reducer;
+export default cameraSlice.reducer;

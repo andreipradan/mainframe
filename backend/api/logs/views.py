@@ -16,8 +16,8 @@ def get_list(request):
         try:
             with open(root + filename, "r") as file:
                 return FileResponse(file.read())
-        except UnicodeDecodeError as e:
-            return JsonResponse(status=400, data={"Decode Error": str(e)})
+        except (PermissionError, UnicodeDecodeError) as e:
+            return JsonResponse(status=400, data={"error": str(e)})
 
     path = request.GET.get("path")
     return JsonResponse(

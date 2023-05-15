@@ -5,7 +5,7 @@ import Spinner from '../app/shared/Spinner';
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
-const Livecam = lazy(() => import ("./apps/Livecam"));
+const Camera = lazy(() => import ("./apps/Camera"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
 const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
@@ -39,7 +39,7 @@ class AppRoutes extends Component {
       <Suspense fallback={<Spinner/>}>
         <Switch>
           <Route exact path="/dashboard" component={ Dashboard } />
-          <Route exact path="/apps/livecam" component={ Livecam } />
+          <Route exact path="/apps/camera" component={ Camera } />
           <Route exact path="/apps/expenses" component={ Expenses } />
           <Route exact path="/apps/todo" component={ Todo } />
           <Route exact path="/bots" component={ Bots } />
