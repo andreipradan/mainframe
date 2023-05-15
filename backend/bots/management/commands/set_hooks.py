@@ -64,7 +64,9 @@ class Command(BaseCommand):
             url = f"{ngrok_url}/api/bots/{bot.id}/webhook/"
             try:
                 response = bot.telegram_bot.set_webhook(url)
-                logger.info(f"[Hooks][Telegram] {bot.full_name}: {'✅' if response else '❌'}")
+                logger.info(
+                    f"[Hooks][Telegram] {bot.full_name}: {'✅' if response else '❌'}"
+                )
             except telegram.error.TelegramError as e:
                 logger.error(str(e))
         logger.info("[Hooks] Done")
