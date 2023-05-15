@@ -45,12 +45,11 @@ else
 fi
 
 LOGS_DIR=/home/rpi/projects/logs/mainframe
-echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path and backend.log file"
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path"
 if [ -d "${LOGS_DIR}" ]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path already exists";
 else
-  sudo mkdir -p "${LOGS_DIR}/backend";
-  sudo touch "${LOGS_DIR}/backend/backend.log";
+  sudo mkdir -p "${LOGS_DIR}";
   sudo touch "${LOGS_DIR}/server.log";
   sudo chown -R rpi.rpi ${LOGS_DIR}
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path created"
