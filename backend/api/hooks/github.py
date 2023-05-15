@@ -84,16 +84,16 @@ def mainframe(request):
 
     payload = json.loads(request.body)
     branch = payload.get("ref", "").replace("refs/heads/", "")
-    branch_message = f" on <b>{branch}</b> branch" if branch else ""
+    branch_message = f"\nBranch: {branch}" if branch else ""
     pusher = payload.get("pusher", {}).get("name", "")
-    pusher_message = f" from {pusher}" if pusher else ""
+    author = f"\nAuthor: {pusher}" if pusher else ""
     compare = payload.get("compare", "")
     compare_message = (
-        f" | <a target='_blank' href='{compare}'>diff</a>" if compare else ""
+        f"\n<a target='_blank' href='{compare}'>Compare</a>" if compare else ""
     )
     if event != "workflow_run":
         send_telegram_message(
-            text=f"{prefix} Got a '{event}' event{branch_message}{pusher_message}{compare_message}",
+            text=f"{prefix}[Event] <b>{event}</b>{branch_message}{author}{compare_message}",
             parse_mode=telegram.ParseMode.HTML,
         )
     if event == "ping":
@@ -102,10 +102,16 @@ def mainframe(request):
     elif event == "workflow_run":
         action = " ".join(payload["action"].split("_")).title()
         wf_run = payload["workflow_run"]
-        conclusion = f" - {wf_run['conclusion']}" if wf_run["conclusion"] else ""
-        url = wf_run["html_url"]
+        conclusion = (
+            f"\nConclusion: {wf_run['conclusion'].title()}"
+            if wf_run["conclusion"]
+            else ""
+        )
         send_telegram_message(
-            text=f"{prefix}[workflow][{wf_run['name']} #{wf_run['run_number']}] {action}{conclusion.title()} on {wf_run['head_branch']} | <a href='{url}'>Details</a>",
+            text=f"{prefix}[Action] {wf_run['name']} (#{wf_run['run_number']})"
+            f"\nStatus: {action}{conclusion}"
+            f"\nBranch: {wf_run['head_branch']}"
+            f"\n<a href='{wf_run['html_url']}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
 
