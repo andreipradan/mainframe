@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
+import cameraReducer from "./cameraSlice";
 import cronsReducer from "../redux/cronsSlice"
 import devicesReducer from "../redux/devicesSlice"
 import earthquakesReducer from "../redux/earthquakesSlice"
 import lightsReducer from "../redux/lightsSlice";
-import livecamReducer from "../redux/livecamSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
 import transactionsReducer from "../redux/transactionsSlice";
@@ -14,11 +14,11 @@ export default configureStore({
   reducer: {
     auth: authReducer,
     bots: botReducer,
+    camera: cameraReducer,
     crons: cronsReducer,
     devices: devicesReducer,
     earthquakes: earthquakesReducer,
     lights: lightsReducer,
-    livecam: livecamReducer,
     logs: logsReducer,
     meals: mealsReducer,
     transactions: transactionsReducer,

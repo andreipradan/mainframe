@@ -134,8 +134,8 @@ class Sidebar extends Component {
               <div>
                 <ul className="nav flex-column sub-menu">
                   <li className="nav-item">
-                    <Link className={ this.isPathActive('/apps/livecam') ? 'nav-link active' : 'nav-link' } to="/apps/livecam">
-                      <Trans>Live Cam</Trans>
+                    <Link className={ this.isPathActive('/apps/camera') ? 'nav-link active' : 'nav-link' } to="/apps/camera">
+                      <Trans>Camera</Trans>
                     </Link>
                   </li>
                   <li className="nav-item">

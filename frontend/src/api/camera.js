@@ -1,16 +1,37 @@
 import axios from "./index";
 import {
+  set,
+  setCurrentFile,
   setErrors,
   setLoading,
-} from "../redux/livecamSlice";
+} from "../redux/cameraSlice";
 import {handleErrors} from "./errors";
 
 
 class CameraApi {
-  static streaming = (token, action) => dispatch => {
+  static getFile = (token, filename) => dispatch => {
     dispatch(setLoading(true));
     axios
-      .post(`${base}/streaming/`, {"action": action}, { headers: { Authorization: token } })
+      .get(`${base}/file/?filename=${filename}`, {
+        headers: { Authorization: token },
+        responseType: 'arraybuffer',
+      })
+      .then((response) => {
+        dispatch(setCurrentFile({contents: Buffer.from(response.data, "binary").toString("base64"), name: filename}))
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static getList = (token, page = null) => (dispatch) => {
+    dispatch(setLoading(true));
+    axios
+      .get(`${base}/?page=${page || 1}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static takePicture = (token) => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/picture/`,{}, { headers: { Authorization: token } })
       .then(response => console.log(response.data))
       .catch(err => handleErrors(err, dispatch, setErrors));
   };
