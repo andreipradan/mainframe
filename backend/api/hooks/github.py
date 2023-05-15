@@ -148,7 +148,7 @@ def mainframe(request):
 
         send_telegram_message(text=msg)
 
-        logs_path = f"{settings.LOGS_DIR}/deploy/"
+        logs_path = f"/var/log/mainframe/deploy/"
         mkdir = f"mkdir -p {logs_path}`date +%Y`"
         output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
 
