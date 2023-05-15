@@ -83,9 +83,7 @@ class BaseEarthquakeCommand(BaseCommand):
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
         events = [
-            event
-            for event in events
-            if float(event.magnitude) >= float(min_magnitude)
+            event for event in events if float(event.magnitude) >= float(min_magnitude)
         ]
 
         self.logger.info(f"Got {len(events)} events with magnitude >= {min_magnitude}")
