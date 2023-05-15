@@ -44,13 +44,17 @@ class Command(BaseCommand):
 
         tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
         expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
-        cron = Cron(
-            command=f"be_real",
-            expression=expression,
-            is_active=True,
-            is_management=True,
+        Cron.objects.filter(command__contains="be_real").update(expression=expression)
+        set_crons(
+            [
+                Cron(
+                    command=f"be_real",
+                    expression=expression,
+                    is_active=True,
+                    is_management=True,
+                )
+            ]
         )
-        set_crons([cron])
         logger.info(
             f"Set next run and cron to {tomorrow_run.strftime('%H:%M %d.%m.%Y')}"
         )

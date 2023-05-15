@@ -55,7 +55,6 @@ def remove_crons_for_command(cron: Cron) -> None:
 
 
 def set_crons(crons: List[Cron], clear_all=False, replace=True):
-    logger.info(f"Setting crons")
     with CronTab(user=config("USERNAME")) as crontab:
         if clear_all:
             logger.warning("Clearing all existing crons")
