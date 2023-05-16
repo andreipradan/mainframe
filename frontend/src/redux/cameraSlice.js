@@ -12,7 +12,11 @@ export const cameraSlice = createSlice({
   },
   reducers: {
     add: (state, action) => {
-      state.results = state.results ? [...state.results, action.payload] : [action.payload]
+      state.errors = null
+      state.loading = false
+      state.results = state.results ? [...state.results, action.payload].sort((a, b) =>
+          a.name > b.name ? 1 : -1
+      ) : [action.payload]
     },
     set: (state, action) => {
       state.currentFile = null
