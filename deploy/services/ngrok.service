@@ -11,7 +11,7 @@ ExecStart=/usr/local/bin/ngrok start --all
 ExecStartPost=/usr/bin/timeout 60 sh -c \
     'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; \
         do sleep 1; \
-        echo "waiting for port 7777"; \
+        echo "Waiting for backend port"; \
     done; \
     echo "Success"; \
     /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_hooks'
