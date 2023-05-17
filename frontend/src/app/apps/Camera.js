@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, {useEffect, useState} from 'react'
 import {useDispatch, useSelector} from "react-redux";
 import { setAlertOpen } from "../../redux/cameraSlice";
 import CameraApi from "../../api/camera";
@@ -8,13 +8,24 @@ import {BallTriangle} from "react-loader-spinner";
 export const Camera = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results, errors, alertOpen, currentFile, loading, path } = useSelector(state => state.camera)
+  const {results, errors, alertOpen, loading, path } = useSelector(state => state.camera)
 
   useEffect(() => {
     !results && dispatch(CameraApi.getList(token));
   }, []);
 
   useEffect(() => {dispatch(setAlertOpen(!!errors))}, [errors])
+
+  const [currentImage, setCurrentImage] = useState(null)
+
+  const setImage = filename => {
+    const base = process.env.NODE_ENV === 'development'
+      ? "http://localhost:5678"
+      : `https://${window.location.hostname}`
+    setCurrentImage({
+      name: filename,
+      url: `${base}/static/media/${filename}`,
+  })}
 
   return <div>
     <div className="page-header">
@@ -40,7 +51,7 @@ export const Camera = () => {
             </h4>
 
             {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
-            <div className={`col-lg-${currentFile ? "4" : "12"} stretch-card`}>
+            <div className={`col-lg-${currentImage ? "4" : "12"} stretch-card`}>
               <div className="card">
                 <div className="card-body">
                   <h4 className="card-title">
@@ -78,7 +89,7 @@ export const Camera = () => {
                           />
                         : results?.map((result, i) =>
                           <li key={i} style={{cursor: "pointer"}} onClick={() =>
-                            dispatch(result.is_file ? CameraApi.getFile(token, result.name) : CameraApi.getList(token, result.name))}
+                            result.is_file ? setImage(result.name) : dispatch(CameraApi.getList(token, result.name))}
                           >
                             <i className={`mdi mdi-${result.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
                             {result.name.split("/")[result.name.split("/").length - 1]}
@@ -90,11 +101,11 @@ export const Camera = () => {
               </div>
             </div>
             {
-              currentFile && <div className="col-lg-8 grid-margin stretch-card">
+              <div className="col-lg-8 grid-margin stretch-card">
                 <div className="card">
                   <div className="card-body">
-                    <h4 className="card-title">Home{currentFile.name}</h4>
-                    <img src={`data:image/jpeg;charset=utf-8;base64,${currentFile.contents}`} alt={currentFile.name} />
+                    <h4 className="card-title">{currentImage?.name}</h4>
+                    <img src={currentImage?.url} alt={currentImage?.name} />
                   </div>
                 </div>
               </div>

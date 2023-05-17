@@ -2,7 +2,6 @@ import axios from "./index";
 import {
   add,
   set,
-  setCurrentFile,
   setErrors,
   setLoading,
 } from "../redux/cameraSlice";
@@ -10,18 +9,6 @@ import {handleErrors} from "./errors";
 
 
 class CameraApi {
-  static getFile = (token, filename) => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/file/?filename=${filename}`, {
-        headers: { Authorization: token },
-        responseType: 'arraybuffer',
-      })
-      .then((response) => {
-        dispatch(setCurrentFile({contents: Buffer.from(response.data, "binary").toString("base64"), name: filename}))
-      })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
   static getList = (token, page = null) => (dispatch) => {
     dispatch(setLoading(true));
     axios

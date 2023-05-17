@@ -4,7 +4,6 @@ export const cameraSlice = createSlice({
   name: "livecam",
   initialState: {
     alertOpen: false,
-    currentFile: null,
     errors: null,
     loading: false,
     path: null,
@@ -19,7 +18,6 @@ export const cameraSlice = createSlice({
       ) : [action.payload]
     },
     set: (state, action) => {
-      state.currentFile = null
       state.errors = null
       state.loading = false
       state.path = action.payload.path;
@@ -27,11 +25,6 @@ export const cameraSlice = createSlice({
     },
     setAlertOpen: (state, action) => {
       state.alertOpen = action.payload
-    },
-    setCurrentFile: (state, action) => {
-      state.errors = null
-      state.loading = false
-      state.currentFile = action.payload
     },
     setErrors: (state, action) => {
       state.errors = action.payload;
@@ -44,7 +37,7 @@ export const cameraSlice = createSlice({
   },
 });
 
-export const { add, set, setAlertOpen, setCurrentFile, setErrors, setLoading } =
+export const { add, set, setAlertOpen, setErrors, setLoading } =
   cameraSlice.actions;
 
 export default cameraSlice.reducer;
