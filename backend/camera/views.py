@@ -33,7 +33,9 @@ class CameraViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"], url_path=r"(?P<string>[\w\-.\w\-]+)")
     def file(self, request, filename):
-        return FileResponse(download_blob_into_memory(filename), content_type="image/jpeg")
+        return FileResponse(
+            download_blob_into_memory(filename), content_type="image/jpeg"
+        )
 
     def list(self, request):
         storage_client = storage.Client()
