@@ -9,10 +9,10 @@ import {handleErrors} from "./errors";
 
 
 class CameraApi {
-  static getList = (token, page = null) => (dispatch) => {
+  static getList = (token, path = null) => (dispatch) => {
     dispatch(setLoading(true));
     axios
-      .get(`${base}/?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}/` + (path ? `?path=${path}` : ""), { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };

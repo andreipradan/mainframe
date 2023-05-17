@@ -1,9 +1,8 @@
-from operator import itemgetter
-from pathlib import Path
-
 from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
+
+from clients.os import get_folder_contents
 
 
 @csrf_exempt
@@ -14,7 +13,7 @@ def get_list(request):
     root = "/var/log"
     if filename := request.GET.get("filename"):
         try:
-            with open(root + filename, "r") as file:
+            with open(f"{root}/{filename}", "r") as file:
                 return FileResponse(file.read())
         except (PermissionError, UnicodeDecodeError) as e:
             return JsonResponse(status=400, data={"error": str(e)})
@@ -23,16 +22,7 @@ def get_list(request):
     return JsonResponse(
         {
             "path": path or "/",
-            "results": sorted(
-                [
-                    {
-                        "name": str(item).replace(root, ""),
-                        "is_file": item.is_file(),
-                    }
-                    for item in Path((root + path) if path else root).iterdir()
-                ],
-                key=itemgetter("is_file", "name"),
-            ),
+            "results": get_folder_contents(f"{root}/{path or ''}"),
         },
         safe=False,
     )
