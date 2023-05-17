@@ -53,4 +53,5 @@ class CameraViewSet(viewsets.ViewSet):
         sleep(2)
         camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
+        camera.close()
         return JsonResponse(status=201, data={"filename": filename})
