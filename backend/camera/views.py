@@ -31,12 +31,11 @@ def upload_blob_from_stream(file_obj, destination_blob_name):
 class CameraViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
-    @action(detail=False, methods=["get"])
-    def file(self, request):
-        if not (filename := request.GET.get("filename")):
-            return JsonResponse(status=400, data={"error": "Invalid filename"})
-        file = download_blob_into_memory(filename)
-        return FileResponse(file, content_type="image/jpeg")
+    @action(detail=False, methods=["get"], url_path=r"(?P<string>[\w\-.\w\-]+)")
+    def file(self, request, filename):
+        return FileResponse(
+            download_blob_into_memory(filename), content_type="image/jpeg"
+        )
 
     def list(self, request):
         storage_client = storage.Client()
