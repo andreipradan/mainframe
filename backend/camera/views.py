@@ -1,15 +1,15 @@
 from datetime import datetime
-from io import BytesIO
-from operator import itemgetter
 from time import sleep
 
 import environ
-from django.http import FileResponse, JsonResponse
+from django.conf import settings
+from django.http import JsonResponse
 from google.cloud import storage
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
+from clients.os import get_folder_contents
 
 config = environ.Env()
 
@@ -29,38 +29,15 @@ def upload_blob_from_stream(file_obj, destination_blob_name):
 
 
 class CameraViewSet(viewsets.ViewSet):
+    base_path = settings.BASE_DIR / "build" / "static" / "media"
     permission_classes = (IsAuthenticated,)
 
-    @action(detail=False, methods=["get"], url_path=r"(?P<string>[\w\-.\w\-]+)")
-    def file(self, request, filename):
-        return FileResponse(download_blob_into_memory(filename), content_type="image/jpeg")
-
     def list(self, request):
-        storage_client = storage.Client()
         path = request.GET.get("path")
-        kwargs = {}
-        if path:
-            kwargs.update(
-                {
-                    "prefix": path,
-                    "delimiter": "/",
-                }
-            )
-        blobs = storage_client.list_blobs(config("GOOGLE_STORAGE_BUCKET"), **kwargs)
-        results = sorted(
-            [
-                {
-                    "name": blob.name,
-                    "is_file": True,
-                }
-                for blob in blobs
-            ],
-            key=itemgetter("name"),
-        )
         return JsonResponse(
             {
                 "path": path or "/",
-                "results": results,
+                "results": get_folder_contents(f"{self.base_path}/{path or ''}"),
             },
             safe=False,
         )
@@ -69,12 +46,11 @@ class CameraViewSet(viewsets.ViewSet):
     def picture(self, request):
         from picamera import PiCamera
 
-        my_stream = BytesIO()
+        filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
         camera.rotation = 270
         camera.start_preview()
         sleep(2)
-        camera.capture(my_stream, "jpeg")
-        filename = f"{datetime.utcnow().isoformat()}.jpg"
-        upload_blob_from_stream(my_stream, filename)
+        camera.capture(f'{self.base_path}/{filename}')
+        camera.stop_preview()
         return JsonResponse(status=201, data={"filename": filename})
