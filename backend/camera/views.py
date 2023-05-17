@@ -51,6 +51,6 @@ class CameraViewSet(viewsets.ViewSet):
         camera.rotation = 270
         camera.start_preview()
         sleep(2)
-        camera.capture(f'{self.base_path}/{filename}')
+        camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
         return JsonResponse(status=201, data={"filename": filename})
