@@ -39,7 +39,9 @@ def upload_blob(filename, destination):
     bucket = storage_client.bucket(config("GOOGLE_STORAGE_BUCKET"))
     blob = bucket.blob(destination)
     generation_match_precondition = 0
-    blob.upload_from_filename(filename, if_generation_match=generation_match_precondition)
+    blob.upload_from_filename(
+        filename, if_generation_match=generation_match_precondition
+    )
 
 
 class CameraViewSet(viewsets.ViewSet):
@@ -74,7 +76,12 @@ class CameraViewSet(viewsets.ViewSet):
     def upload(self, request):
         start = time()
         path = request.GET.get("path")
-        files = list(filter(lambda item: item["is_file"] is True, get_folder_contents(f"{self.base_path}/{path or ''}")))
+        files = list(
+            filter(
+                lambda item: item["is_file"] is True,
+                get_folder_contents(f"{self.base_path}/{path or ''}"),
+            )
+        )
         errors_count = 0
         for file in files:
             try:
@@ -84,7 +91,10 @@ class CameraViewSet(viewsets.ViewSet):
                 errors_count += 1
         return JsonResponse(
             {
-                "messages": [f"Successfully uploaded {len(files) - errors_count}", f"Duration: {time() - start}"],
+                "messages": [
+                    f"Successfully uploaded {len(files) - errors_count}",
+                    f"Duration: {time() - start}",
+                ],
                 "errors": [f"{errors_count} errors encountered. See logs"],
             },
             safe=False,
