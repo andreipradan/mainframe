@@ -52,6 +52,7 @@ class BaseEarthquakeCommand(BaseCommand):
             requests.exceptions.HTTPError,
             requests.exceptions.ReadTimeout,
         ) as e:
+            self.logger.error(str(e))
             raise CommandError(str(e))
 
         try:

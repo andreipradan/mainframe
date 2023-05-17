@@ -4,6 +4,7 @@ import {
   set,
   setErrors,
   setLoading,
+  upload,
 } from "../redux/cameraSlice";
 import {handleErrors} from "./errors";
 
@@ -21,6 +22,13 @@ class CameraApi {
     axios
       .put(`${base}/picture/`,{}, { headers: { Authorization: token } })
       .then(response => dispatch(add({"name": response.data.filename, "is_file": true})))
+      .catch(err => handleErrors(err, dispatch, setErrors));
+  };
+  static upload = (token) => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/upload/`,{}, { headers: { Authorization: token } })
+      .then(response => dispatch(upload(response.data)))
       .catch(err => handleErrors(err, dispatch, setErrors));
   };
 }

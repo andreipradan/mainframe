@@ -6,6 +6,8 @@ export const cameraSlice = createSlice({
     alertOpen: false,
     errors: null,
     loading: false,
+    messages: null,
+    messagesOpen: false,
     path: null,
     results: null,
   },
@@ -16,6 +18,7 @@ export const cameraSlice = createSlice({
       state.results = state.results ? [...state.results, action.payload].sort((a, b) =>
           a.name > b.name ? 1 : -1
       ) : [action.payload]
+      state.messages = [`"${action.payload}" created successfully!`]
     },
     set: (state, action) => {
       state.errors = null
@@ -26,18 +29,23 @@ export const cameraSlice = createSlice({
     setAlertOpen: (state, action) => {
       state.alertOpen = action.payload
     },
+    setMessagesOpen: (state, action) => {
+      state.messagesOpen = action.payload
+    },
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
     },
     setLoading: (state, action) => {state.loading = action.payload},
-    setSocketOpen: (state, action) => {
-      state.socketOpen = action.payload
+    upload: (state, action) => {
+      state.errors = action.payload.errors
+      state.loading = false
+      state.messages = [action.payload.messages]
     },
   },
 });
 
-export const { add, set, setAlertOpen, setErrors, setLoading } =
+export const { add, set, setAlertOpen, setErrors, setLoading, setMessagesOpen, upload } =
   cameraSlice.actions;
 
 export default cameraSlice.reducer;

@@ -1,8 +1,6 @@
 [Unit]
 After=backend.service
 Description=Ngrok public URL service
-StartLimitBurst=5
-StartLimitIntervalSec=1d
 
 [Service]
 User=rpi
@@ -14,6 +12,7 @@ ExecStartPost=/usr/bin/timeout 60 sh -c \
         echo "Waiting for backend port"; \
     done; \
     echo "Success"; \
+    sleep 3; \
     /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_hooks'
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[ngrok]] down
 Restart=on-failure
