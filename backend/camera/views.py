@@ -54,14 +54,14 @@ class IsAuthenticatedOrLocalNetwork(BasePermission):
     def has_permission(self, request, view):
         if bool(request.user and request.user.is_authenticated):
             return True
-        local_network = ipaddress.ip_network('192.168.0.0/16')
-        client_ip = ipaddress.ip_address(request.META['REMOTE_ADDR'])
-        is_local_network = client_ip in local_network or client_ip == ipaddress.ip_address(
-            "127.0.0.1"
+        local_network = ipaddress.ip_network("192.168.0.0/16")
+        client_ip = ipaddress.ip_address(request.META["REMOTE_ADDR"])
+        is_local_network = (
+            client_ip in local_network or client_ip == ipaddress.ip_address("127.0.0.1")
         )
         if not is_local_network:
             return False
-        auth_header = request.META.get('HTTP_LOCAL_NETWORK_TOKEN', '')
+        auth_header = request.META.get("HTTP_LOCAL_NETWORK_TOKEN", "")
         if not auth_header:
             return False
         if auth_header == config("RPI_TOKEN"):
