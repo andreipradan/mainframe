@@ -71,7 +71,7 @@ class CameraViewSet(viewsets.ViewSet):
         camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
         camera.close()
-        send_telegram_message(photo=open(f"{self.base_path}/{filename}", 'rb'))
+        send_telegram_message(photo=open(f"{self.base_path}/{filename}", "rb"))
         return JsonResponse(status=201, data={"filename": filename})
 
     @action(detail=False, methods=["put"])
