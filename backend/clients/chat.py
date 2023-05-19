@@ -33,8 +33,14 @@ def send_telegram_message(**kwargs):
     }
     bot_kwargs.update(kwargs)
     bot = telegram.Bot(config["TELEGRAM_DEBUG_TOKEN"])
+    if "text" in bot_kwargs:
+        action = bot.send_message
+    elif "photo" in bot_kwargs:
+        action = bot.send_photo
+    else:
+        raise NotImplementedError
     try:
-        return bot.send_message(**bot_kwargs)
+        return action(**bot_kwargs)
     except telegram.error.TelegramError as e:
         logging.error(str(e))
 
