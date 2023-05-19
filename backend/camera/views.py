@@ -1,3 +1,4 @@
+import ipaddress
 import logging
 from datetime import datetime
 from time import sleep, time
@@ -9,9 +10,9 @@ from google.api_core.exceptions import PreconditionFailed
 from google.cloud import storage
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
-from clients.chat import send_telegram_message, send_photo
+from clients.chat import send_photo
 from clients.logs import MainframeHandler
 from clients.os import get_folder_contents
 
@@ -45,9 +46,37 @@ def upload_blob(filename, destination):
     )
 
 
+class IsAuthenticatedOrLocalNetwork(BasePermission):
+    """
+    Allows access only to authenticated users.
+    """
+
+    def has_permission(self, request, view):
+        if bool(request.user and request.user.is_authenticated):
+            return True
+        local_network = ipaddress.ip_network("192.168.0.0/16")
+        client_ip = ipaddress.ip_address(request.META["REMOTE_ADDR"])
+        is_local_network = (
+            client_ip in local_network or client_ip == ipaddress.ip_address("127.0.0.1")
+        )
+        if not is_local_network:
+            return False
+        auth_header = request.META.get("HTTP_LOCAL_NETWORK_TOKEN", "")
+        if not auth_header:
+            return False
+        if auth_header == config("RPI_TOKEN"):
+            return True
+        return False
+
+
 class CameraViewSet(viewsets.ViewSet):
     base_path = settings.BASE_DIR / "build" / "static" / "media"
     permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.action == "picture":
+            return [IsAuthenticatedOrLocalNetwork()]
+        return super().get_permissions()
 
     def list(self, request):
         path = request.GET.get("path")
@@ -61,6 +90,7 @@ class CameraViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["put"])
     def picture(self, request):
+        logger.info("Taking a picture...")
         from picamera import PiCamera
 
         filename = f"{datetime.utcnow().isoformat()}.jpg"
@@ -71,7 +101,9 @@ class CameraViewSet(viewsets.ViewSet):
         camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
         camera.close()
+        logger.info("Done, sending to telegram...")
         send_photo(photo=open(f"{self.base_path}/{filename}", "rb"))
+        logger.info("Done")
         return JsonResponse(status=201, data={"filename": filename})
 
     @action(detail=False, methods=["put"])
