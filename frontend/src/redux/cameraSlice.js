@@ -18,7 +18,7 @@ export const cameraSlice = createSlice({
       state.results = state.results ? [...state.results, action.payload].sort((a, b) =>
           a.name > b.name ? 1 : -1
       ) : [action.payload]
-      state.messages = [`"${action.payload}" created successfully!`]
+      state.messages = [`"${action.payload.name}" created successfully!`]
     },
     set: (state, action) => {
       state.errors = null

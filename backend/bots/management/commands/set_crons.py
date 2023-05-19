@@ -22,5 +22,5 @@ class Command(BaseCommand):
         logger.info(f"[Crons] Done")
 
         healthchecks.ping() and logger.info("[Healthcheck] Done")
-        send_telegram_message(f"[[backend]] up")
+        send_telegram_message(text=f"[[backend]] up")
         self.stdout.write(self.style.SUCCESS("[Crons] Done."))

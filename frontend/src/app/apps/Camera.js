@@ -48,7 +48,7 @@ export const Camera = () => {
                   <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.getList(token))}>
                     <i className="mdi mdi-refresh"></i>
                   </button>
-                  <button type="button" className="btn btn-outline-primary btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.takePicture(token, "start"))}>
+                  <button type="button" className="btn btn-outline-primary btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.takePicture(token))}>
                     <i className="mdi mdi-camera"></i>
                   </button>
                   <button type="button" className="btn btn-outline-info btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.upload(token))}>

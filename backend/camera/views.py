@@ -11,6 +11,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
+from clients.chat import send_telegram_message
 from clients.logs import MainframeHandler
 from clients.os import get_folder_contents
 
@@ -70,6 +71,7 @@ class CameraViewSet(viewsets.ViewSet):
         camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
         camera.close()
+        send_telegram_message(photo=open(f"{self.base_path}/{filename}", "rb"))
         return JsonResponse(status=201, data={"filename": filename})
 
     @action(detail=False, methods=["put"])
