@@ -70,5 +70,5 @@ class Command(BaseCommand):
             except telegram.error.TelegramError as e:
                 logger.error(str(e))
         logger.info("[Hooks] Done")
-        send_telegram_message(f"[[ngrok]] up: {ngrok_url}")
+        send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}")
         self.stdout.write(self.style.SUCCESS("[Hooks] Done."))

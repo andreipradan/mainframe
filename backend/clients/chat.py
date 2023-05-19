@@ -20,10 +20,13 @@ def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="
         return e.message
 
 
-def send_telegram_message(text, **kwargs):
+def send_telegram_message(**kwargs):
+    if not any(("text" in kwargs, "photo" in kwargs)):
+        return logging.exception("Missing text or photo")
+
     config = dotenv.dotenv_values()
     bot_kwargs = {
-        "chat_id": kwargs.get("chat_id", config["TELEGRAM_DEBUG_CHAT_ID"]),
+        "chat_id": config["TELEGRAM_DEBUG_CHAT_ID"],
         "disable_notification": True,
         "disable_web_page_preview": True,
         "parse_mode": telegram.ParseMode.MARKDOWN,
@@ -31,7 +34,7 @@ def send_telegram_message(text, **kwargs):
     bot_kwargs.update(kwargs)
     bot = telegram.Bot(config["TELEGRAM_DEBUG_TOKEN"])
     try:
-        return bot.send_message(text=text, **bot_kwargs)
+        return bot.send_message(**bot_kwargs)
     except telegram.error.TelegramError as e:
         logging.error(str(e))
 
@@ -39,4 +42,4 @@ def send_telegram_message(text, **kwargs):
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         raise ValueError("Text missing")
-    send_telegram_message(" ".join(sys.argv[1:]))
+    send_telegram_message(text=" ".join(sys.argv[1:]))
