@@ -52,4 +52,4 @@ def send_photo(photo, **kwargs):
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         raise ValueError("Text missing")
-    send_telegram_message(" ".join(sys.argv[1:]))
+    send_telegram_message(text=" ".join(sys.argv[1:]))
