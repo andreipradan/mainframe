@@ -54,9 +54,11 @@ class IsAuthenticatedOrLocalNetwork(BasePermission):
     def has_permission(self, request, view):
         if bool(request.user and request.user.is_authenticated):
             return True
-        local_network = ipaddress.ip_network('192.168.0.0/16')
-        client_ip = ipaddress.ip_address(request.META['REMOTE_ADDR'])
-        return client_ip in local_network or client_ip == ipaddress.ip_address("127.0.0.1")
+        local_network = ipaddress.ip_network("192.168.0.0/16")
+        client_ip = ipaddress.ip_address(request.META["REMOTE_ADDR"])
+        return client_ip in local_network or client_ip == ipaddress.ip_address(
+            "127.0.0.1"
+        )
 
 
 class CameraViewSet(viewsets.ViewSet):
