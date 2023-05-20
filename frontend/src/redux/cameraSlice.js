@@ -12,14 +12,6 @@ export const cameraSlice = createSlice({
     results: null,
   },
   reducers: {
-    add: (state, action) => {
-      state.errors = null
-      state.loading = false
-      state.results = state.results ? [...state.results, action.payload].sort((a, b) =>
-          a.name > b.name ? 1 : -1
-      ) : [action.payload]
-      state.messages = [`"${action.payload.name}" created successfully!`]
-    },
     set: (state, action) => {
       state.errors = null
       state.loading = false
@@ -45,7 +37,7 @@ export const cameraSlice = createSlice({
   },
 });
 
-export const { add, set, setAlertOpen, setErrors, setLoading, setMessagesOpen, upload } =
+export const { set, setAlertOpen, setErrors, setLoading, setMessagesOpen, upload } =
   cameraSlice.actions;
 
 export default cameraSlice.reducer;

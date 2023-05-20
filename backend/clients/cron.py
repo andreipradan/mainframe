@@ -66,4 +66,4 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             cmd.setall(cron.expression)
             cmd.enable(cron.is_active)
             cmd.set_comment(cron.description)
-    logger.info(f"Set {i + 1} cron{'s' if i else ''}")
+    logger.info(f"Set {i + 1} cron{'s' if i else ''} ✅")

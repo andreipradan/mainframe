@@ -16,10 +16,12 @@ def parse_value(value):
 
 
 def parse_record(record: logging.LogRecord) -> dict:
-    return {
+    record = {
         field: parse_value(getattr(record, field, None))
         for field in record.__dict__.keys()
     }
+    record["msg"] = f"[Mainframe] {record['msg']}"
+    return record
 
 
 class AxiomHandler(logging.Handler):
@@ -32,10 +34,7 @@ class AxiomHandler(logging.Handler):
         return axiom.Client(environ.Env()("AXIOM_TOKEN"))
 
     def emit(self, record: logging.LogRecord) -> None:
-        try:
-            self.client.ingest_events(self.dataset, [record.__dict__])
-        except TypeError:
-            self.client.ingest_events(self.dataset, [parse_record(record)])
+        self.client.ingest_events(self.dataset, [parse_record(record)])
 
 
 class ManagementCommandsHandler(MemoryHandler):

@@ -21,6 +21,7 @@ def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="
 
 
 def send_telegram_message(text, **kwargs):
+    logger = kwargs.pop("logger", logging)
     config = dotenv.dotenv_values()
     bot_kwargs = {
         "chat_id": config["TELEGRAM_DEBUG_CHAT_ID"],
@@ -33,10 +34,12 @@ def send_telegram_message(text, **kwargs):
     try:
         return bot.send_message(text=text, **bot_kwargs)
     except telegram.error.TelegramError as e:
-        logging.error(str(e))
+        logger.error(str(e))
 
 
 def send_photo(photo, **kwargs):
+    logger = kwargs.pop("logger", logging)
+    logger.info("[Telegram] Sending photo")
     config = dotenv.dotenv_values()
     bot = telegram.Bot(config["TELEGRAM_DEBUG_TOKEN"])
     try:
@@ -46,7 +49,8 @@ def send_photo(photo, **kwargs):
             **kwargs,
         )
     except telegram.error.TelegramError as e:
-        logging.error(str(e))
+        logger.error(str(e))
+    logger.info("[Telegram] Done")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import ipaddress
 import logging
 from datetime import datetime
+from io import BytesIO
+from threading import Thread
 from time import sleep, time
 
 import environ
@@ -90,21 +92,27 @@ class CameraViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["put"])
     def picture(self, request):
-        logger.info("Taking a picture...")
+        logger.info("[Picture] Taking picture...")
         from picamera import PiCamera
 
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
         camera.rotation = 270
+        camera.resolution = (720, 1024)
         camera.start_preview()
-        sleep(2)
+        sleep(1)
         camera.capture(f"{self.base_path}/{filename}")
+        logger.info("[Picture] Captured")
         camera.stop_preview()
         camera.close()
-        logger.info("Done, sending to telegram...")
-        send_photo(photo=open(f"{self.base_path}/{filename}", "rb"))
-        logger.info("Done")
-        return JsonResponse(status=201, data={"filename": filename})
+        thread = Thread(
+            target=send_photo,
+            args=(open(f"{self.base_path}/{filename}", "rb"),),
+            kwargs={"logger": logger},
+        )
+        thread.start()
+        logger.info("[Picture] ✅")
+        return self.list(request)
 
     @action(detail=False, methods=["put"])
     def upload(self, request):
