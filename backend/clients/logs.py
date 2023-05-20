@@ -34,10 +34,7 @@ class AxiomHandler(logging.Handler):
         return axiom.Client(environ.Env()("AXIOM_TOKEN"))
 
     def emit(self, record: logging.LogRecord) -> None:
-        try:
-            self.client.ingest_events(self.dataset, [record.__dict__])
-        except TypeError:
-            self.client.ingest_events(self.dataset, [parse_record(record)])
+        self.client.ingest_events(self.dataset, [parse_record(record)])
 
 
 class ManagementCommandsHandler(MemoryHandler):
