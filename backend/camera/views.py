@@ -94,6 +94,7 @@ class CameraViewSet(viewsets.ViewSet):
     def picture(self, request):
         logger.info("[Picture] Taking picture...")
         from picamera import PiCamera
+
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
         camera.rotation = 270
@@ -106,8 +107,8 @@ class CameraViewSet(viewsets.ViewSet):
         camera.close()
         thread = Thread(
             target=send_photo,
-            args=(open(f"{self.base_path}/{filename}", "rb"), ),
-            kwargs={"logger": logger}
+            args=(open(f"{self.base_path}/{filename}", "rb"),),
+            kwargs={"logger": logger},
         )
         thread.start()
         logger.info("[Picture] ✅")
