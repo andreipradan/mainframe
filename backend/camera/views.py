@@ -114,7 +114,8 @@ class CameraViewSet(viewsets.ViewSet):
         stream = BytesIO()
         with PiCamera() as camera:
             camera.rotation = 270
-            sleep(2)
+            camera.resolution = (720, 1024)
+            sleep(1)
             camera.capture(stream, "jpeg")
 
         stream.seek(0)
