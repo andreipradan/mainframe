@@ -101,6 +101,7 @@ class CameraViewSet(viewsets.ViewSet):
         camera.start_preview()
         sleep(1)
         camera.capture(f"{self.base_path}/{filename}")
+        logger.info("[Picture] Captured")
         camera.stop_preview()
         camera.close()
         thread = Thread(
