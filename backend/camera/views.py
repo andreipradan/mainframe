@@ -92,7 +92,7 @@ class CameraViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["put"])
     def picture(self, request):
-        logger.info("Taking a picture...")
+        logger.info("[Picture] Taking picture...")
         from picamera import PiCamera
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
@@ -103,9 +103,13 @@ class CameraViewSet(viewsets.ViewSet):
         camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
         camera.close()
-        thread = Thread(target=send_photo, args=(open(f"{self.base_path}/{filename}", "rb"), ))
+        thread = Thread(
+            target=send_photo,
+            args=(open(f"{self.base_path}/{filename}", "rb"), ),
+            kwargs={"logger": logger}
+        )
         thread.start()
-        logger.info("Done")
+        logger.info("[Picture] ✅")
         return self.list(request)
 
     @action(detail=False, methods=["put"])
