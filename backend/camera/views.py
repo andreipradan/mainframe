@@ -97,7 +97,7 @@ class CameraViewSet(viewsets.ViewSet):
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
         camera.rotation = 270
-        camera.resolution = (1920, 1080)
+        camera.resolution = (1280, 720)
         # camera.start_preview()
         sleep(1)
         camera.capture(f"{self.base_path}/{filename}")
