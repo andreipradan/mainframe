@@ -92,15 +92,16 @@ class CameraViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["put"])
     def picture(self, request):
         logger.info("Taking a picture...")
-        return JsonResponse(status=201, data={"filename": self.send_image()})
+        # return JsonResponse(status=201, data={"filename": self.send_image()})
 
         from picamera import PiCamera
 
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
         camera.rotation = 270
+        camera.resolution = (720, 1024)
         camera.start_preview()
-        sleep(2)
+        sleep(1)
         camera.capture(f"{self.base_path}/{filename}")
         camera.stop_preview()
         camera.close()
