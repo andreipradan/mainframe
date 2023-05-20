@@ -1,6 +1,5 @@
 import axios from "./index";
 import {
-  add,
   set,
   setErrors,
   setLoading,
@@ -21,7 +20,7 @@ class CameraApi {
     dispatch(setLoading(true));
     axios
       .put(`${base}/picture/`,{}, { headers: { Authorization: token } })
-      .then(response => dispatch(add({"name": response.data.filename, "is_file": true})))
+      .then(response => dispatch(set(response.data)))
       .catch(err => handleErrors(err, dispatch, setErrors));
   };
   static upload = (token) => dispatch => {
