@@ -16,10 +16,12 @@ def parse_value(value):
 
 
 def parse_record(record: logging.LogRecord) -> dict:
-    return {
+    record = {
         field: parse_value(getattr(record, field, None))
         for field in record.__dict__.keys()
     }
+    record["msg"] = f"[Mainframe] {record['msg']}"
+    return record
 
 
 class AxiomHandler(logging.Handler):

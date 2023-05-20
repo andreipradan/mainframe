@@ -92,7 +92,7 @@ class CameraViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["put"])
     def picture(self, request):
         logger.info("Taking a picture...")
-        return JsonResponse(status=201, data={"filename": self.send_image()})
+        # return JsonResponse(status=201, data={"filename": self.send_image()})
 
         from picamera import PiCamera
 
