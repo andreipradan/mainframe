@@ -97,11 +97,11 @@ class CameraViewSet(viewsets.ViewSet):
         filename = f"{datetime.utcnow().isoformat()}.jpg"
         camera = PiCamera()
         camera.rotation = 270
-        camera.resolution = (1280, 720)
-        # camera.start_preview()
+        camera.resolution = (720, 1024)
+        camera.start_preview()
         sleep(1)
         camera.capture(f"{self.base_path}/{filename}")
-        # camera.stop_preview()
+        camera.stop_preview()
         camera.close()
         thread = Thread(target=send_photo, args=(open(f"{self.base_path}/{filename}", "rb"), ))
         thread.start()
