@@ -72,7 +72,11 @@ class IsAuthenticatedOrLocalNetwork(BasePermission):
 
 
 class CameraViewSet(viewsets.ViewSet):
-    base_path = settings.BASE_DIR / "build" / "static" / "media"
+    base_path = (
+        settings.BASE_DIR / "build" / "static" / "media"
+        if settings.ENV == "local"
+        else "/var/media"
+    )
     permission_classes = (IsAuthenticated,)
 
     def get_permissions(self):
