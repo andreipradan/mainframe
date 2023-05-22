@@ -7,13 +7,13 @@ if [ "$1" == "--continue" ]; then
 
   cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "$HOME/.config/ngrok/ngrok.yml"
 
-  REDIS_DIR=/etc/redis
-  echo "[redis] Installing redis server"
-  sudo apt install -y redis-server
-  echo "[redis] Setting supervised from no to systemd"
-  sudo sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
-  sudo systemctl restart redis.service
-  echo "[redis] Done."
+#  REDIS_DIR=/etc/redis
+#  echo "[redis] Installing redis server"
+#  sudo apt install -y redis-server
+#  echo "[redis] Setting supervised from no to systemd"
+#  sudo sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
+#  sudo systemctl restart redis.service
+#  echo "[redis] Done."
 
   echo "=== Initial setup Done! ==="
   echo "Please fill out the env vars inside mainframe/backend/.env"
@@ -33,8 +33,6 @@ echo "[zsh] Installing ohmyzsh" && sh -c "$(curl -fsSL https://raw.githubusercon
 echo "[zsh] Setting .zshrc aliases" && cat "${PROJECT_DIR}/deploy/.zshrc" >> "${HOME}/.zshrc"
 echo "[zsh] Setting theme to af-magic" && sed -i -e 's/ZSH_THEME="robbyrussell"/ZSH_THEME="af-magic"/g' "${HOME}/.zshrc"
 echo "[zsh] Done."
-
-#echo "Installing drivers for picamera" && sudo apt-get install ffmpeg git python3-picamera python3-ws4py
 
 echo "[env] Setting .env placeholder" &&
 ENV_FILE="${PROJECT_DIR}/backend/.env"
