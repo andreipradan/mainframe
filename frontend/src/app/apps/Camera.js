@@ -19,12 +19,13 @@ export const Camera = () => {
 
   const [currentImage, setCurrentImage] = useState(null)
   const setImage = filename => {
-    const base = process.env.NODE_ENV === 'development'
+    const isLocal = process.env.NODE_ENV === 'development'
+    const base = isLocal
       ? "http://localhost:5678"
       : `https://${window.location.hostname}`
     setCurrentImage({
       name: filename,
-      url: `${base}/static/media/${filename}`,
+      url: `${base}/${isLocal ? "static/" : ""}media/${filename}`,
   })}
 
   return (

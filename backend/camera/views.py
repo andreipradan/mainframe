@@ -41,7 +41,7 @@ class CameraViewSet(viewsets.ViewSet):
     base_path = (
         settings.BASE_DIR / "build" / "static" / "media"
         if settings.ENV == "local"
-        else "/var/media"
+        else Path("/var/media")
     )
     permission_classes = (IsAuthenticated,)
 
