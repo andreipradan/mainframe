@@ -50,8 +50,6 @@ else
   sudo mkdir -p "${LOGS_DIR}";
   sudo touch "${LOGS_DIR}/server.log";
   sudo chown -R rpi.rpi ${LOGS_DIR}
-  sudo mkdir "/var/media"
-  sudo chown -R rpi.rpi "/var/media"
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path created"
 fi
 

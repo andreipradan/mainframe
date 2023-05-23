@@ -38,11 +38,7 @@ def list_blobs_with_prefix(prefix):
 
 
 class CameraViewSet(viewsets.ViewSet):
-    base_path = (
-        settings.BASE_DIR / "build" / "static" / "media"
-        if settings.ENV == "local"
-        else Path("/var/media")
-    )
+    base_path = settings.BASE_DIR / "build" / "static" / "media"
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
