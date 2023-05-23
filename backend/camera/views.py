@@ -44,11 +44,25 @@ class CameraViewSet(viewsets.ViewSet):
     def list(self, request):
         prefix = request.GET.get("path", "")
         blobs = list_blobs_with_prefix(prefix)
-        local_files = list(map(itemgetter("name"), get_folder_contents(self.base_path)))
+        local_files = list(map(itemgetter("name"), get_folder_contents(self.base_path / prefix)))
+        files = [
+            {
+                "name": b.name.split("/")[-1],
+                "is_file": True,
+                "is_local": b.name.split("/")[-1] in local_files
+            } for b in blobs if b.name != prefix
+        ]
         return JsonResponse(
             {
-                "path": prefix or "/",
-                "results": [{"name": b.name, "is_file": True, "is_local": b.name in local_files} for b in blobs],
+                "path": prefix or "",
+                "results": [
+                    {
+                        "name": b,
+                        "is_file": False,
+                        "is_local": True,
+                    }
+                    for b in blobs.prefixes
+                ] + files,
             },
             safe=False,
         )
@@ -68,5 +82,11 @@ class CameraViewSet(viewsets.ViewSet):
         if not filename:
             return JsonResponse(status=400, data={"error": f"Invalid filename: {filename}"})
 
-        download_blob(filename, self.base_path)
+        try:
+            download_blob(filename, self.base_path)
+        except FileNotFoundError:
+            file_path = "/".join(filename.split("/")[:-1])
+            logger.warning(f"Path {file_path} does not exist. Creating...")
+            Path(f"{self.base_path}/{file_path}").mkdir(parents=True)
+            download_blob(filename, self.base_path)
         return self.list(request)

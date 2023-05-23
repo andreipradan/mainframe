@@ -24,7 +24,7 @@ export const Camera = () => {
       : `https://${window.location.hostname}`
     setCurrentImage({
       name: filename,
-      url: `${base}/static/media/${filename}`,
+      url: `${base}/static/media/${path}/${filename}`,
   })}
 
   return (
@@ -58,7 +58,7 @@ export const Camera = () => {
                     }
                     {
                       path?.split("/").filter(i => !!i).map((folder, i) =>
-                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, i + 2).join("/")))}>
+                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, i + 1).join("/") + "/"))}>
                           {folder}
                         </li>
                       )
@@ -102,8 +102,8 @@ export const Camera = () => {
                             className={`float-right mdi mdi-${!result.is_local ? "download-outline text-primary" : "trash-can-outline text-danger"}`}
                             onClick={() =>
                               !result.is_local
-                                ? dispatch(CameraApi.downloadImage(token, result.name))
-                                : dispatch(CameraApi.deleteImage(token, result.name))}
+                                ? dispatch(CameraApi.downloadImage(token, path + result.name))
+                                : dispatch(CameraApi.deleteImage(token, path + result.name))}
                           />
                         }
                       </li>
