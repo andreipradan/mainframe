@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { BallTriangle } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
@@ -8,7 +8,7 @@ import {setAlertOpen, setMessagesOpen} from "../../redux/cameraSlice";
 export const Camera = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results, errors, alertOpen, loading, messages, messagesOpen, path } = useSelector(state => state.camera)
+  const { alertOpen, errors, loading, messages, messagesOpen, path, results } = useSelector(state => state.camera)
 
   useEffect(() => {
     !results && dispatch(CameraApi.getList(token));
@@ -48,12 +48,6 @@ export const Camera = () => {
                   <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.getList(token))}>
                     <i className="mdi mdi-refresh"></i>
                   </button>
-                  <button type="button" className="btn btn-outline-primary btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.takePicture(token))}>
-                    <i className="mdi mdi-camera"></i>
-                  </button>
-                  <button type="button" className="btn btn-outline-info btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.upload(token))}>
-                    <i className="mdi mdi-upload"></i>
-                  </button>
                 </div>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -88,11 +82,30 @@ export const Camera = () => {
                         color = '#e15b64'
                       />
                     : results?.map((result, i) =>
-                      <li key={i} style={{cursor: "pointer"}} onClick={() =>
-                        result.is_file ? setImage(result.name) : dispatch(CameraApi.getList(token, result.name))}
+                      <li
+                        key={i}
                       >
-                        <i className={`mdi mdi-${result.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
-                        {result.name}
+                        <span
+                          style={{cursor: result.is_local ? "pointer": ""}}
+                          className={result.is_local ? "" : "text-muted" }
+                          onClick={() =>
+                            result.is_file
+                              ? result.is_local ? setImage(result.name) : null
+                              : dispatch(CameraApi.getList(token, result.name))}
+                        >
+                          <i className={`mdi mdi-${result.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
+                          {result.name}{" "}
+                        </span>
+                        {
+                          result.is_file && <i
+                            style={{cursor: "pointer"}}
+                            className={`float-right mdi mdi-${!result.is_local ? "download-outline text-primary" : "trash-can-outline text-danger"}`}
+                            onClick={() =>
+                              !result.is_local
+                                ? dispatch(CameraApi.downloadImage(token, result.name))
+                                : dispatch(CameraApi.deleteImage(token, result.name))}
+                          />
+                        }
                       </li>
                     )
                 }

@@ -7,11 +7,11 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
+const Logs = lazy(() => import('./apps/Logs'));
 const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
-const Logs = lazy(() => import('./logs/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
@@ -41,12 +41,12 @@ class AppRoutes extends Component {
           <Route exact path="/dashboard" component={ Dashboard } />
           <Route exact path="/apps/camera" component={ Camera } />
           <Route exact path="/apps/expenses" component={ Expenses } />
+          <Route exact path="/apps/logs" component={ Logs } />
           <Route exact path="/apps/todo" component={ Todo } />
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />
-          <Route exact path="/logs" component={ Logs } />
           <Route exact path="/meals" component={ Meals } />
 
           <Route path="/basic-ui/buttons" component={ Buttons } />

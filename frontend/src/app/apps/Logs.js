@@ -44,7 +44,7 @@ const Logs = () =>  {
                     }
                     {
                       path?.split("/").filter(i => !!i).map((folder, i) =>
-                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token, path.split("/").slice(0, i + 2).join("/")))}>
+                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token, path.split("/").slice(0, i + 1).join("/")))}>
                           {folder}
                         </li>
                       )
@@ -65,7 +65,7 @@ const Logs = () =>  {
                       />
                     : logs?.map((log, i) =>
                       <li key={i} style={{cursor: "pointer"}} onClick={() =>
-                        dispatch(log.is_file ? LogsApi.getFile(token, log.name) : LogsApi.getList(token, log.name))}
+                        dispatch(log.is_file ? LogsApi.getFile(token, path ? `${path}/${log.name}` : log.name) : LogsApi.getList(token, path ? `${path}/${log.name}` : log.name))}
                       >
                         <i className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
                         {log.name.split("/")[log.name.split("/").length - 1]}

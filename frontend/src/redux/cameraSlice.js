@@ -29,11 +29,6 @@ export const cameraSlice = createSlice({
       state.loading = false;
     },
     setLoading: (state, action) => {state.loading = action.payload},
-    upload: (state, action) => {
-      state.errors = action.payload.errors
-      state.loading = false
-      state.messages = [action.payload.messages]
-    },
   },
 });
 
