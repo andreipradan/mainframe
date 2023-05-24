@@ -45,20 +45,18 @@ export const Camera = () => {
               <h4 className="card-title">
                 Available Images
                 <div className="btn-group" role="group" aria-label="Basic example">
-                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.getList(token))}>
+                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.getList(token, path))}>
                     <i className="mdi mdi-refresh"></i>
                   </button>
                 </div>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    {
-                      path && <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token))}>
-                          Home
-                        </li>
-                    }
+                    <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token))}>
+                      Home
+                    </li>
                     {
                       path?.split("/").filter(i => !!i).map((folder, i) =>
-                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, i + 1).join("/") + "/"))}>
+                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, i + 1).join("/")))}>
                           {folder}
                         </li>
                       )
@@ -91,21 +89,23 @@ export const Camera = () => {
                           onClick={() =>
                             result.is_file
                               ? result.is_local ? setImage(result.name) : null
-                              : dispatch(CameraApi.getList(token, result.name))}
+                              : result.is_local ? dispatch(CameraApi.getList(token, result.name)) : null}
                         >
                           <i className={`mdi mdi-${result.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
                           {result.name}{" "}
                         </span>
-                        {
-                          result.is_file && <i
-                            style={{cursor: "pointer"}}
-                            className={`float-right mdi mdi-${!result.is_local ? "download-outline text-primary" : "trash-can-outline text-danger"}`}
-                            onClick={() =>
-                              !result.is_local
-                                ? dispatch(CameraApi.downloadImage(token, path + result.name))
-                                : dispatch(CameraApi.deleteImage(token, path + result.name))}
-                          />
-                        }
+                        <i
+                          style={{cursor: "pointer"}}
+                          className={`float-right mdi mdi-${!result.is_local ? "download-outline text-primary" : "trash-can-outline text-danger"}`}
+                          onClick={() =>
+                            !result.is_local
+                              ? result.is_file
+                                ? dispatch(CameraApi.downloadImage(token, `${path}${path ? "/": ""}${result.name}`))
+                                : dispatch(CameraApi.createFolder(token, result.name))
+                              : results.is_file
+                                ? dispatch(CameraApi.deleteImage(token, `${path}${path ? "/": ""}${result.name}`))
+                                : dispatch(CameraApi.deleteFolder(token, result.name))}
+                        />
                       </li>
                     )
                 }
@@ -115,9 +115,9 @@ export const Camera = () => {
         </div>
         <div className="col-lg-7 grid-margin stretch-card">
               <div className="card">
-                <div className="card-body">
+                <div className="card-body flex-wrap d-flex">
                   <h4 className="card-title">{currentImage?.name}</h4>
-                  <img src={currentImage?.url} alt={currentImage?.name} />
+                  <img className="w-100" src={currentImage?.url} alt={currentImage?.name} />
                 </div>
               </div>
             </div>

@@ -8,6 +8,20 @@ import {handleErrors} from "./errors";
 
 
 class CameraApi {
+  static createFolder = (token, folder) => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/create-folder/?folder=${folder}`, {}, { headers: { Authorization: token } })
+      .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static deleteFolder = (token, folder) => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .delete(`${base}/delete-folder/?folder=${folder}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
   static deleteImage = (token, filename) => dispatch => {
     dispatch(setLoading(true));
     axios
