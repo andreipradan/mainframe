@@ -37,11 +37,9 @@ const Logs = () =>  {
                 </button>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    {
-                      path && <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token))}>
-                          Home
-                        </li>
-                    }
+                    <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token))}>
+                      Home
+                    </li>
                     {
                       path?.split("/").filter(i => !!i).map((folder, i) =>
                         <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(LogsApi.getList(token, path.split("/").slice(0, i + 1).join("/")))}>
@@ -55,22 +53,29 @@ const Logs = () =>  {
               {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
               <ul className="list-arrow" style={{maxHeight: "60vh", overflowY: "scroll"}}>
                 {
-                  loading ? <BallTriangle
-                        visible={true}
-                        width="100%"
-                        ariaLabel="ball-triangle-loading"
-                        wrapperStyle={{}}
-                        wrapperClass={{}}
-                        color = '#e15b64'
-                      />
-                    : logs?.map((log, i) =>
-                      <li key={i} style={{cursor: "pointer"}} onClick={() =>
-                        dispatch(log.is_file ? LogsApi.getFile(token, path ? `${path}/${log.name}` : log.name) : LogsApi.getList(token, path ? `${path}/${log.name}` : log.name))}
-                      >
-                        <i className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
-                        {log.name.split("/")[log.name.split("/").length - 1]}
-                      </li>
-                    )
+                  loading
+                    ? <BallTriangle
+                      visible={true}
+                      width="100%"
+                      ariaLabel="ball-triangle-loading"
+                      wrapperStyle={{}}
+                      wrapperClass={{}}
+                      color = '#e15b64'
+                    />
+                    : <>
+                      {
+                        path && <li style={{cursor: "pointer"}} onClick={() => dispatch(LogsApi.getList(token, path.split("/").slice(0, path.split("/").length - 1).join("/")))}>..</li>
+                      }
+                      {
+                        logs?.map((log, i) =>
+                          <li key={i} style={{cursor: "pointer"}} onClick={() =>
+                            dispatch(log.is_file ? LogsApi.getFile(token, path ? `${path}/${log.name}` : log.name) : LogsApi.getList(token, path ? `${path}/${log.name}` : log.name))}
+                          >
+                            <i className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`}/> {" "}
+                            {log.name.split("/")[log.name.split("/").length - 1]}
+                          </li>)
+                      }
+                    </>
                 }
               </ul>
             </div>
