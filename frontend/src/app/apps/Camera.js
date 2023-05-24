@@ -4,6 +4,7 @@ import { BallTriangle } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
 import CameraApi from "../../api/camera";
 import {setAlertOpen, setMessagesOpen} from "../../redux/cameraSlice";
+import LogsApi from "../../api/logs";
 
 export const Camera = () => {
   const dispatch = useDispatch();
@@ -79,7 +80,12 @@ export const Camera = () => {
                         wrapperClass={{}}
                         color = '#e15b64'
                       />
-                    : results?.map((result, i) =>
+                    : <>
+                    {
+                      path && <li style={{cursor: "pointer"}} onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, path.split("/").length - 1).join("/")))}>..</li>
+                    }
+                    {
+                      results?.map((result, i) =>
                       <li
                         key={i}
                       >
@@ -106,8 +112,9 @@ export const Camera = () => {
                                 ? dispatch(CameraApi.deleteImage(token, `${path}${path ? "/": ""}${result.name}`))
                                 : dispatch(CameraApi.deleteFolder(token, result.name))}
                         />
-                      </li>
-                    )
+                      </li>)
+                    }
+                    </>
                 }
               </ul>
             </div>
