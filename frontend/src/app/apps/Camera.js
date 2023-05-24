@@ -102,7 +102,7 @@ export const Camera = () => {
                               ? result.is_file
                                 ? dispatch(CameraApi.downloadImage(token, `${path}${path ? "/": ""}${result.name}`))
                                 : dispatch(CameraApi.createFolder(token, result.name))
-                              : results.is_file
+                              : result.is_file
                                 ? dispatch(CameraApi.deleteImage(token, `${path}${path ? "/": ""}${result.name}`))
                                 : dispatch(CameraApi.deleteFolder(token, result.name))}
                         />
