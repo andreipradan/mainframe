@@ -1,9 +1,10 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Link, useHistory} from 'react-router-dom';
 import {Button, Form} from 'react-bootstrap';
 import AuthApi from "../../api/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { Dna } from "react-loader-spinner";
+import Alert from "react-bootstrap/Alert";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -11,11 +12,14 @@ const Login = () => {
   const history = useHistory();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [messageOpen, setMessageOpen] = useState(false)
 
   const login = async (e) => {
     e.preventDefault()
     dispatch(AuthApi.Login({email, password}, history))
   }
+
+  useEffect(() => {setMessageOpen(!!auth.message)}, [auth.message])
 
   return <div>
     <div className="d-flex align-items-center auth px-0">
@@ -27,6 +31,8 @@ const Login = () => {
             </div>
             <h4>Hello! let's get started</h4>
             <h6 className="font-weight-light">
+              {messageOpen && <Alert variant="success" dismissible onClose={() => setMessageOpen(false)}>{auth.message}</Alert>}
+
               {
                 auth.errors?.length || auth.errors?.success === "False"
                   ? auth.errors?.msg

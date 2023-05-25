@@ -42,7 +42,7 @@ class AuthApi {
     .then(() => {
       Cookie.remove('token');
       Cookie.remove('user');
-      dispatch(logout())
+      dispatch(logout("Logged out successfully"))
       history.push("/login")
     });
   };

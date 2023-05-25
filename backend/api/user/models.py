@@ -53,4 +53,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return f"{self.email}"
+        return f"{self.name} | {self.email}"
+
+    @property
+    def name(self):
+        return self.email.split("@")[0]

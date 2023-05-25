@@ -27,13 +27,6 @@ class DevicesApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static reboot = token => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .put(`${base}/reboot/`, {}, { headers: { Authorization: token } })
-      .then((response) => dispatch(setLoading(false)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
   static sync = token => dispatch => {
     dispatch(setLoading(true));
     axios

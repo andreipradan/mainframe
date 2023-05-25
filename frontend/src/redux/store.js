@@ -8,6 +8,7 @@ import earthquakesReducer from "../redux/earthquakesSlice"
 import lightsReducer from "../redux/lightsSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
+import rpiReducer from "../redux/rpiSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 
 export default configureStore({
@@ -21,6 +22,7 @@ export default configureStore({
     lights: lightsReducer,
     logs: logsReducer,
     meals: mealsReducer,
+    rpi: rpiReducer,
     transactions: transactionsReducer,
   },
 });

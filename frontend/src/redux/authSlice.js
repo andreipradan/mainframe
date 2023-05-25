@@ -6,6 +6,7 @@ export const authSlice = createSlice({
   initialState: {
     errors: null,
     loading: false,
+    message: null,
     token: Cookie.get('token') || null,
 	  user: Cookie.get("user") ? JSON.parse(Cookie.get('user')) : null,
   },
@@ -13,11 +14,13 @@ export const authSlice = createSlice({
     login: (state, action) => {
       state.errors = null;
       state.loading = false;
+      state.message = null
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
     logout: (state, action) => {
       state.errors = null;
+      state.message = action.payload
       state.token = null;
       state.user = null;
     },
