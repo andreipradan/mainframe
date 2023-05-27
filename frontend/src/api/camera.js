@@ -1,39 +1,42 @@
 import axios from "./index";
 import {
+  download,
   set,
   setErrors,
-  setLoading,
+  setLoading, setLoadingFiles,
 } from "../redux/cameraSlice";
 import {handleErrors} from "./errors";
 
 
 class CameraApi {
   static createFolder = (token, folder) => dispatch => {
-    dispatch(setLoading(true));
+    dispatch(setLoadingFiles(folder));
     axios
       .put(`${base}/create-folder/?folder=${folder}`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static deleteFolder = (token, folder) => dispatch => {
-    dispatch(setLoading(true));
+    dispatch(setLoadingFiles(folder));
     axios
       .delete(`${base}/delete-folder/?folder=${folder}`, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static deleteImage = (token, filename) => dispatch => {
-    dispatch(setLoading(true));
+    dispatch(setLoadingFiles(filename));
     axios
       .delete(`${base}/delete/?filename=${filename}`, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static downloadImage = (token, filename) => dispatch => {
-    dispatch(setLoading(true));
+    dispatch(setLoadingFiles(filename));
     axios
       .put(`${base}/download/?filename=${filename}`, {}, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
+      .then((response) => {
+        dispatch(download({data: response.data, filename: filename}))
+      })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static getList = (token, path = null) => (dispatch) => {

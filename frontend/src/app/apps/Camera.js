@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import { BallTriangle } from "react-loader-spinner";
+import {BallTriangle, Circles } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
 import CameraApi from "../../api/camera";
 import {setAlertOpen, setMessagesOpen} from "../../redux/cameraSlice";
-import LogsApi from "../../api/logs";
 
 export const Camera = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const { alertOpen, errors, loading, messages, messagesOpen, path, results } = useSelector(state => state.camera)
+  const { alertOpen, errors, loading, loadingFiles, messages, messagesOpen, path, results } = useSelector(state => state.camera)
 
   useEffect(() => {
     !results && dispatch(CameraApi.getList(token));
@@ -86,9 +85,7 @@ export const Camera = () => {
                     }
                     {
                       results?.map((result, i) =>
-                      <li
-                        key={i}
-                      >
+                      <li key={i}>
                         <span
                           style={{cursor: result.is_local ? "pointer": ""}}
                           className={result.is_local ? "" : "text-muted" }
@@ -100,18 +97,30 @@ export const Camera = () => {
                           <i className={`mdi mdi-${result.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
                           {result.name}{" "}
                         </span>
-                        <i
-                          style={{cursor: "pointer"}}
-                          className={`float-right mdi mdi-${!result.is_local ? "download-outline text-primary" : "trash-can-outline text-danger"}`}
-                          onClick={() =>
-                            !result.is_local
-                              ? result.is_file
-                                ? dispatch(CameraApi.downloadImage(token, `${path}${path ? "/": ""}${result.name}`))
-                                : dispatch(CameraApi.createFolder(token, result.name))
-                              : result.is_file
-                                ? dispatch(CameraApi.deleteImage(token, `${path}${path ? "/": ""}${result.name}`))
-                                : dispatch(CameraApi.deleteFolder(token, result.name))}
-                        />
+                        {
+                          loadingFiles?.includes(result.is_file ? `${path}/${result.name}` : result.name)
+                          ? <Circles
+                              visible={true}
+                              height="15"
+                              ariaLabel="ball-triangle-loading"
+                              wrapperStyle={{}}
+                              wrapperClass={{}}
+                              color='orange'
+                              className="float-right small"
+                            />
+                          : <i
+                              style={{cursor: "pointer"}}
+                              className={`float-right mdi mdi-${!result.is_local ? "download-outline text-primary" : "trash-can-outline text-danger"}`}
+                              onClick={() =>
+                                !result.is_local
+                                  ? result.is_file
+                                    ? dispatch(CameraApi.downloadImage(token, `${path}${path ? "/": ""}${result.name}`))
+                                    : dispatch(CameraApi.createFolder(token, result.name))
+                                  : result.is_file
+                                    ? dispatch(CameraApi.deleteImage(token, `${path}${path ? "/": ""}${result.name}`))
+                                    : dispatch(CameraApi.deleteFolder(token, result.name))}
+                            />
+                        }
                       </li>)
                     }
                     </>

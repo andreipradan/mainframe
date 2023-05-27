@@ -44,7 +44,7 @@ class AuthApi {
       Cookie.remove('user');
       dispatch(logout("Logged out successfully"))
       history.push("/login")
-    });
+    }).catch(err => handleErrors(err, dispatch))
   };
 }
 
