@@ -5,11 +5,13 @@ export const rpiSlice = createSlice({
   initialState: {
     errors: null,
     loading: false,
+    message: null,
   },
   reducers: {
     completed: (state, action) => {
       state.errors = null
       state.loading = false
+      state.message = action.payload
     },
     setErrors: (state, action) => {
       state.errors = action.payload;

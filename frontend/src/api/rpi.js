@@ -29,6 +29,15 @@ class RpiApi {
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
+  static restartBackend = token => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/restart-backend/`, {}, { headers: { Authorization: token } })
+      .then(() => {
+        dispatch(completed("Restarted backend, please refresh this page after a couple of moments"))
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
 }
 
 let base = "rpi";

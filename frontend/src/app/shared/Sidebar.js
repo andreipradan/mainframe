@@ -15,9 +15,10 @@ const Sidebar = () => {
 
   const token = useSelector((state) => state.auth.token)
   const user = useSelector((state) => state.auth.user)
-  const {errors, loading} = useSelector(state => state.rpi)
+  const {errors, loading, message} = useSelector(state => state.rpi)
 
   const [alertOpen, setAlertOpen] = useState(false)
+  const [messageOpen, setMessageOpen] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [currentModal, setCurrentModal] = useState("")
 
@@ -31,6 +32,7 @@ const Sidebar = () => {
   const [errorPagesMenuOpen, setErrorPagesMenuOpen] = useState(false)
 
   useEffect(() => {setAlertOpen(!!errors)}, [errors])
+  useEffect(() => {setMessageOpen(!!message)}, [message])
 
   useEffect(() => {
     onRouteChanged()
@@ -176,6 +178,21 @@ const Sidebar = () => {
                 <Dropdown.Item href="!#" onClick={e => {
                   e.preventDefault()
                   setModalOpen(true)
+                  setCurrentModal("restart backend")
+                }} className="preview-item">
+                  <div className="preview-thumbnail">
+                    <div className="preview-icon bg-dark rounded-circle">
+                      <i className="mdi mdi-restart text-danger"></i>
+                    </div>
+                  </div>
+                  <div className="preview-item-content">
+                    <p className="preview-subject mb-1"><Trans>Restart backend</Trans></p>
+                  </div>
+                </Dropdown.Item>
+                <Dropdown.Divider/>
+                <Dropdown.Item href="!#" onClick={e => {
+                  e.preventDefault()
+                  setModalOpen(true)
                   setCurrentModal("reboot")
                 }} className="preview-item">
                   <div className="preview-thumbnail">
@@ -191,6 +208,7 @@ const Sidebar = () => {
             </Dropdown>
           </div>
           {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+          {messageOpen && <Alert variant="primary" dismissible onClose={() => setMessageOpen(false)}>{message}</Alert>}
 
         </li>
         <li className="nav-item nav-category">
@@ -418,6 +436,7 @@ const Sidebar = () => {
             evt.preventDefault()
             if (currentModal === "reboot") dispatch(RpiApi.reboot(token))
             else if (currentModal === "clear build") dispatch(RpiApi.clearBuild(token))
+            else if (currentModal === "restart backend") dispatch(RpiApi.restartBackend(token))
             setModalOpen(false)
           }}>
             {currentModal.toUpperCase()}
