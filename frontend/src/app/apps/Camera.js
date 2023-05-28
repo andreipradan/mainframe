@@ -84,6 +84,9 @@ export const Camera = () => {
                       path && <li style={{cursor: "pointer"}} onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, path.split("/").length - 1).join("/")))}>..</li>
                     }
                     {
+                      !results?.length && <li>No files found</li>
+                    }
+                    {
                       results?.map((result, i) =>
                       <li key={i}>
                         <span
@@ -98,7 +101,7 @@ export const Camera = () => {
                           {result.name}{" "}
                         </span>
                         {
-                          loadingFiles?.includes(result.is_file ? `${path}/${result.name}` : result.name)
+                          loadingFiles?.includes(result.is_file && path ? `${path}/${result.name}` : result.name)
                           ? <Circles
                               visible={true}
                               height="15"
@@ -130,13 +133,21 @@ export const Camera = () => {
           </div>
         </div>
         <div className="col-lg-7 grid-margin stretch-card">
-              <div className="card">
-                <div className="card-body flex-wrap d-flex">
-                  <h4 className="card-title">{currentImage?.name}</h4>
-                  <img className="w-100" src={currentImage?.url} alt={currentImage?.name} />
-                </div>
-              </div>
+          <div className="card">
+            <div className="card-body flex-wrap d-flex">
+              <h4 className="card-title">{currentImage?.name}</h4>
+              {
+                currentImage?.name.endsWith(".jpg")
+                  ? <img className="w-100" src={currentImage?.url} alt={currentImage?.name} />
+                  : currentImage?.name.endsWith(".mp4")
+                    ? <video controls width="100%">
+                      <source src={currentImage?.url} type="video/mp4" />
+                    </video>
+                    : null
+              }
             </div>
+          </div>
+        </div>
       </div>
     </div>
   )

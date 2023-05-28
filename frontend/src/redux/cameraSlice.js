@@ -16,7 +16,7 @@ export const cameraSlice = createSlice({
     download: (state, action) => {
       state.errors = null
       state.loading = false
-      state.loadingFiles = state.loadingFiles.filter(file => file !== action.payload.filename)
+      state.loadingFiles = state.loadingFiles && state.loadingFiles.filter(file => file !== action.payload.filename)
       state.path = action.payload.data.path;
       state.results = action.payload.data.results;
     },
