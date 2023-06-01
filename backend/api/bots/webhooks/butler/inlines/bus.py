@@ -225,7 +225,15 @@ class BusInline(BaseInlines):
 
     @classmethod
     def sync(cls, update, line_type):
-        lines = list(TransitLine.objects.filter(line_type=line_type))
+        if line_type == "favorites":
+            user = (
+                update.callback_query.from_user
+                if update.callback_query
+                else update.message.from_user
+            )
+            lines = list(TransitLine.objects.filter(favorite_of__contains=[user.username or user.id]))
+        else:
+            lines = list(TransitLine.objects.filter(line_type=line_type))
         CTPClient.fetch_schedules(lines)
         override_message = f"Synced schedules for {len(lines)} {line_type} lines 👌"
         return cls.start(update, line_type=line_type, override_message=override_message)
