@@ -71,8 +71,8 @@ class Schedule(TimeStampedModel):
             (OCCURRENCE_D, "Sunday"),
         ),
     )
-    terminal1_schedule = ArrayField(models.CharField(max_length=5), default=list)
-    terminal2_schedule = ArrayField(models.CharField(max_length=5), default=list)
+    terminal1_schedule = ArrayField(models.CharField(max_length=10), default=list)
+    terminal2_schedule = ArrayField(models.CharField(max_length=10), default=list)
 
     schedule_start_date = models.DateField(blank=True, null=True)
 
