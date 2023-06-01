@@ -50,7 +50,8 @@ class CameraViewSet(viewsets.ViewSet):
             {
                 "name": b.name.split("/")[-1],
                 "is_file": True,
-                "is_local": b.name.split("/")[-1] in local_files
+                "is_local": b.name.split("/")[-1] in local_files,
+                "size": f"{(b.size / (1024 ** 2)):.2f}",
             } for b in blobs if b.name != prefix
         ]
         folders = [
@@ -58,6 +59,7 @@ class CameraViewSet(viewsets.ViewSet):
                 "name": b[:-1],
                 "is_file": False,
                 "is_local": b.split("/")[:-1][-1] in local_files,
+                "size": None,
             }
             for b in blobs.prefixes
         ]

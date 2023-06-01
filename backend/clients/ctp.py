@@ -1,5 +1,6 @@
 import asyncio
 import csv
+import re
 from datetime import datetime
 
 import aiohttp
@@ -19,14 +20,13 @@ class FetchTransitLinesException(Exception):
 
 
 def extract_line_type(class_list):
-    if "tramvaie" in class_list:
+    if "trams" in class_list:
         return TransitLine.CAR_TYPE_TRAM
-    if "autobuze" in class_list:
-        return TransitLine.CAR_TYPE_BUS
-    if "troleibuze" in class_list:
+    if "trolleybus" in class_list or "trolleybuses" in class_list:
         return TransitLine.CAR_TYPE_TROLLEYBUS
-    if "microbuze" in class_list:
+    if "minibuses" in class_list:
         return TransitLine.CAR_TYPE_MINIBUS
+    return TransitLine.CAR_TYPE_BUS
 
 
 def extract_terminals(route, separators):
@@ -102,33 +102,31 @@ def parse_schedule(args) -> Optional[Schedule]:
     )
 
 
-LINE_TYPES = {
-    "urban": TransitLine.LINE_TYPE_URBAN,
-    "metropolitan": TransitLine.LINE_TYPE_METROPOLITAN,
-}
-
-
 class CTPClient:
     DETAIL_URL = "https://ctpcj.ro/orare/csv/orar_{}_{}.csv"
-    LIST_URL = "https://ctpcj.ro/index.php/ro/orare-linii/linii-{}"
+    LIST_URL = "https://ctpcj.ro/index.php/en/timetables/{}"
 
     @classmethod
     def fetch_lines(cls, line_type, commit=True) -> List[TransitLine]:
-        if line_type not in LINE_TYPES.keys():
+        choices = [c[0] for c in TransitLine.LINE_TYPE_CHOICES]
+        if line_type not in choices:
             raise FetchTransitLinesException(
-                f"Invalid line_type: {line_type}. Must be one of {LINE_TYPES.keys()}"
+                f"Invalid line_type: {line_type}. Must be one of {choices}"
             )
-
-        soup = scraper.fetch(cls.LIST_URL.format(f"{line_type}e"), logger)
+        url = cls.LIST_URL.format(
+            f"{line_type}-line{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
+        )
+        soup = scraper.fetch(url, logger)
         if isinstance(soup, Exception) or "EROARE" in soup.text:
             raise FetchTransitLinesException(soup)
 
         lines = []
-        for item in soup.find_all("div", {"class": "element"}):
+        for item in soup.find_all("div", {"class": "element", "data-title": re.compile("Line")}):
             name = (
                 item.find("h6", {"itemprop": "name"})
                 .text.strip()
-                .replace("Linia ", "")
+                .replace("Line ", "")
+                .replace(" Line", "")
                 .replace("Cora ", "")
             )
             route = item.find("div", {"class": "ruta"}).text.strip()
@@ -136,7 +134,7 @@ class CTPClient:
             transit_line = TransitLine(
                 name=name.replace("🚲", ""),
                 car_type=extract_line_type(item.attrs["class"]),
-                line_type=LINE_TYPES[line_type],
+                line_type=line_type,
                 has_bike_rack="🚲" in name,
                 terminal1=terminal1.strip(),
                 terminal2=terminal2.strip(),

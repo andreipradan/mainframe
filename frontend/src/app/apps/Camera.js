@@ -98,7 +98,7 @@ export const Camera = () => {
                               : result.is_local ? dispatch(CameraApi.getList(token, result.name)) : null}
                         >
                           <i className={`mdi mdi-${result.is_file ? 'file text-default' : 'folder text-warning'}`} /> {" "}
-                          {result.name}{" "}
+                          {result.name}{result.is_file ? ` [${result.size} MB] ` : " "}
                         </span>
                         {
                           loadingFiles?.includes(result.is_file && path ? `${path}/${result.name}` : result.name)

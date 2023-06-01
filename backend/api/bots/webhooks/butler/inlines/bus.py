@@ -9,7 +9,7 @@ from api.bots.webhooks.shared import BaseInlines, chunks
 from clients.chat import edit_message
 from datetime import datetime
 
-from clients.ctp import LINE_TYPES, CTPClient
+from clients.ctp import CTPClient
 from clients.logs import MainframeHandler
 from transit_lines.models import TransitLine, Schedule
 
@@ -52,8 +52,9 @@ def parse_schedule(schedule: Schedule, now: str, full_details=False):
         f"{start2}: <b>{terminal2_next_time}</b>\n\n"
         f"<b>{start1}</b>\n{' | '.join([t if t != terminal1_next_time else f'<b>{t}</b>' for t in terminal1_times])}\n"
         f"<b>{start2}</b>\n{' | '.join([t if t != terminal2_next_time else f'<b>{t}</b>' for t in terminal2_times])}\n"
-        f"{'' if terminal1_times + terminal2_times else f'Start date: {schedule.schedule_start_date}'}"
-        f"<a href='https://ctpcj.ro/orare/pdf/orar_{schedule.line.name}.pdf'>PDF version</a>"
+        f"{'' if terminal1_times + terminal2_times else f'Start date: {schedule.schedule_start_date}'}\n"
+        f"<a href='https://ctpcj.ro/orare/pdf/orar_{schedule.line.name}.pdf'>PDF version</a>\n"
+        f"<a href='https://ctpcj.ro/orare/harta/{schedule.line.name}.jpeg'>Route map</a> (if available)"
     )
 
 
@@ -77,11 +78,17 @@ class BusInline(BaseInlines):
                 0, Button("♻️", callback_data=f"bus sync {line_type}")
             )
             line_type_buttons[0].append(Button("⭐️", callback_data=f"bus start"))
-        if line_type != "urban":
-            line_type_buttons[0].append(Button("🚍", callback_data=f"bus start urban"))
-        if line_type != "metropolitan":
+        if line_type != TransitLine.LINE_TYPE_URBAN:
+            line_type_buttons[0].append(Button(
+                "🚍", callback_data=f"bus start {TransitLine.LINE_TYPE_URBAN}")
+            )
+        if line_type != TransitLine.LINE_TYPE_EXPRESS:
+            line_type_buttons[0].append(Button(
+                "🚇", callback_data=f"bus start {TransitLine.LINE_TYPE_EXPRESS}")
+            )
+        if line_type != TransitLine.LINE_TYPE_METROPOLITAN:
             line_type_buttons[0].append(
-                Button("Ⓜ️", callback_data=f"bus start metropolitan")
+                Button("Ⓜ️", callback_data=f"bus start {TransitLine.LINE_TYPE_METROPOLITAN}")
             )
 
         if count > cls.PER_PAGE:
@@ -187,7 +194,7 @@ class BusInline(BaseInlines):
         if line_type == "favorites":
             qs = qs.filter(favorite_of__contains=[user.username or user.id])
         else:
-            qs = qs.filter(line_type=LINE_TYPES[line_type])
+            qs = qs.filter(line_type=line_type)
 
         lines = list(qs.order_by("name")[start : start + cls.PER_PAGE])
         count = qs.count()
@@ -218,7 +225,7 @@ class BusInline(BaseInlines):
 
     @classmethod
     def sync(cls, update, line_type):
-        lines = list(TransitLine.objects.filter(line_type=LINE_TYPES[line_type]))
+        lines = list(TransitLine.objects.filter(line_type=line_type))
         CTPClient.fetch_schedules(lines)
         override_message = f"Synced schedules for {len(lines)} {line_type} lines 👌"
         return cls.start(update, line_type=line_type, override_message=override_message)

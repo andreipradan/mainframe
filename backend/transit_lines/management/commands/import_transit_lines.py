@@ -18,7 +18,7 @@ class Command(BaseCommand):
         logger.info("Importing transit lines")
 
         lines = []
-        for line_type in ["urban", "metropolitan"]:
+        for line_type in [c[0] for c in TransitLine.LINE_TYPE_CHOICES]:
             try:
                 lines.extend(CTPClient.fetch_lines(line_type, commit=False))
             except FetchTransitLinesException as e:

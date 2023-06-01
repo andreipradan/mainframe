@@ -10,16 +10,16 @@ class TransitLine(TimeStampedModel):
     CAR_TYPE_TRAM = 3
     CAR_TYPE_TROLLEYBUS = 4
 
-    LINE_TYPE_METROPOLITAN = 1
-    LINE_TYPE_URBAN = 2
-
-    name = models.CharField(max_length=16, unique=True)
-    line_type = models.IntegerField(
-        choices=(
-            (LINE_TYPE_METROPOLITAN, "Metropolitan"),
-            (LINE_TYPE_URBAN, "Urban"),
-        )
+    LINE_TYPE_METROPOLITAN = "metropolitan"
+    LINE_TYPE_URBAN = "urban"
+    LINE_TYPE_EXPRESS = "express"
+    LINE_TYPE_CHOICES = (
+        (LINE_TYPE_METROPOLITAN, "Metropolitan"),
+        (LINE_TYPE_URBAN, "Urban"),
+        (LINE_TYPE_EXPRESS, "Express"),
     )
+    name = models.CharField(max_length=16, unique=True)
+    line_type = models.CharField(choices=LINE_TYPE_CHOICES, max_length=16)
     car_type = models.IntegerField(
         choices=(
             (CAR_TYPE_BUS, "Bus"),
