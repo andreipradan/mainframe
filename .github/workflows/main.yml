@@ -1,7 +1,7 @@
 name: black-action
 on: [push]
 jobs:
-  linter_name:
+  black:
     name: runner / black
     runs-on: ubuntu-latest
     steps:
@@ -26,3 +26,29 @@ jobs:
       - name: Fail if black requires formatting
         if: steps.action_black.outputs.is_formatted == 'true'
         run: exit 1
+
+  build-and-upload-to-cloud-storage:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+    - id: 'checkout'
+      uses: 'actions/checkout@v3'
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - working-directory: ./frontend
+      run: npm run build --if-present
+    - id: 'upload-folder'
+      uses: 'google-github-actions/upload-cloud-storage@v1'
+      working-directory: ./frontend
+      with:
+        path: './build'
+        destination: ${{ secrets.BUCKET_NAME }}
