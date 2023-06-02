@@ -1,4 +1,4 @@
-name: black-action
+name: black-build-and-upload
 on: [push]
 jobs:
   black:
@@ -46,8 +46,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: build frontend
       run: npm run build --if-present
-      with:
-        working-directory: ./frontend
+      working-directory: ./frontend
     - id: 'upload-folder'
       uses: 'google-github-actions/upload-cloud-storage@v1'
       with:
