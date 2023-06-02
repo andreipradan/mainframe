@@ -44,11 +44,12 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - working-directory: ./frontend
-      run: npm run build --if-present
+    - run: npm run build --if-present
+      with:
+        working-directory: ./frontend
     - id: 'upload-folder'
       uses: 'google-github-actions/upload-cloud-storage@v1'
-      working-directory: ./frontend
       with:
+        working-directory: ./frontend
         path: './build'
         destination: ${{ secrets.BUCKET_NAME }}
