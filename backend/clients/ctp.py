@@ -121,7 +121,9 @@ class CTPClient:
             raise FetchTransitLinesException(soup)
 
         lines = []
-        for item in soup.find_all("div", {"class": "element", "data-title": re.compile("Line")}):
+        for item in soup.find_all(
+            "div", {"class": "element", "data-title": re.compile("Line")}
+        ):
             name = (
                 item.find("h6", {"itemprop": "name"})
                 .text.strip()

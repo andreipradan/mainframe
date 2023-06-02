@@ -20,7 +20,9 @@ class LogsViewSet(viewsets.ViewSet):
                 with open(self.base_path / filename, "r") as file:
                     return FileResponse(file.read())
             except (PermissionError, UnicodeDecodeError, FileNotFoundError) as e:
-                return JsonResponse(status=400, data={"error": f"{e.reason}: {filename}"})
+                return JsonResponse(
+                    status=400, data={"error": f"{e.reason}: {filename}"}
+                )
 
         path = request.GET.get("path", "")
         if path.startswith("/"):

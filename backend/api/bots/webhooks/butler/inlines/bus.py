@@ -79,16 +79,19 @@ class BusInline(BaseInlines):
         if line_type != "favorites":
             line_type_buttons[0].append(Button("⭐️", callback_data=f"bus start"))
         if line_type != TransitLine.LINE_TYPE_URBAN:
-            line_type_buttons[0].append(Button(
-                "🚍", callback_data=f"bus start {TransitLine.LINE_TYPE_URBAN}")
+            line_type_buttons[0].append(
+                Button("🚍", callback_data=f"bus start {TransitLine.LINE_TYPE_URBAN}")
             )
         if line_type != TransitLine.LINE_TYPE_EXPRESS:
-            line_type_buttons[0].append(Button(
-                "🚇", callback_data=f"bus start {TransitLine.LINE_TYPE_EXPRESS}")
+            line_type_buttons[0].append(
+                Button("🚇", callback_data=f"bus start {TransitLine.LINE_TYPE_EXPRESS}")
             )
         if line_type != TransitLine.LINE_TYPE_METROPOLITAN:
             line_type_buttons[0].append(
-                Button("Ⓜ️", callback_data=f"bus start {TransitLine.LINE_TYPE_METROPOLITAN}")
+                Button(
+                    "Ⓜ️",
+                    callback_data=f"bus start {TransitLine.LINE_TYPE_METROPOLITAN}",
+                )
             )
 
         if count > cls.PER_PAGE:
@@ -231,7 +234,11 @@ class BusInline(BaseInlines):
                 if update.callback_query
                 else update.message.from_user
             )
-            lines = list(TransitLine.objects.filter(favorite_of__contains=[user.username or user.id]))
+            lines = list(
+                TransitLine.objects.filter(
+                    favorite_of__contains=[user.username or user.id]
+                )
+            )
         else:
             lines = list(TransitLine.objects.filter(line_type=line_type))
         CTPClient.fetch_schedules(lines)

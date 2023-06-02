@@ -45,14 +45,18 @@ class CameraViewSet(viewsets.ViewSet):
     def list(self, request, **kwargs):
         prefix = request.GET.get("path", kwargs.get("path", ""))
         blobs = list_blobs_with_prefix(f"{prefix}/" if prefix else None)
-        local_files = list(map(itemgetter("name"), get_folder_contents(self.base_path / prefix)))
+        local_files = list(
+            map(itemgetter("name"), get_folder_contents(self.base_path / prefix))
+        )
         files = [
             {
                 "name": b.name.split("/")[-1],
                 "is_file": True,
                 "is_local": b.name.split("/")[-1] in local_files,
                 "size": f"{(b.size / (1024 ** 2)):.2f}",
-            } for b in blobs if b.name != prefix
+            }
+            for b in blobs
+            if b.name != prefix
         ]
         folders = [
             {
@@ -84,7 +88,9 @@ class CameraViewSet(viewsets.ViewSet):
     def delete(self, request):
         filename = request.GET.get("filename", "")
         if not filename:
-            return JsonResponse(status=400, data={"error": f"Invalid filename: {filename}"})
+            return JsonResponse(
+                status=400, data={"error": f"Invalid filename: {filename}"}
+            )
 
         file_path = "/".join(filename.split("/")[:-1])
         Path.unlink(self.base_path / filename)
@@ -103,7 +109,9 @@ class CameraViewSet(viewsets.ViewSet):
     def download(self, request):
         filename = request.GET.get("filename", "")
         if not filename:
-            return JsonResponse(status=400, data={"error": f"Invalid filename: {filename}"})
+            return JsonResponse(
+                status=400, data={"error": f"Invalid filename: {filename}"}
+            )
 
         file_path = "/".join(filename.split("/")[:-1])
         try:
