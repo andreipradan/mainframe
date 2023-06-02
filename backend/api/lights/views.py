@@ -25,44 +25,44 @@ class LightsViewSet(viewsets.ViewSet):
     def list(self, request):
         return JsonResponse(data=LightsClient.get_bulbs(), safe=False)
 
-    @action(detail=False, methods=["patch"], url_path=f'{IP_REGEX}/set-brightness')
+    @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-brightness")
     def set_brightness(self, request, ip):
         body = json.loads(request.body)
         response = LightsClient.set_brightness(ip, body["brightness"])
         logger.info(response)
         return HttpResponse(response)
 
-    @action(detail=False, methods=["patch"], url_path=f'{IP_REGEX}/set-color-temp')
+    @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-color-temp")
     def set_color_temp(self, request, ip):
         body = json.loads(request.body)
         response = LightsClient.set_color_temp(ip, body["color_temp"])
         logger.info(response)
         return HttpResponse(response)
 
-    @action(detail=False, methods=["patch"], url_path=f'{IP_REGEX}/set-rgb')
+    @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-rgb")
     def set_rgb(self, request, ip):
         body = json.loads(request.body)
         response = LightsClient.set_rgb(ip, body["rgb"])
         logger.info(response)
         return HttpResponse(response)
 
-    @action(detail=False, methods=["put"], url_path=f'turn-all-off')
+    @action(detail=False, methods=["put"], url_path=f"turn-all-off")
     def turn_all_off(self, request):
         response = LightsClient.turn_all_off()
         return HttpResponse(response)
 
-    @action(detail=False, methods=["put"], url_path=f'turn-all-on')
+    @action(detail=False, methods=["put"], url_path=f"turn-all-on")
     def turn_all_on(self, request):
         response = LightsClient.turn_all_on()
         return HttpResponse(response)
 
-    @action(detail=False, methods=["put"], url_path=f'{IP_REGEX}/turn-off')
+    @action(detail=False, methods=["put"], url_path=f"{IP_REGEX}/turn-off")
     def turn_off(self, request, ip):
         response = LightsClient.turn_off(ip)
         logger.info(f"Turn off {ip}: {response}")
         return HttpResponse(response)
 
-    @action(detail=False, methods=["put"], url_path=f'{IP_REGEX}/turn-on')
+    @action(detail=False, methods=["put"], url_path=f"{IP_REGEX}/turn-on")
     def turn_on(self, request, ip):
         response = LightsClient.turn_on(ip)
         logger.info(f"Turn on {ip}: {response}")
