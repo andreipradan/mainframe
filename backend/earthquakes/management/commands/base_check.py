@@ -63,6 +63,11 @@ class BaseEarthquakeCommand(BaseCommand):
             return self.logger.error(self.style.ERROR("No bots with earthquake config"))
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
+        if self.source == Earthquake.SOURCE_INFP:
+            latest = Earthquake.objects.filter(
+                source=Earthquake.SOURCE_INFP
+            ).order_by("-timestamp").first()
+            events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
             return self.logger.info("No events found!")

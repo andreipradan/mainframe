@@ -23,7 +23,7 @@ class Command(BaseEarthquakeCommand):
         soup = BeautifulSoup(response.text, features="html.parser")
         return soup.html.body.find_all("div", {"class": "event-item"})
 
-    def parse_earthquake(self, card):
+    def parse_earthquake(self, card) -> Earthquake:
         intensity = card.find("span", {"title": "Intensitate epicentrala"})
         timestamp = datetime.strptime(card.attrs["data-time"], "%Y-%m-%d %H:%M:%S")
         return Earthquake(
