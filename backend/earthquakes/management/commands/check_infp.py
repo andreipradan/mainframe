@@ -25,9 +25,8 @@ class Command(BaseEarthquakeCommand):
 
     def get_datetime(self, string):
         date, time, tz = string.split()
-        return datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S").replace(
-            tzinfo=pytz.timezone(tz)
-        )
+        dt = datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S")
+        return pytz.timezone(tz).localize(dt)
 
     def parse_earthquake(self, card):
         body = card.find("div", {"class": "card-body"})
