@@ -1,5 +1,6 @@
 import logging
 import shutil
+from datetime import datetime
 from operator import itemgetter
 from pathlib import Path
 
@@ -44,6 +45,9 @@ class CameraViewSet(viewsets.ViewSet):
 
     def list(self, request, **kwargs):
         prefix = request.GET.get("path", kwargs.get("path", ""))
+        if not prefix:
+            prefix = datetime.now().strftime("%Y/%m")
+            Path(f"{self.base_path}/{prefix}").mkdir(parents=True, exist_ok=True)
         blobs = list_blobs_with_prefix(f"{prefix}/" if prefix else None)
         local_files = list(
             map(itemgetter("name"), get_folder_contents(self.base_path / prefix))

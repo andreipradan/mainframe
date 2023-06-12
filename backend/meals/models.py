@@ -32,3 +32,16 @@ class Meal(TimeStampedModel):
 
     def __str__(self):
         return f"{self.get_type_display()} - {self.date} - {self.name}"
+
+    @property
+    def time(self):
+        if self.type == self.TYPE_BREAKFAST:
+            return 10
+        elif self.type == self.TYPE_SNACK_1:
+            return 12
+        elif self.type == self.TYPE_LUNCH:
+            return 14
+        elif self.type == self.TYPE_SNACK_2:
+            return 16
+        elif self.type == self.TYPE_DINNER:
+            return 18

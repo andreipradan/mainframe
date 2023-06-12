@@ -6,6 +6,9 @@
   "dependencies": {
     "@amcharts/amcharts5": "^5.3.3",
     "@amcharts/amcharts5-geodata": "^5.1.0",
+    "@fullcalendar/core": "^6.1.8",
+    "@fullcalendar/daygrid": "^6.1.8",
+    "@fullcalendar/react": "^6.1.8",
     "@mdi/font": "^4.2.95",
     "@reduxjs/toolkit": "^1.9.1",
     "axios": "^1.2.3",

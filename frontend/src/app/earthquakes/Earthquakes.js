@@ -73,7 +73,7 @@ const Earthquakes = () => {
   useEffect(() => {
     !earthquakes && dispatch(EarthquakesApi.getList(token))
     !bots && dispatch(BotsApi.getList(token))
-  }, [dispatch, earthquakes, token]);
+  }, [bots, dispatch, earthquakes, token]);
 
   useLayoutEffect(() => {
     const root = am5.Root.new("map")

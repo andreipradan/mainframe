@@ -24,8 +24,10 @@ export const Camera = () => {
       : `https://${window.location.hostname}`
     setCurrentImage({
       name: filename,
-      url: `${base}/static/media/${path}/${filename}`,
-  })}
+      url: `${base}/static/media/${path}/${filename}`})
+    const video = document.getElementById("video");
+    if (video) video.load()
+  }
 
   return (
     <div>
@@ -91,7 +93,7 @@ export const Camera = () => {
                       <li key={i}>
                         <span
                           style={{cursor: result.is_local ? "pointer": ""}}
-                          className={result.is_local ? "" : "text-muted" }
+                          className={`${result.is_local ? "" : "text-muted"} ${result.name === currentImage?.name ? "text-success" : ""}`}
                           onClick={() =>
                             result.is_file
                               ? result.is_local ? setImage(result.name) : null
@@ -106,10 +108,8 @@ export const Camera = () => {
                               visible={true}
                               height="15"
                               ariaLabel="ball-triangle-loading"
-                              wrapperStyle={{}}
-                              wrapperClass={{}}
+                              wrapperStyle={{float: "right"}}
                               color='orange'
-                              className="float-right small"
                             />
                           : <i
                               style={{cursor: "pointer"}}
@@ -140,7 +140,7 @@ export const Camera = () => {
                 currentImage?.name.endsWith(".jpg")
                   ? <img className="w-100" src={currentImage?.url} alt={currentImage?.name} />
                   : currentImage?.name.endsWith(".mp4")
-                    ? <video controls width="100%">
+                    ? <video id="video" controls width="100%">
                       <source src={currentImage?.url} type="video/mp4" />
                     </video>
                     : null

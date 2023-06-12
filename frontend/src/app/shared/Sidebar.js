@@ -53,7 +53,6 @@ const Sidebar = () => {
   }, []);
 
   useEffect(() => {
-    console.log("location changed to " + location)
     onRouteChanged()
   }, [location])
 
@@ -355,7 +354,7 @@ const Sidebar = () => {
           </Collapse>
         </li>
         <li className={ isPathActive('/icons') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <div className={ iconsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setIconsMenuOpen(iconsMenuOpen) } data-toggle="collapse">
+          <div className={ iconsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setIconsMenuOpen(!iconsMenuOpen) } data-toggle="collapse">
             <span className="menu-icon">
               <i className="mdi mdi-contacts"></i>
             </span>
@@ -371,7 +370,7 @@ const Sidebar = () => {
           </Collapse>
         </li>
         <li className={ isPathActive('/login') || isPathActive('/register') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <div className={ userPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setUserPagesMenuOpen(userPagesMenuOpen) } data-toggle="collapse">
+          <div className={ userPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setUserPagesMenuOpen(!userPagesMenuOpen) } data-toggle="collapse">
             <span className="menu-icon">
               <i className="mdi mdi-security"></i>
             </span>
@@ -388,7 +387,7 @@ const Sidebar = () => {
           </Collapse>
         </li>
         <li className={ isPathActive('/error-pages') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <div className={ errorPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setErrorPagesMenuOpen(errorPagesMenuOpen) } data-toggle="collapse">
+          <div className={ errorPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setErrorPagesMenuOpen(!errorPagesMenuOpen) } data-toggle="collapse">
             <span className="menu-icon">
               <i className="mdi mdi-lock"></i>
             </span>
