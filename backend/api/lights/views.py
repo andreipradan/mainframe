@@ -1,12 +1,12 @@
 import json
 import logging
 
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from clients.lights import LightsClient
+from clients.lights import LightsClient, LightsException
 from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
@@ -22,48 +22,50 @@ class LightsViewSet(viewsets.ViewSet):
     lookup_field = "ip"
     permission_classes = (IsAuthenticated,)
 
+    def _request(self, what, **kwargs):
+        logger.info(f"Lights: {what}, args: {kwargs}")
+        try:
+            data = {"data": getattr(LightsClient, what)(**kwargs)}
+            status = 200
+        except LightsException as e:
+            data = {"error": str(e)}
+            status = 400
+        if "error" in data:
+            logger.error(data["error"])
+        else:
+            logger.info(data["data"])
+        return JsonResponse(data=data, status=status)
+
     def list(self, request):
         return JsonResponse(data=LightsClient.get_bulbs(), safe=False)
 
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-brightness")
     def set_brightness(self, request, ip):
         body = json.loads(request.body)
-        response = LightsClient.set_brightness(ip, body["brightness"])
-        logger.info(response)
-        return HttpResponse(response)
+        return self._request("set_brightness", ip=ip, brightness=body["brightness"])
 
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-color-temp")
     def set_color_temp(self, request, ip):
         body = json.loads(request.body)
-        response = LightsClient.set_color_temp(ip, body["color_temp"])
-        logger.info(response)
-        return HttpResponse(response)
+        return self._request("set_color_temp", ip=ip, color_temp=body["color_temp"])
 
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-rgb")
     def set_rgb(self, request, ip):
         body = json.loads(request.body)
-        response = LightsClient.set_rgb(ip, body["rgb"])
-        logger.info(response)
-        return HttpResponse(response)
+        return self._request("set_rgb", ip=ip, rgb=body["rgb"])
 
     @action(detail=False, methods=["put"], url_path=f"turn-all-off")
     def turn_all_off(self, request):
-        response = LightsClient.turn_all_off()
-        return HttpResponse(response)
+        return self._request("turn_all_off")
 
     @action(detail=False, methods=["put"], url_path=f"turn-all-on")
     def turn_all_on(self, request):
-        response = LightsClient.turn_all_on()
-        return HttpResponse(response)
+        return self._request("turn_all_on")
 
     @action(detail=False, methods=["put"], url_path=f"{IP_REGEX}/turn-off")
     def turn_off(self, request, ip):
-        response = LightsClient.turn_off(ip)
-        logger.info(f"Turn off {ip}: {response}")
-        return HttpResponse(response)
+        return self._request("turn_off", ip=ip)
 
     @action(detail=False, methods=["put"], url_path=f"{IP_REGEX}/turn-on")
     def turn_on(self, request, ip):
-        response = LightsClient.turn_on(ip)
-        logger.info(f"Turn on {ip}: {response}")
-        return HttpResponse(response)
+        return self._request("turn_on", ip=ip)
