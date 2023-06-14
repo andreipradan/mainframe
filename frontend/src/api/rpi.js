@@ -13,10 +13,7 @@ class RpiApi {
     dispatch(setLoading(true))
     axios
       .put(`${base}/clear-build/`, {}, {headers: {Authorization: token}})
-      .then(() => {
-        dispatch(logout("Build cleared!"))
-        dispatch(completed())
-      })
+      .then(() => dispatch(completed("Build cleared, after copying the static files, please restart backend")))
       .catch(err => handleErrors(err, dispatch, setErrors))
   }
   static reboot = token => dispatch => {
@@ -24,8 +21,8 @@ class RpiApi {
     axios
       .put(`${base}/reboot/`, {}, { headers: { Authorization: token } })
       .then(() => {
+        dispatch(completed("Rebooting"))
         dispatch(logout("Started reboot, please refresh this page after a couple of moments"))
-        dispatch(completed())
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
