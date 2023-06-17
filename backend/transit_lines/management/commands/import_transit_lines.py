@@ -42,6 +42,6 @@ class Command(BaseCommand):
             unique_fields=list(*Schedule._meta.unique_together),
         )
 
-        msg = f"Synced {len(lines)} transit lines and {len(list(schedules))} schedules"
+        msg = f"Synced {len(lines)} transit lines and {len(schedules)} schedules"
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS(msg))

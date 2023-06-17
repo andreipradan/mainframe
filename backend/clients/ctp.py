@@ -88,6 +88,8 @@ def parse_schedule(args) -> Optional[Schedule]:
     except ValueError:
         if date_row == "20.02.20232":
             schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y2")
+        else:
+            raise
 
     reader = csv.DictReader(rows[5:], fieldnames=["time1", "time2"])
     terminal1_schedule = []
