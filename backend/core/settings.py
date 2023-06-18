@@ -235,4 +235,4 @@ LOGGING = {
     },
 }
 if ENV != "local":
-    LOGGING["loggers"]["django"]["handlers"].append("mainframe")
+    LOGGING["loggers"]["root"]["handlers"].append("mainframe")
