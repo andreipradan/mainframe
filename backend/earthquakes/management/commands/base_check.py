@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import environ
 import pytz
 import requests
 import telegram
@@ -101,6 +102,7 @@ class BaseEarthquakeCommand(BaseCommand):
 
         self.set_last_check(instance)
         self.stdout.write(self.style.SUCCESS("Done."))
+        requests.post(url=environ.Env()(f"HEALTHCHECKS_{self.source.upper()}"))
 
     def fetch(self, **options):
         raise NotImplementedError
