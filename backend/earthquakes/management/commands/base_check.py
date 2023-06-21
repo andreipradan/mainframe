@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import environ
 import pytz
 import requests
 import telegram
@@ -8,6 +7,7 @@ from django.core.management import CommandError, BaseCommand
 from django.db import OperationalError
 
 from bots.models import Bot
+from clients import healthchecks
 from clients.chat import send_telegram_message
 from earthquakes.models import Earthquake
 
@@ -45,12 +45,7 @@ class BaseEarthquakeCommand(BaseCommand):
     url = NotImplemented
 
     def handle(self, *args, **options):
-        try:
-            response = requests.post(url=environ.Env()(f"HEALTHCHECKS_{self.source.upper()}"))
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            self.logger.warning(str(e))
-
+        healthchecks.ping(self.source)
         try:
             response = self.fetch(**options)
             response.raise_for_status()

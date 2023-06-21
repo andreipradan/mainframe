@@ -2,6 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand, CommandError
 
+from clients import healthchecks
 from clients.ctp import CTPClient, FetchTransitLinesException
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
@@ -16,6 +17,7 @@ class Command(BaseCommand):
         logger.addHandler(ManagementCommandsHandler())
 
         logger.info("Importing transit lines")
+        healthchecks.ping("transit")
 
         lines = []
         for line_type in [c[0] for c in TransitLine.LINE_TYPE_CHOICES]:

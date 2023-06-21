@@ -1,6 +1,7 @@
 import logging
 from django.core.management.base import BaseCommand, CommandError
 
+from clients import healthchecks
 from clients.logs import ManagementCommandsHandler
 from clients.meals import MealsClient, FetchMealsException
 from clients.chat import send_telegram_message
@@ -12,6 +13,7 @@ class Command(BaseCommand):
         logger.addHandler(ManagementCommandsHandler())
 
         logger.info("Fetching menu for the next month")
+        healthchecks.ping("meals")
         try:
             meals = MealsClient.fetch_meals()
         except FetchMealsException as e:
