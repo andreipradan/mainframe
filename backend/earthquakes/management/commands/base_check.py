@@ -46,6 +46,12 @@ class BaseEarthquakeCommand(BaseCommand):
 
     def handle(self, *args, **options):
         try:
+            response = requests.post(url=environ.Env()(f"HEALTHCHECKS_{self.source.upper()}"))
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            self.logger.warning(str(e))
+
+        try:
             response = self.fetch(**options)
             response.raise_for_status()
         except (
@@ -102,7 +108,6 @@ class BaseEarthquakeCommand(BaseCommand):
 
         self.set_last_check(instance)
         self.stdout.write(self.style.SUCCESS("Done."))
-        requests.post(url=environ.Env()(f"HEALTHCHECKS_{self.source.upper()}"))
 
     def fetch(self, **options):
         raise NotImplementedError
