@@ -54,8 +54,7 @@ class BaseEarthquakeCommand(BaseCommand):
             requests.exceptions.HTTPError,
             requests.exceptions.ReadTimeout,
         ) as e:
-            self.logger.warning(str(e))
-            raise CommandError(str(e))
+            return self.logger.warning(str(e))
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
