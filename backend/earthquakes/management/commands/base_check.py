@@ -71,7 +71,7 @@ class BaseEarthquakeCommand(BaseCommand):
             events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
-            return self.logger.info("No events found!")
+            return
 
         Earthquake.objects.bulk_create(
             events,
@@ -93,8 +93,8 @@ class BaseEarthquakeCommand(BaseCommand):
             event for event in events if float(event.magnitude) >= float(min_magnitude)
         ]
 
-        self.logger.info(f"Got {len(events)} events with magnitude >= {min_magnitude}")
         if len(events):
+            self.logger.info(f"Got {len(events)} events with magnitude >= {min_magnitude}")
             send_telegram_message(
                 text="\n\n".join(parse_event(event) for event in events),
                 parse_mode=telegram.ParseMode.HTML,
