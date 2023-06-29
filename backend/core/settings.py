@@ -50,6 +50,7 @@ if ENV != "local":
         ],
         traces_sample_rate=1.0,
         send_default_pii=False,
+        profiles_sample_rate=1.0,
     )
 else:
     ALLOWED_HOSTS += ["localhost", "127.0.0.1"]

@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 import requests
 import telegram
-from django.core.management import CommandError, BaseCommand
+from django.core.management import BaseCommand
 from django.db import OperationalError
 
 from bots.models import Bot

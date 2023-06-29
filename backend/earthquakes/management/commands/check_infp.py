@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime
 
+import environ
 import pytz
 import requests
 from bs4 import BeautifulSoup
+from sentry_sdk.crons import monitor
 
 from clients.logs import ManagementCommandsHandler
 from earthquakes.management.commands.base_check import BaseEarthquakeCommand
@@ -15,6 +17,10 @@ class Command(BaseEarthquakeCommand):
     logger.addHandler(ManagementCommandsHandler())
     source = Earthquake.SOURCE_INFP
     url = "http://n1.infp.ro/"
+
+    @monitor(monitor_slug=environ.Env()("SENTRY_INFP"))
+    def handle(self, *args, **options):
+        super().handle(*args, **options)
 
     def fetch(self, **options):
         return requests.get(self.url, timeout=30)
