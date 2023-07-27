@@ -169,15 +169,19 @@ class BusInline(BaseInlines):
         else:
             logger.error("This shouldn't happen, like ever")
             return ""
-        schedule = Schedule.objects.select_related("line").get(
-            line__name=line_name.upper(), occurrence=day
-        )
         message = update.callback_query.message
+        try:
+            schedule = Schedule.objects.select_related("line").get(
+                line__name=line_name.upper(), occurrence=day
+            )
+            text = parse_schedule(schedule, now.strftime("%H:%M"), full_details)
+        except Schedule.DoesNotExist:
+            text = f"Scheduled for {line_name} not found"
         return edit_message(
             update.callback_query.bot,
             message.chat_id,
             message.message_id,
-            parse_schedule(schedule, now.strftime("%H:%M"), full_details),
+            text=text,
             reply_markup=cls.get_bottom_markup(
                 line_type, int(page), line_name, full_details
             ),
