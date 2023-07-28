@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
 import cameraReducer from "./cameraSlice";
+import creditReducer from "../redux/creditSlice";
 import cronsReducer from "../redux/cronsSlice"
 import devicesReducer from "../redux/devicesSlice"
 import earthquakesReducer from "../redux/earthquakesSlice"
@@ -16,6 +17,7 @@ export default configureStore({
     auth: authReducer,
     bots: botReducer,
     camera: cameraReducer,
+    credit: creditReducer,
     crons: cronsReducer,
     devices: devicesReducer,
     earthquakes: earthquakesReducer,

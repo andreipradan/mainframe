@@ -6,6 +6,7 @@ import Spinner from '../app/shared/Spinner';
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
+const Credit = lazy(() => import ("./apps/Credit/Credit"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Todo = lazy(() => import('./apps/TodoList'));
@@ -40,6 +41,7 @@ class AppRoutes extends Component {
         <Switch>
           <Route exact path="/dashboard" component={ Dashboard } />
           <Route exact path="/apps/camera" component={ Camera } />
+          <Route exact path="/apps/credit" component={ Credit } />
           <Route exact path="/apps/expenses" component={ Expenses } />
           <Route exact path="/apps/logs" component={ Logs } />
           <Route exact path="/apps/todo" component={ Todo } />
@@ -68,7 +70,7 @@ class AppRoutes extends Component {
           <Route path="/error-pages/error-500" component={ Error500 } />
 
 
-          <Redirect to="/dashboard" />
+          <Redirect to="/error-pages/error-404" />
         </Switch>
       </Suspense>
     );

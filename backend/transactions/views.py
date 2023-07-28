@@ -1,5 +1,5 @@
-from django.db.models import Count, Sum, Q, Max
-from django.db.models.functions import TruncYear, Abs
+from django.db.models import Count, Sum, Q
+from django.db.models.functions import TruncYear
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action

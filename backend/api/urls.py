@@ -3,6 +3,7 @@ from django.urls import path, include
 urlpatterns = [
     path("bots/", include(("api.bots.routers", "api"), namespace="bots")),
     path("camera/", include(("camera.routers", "api"), namespace="camera")),
+    path("credit/", include(("credit.routers", "api"), namespace="credit")),
     path("crons/", include(("crons.routers", "api"), namespace="crons")),
     path("devices/", include(("devices.routers", "api"), namespace="devices")),
     path(
