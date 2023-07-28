@@ -26,9 +26,11 @@ class Command(BaseEarthquakeCommand):
             since = datetime.now().astimezone(
                 pytz.timezone("Europe/Bucharest")
             ) - timedelta(minutes=options["minutes"])
-        elif latest := Earthquake.objects.filter(
-                source=Earthquake.SOURCE_USGS
-        ).order_by("-timestamp").first():
+        elif (
+            latest := Earthquake.objects.filter(source=Earthquake.SOURCE_USGS)
+            .order_by("-timestamp")
+            .first()
+        ):
             since = latest.timestamp
 
         params = {

@@ -65,9 +65,11 @@ class BaseEarthquakeCommand(BaseCommand):
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if self.source == Earthquake.SOURCE_INFP:
-            latest = Earthquake.objects.filter(
-                source=Earthquake.SOURCE_INFP
-            ).order_by("-timestamp").first()
+            latest = (
+                Earthquake.objects.filter(source=Earthquake.SOURCE_INFP)
+                .order_by("-timestamp")
+                .first()
+            )
             events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
@@ -94,7 +96,9 @@ class BaseEarthquakeCommand(BaseCommand):
         ]
 
         if len(events):
-            self.logger.info(f"Got {len(events)} events with magnitude >= {min_magnitude}")
+            self.logger.info(
+                f"Got {len(events)} events with magnitude >= {min_magnitude}"
+            )
             send_telegram_message(
                 text="\n\n".join(parse_event(event) for event in events),
                 parse_mode=telegram.ParseMode.HTML,

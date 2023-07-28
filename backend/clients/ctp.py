@@ -84,7 +84,9 @@ def parse_schedule(args) -> Optional[Schedule]:
     rows = [row.strip() for row in response.split("\n") if row.strip()]
     date_row = rows[2].split(",")[1]
     try:
-        schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y") if date_row else None
+        schedule_start_date = (
+            datetime.strptime(date_row, "%d.%m.%Y") if date_row else None
+        )
     except ValueError:
         if date_row == "20.02.20232":
             schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y2")

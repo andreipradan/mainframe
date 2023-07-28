@@ -67,27 +67,37 @@ def call(data, instance: Bot):
     if message.left_chat_member:
         return reply(update, f"Bye {message.left_chat_member.full_name}! 😢")
 
-    if (
-        message.document
-        # and from_user.id == instance.additional_data.get("debug_chat_id")
-        and message.document.file_name.endswith(".csv")
-    ):
-        logger.info("Got csv saving...")
-        file_name = message.document.file_name
-        bot.get_file(message.document.file_id).download(
-            settings.BASE_DIR / "transactions" / "data" / file_name
-        )
-        logger.info("Saved")
-        cron.delay("import_transactions")
-        return reply(update, f"Saved {file_name}")
-
     from_user = update.message.from_user
     user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
-    if not message.text:
-        return logger.info(f"No message text: {update.to_dict()}. From: {user}")
-
     if str(from_user.username or from_user.id) not in instance.whitelist:
         return logger.error(f"Ignoring message from: {user}")
+
+    if message.document:
+        if (extension := message.document.file_name[-4:]) in [".csv", ".pdf"]:
+            logger.info(f"Got {extension} saving...")
+            file_name = message.document.file_name
+            if extension == ".csv":
+                cron_name = "import_transactions"
+                path = settings.BASE_DIR / "transactions" / "data" / file_name
+            elif extension == ".pdf":
+                if file_name.startswith("Tranzactii"):
+                    doc_type = "payments"
+                elif file_name.startswith("Scadentar"):
+                    doc_type = "timetables"
+                else:
+                    return logger.error("Unhandled pdf type")
+                cron_name = f"import_{doc_type}"
+                path = settings.BASE_DIR / "credit" / "data" / doc_type / file_name
+            else:
+                return logger.error(f"Unhandled extension: {extension}")
+
+            bot.get_file(message.document.file_id).download(path)
+            logger.info(f"Saved {file_name}")
+            cron.delay(cron_name)
+            return reply(update, f"Saved {file_name}")
+
+    if not message.text:
+        return logger.info(f"No message text: {update.to_dict()}. From: {user}")
 
     if not message.text.startswith("/"):
         return logger.warning(f"Invalid command: '{message.text}'. From: {user}")
