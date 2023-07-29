@@ -40,10 +40,15 @@ class Credit(TimeStampedModel):
     currency = models.CharField(max_length=3)
     date = models.DateField()
     number = models.IntegerField(unique=True)
+    number_of_months = models.IntegerField()
     total = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
 
     def __str__(self):
         return f"{self.total} {self.currency}"
+
+    @property
+    def latest_timetable(self):
+        return self.timetable_set.order_by("-date").first()
 
 
 class Payment(TimeStampedModel):

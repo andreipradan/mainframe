@@ -8,6 +8,8 @@ import {
   set as setPayments,
   setErrors as setPaymentErrors,
   setLoading as setPaymentLoading,
+  setLoadingPayments,
+  update,
 } from "../redux/paymentSlice";
 import {
   deleteTimetable,
@@ -46,6 +48,13 @@ class CreditApi {
       .then(response => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
+  static updatePayment = (token, id, data) => dispatch => {
+    dispatch(setLoadingPayments(id))
+    axios
+      .patch(`${base}payments/${id}/`, data, { headers: { Authorization: token } })
+      .then((response) => dispatch(update(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setPaymentErrors))
+  }
 }
 
 let base = "credit/";

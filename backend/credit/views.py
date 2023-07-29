@@ -1,4 +1,6 @@
-from django.db.models import Sum
+from decimal import Decimal
+
+from django.db.models import Sum, Case, When, F
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -21,6 +23,9 @@ class OverviewViewSet(viewsets.ViewSet):
             total_interest=Sum("interest"),
             total_paid=Sum("total"),
             total_principal=Sum("principal"),
+            total_prepaid=Sum(
+                Case(When(is_prepayment=True, then=F("total")), default=Decimal(0))
+            ),
         )
         last_payment = Payment.objects.order_by("-date").first()
         return JsonResponse(
@@ -30,6 +35,7 @@ class OverviewViewSet(viewsets.ViewSet):
                     "interest": paid["total_interest"],
                     "principal": paid["total_principal"],
                     "total": paid["total_paid"],
+                    "prepaid": paid["total_prepaid"],
                 },
                 "last_payment": PaymentSerializer(instance=last_payment).data
                 if last_payment
@@ -41,7 +47,7 @@ class OverviewViewSet(viewsets.ViewSet):
 
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Payment.objects.all()
+    queryset = Payment.objects.select_related("credit").all()
     serializer_class = PaymentSerializer
 
 

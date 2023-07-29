@@ -7,7 +7,7 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
 const CreditOverview = lazy(() => import ("./credit/Overview/Overview"));
-const CreditPayments = lazy(() => import ("./credit/Payments"));
+const CreditPayments = lazy(() => import ("./credit/Payment/Payments"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Todo = lazy(() => import('./apps/TodoList'));

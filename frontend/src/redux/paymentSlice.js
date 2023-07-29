@@ -6,6 +6,7 @@ export const paymentSlice = createSlice({
     count: 0,
     errors: null,
     loading: false,
+    loadingPayments: null,
     next: null,
     overview: null,
     previous: null,
@@ -18,6 +19,7 @@ export const paymentSlice = createSlice({
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
+      state.loadingPayments = null
     },
     set: (state, action) => {
       state.count = action.payload.count
@@ -28,7 +30,18 @@ export const paymentSlice = createSlice({
       state.results = action.payload.results;
     },
     setLoading: (state, action) => {state.loading = action.payload},
+    setLoadingPayments: (state, action) => {
+      state.loadingPayments = !state.loadingPayments
+        ? [action.payload]
+        : [...state.loadingPayments, action.payload];
+    },
+    update: (state, action) => {
+      state.errors = null;
+      state.loadingPayments = state.loadingPayments?.filter((id) => id !== action.payload.id);
+      state.results = state.results.map((p) => (p.id === action.payload.id ? action.payload : p));
+      state.selectedPayment = action.payload.id === state.selectedPayment?.id ? action.payload : state.selectedPayment
+    },
   },
 });
-export const { selectPayment, set, setErrors, setLoading } = paymentSlice.actions;
+export const { selectPayment, set, setErrors, setLoading, setLoadingPayments, update } = paymentSlice.actions;
 export default paymentSlice.reducer;

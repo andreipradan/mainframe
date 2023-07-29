@@ -53,9 +53,7 @@ const Sidebar = () => {
     });
   }, []);
 
-  useEffect(() => {
-    onRouteChanged()
-  }, [location])
+  useEffect(() => {onRouteChanged()}, [location])
 
   const closeAllMenus = () => {
     setAppsMenuOpen(false)
@@ -75,6 +73,7 @@ const Sidebar = () => {
     const dropdownPaths = [
       {path:'/apps', setState: setAppsMenuOpen},
       {path:'/basic-ui', setState: setBasicUiMenuOpen},
+      {path:'/credit', setState: setCreditMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
       {path:'/tables', setState: setTablesMenuOpen},
       {path:'/icons', setState: setIconsMenuOpen},
