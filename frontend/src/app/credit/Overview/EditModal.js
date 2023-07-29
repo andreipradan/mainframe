@@ -9,13 +9,13 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
-import {selectTimetable} from "../../../redux/creditSlice";
+import {selectTimetable} from "../../../redux/timetableSlice";
 import CreditApi from "../../../api/credit";
 
 const EditModal = () => {
   const dispatch = useDispatch();
-  const loadingTimetables = useSelector(state => state.credit.loadingTimetables)
-  const timetable = useSelector(state => state.credit.selectedTimetable)
+  const loadingTimetables = useSelector(state => state.timetable.loadingTimetables)
+  const timetable = useSelector(state => state.timetable.selectedTimetable)
   const token = useSelector((state) => state.auth.token)
 
   return <Modal centered show={!!timetable} onHide={() => dispatch(selectTimetable())}>

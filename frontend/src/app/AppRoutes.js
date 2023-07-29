@@ -6,7 +6,8 @@ import Spinner from '../app/shared/Spinner';
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
-const Credit = lazy(() => import ("./apps/Credit/Credit"));
+const CreditOverview = lazy(() => import ("./credit/Overview/Overview"));
+const CreditPayments = lazy(() => import ("./credit/Payments"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Todo = lazy(() => import('./apps/TodoList'));
@@ -41,11 +42,12 @@ class AppRoutes extends Component {
         <Switch>
           <Route exact path="/dashboard" component={ Dashboard } />
           <Route exact path="/apps/camera" component={ Camera } />
-          <Route exact path="/apps/credit" component={ Credit } />
           <Route exact path="/apps/expenses" component={ Expenses } />
           <Route exact path="/apps/logs" component={ Logs } />
           <Route exact path="/apps/todo" component={ Todo } />
           <Route exact path="/bots" component={ Bots } />
+          <Route exact path="/credit/overview" component={ CreditOverview } />
+          <Route exact path="/credit/payments" component={ CreditPayments } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />

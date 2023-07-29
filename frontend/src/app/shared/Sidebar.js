@@ -24,6 +24,7 @@ const Sidebar = () => {
 
   const [appsMenuOpen, setAppsMenuOpen] = useState(false)
   const [basicUiMenuOpen, setBasicUiMenuOpen] = useState(false)
+  const [creditMenuOpen, setCreditMenuOpen] = useState(false)
   const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false)
   const [tablesMenuOpen, setTablesMenuOpen] = useState(false)
   const [iconsMenuOpen, setIconsMenuOpen] = useState(false)
@@ -236,11 +237,6 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={ isPathActive('/apps/credit') ? 'nav-link active' : 'nav-link' } to="/apps/credit">
-                    Credit
-                  </Link>
-                </li>
-                <li className="nav-item">
                   <Link className={ isPathActive('/apps/expenses') ? 'nav-link active' : 'nav-link' } to="/apps/expenses">
                     <Trans>Expenses</Trans>
                   </Link>
@@ -253,6 +249,36 @@ const Sidebar = () => {
                 <li className="nav-item">
                   <Link className={ isPathActive('/apps/todo') ? 'nav-link active' : 'nav-link' } to="/apps/todo">
                     <Trans>To do List</Trans>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </Collapse>
+        </li>
+        <li className={ isPathActive('/credit') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+          <div className={ appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setCreditMenuOpen(!creditMenuOpen) } data-toggle="collapse">
+            <span className="menu-icon">
+              <i className="mdi mdi-credit-card"></i>
+            </span>
+            <span className="menu-title"><Trans>Credit</Trans></span>
+            <i className="menu-arrow"></i>
+          </div>
+          <Collapse in={ creditMenuOpen }>
+            <div>
+              <ul className="nav flex-column sub-menu">
+                <li className="nav-item">
+                  <Link className={ isPathActive('/credit/overview') ? 'nav-link active' : 'nav-link' } to="/credit/overview">
+                    Overview
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={ isPathActive('/credit/payments') ? 'nav-link active' : 'nav-link' } to="/credit/payments">
+                    Payments
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={ isPathActive('/credit/timetables') ? 'nav-link active' : 'nav-link' } to="/credit/timetables">
+                    <span className="menu-title">Timetables</span>
                   </Link>
                 </li>
               </ul>

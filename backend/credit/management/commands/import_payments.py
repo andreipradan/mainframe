@@ -70,7 +70,9 @@ def extract_payment(row):
             ).date()
             payment["is_prepayment"] = True
             payment["remaining"] = normalize_amount(remaining)
-            payment["total"] = normalize_amount(total)
+            total = normalize_amount(total)
+            payment["principal"] = total
+            payment["total"] = total
         if item.startswith("Referinta: "):
             item = item.replace("Referinta: ", "")
             payment["reference"] = item

@@ -1,11 +1,20 @@
 import axios from "./index";
 import {
-  deleteTimetable,
   set,
   setErrors,
   setLoading,
-  setOverview,
 } from "../redux/creditSlice";
+import {
+  set as setPayments,
+  setErrors as setPaymentErrors,
+  setLoading as setPaymentLoading,
+} from "../redux/paymentSlice";
+import {
+  deleteTimetable,
+  set as setTimetables,
+  setErrors as setTimetableErrors,
+  setLoading as setTimetableLoading,
+} from "../redux/timetableSlice";
 import {handleErrors} from "./errors";
 
 
@@ -16,18 +25,25 @@ class CreditApi {
       .then(() => {dispatch(deleteTimetable(timetableId))})
       .catch((err) => handleErrors(err, dispatch));
   };
-  static getList = (token, page = null) => (dispatch) => {
-    dispatch(setLoading(true));
+  static getPayments = (token, page = null) => (dispatch) => {
+    dispatch(setPaymentLoading(true));
     axios
-      .get(base + `?page=${page || 1}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .get(`${base}payments/` + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setPayments(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
+  };
+  static getTimetables = (token, page = null) => (dispatch) => {
+    dispatch(setTimetableLoading(true));
+    axios
+      .get(`${base}timetables/` + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setTimetables(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
   static getOverview = token => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .get(base, { headers: { Authorization: token } })
-      .then((response) => dispatch(setOverview(response.data)))
+      .then(response => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }

@@ -2,14 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
 import cameraReducer from "./cameraSlice";
-import creditReducer from "../redux/creditSlice";
+import creditReducer from "../redux/creditSlice"
 import cronsReducer from "../redux/cronsSlice"
 import devicesReducer from "../redux/devicesSlice"
 import earthquakesReducer from "../redux/earthquakesSlice"
 import lightsReducer from "../redux/lightsSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
+import paymentReducer from "../redux/paymentSlice";
 import rpiReducer from "../redux/rpiSlice";
+import timetableReducer from "./timetableSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 
 export default configureStore({
@@ -24,7 +26,9 @@ export default configureStore({
     lights: lightsReducer,
     logs: logsReducer,
     meals: mealsReducer,
+    payment: paymentReducer,
     rpi: rpiReducer,
+    timetable: timetableReducer,
     transactions: transactionsReducer,
   },
 });

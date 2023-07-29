@@ -1,0 +1,34 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+export const paymentSlice = createSlice({
+  name: "payment",
+  initialState: {
+    count: 0,
+    errors: null,
+    loading: false,
+    next: null,
+    overview: null,
+    previous: null,
+    results: null,
+  },
+  reducers: {
+    selectPayment: (state, action) => {
+      state.selectedPayment = action.payload ? state.results.find(t => t.id === action.payload) : null
+    },
+    setErrors: (state, action) => {
+      state.errors = action.payload;
+      state.loading = false;
+    },
+    set: (state, action) => {
+      state.count = action.payload.count
+      state.errors = null
+      state.loading = false
+      state.next = action.payload.next
+      state.previous = action.payload.previous
+      state.results = action.payload.results;
+    },
+    setLoading: (state, action) => {state.loading = action.payload},
+  },
+});
+export const { selectPayment, set, setErrors, setLoading } = paymentSlice.actions;
+export default paymentSlice.reducer;
