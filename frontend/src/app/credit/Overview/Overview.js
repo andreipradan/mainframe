@@ -19,7 +19,7 @@ const Credit = () => {
 
   const [creditAlertOpen, setCreditAlertOpen] = useState(false)
   useEffect(() => {setCreditAlertOpen(!!credit.errors)}, [credit.errors])
-  useEffect(() => {!credit.overview && dispatch(CreditApi.getOverview(token))}, []);
+  useEffect(() => {!credit.details && dispatch(CreditApi.getOverview(token))}, []);
 
   const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
   useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
