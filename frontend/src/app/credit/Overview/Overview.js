@@ -216,7 +216,7 @@ const Credit = () => {
                     wrapperStyle={{float: "right"}}
                     color='orange'
                   />
-                : overview.details
+                : payment.results
                   ? <>
                     <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"}/>
                     <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"}/>

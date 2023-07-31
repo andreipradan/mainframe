@@ -34,7 +34,7 @@ const Payments = () => {
   const prepaid = calculateSum(payment.results, "total", "is_prepayment")
 
   const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
-  const remainingInterest = calculateSum(latestTimetable.amortization_table, "interest")
+  const remainingInterest = calculateSum(latestTimetable?.amortization_table, "interest")
   const remainingTotal = remainingPrincipal + remainingInterest
   return <div>
     <div className="page-header">
