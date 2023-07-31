@@ -240,7 +240,7 @@ const Credit = () => {
       <div className="col-sm-12 col-md-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">Paid: {remainingTotal} {credit?.currency}</h4>
+            <h4 className="card-title">Remaining: {remainingTotal} {credit?.currency}</h4>
           </div>
           <Doughnut data={remainingData} options={doughnutPieOptions} />
         </div>
