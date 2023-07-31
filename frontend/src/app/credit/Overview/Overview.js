@@ -5,20 +5,26 @@ import "nouislider/distribute/nouislider.css";
 
 import CreditApi from "../../../api/credit";
 import ListItem from "./components/ListItem";
-import {calculateSum, getPassedMonths} from "../utils";
+import {calculateSum, getPercentage} from "../utils";
 import Alert from "react-bootstrap/Alert";
 import { Bar, Doughnut } from "react-chartjs-2";
+import {ProgressBar} from "react-bootstrap";
+import {Tooltip} from "react-tooltip";
 
 const Credit = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const payment = useSelector(state => state.payment)
 
+  const overview = useSelector(state => state.credit)
+  const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
+  useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
+  useEffect(() => {!overview.details && dispatch(CreditApi.getOverview(token))}, []);
+  const credit = overview.details?.credit
+
+  const payment = useSelector(state => state.payment)
   const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
   useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(CreditApi.getPayments(token))}, []);
-
-  const credit = payment.results?.[0].credit
 
   const paidTotal = calculateSum(payment.results, "total")
   const paidInterest = calculateSum(payment.results, "interest")
@@ -26,17 +32,13 @@ const Credit = () => {
   const paidPrepaid = calculateSum(payment.results, "total", "is_prepayment")
 
   const saved = calculateSum(payment.results, "saved")
-  const monthsPassed = getPassedMonths(payment.results)
 
-  const latestTimetable = credit?.latest_timetable.amortization_table
+  const latestTimetable = overview.details?.latest_timetable.amortization_table
   const remainingInterest = calculateSum(latestTimetable, "interest")
   const remainingInsurance = calculateSum(latestTimetable, "insurance")
-  const remainingPrincipal = -payment.results?.[0].remaining
-  const remainingTotal = (
-    parseFloat(remainingPrincipal) +
-    parseFloat(remainingInterest) +
-    parseFloat(remainingInsurance)
-  ).toFixed(2)
+  const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
+  const remainingTotal = (remainingPrincipal + remainingInterest + remainingInsurance).toFixed(2)
+
 
   const paidData = {
     datasets: [{
@@ -133,7 +135,7 @@ const Credit = () => {
         Overview
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(CreditApi.getPayments(token))}
+          onClick={() => dispatch(CreditApi.getOverview(token))}
         >
           <i className="mdi mdi-refresh"></i>
         </button>
@@ -145,7 +147,8 @@ const Credit = () => {
         </ol>
       </nav>
     </div>
-    {paymentAlertOpen && !payment.selectedPayment && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
+    {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
+    {paymentAlertOpen && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
 
     <div className="row">
       <div className="col-sm-12 col-md-4 col-lg-4 grid-margin">
@@ -155,7 +158,7 @@ const Credit = () => {
               Summary
             </h5>
             {
-              payment.loading
+              overview.loading
                 ? <Circles
                     visible={true}
                     height="15"
@@ -180,7 +183,7 @@ const Credit = () => {
           <div className="card-body">
             <h5>Estimated total</h5>
             {
-              payment.loading
+              overview.loading
                 ? <Circles
                     visible={true}
                     height="15"
@@ -188,7 +191,7 @@ const Credit = () => {
                     wrapperStyle={{float: "right"}}
                     color='orange'
                   />
-                : payment.results
+                : overview.details
                   ? <>
                     <ListItem label={"Total"} value={(paidTotal + parseFloat(remainingTotal)).toFixed(2)} textType={"primary"}/>
                     <ListItem label={"Date"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
@@ -205,7 +208,7 @@ const Credit = () => {
           <div className="card-body">
             <h5>Last Payment</h5>
             {
-              payment.loading
+              overview.loading
                 ? <Circles
                     visible={true}
                     height="15"
@@ -213,7 +216,7 @@ const Credit = () => {
                     wrapperStyle={{float: "right"}}
                     color='orange'
                   />
-                : payment.results
+                : overview.details
                   ? <>
                     <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"}/>
                     <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"}/>
@@ -228,6 +231,28 @@ const Credit = () => {
             }
           </div>
         </div>
+      </div>
+      <div className="col-sm-12 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>
+              Progress: {getPercentage(paidTotal, remainingTotal)}%
+              &nbsp;<i id="progress-bar-tip" className="mdi mdi-information-outline"/>
+            </h5>
+            {
+              overview.loading || !credit
+                ? <Circles
+                    visible={true}
+                    height="15"
+                    ariaLabel="ball-triangle-loading"
+                    color='orange'
+                  />
+                : <>
+                <ProgressBar now={paidPrincipal} max={credit.total}/>
+                </>
+            }
+            </div>
+          </div>
       </div>
       <div className="col-sm-12 col-md-6 grid-margin stretch-card">
         <div className="card">
@@ -250,7 +275,7 @@ const Credit = () => {
           <div className="card-body">
             <h4 className="card-title">Payments</h4>
               {
-                payment.loading
+                overview.loading
                   ? <Circles
                       visible={true}
                       height="100%"
@@ -260,11 +285,22 @@ const Credit = () => {
                     />
                   : <Bar height={100} data={paymentsData} options={paymentsOptions} />
               }
-
             </div>
           </div>
       </div>
     </div>
+    <Tooltip anchorSelect="#progress-bar-tip" place={"bottom-start"}>
+      Total paid / remaining total<br/>
+      <br />
+      Paid: <span className="text-primary">{paidTotal}</span><br />
+      &nbsp;&nbsp;Principal: <span className="text-success">{paidPrincipal}</span><br/>
+      &nbsp;&nbsp;Interest: <span className="text-danger">{paidInterest}</span><br/>
+      <br/>
+      Remaining: <span className="text-primary">{remainingTotal}</span><br />
+      &nbsp;&nbsp;Principal: <span className="text-success">{remainingPrincipal}</span><br/>
+      &nbsp;&nbsp;Interest: <span className="text-danger">{remainingInterest} ~ </span><br/>
+      &nbsp;&nbsp;Insurance: <span className="text-danger">{remainingInsurance}</span><br/>
+    </Tooltip>
   </div>
 }
 

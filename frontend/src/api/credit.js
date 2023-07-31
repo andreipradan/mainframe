@@ -27,6 +27,13 @@ class CreditApi {
       .then(() => {dispatch(deleteTimetable(timetableId))})
       .catch((err) => handleErrors(err, dispatch));
   };
+  static getOverview = token => (dispatch) => {
+    dispatch(setLoading(true));
+    axios
+      .get(base, { headers: { Authorization: token } })
+      .then(response => {dispatch(set(response.data))})
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
   static getPayments = (token, page = null) => (dispatch) => {
     dispatch(setPaymentLoading(true));
     axios
@@ -40,13 +47,6 @@ class CreditApi {
       .get(`${base}timetables/` + `?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTimetables(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  };
-  static getOverview = token => (dispatch) => {
-    dispatch(setLoading(true));
-    axios
-      .get(base, { headers: { Authorization: token } })
-      .then(response => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updatePayment = (token, id, data) => dispatch => {
     dispatch(setLoadingPayments(id))

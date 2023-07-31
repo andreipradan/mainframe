@@ -83,3 +83,6 @@
 .fc-event{
     cursor: pointer;
 }
+.progress-bar {
+  background: -webkit-linear-gradient(left, #ff0000 0%, #2cef00 100%); /* Chrome10-25,Safari5.1-6 */
+}

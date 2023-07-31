@@ -20,17 +20,13 @@ const EditModal = () => {
   const selectedPayment = useSelector(state => state.payment.selectedPayment)
   const token = useSelector((state) => state.auth.token)
 
-  const [isPrepayment, setIsPrepayment] = useState(null);
   const [saved, setSaved] = useState(null);
 
   const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
   useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
 
   useEffect(() => {
-    if (selectedPayment) {
-      setIsPrepayment(selectedPayment.is_prepayment)
-      setSaved(selectedPayment.saved || 0)
-    }
+    if (selectedPayment) setSaved(selectedPayment.saved || 0)
   }, [selectedPayment]);
   return <Modal centered show={!!selectedPayment} onHide={() => dispatch(selectPayment())}>
     <Modal.Header closeButton>
@@ -67,15 +63,6 @@ const EditModal = () => {
                 onChange={e => setSaved(e.target.value)}
               />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                id="custom-switch"
-                label="Is Prepayment"
-                checked={isPrepayment}
-                onChange={() => {setIsPrepayment(!isPrepayment)}}
-              />
-            </Form.Group>
           </Form>
       }
     </Modal.Body>
@@ -85,7 +72,6 @@ const EditModal = () => {
       </Button>
       <Button variant="primary" onClick={() => {
         dispatch(CreditApi.updatePayment(token, selectedPayment.id, {
-          is_prepayment: isPrepayment,
           saved: saved,
         }))
       }}>

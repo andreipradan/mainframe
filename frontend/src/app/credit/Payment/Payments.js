@@ -8,15 +8,22 @@ import { selectPayment } from "../../../redux/paymentSlice";
 import EditModal from "./EditModal";
 import {Tooltip} from "react-tooltip";
 import {useHistory} from "react-router-dom";
-import {calculateSum, getPassedMonths} from "../utils";
+import { calculateSum, getPercentage } from "../utils";
 
 const Payments = () => {
   const dispatch = useDispatch();
   const history = useHistory();
 
   const token = useSelector((state) => state.auth.token)
-  const payment = useSelector(state => state.payment)
 
+  const overview = useSelector(state => state.credit)
+  const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
+  useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
+  useEffect(() => {!overview.details && dispatch(CreditApi.getOverview(token))}, []);
+  const credit = overview.details?.credit
+  const latestTimetable = overview.details?.latest_timetable
+
+  const payment = useSelector(state => state.payment)
   const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
   useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(CreditApi.getPayments(token))}, []);
@@ -26,13 +33,9 @@ const Payments = () => {
   const principal = calculateSum(payment.results, "principal")
   const prepaid = calculateSum(payment.results, "total", "is_prepayment")
 
-  const credit = payment.results?.[0].credit
-  const monthsPassed = getPassedMonths(payment.results)
-
-  const estimatedTotalInterest = credit ? (interest / monthsPassed) * credit.latest_timetable.amortization_table.length : 0
-  const remainingPrincipal = -payment.results?.[0].remaining
-  const remainingInterest = calculateSum(credit?.latest_timetable.amortization_table, "interest")
-  const remainingTotal = parseFloat(remainingPrincipal) + parseFloat(remainingInterest)
+  const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
+  const remainingInterest = calculateSum(latestTimetable.amortization_table, "interest")
+  const remainingTotal = remainingPrincipal + remainingInterest
   return <div>
     <div className="page-header">
       <h3 className="page-title">
@@ -187,7 +190,7 @@ const Payments = () => {
                           </p>
                         </div>
                         <h6 className="text-muted font-weight-normal">
-                          ~ { (interest / estimatedTotalInterest * 100).toFixed(2)}%&nbsp;
+                          ~ { getPercentage(interest, remainingInterest) }%&nbsp;
                           <i id="interest-percentage" className="mdi mdi-information-outline"/>
                         </h6>
 
@@ -211,6 +214,7 @@ const Payments = () => {
               </button>
             </h4>
             <div className="table-responsive">
+              {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
               {paymentAlertOpen && !payment.selectedPayment && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
 
               <table className="table table-hover">
@@ -276,8 +280,7 @@ const Payments = () => {
       Percentage of the total loan
     </Tooltip>
     <Tooltip anchorSelect="#interest-percentage" place="bottom-start">
-      Percentage of the estimated remaining interest<br/>
-      based on a median of the previous interest payments
+      Percentage of the remaining interest
     </Tooltip>
   </div>
 }
