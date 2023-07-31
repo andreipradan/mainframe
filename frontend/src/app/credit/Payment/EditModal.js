@@ -53,7 +53,12 @@ const EditModal = () => {
             height = "50"
             wrapperStyle={{width: "100%"}}
           />
-        : <Form>
+        : <Form
+            onSubmit={event => {
+              event.preventDefault()
+              dispatch(CreditApi.updatePayment(token, selectedPayment.id, {saved: saved}))
+            }}
+          >
             <Form.Group className="mb-3">
               <Form.Label>Saved</Form.Label>
               <Form.Control
