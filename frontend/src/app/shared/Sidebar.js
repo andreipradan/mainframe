@@ -8,6 +8,9 @@ import Button from "react-bootstrap/Button";
 import RpiApi from "../../api/rpi";
 import Alert from "react-bootstrap/Alert";
 import {Circles} from "react-loader-spinner";
+import logo from "../../assets/images/logo.svg"
+import logoMini from "../../assets/images/logo-mini.svg"
+
 
 const Sidebar = () => {
   const dispatch = useDispatch()
@@ -92,8 +95,8 @@ const Sidebar = () => {
   return (
     <nav className="sidebar sidebar-offcanvas" id="sidebar">
       <div className="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
-        <a className="sidebar-brand brand-logo" href="index.html"><img src={require('../../assets/images/logo.svg')} alt="logo" /></a>
-        <a className="sidebar-brand brand-logo-mini" href="index.html"><img src={require('../../assets/images/logo-mini.svg')} alt="logo" /></a>
+        <a className="sidebar-brand brand-logo" href="/dashboard"><img src={logo} alt="logo" /></a>
+        <a className="sidebar-brand brand-logo-mini" href="/dashboard"><img src={logoMini} alt="logo" /></a>
       </div>
       <ul className="nav">
         <li className="nav-item profile">

@@ -5,6 +5,7 @@ import AuthApi from "../../api/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { Dna } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
+import logo from "../../assets/images/logo.svg"
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -27,7 +28,7 @@ const Login = () => {
         <div className="col-lg-6 mx-auto">
           <div className="card text-left py-5 px-4 px-sm-5">
             <div className="brand-logo">
-              <img src={require("../../assets/images/logo.svg")} alt="logo"/>
+              <img src={logo} alt="logo"/>
             </div>
             <h4>Hello! let's get started</h4>
             <h6 className="font-weight-light">

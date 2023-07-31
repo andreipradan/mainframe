@@ -195,7 +195,7 @@ const Credit = () => {
                   ? <>
                     <ListItem label={"Total"} value={(paidTotal + parseFloat(remainingTotal)).toFixed(2)} textType={"primary"}/>
                     <ListItem label={"Date"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
-                    <ListItem label={"Months"} value={`${latestTimetable.length} (${(latestTimetable.length / 12).toFixed(2)} yrs)`} />
+                    <ListItem label={"Months"} value={`${latestTimetable.length} (${(latestTimetable.length / 12).toFixed(1)} yrs)`} />
                     <ListItem label={"Interest"} value={(paidInterest + remainingInterest).toFixed(2)} textType={"danger"}/>
                   </>
                   : "-"
