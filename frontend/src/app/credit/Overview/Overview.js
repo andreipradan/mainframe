@@ -2,237 +2,269 @@ import React, {useEffect, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
-import { Tooltip } from 'react-tooltip'
 
-import Alert from "react-bootstrap/Alert";
 import CreditApi from "../../../api/credit";
-import { selectTimetable } from "../../../redux/timetableSlice";
-import EditModal from "./EditModal";
+import ListItem from "./components/ListItem";
+import {calculateSum, getPassedMonths} from "../utils";
+import Alert from "react-bootstrap/Alert";
+import { Bar, Doughnut } from "react-chartjs-2";
 
 const Credit = () => {
   const dispatch = useDispatch();
-
   const token = useSelector((state) => state.auth.token)
+  const payment = useSelector(state => state.payment)
 
-  const credit = useSelector(state => state.credit)
-  const timetable = useSelector(state => state.timetable)
+  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
+  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
+  useEffect(() => {!payment.results && dispatch(CreditApi.getPayments(token))}, []);
 
-  const [creditAlertOpen, setCreditAlertOpen] = useState(false)
-  useEffect(() => {setCreditAlertOpen(!!credit.errors)}, [credit.errors])
-  useEffect(() => {!credit.details && dispatch(CreditApi.getOverview(token))}, []);
+  const credit = payment.results?.[0].credit
 
-  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
-  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
-  useEffect(() => {!timetable.results && dispatch(CreditApi.getTimetables(token))}, []);
+  const paidTotal = calculateSum(payment.results, "total")
+  const paidInterest = calculateSum(payment.results, "interest")
+  const paidPrincipal = calculateSum(payment.results, "principal")
+  const paidPrepaid = calculateSum(payment.results, "total", "is_prepayment")
+
+  const saved = calculateSum(payment.results, "saved")
+  const monthsPassed = getPassedMonths(payment.results)
+
+  const latestTimetable = credit?.latest_timetable.amortization_table
+  const remainingInterest = calculateSum(latestTimetable, "interest")
+  const remainingInsurance = calculateSum(latestTimetable, "insurance")
+  const remainingPrincipal = -payment.results?.[0].remaining
+  const remainingTotal = (
+    parseFloat(remainingPrincipal) +
+    parseFloat(remainingInterest) +
+    parseFloat(remainingInsurance)
+  ).toFixed(2)
+
+  const paidData = {
+    datasets: [{
+      data: [paidInterest, paidPrincipal, paidPrepaid],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.5)',
+        'rgba(75, 192, 192, 0.5)',
+        'rgba(255, 206, 86, 0.5)',
+      ],
+      borderColor: [
+        'rgba(255,99,132,1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 206, 86, 1)',
+      ],
+    }],
+    labels: ['Interest', 'Principal', 'Prepaid']
+  };
+  const remainingData = {
+    datasets: [{
+      data: [remainingInterest, remainingPrincipal, remainingInsurance],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.5)',
+        'rgba(75, 192, 192, 0.5)',
+        'rgba(255, 206, 86, 0.5)',
+      ],
+      borderColor: [
+        'rgba(255,99,132,1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 206, 86, 1)',
+      ],
+    }],
+    labels: ['Interest', 'Principal', 'Insurance']
+  };
+
+  const doughnutPieOptions = {
+    responsive: true,
+    animation: {animateScale: true, animateRotate: true},
+    tooltips: {
+      callbacks: {
+        label: function(tooltipItem, data) {
+          let dataset = data.datasets[tooltipItem.datasetIndex];
+          let meta = dataset._meta[Object.keys(dataset._meta)[0]];
+          let total = meta.total;
+          let currentValue = dataset.data[tooltipItem.index];
+          let percentage = parseFloat((currentValue/total*100).toFixed(1));
+          return currentValue + ' (' + percentage + '%)';
+        },
+        title: (tooltipItem, data) => data.labels[tooltipItem[0].index]
+      }
+    }
+  };
+
+  const paymentsData = {
+        labels: payment.results?.map(p => p.date).reverse(),
+        datasets: [{
+          label: 'Ron',
+          data: payment.results?.map(p => p.total).reverse(),
+          backgroundColor: context => {
+            const ctx = context.chart.ctx;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(243,16,65,0.2)');
+            gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
+            gradient.addColorStop(1, 'rgba(75,192,126,0.2)');
+            return gradient;
+          },
+          borderColor: context => {
+            const ctx = context.chart.ctx;
+            const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
+            gradient.addColorStop(0, 'rgba(243,16,65,1)');
+            gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
+            gradient.addColorStop(1, 'rgb(75,192,126)');
+            return gradient;
+          },
+          borderWidth: 1,
+          fill: false
+        }]
+    };
+
+  const paymentsOptions = {
+    scales: {
+      yAxes: [{
+        ticks: {beginAtZero: true},
+        gridLines: {color: "rgba(204, 204, 204,0.1)"}
+      }],
+      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
+    },
+    legend: {display: false},
+    elements: {point: {radius: 0}},
+    }
 
   return <div>
-    <div className="row">
-      {
-        creditAlertOpen
-          ? <div className="col-sm-12 grid-margin"><Alert variant="danger" dismissible onClose={() => setCreditAlertOpen(false)}>{credit.errors}</Alert></div>
-          : <>
-            <div className="col-sm-4 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>
-                    Total
-                    <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CreditApi.getOverview(token))}>
-                      <i className="mdi mdi-refresh" />
-                    </button>
-                  </h5>
-                  <div className="row">
-                    {
-                      credit.loading
-                        ? <Circles
-                              visible={true}
-                              height="15"
-                              ariaLabel="ball-triangle-loading"
-                              wrapperStyle={{float: "right"}}
-                              color='orange'
-                            />
-                        : <>
-                          <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                        <div className="d-flex d-sm-block d-md-flex align-items-center">
-                          <h4 className="mb-0">{credit.details?.total}</h4>
-                        </div>
-                        <h6 className="text-muted font-weight-normal">Date: {credit.details?.date?.toLocaleString()}</h6>
-                      </div>
-                          <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                        <i className="icon-md mdi mdi-cash text-primary ml-auto" />
-                      </div>
-                        </>
-                    }
-
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-4 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>Paid</h5>
-                  <div className="row">
-                    {
-                      credit.loading
-                        ? <Circles
-                            visible={true}
-                            height="15"
-                            ariaLabel="ball-triangle-loading"
-                            wrapperStyle={{float: "right"}}
-                            color='orange'
-                          />
-                        : credit.details?.paid?.total
-                          ? <>
-                            <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                              <div className="d-flex d-sm-block d-md-flex align-items-center">
-                                <h4 className="mb-0">RON {credit.details?.paid?.total}</h4>
-                              </div>
-                              <h6 className="text-muted font-weight-normal"> Interest: {credit.details?.paid?.interest}</h6>
-                            </div>
-                            <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                              <i className="icon-md mdi mdi-wallet-travel text-danger ml-auto"></i>
-                            </div>
-                          </>
-                          : <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                              <div className="d-flex d-sm-block d-md-flex align-items-center">
-                                -
-                              </div>
-                              <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                                <i className="icon-md mdi mdi-wallet-travel text-danger ml-auto"></i>
-                              </div>
-                            </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-4 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>
-                    Last Payment <i id="not-clickable" className="mdi mdi-information-outline"/>
-                  </h5>
-                  <div className="row">
-                    {
-                      credit.loading
-                        ? <Circles
-                            visible={true}
-                            height="15"
-                            ariaLabel="ball-triangle-loading"
-                            wrapperStyle={{float: "right"}}
-                            color='orange'
-                          />
-                        : credit.details?.last_payment
-                          ? <>
-                            <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                              <div className="d-flex d-sm-block d-md-flex align-items-center">
-                                <h4 className="mb-0">RON {credit.details?.last_payment?.total}</h4>
-                              </div>
-                              <h6 className="text-muted font-weight-normal">
-                                {
-                                  credit.details?.last_payment?.is_prepayment
-                                    ? <>
-                                      <i className="text-success mdi mdi-check" /> Prepayment
-                                    </>
-                                    : <>
-                                      <i className="text-danger mdi mdi-cash-multiple" /> Installment
-                                    </>
-                                }
-                              </h6>
-
-                            </div>
-                            <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                              <i className="icon-md mdi mdi-monitor text-success ml-auto"></i>
-                            </div>
-                          </>
-                        : <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                            <div className="d-flex d-sm-block d-md-flex align-items-center">
-                              -
-                            </div>
-                            <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                              <i className="icon-md mdi mdi-history text-success ml-auto"></i>
-                            </div>
-                          </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-      }
+    <div className="page-header">
+      <h3 className="page-title">
+        Overview
+        <button type="button"
+          className="btn btn-outline-success btn-sm border-0 bg-transparent"
+          onClick={() => dispatch(CreditApi.getPayments(token))}
+        >
+          <i className="mdi mdi-refresh"></i>
+        </button>
+      </h3>
+      <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+        <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Credit</a></li>
+        <li className="breadcrumb-item active" aria-current="page">Overview</li>
+        </ol>
+      </nav>
     </div>
-    <div className="row ">
-      <div className="col-12 grid-margin">
+    {paymentAlertOpen && !payment.selectedPayment && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
+
+    <div className="row">
+      <div className="col-sm-12 col-md-4 col-lg-4 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">
-              Timetables
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CreditApi.getTimetables(token))}>
-                <i className="mdi mdi-refresh" />
-              </button>
-            </h4>
-            <div className="table-responsive">
-              {timetableAlertOpen && <Alert variant="danger" dismissible onClose={() => setTimetableAlertOpen(false)}>{timetable.errors}</Alert>}
-
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th> Date </th>
-                    <th> Interest </th>
-                    <th> Margin </th>
-                    <th> IRCC </th>
-                    <th> Months </th>
-                    <th> Actions </th>
-                  </tr>
-                </thead>
-                <tbody>
-                {
-                  timetable.loading
-                    ? <Circles
-                        visible={true}
-                        width="100%"
-                        ariaLabel="ball-triangle-loading"
-                        wrapperStyle={{float: "right"}}
-                        color='orange'
-                      />
-                    : timetable.results?.length
-                        ? timetable.results.map((timetable, i) => <tr key={i}>
-                          <td> {timetable.date} </td>
-                          <td> {timetable.interest}% </td>
-                          <td> {timetable.margin}% </td>
-                          <td> {timetable.ircc}% </td>
-                          <td> {timetable.amortization_table.length} </td>
-                          <td>
-                            <i
-                              style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-pencil text-secondary"
-                              onClick={() => dispatch(selectTimetable(timetable.id))}
-                            />
-                            <i
-                              style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-trash-can-outline text-danger"
-                              onClick={() => dispatch(CreditApi.deleteTimetable(token, timetable.id))}
-                            />
-                          </td>
-                        </tr>)
-                      : <tr><td colSpan={6}><span>No timetables found</span></td></tr>
-                }
-                </tbody>
-              </table>
+            <h5>
+              Summary
+            </h5>
+            {
+              payment.loading
+                ? <Circles
+                    visible={true}
+                    height="15"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{float: "right"}}
+                    color='orange'
+                  />
+                : credit
+                  ? <>
+                    <ListItem label={"Credit"} value={credit.total} textType={"primary"}/>
+                    <ListItem label={"Date"} value={credit.date.toLocaleString()} textType={"warning"}/>
+                    <ListItem label={"Months"} value={`${credit.number_of_months} (${credit.number_of_months / 12} yrs)`} />
+                    <ListItem label={"Saved"} value={saved} textType={"success"}/>
+                  </>
+                  : "-"
+            }
             </div>
+          </div>
+      </div>
+      <div className="col-sm-12 col-md-4 col-lg-4 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>Estimated total</h5>
+            {
+              payment.loading
+                ? <Circles
+                    visible={true}
+                    height="15"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{float: "right"}}
+                    color='orange'
+                  />
+                : payment.results
+                  ? <>
+                    <ListItem label={"Total"} value={(paidTotal + parseFloat(remainingTotal)).toFixed(2)} textType={"primary"}/>
+                    <ListItem label={"Date"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
+                    <ListItem label={"Months"} value={`${latestTimetable.length} (${(latestTimetable.length / 12).toFixed(2)} yrs)`} />
+                    <ListItem label={"Interest"} value={(paidInterest + remainingInterest).toFixed(2)} textType={"danger"}/>
+                  </>
+                  : "-"
+            }
           </div>
         </div>
       </div>
+      <div className="col-sm-12 col-md-4 col-lg-4 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>Last Payment</h5>
+            {
+              payment.loading
+                ? <Circles
+                    visible={true}
+                    height="15"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{float: "right"}}
+                    color='orange'
+                  />
+                : payment.results
+                  ? <>
+                    <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"}/>
+                    <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"}/>
+                    <ListItem label={"Principal"} value={payment.results[0].principal} textType={"success"}/>
+                    {
+                      payment.results[0].is_prepayment
+                        ? <ListItem label={"Saved"} value={payment.results[0].saved} textType={"success"}/>
+                        : <ListItem label={"Interest"} value={payment.results[0].interest} textType={"danger"}/>
+                    }
+                  </>
+                  : "-"
+            }
+          </div>
+        </div>
+      </div>
+      <div className="col-sm-12 col-md-6 grid-margin stretch-card">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">Paid: {paidTotal} {credit?.currency}</h4>
+          </div>
+          <Doughnut data={paidData} options={doughnutPieOptions} />
+        </div>
+      </div>
+      <div className="col-sm-12 col-md-6 grid-margin stretch-card">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">Paid: {remainingTotal} {credit?.currency}</h4>
+          </div>
+          <Doughnut data={remainingData} options={doughnutPieOptions} />
+        </div>
+      </div>
+      <div className="col-sm-12 col-md-12 grid-margin stretch-card">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">Payments</h4>
+              {
+                payment.loading
+                  ? <Circles
+                      visible={true}
+                      height="100%"
+                      ariaLabel="ball-triangle-loading"
+                      wrapperStyle={{float: "right"}}
+                      color='orange'
+                    />
+                  : <Bar height={100} data={paymentsData} options={paymentsOptions} />
+              }
+
+            </div>
+          </div>
+      </div>
     </div>
-    <EditModal />
-    <Tooltip anchorSelect="#not-clickable" place="bottom-start">
-      <span className="font-weight-normal">
-        Principal: <span className="text-success">{credit.details?.last_payment?.principal}</span>
-      </span>
-      <h6 className="font-weight-normal">
-        Interest: <span className="text-danger">{credit.details?.last_payment?.interest}</span>
-      </h6>
-    </Tooltip>
   </div>
 }
 

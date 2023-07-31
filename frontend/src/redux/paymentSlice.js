@@ -39,7 +39,7 @@ export const paymentSlice = createSlice({
       state.errors = null;
       state.loadingPayments = state.loadingPayments?.filter((id) => id !== action.payload.id);
       state.results = state.results.map((p) => (p.id === action.payload.id ? action.payload : p));
-      state.selectedPayment = action.payload.id === state.selectedPayment?.id ? action.payload : state.selectedPayment
+      state.selectedPayment = null
     },
   },
 });

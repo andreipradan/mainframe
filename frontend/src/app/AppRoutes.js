@@ -8,6 +8,7 @@ const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
 const CreditOverview = lazy(() => import ("./credit/Overview/Overview"));
 const CreditPayments = lazy(() => import ("./credit/Payment/Payments"));
+const CreditTimetables = lazy(() => import ("./credit/Timetable/Timetable"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Todo = lazy(() => import('./apps/TodoList'));
@@ -48,6 +49,7 @@ class AppRoutes extends Component {
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/credit/overview" component={ CreditOverview } />
           <Route exact path="/credit/payments" component={ CreditPayments } />
+          <Route exact path="/credit/timetables" component={ CreditTimetables } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />

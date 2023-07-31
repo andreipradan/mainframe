@@ -7,192 +7,198 @@ import CreditApi from "../../../api/credit";
 import { selectPayment } from "../../../redux/paymentSlice";
 import EditModal from "./EditModal";
 import {Tooltip} from "react-tooltip";
+import {useHistory} from "react-router-dom";
+import {calculateSum, getPassedMonths} from "../utils";
 
 const Payments = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const token = useSelector((state) => state.auth.token)
-
   const payment = useSelector(state => state.payment)
 
   const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
   useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(CreditApi.getPayments(token))}, []);
 
-  const calculateSum = field => payment.results?.reduce((partialSum, p) => partialSum + parseFloat(p[field]), 0).toFixed(2)
-  const total = calculateSum("total")
-  const interest = calculateSum("interest")
-  const principal = calculateSum("principal")
-  const prepaid = payment.results?.reduce((partialSum, p) => {
-    if (p.is_prepayment) return partialSum + parseFloat(p.total)
-    return partialSum
-  }, 0).toFixed(2)
+  const total = calculateSum(payment.results, "total")
+  const interest = calculateSum(payment.results, "interest")
+  const principal = calculateSum(payment.results, "principal")
+  const prepaid = calculateSum(payment.results, "total", "is_prepayment")
 
   const credit = payment.results?.[0].credit
-  const monthsPassed = payment.results
-    ? Object.values(
-        payment.results?.reduce((acc, obj) => ({ ...acc, [obj.date.split("-").splice(0,2)]: obj }), {})
-      ).length
-    : 0
+  const monthsPassed = getPassedMonths(payment.results)
 
   const estimatedTotalInterest = credit ? (interest / monthsPassed) * credit.latest_timetable.amortization_table.length : 0
-  const remainingPrincipal = credit?.latest_timetable.amortization_table[0].remaining
-  const remainingInterest = credit?.latest_timetable.amortization_table.reduce(
-    (partialSum, p) => partialSum + parseFloat(p.interest), 0
-  ).toFixed(2)
+  const remainingPrincipal = -payment.results?.[0].remaining
+  const remainingInterest = calculateSum(credit?.latest_timetable.amortization_table, "interest")
   const remainingTotal = parseFloat(remainingPrincipal) + parseFloat(remainingInterest)
   return <div>
+    <div className="page-header">
+      <h3 className="page-title">
+        Payments
+        <button type="button"
+          className="btn btn-outline-success btn-sm border-0 bg-transparent"
+          onClick={() => dispatch(CreditApi.getPayments(token))}
+        >
+          <i className="mdi mdi-refresh"></i>
+        </button>
+      </h3>
+      <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+        <li className="breadcrumb-item"><a href="!#" onClick={
+          event => {
+            event.preventDefault()
+            history.push("/credit/overview")
+          }
+        }>Credit</a></li>
+        <li className="breadcrumb-item active" aria-current="page">Payments</li>
+        </ol>
+      </nav>
+    </div>
     <div className="row">
-      {
-        paymentAlertOpen && !payment.selectedPayment
-          ? <div className="col-sm-12 grid-margin"><Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert></div>
-          : <>
-            <div className="col-sm-3 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>
-                    Paid
-                  </h5>
-                  <div className="row">
-                    <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                      <div className="d-flex d-sm-block d-md-flex align-items-center">
-                        {
-                          payment.loading
-                            ? <Circles
-                                visible={true}
-                                height="15"
-                                ariaLabel="ball-triangle-loading"
-                                wrapperStyle={{float: "right"}}
-                                color='orange'
-                              />
-                            : total
-                              ? <>
-                                <i className="mdi mdi-cash-multiple text-primary"></i>&nbsp;
-                                <h4 className="mb-0">{total}</h4>
-                              </>
-                              : "-"
-                        }
-                      </div>
-                      <h6 className="text-muted font-weight-normal">
-                        ~ { (total / remainingTotal * 100).toFixed(2)}%&nbsp;
-                        <i id="paid-percentage" className="mdi mdi-information-outline"/>
-                      </h6>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-3 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>Prepaid</h5>
-                  <div className="row">
-                    {
-                      payment.loading
-                        ? <Circles
-                              visible={true}
-                              height="15"
-                              ariaLabel="ball-triangle-loading"
-                              wrapperStyle={{float: "right"}}
-                              color='orange'
-                            />
-                        : prepaid
-                          ? <>
-                            <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                              <div className="d-flex d-sm-block d-md-flex align-items-center">
-                                <i className="mdi mdi-cash text-success" />&nbsp;
-                                <h4 className="mb-0">{prepaid}</h4>
-                                <p className="text-success ml-2 mb-0 font-weight-medium">
-
-                                </p>
-                              </div>
-                              <h6 className="text-muted font-weight-normal">
-                                { (prepaid / total * 100).toFixed(2)}%&nbsp;
-                                <i id="prepaid-percentage" className="mdi mdi-information-outline"/>
-                              </h6>
-                            </div>
-                          </>
-                          : "-"
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-3 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>Principal</h5>
-                  <div className="row">
-                    {
-                      payment.loading
-                        ? <Circles
-                              visible={true}
-                              height="15"
-                              ariaLabel="ball-triangle-loading"
-                              wrapperStyle={{float: "right"}}
-                              color='orange'
-                            />
-                        : principal
-                          ? <>
-                              <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                                <div className="d-flex d-sm-block d-md-flex align-items-center">
-                                  <i className="mdi mdi-cash text-success" />&nbsp;
-                                  <h4 className="mb-0">{principal}</h4>
-                                  <p className="text-success ml-2 mb-0 font-weight-medium">
-
-                                  </p>
-                                </div>
-                                <h6 className="text-muted font-weight-normal">
-                                  { (principal / credit?.total * 100).toFixed(2)}%&nbsp;
-                                  <i id="principal-percentage" className="mdi mdi-information-outline"/>
-                                </h6>
-                              </div>
-                            </>
-                          : "-"
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-sm-3 grid-margin">
-              <div className="card">
-                <div className="card-body">
-                  <h5>Interest</h5>
-                  <div className="row">
-                    {
-                      payment.loading
-                        ? <Circles
-                              visible={true}
-                              height="15"
-                              ariaLabel="ball-triangle-loading"
-                              wrapperStyle={{float: "right"}}
-                              color='orange'
-                            />
-                        : interest
-                          ? <>
-                            <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                              <div className="d-flex d-sm-block d-md-flex align-items-center">
-                                <i className="mdi mdi-cash text-danger" />&nbsp;
-                                <h4 className="mb-0">{interest}</h4>
-                                <p className="text-success ml-2 mb-0 font-weight-medium">
-
-                                </p>
-                              </div>
-                              <h6 className="text-muted font-weight-normal">
-                                ~ { (interest / estimatedTotalInterest * 100).toFixed(2)}%&nbsp;
-                                <i id="interest-percentage" className="mdi mdi-information-outline"/>
-                              </h6>
-
-                            </div>
-                          </>
+      <div className="col-sm-3 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>Total paid</h5>
+            <div className="row">
+              <div className="col-8 col-sm-12 col-xl-8 my-auto">
+                <div className="d-flex d-sm-block d-md-flex align-items-center">
+                  {
+                    payment.loading
+                      ? <Circles
+                          visible={true}
+                          height="15"
+                          ariaLabel="ball-triangle-loading"
+                          wrapperStyle={{float: "right"}}
+                          color='orange'
+                        />
+                      : total
+                        ? <>
+                          <i className="mdi mdi-cash-multiple text-primary"></i>&nbsp;
+                          <h4 className="mb-0">{total}</h4>
+                        </>
                         : "-"
-                    }
-                  </div>
+                  }
                 </div>
+                <h6 className="text-muted font-weight-normal">
+                  ~ { (total / remainingTotal * 100).toFixed(2)}%&nbsp;
+                  <i id="paid-percentage" className="mdi mdi-information-outline"/>
+                </h6>
               </div>
             </div>
-          </>
-      }
+          </div>
+        </div>
+      </div>
+      <div className="col-sm-3 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>Prepaid</h5>
+            <div className="row">
+              {
+                payment.loading
+                  ? <Circles
+                        visible={true}
+                        height="15"
+                        ariaLabel="ball-triangle-loading"
+                        wrapperStyle={{float: "right"}}
+                        color='orange'
+                      />
+                  : prepaid
+                    ? <>
+                      <div className="col-8 col-sm-12 col-xl-8 my-auto">
+                        <div className="d-flex d-sm-block d-md-flex align-items-center">
+                          <i className="mdi mdi-cash text-success" />&nbsp;
+                          <h4 className="mb-0">{prepaid}</h4>
+                          <p className="text-success ml-2 mb-0 font-weight-medium">
+
+                          </p>
+                        </div>
+                        <h6 className="text-muted font-weight-normal">
+                          { (prepaid / total * 100).toFixed(2)}%&nbsp;
+                          <i id="prepaid-percentage" className="mdi mdi-information-outline"/>
+                        </h6>
+                      </div>
+                    </>
+                    : "-"
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="col-sm-3 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>Principal</h5>
+            <div className="row">
+              {
+                payment.loading
+                  ? <Circles
+                        visible={true}
+                        height="15"
+                        ariaLabel="ball-triangle-loading"
+                        wrapperStyle={{float: "right"}}
+                        color='orange'
+                      />
+                  : principal
+                    ? <>
+                        <div className="col-8 col-sm-12 col-xl-8 my-auto">
+                          <div className="d-flex d-sm-block d-md-flex align-items-center">
+                            <i className="mdi mdi-cash text-success" />&nbsp;
+                            <h4 className="mb-0">{principal}</h4>
+                            <p className="text-success ml-2 mb-0 font-weight-medium">
+
+                            </p>
+                          </div>
+                          <h6 className="text-muted font-weight-normal">
+                            { (principal / credit?.total * 100).toFixed(2)}%&nbsp;
+                            <i id="principal-percentage" className="mdi mdi-information-outline"/>
+                          </h6>
+                        </div>
+                      </>
+                    : "-"
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="col-sm-3 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h5>Interest</h5>
+            <div className="row">
+              {
+                payment.loading
+                  ? <Circles
+                        visible={true}
+                        height="15"
+                        ariaLabel="ball-triangle-loading"
+                        wrapperStyle={{float: "right"}}
+                        color='orange'
+                      />
+                  : interest
+                    ? <>
+                      <div className="col-8 col-sm-12 col-xl-8 my-auto">
+                        <div className="d-flex d-sm-block d-md-flex align-items-center">
+                          <i className="mdi mdi-cash text-danger" />&nbsp;
+                          <h4 className="mb-0">{interest}</h4>
+                          <p className="text-success ml-2 mb-0 font-weight-medium">
+
+                          </p>
+                        </div>
+                        <h6 className="text-muted font-weight-normal">
+                          ~ { (interest / estimatedTotalInterest * 100).toFixed(2)}%&nbsp;
+                          <i id="interest-percentage" className="mdi mdi-information-outline"/>
+                        </h6>
+
+                      </div>
+                    </>
+                  : "-"
+              }
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div className="row ">
       <div className="col-12 grid-margin">
@@ -207,7 +213,7 @@ const Payments = () => {
             <div className="table-responsive">
               {paymentAlertOpen && !payment.selectedPayment && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
 
-              <table className="table">
+              <table className="table table-hover">
                 <thead>
                   <tr>
                     <th> Date </th>
@@ -216,6 +222,7 @@ const Payments = () => {
                     <th> Principal </th>
                     <th> Interest </th>
                     <th> Remaining </th>
+                    <th> Saved </th>
                     <th> Actions </th>
                   </tr>
                 </thead>
@@ -237,6 +244,7 @@ const Payments = () => {
                           <td> {p.principal} </td>
                           <td> {p.interest} </td>
                           <td> {p.remaining} </td>
+                          <td> {p.saved} </td>
                           <td>
                             <i
                               style={{cursor: "pointer"}}
@@ -256,9 +264,9 @@ const Payments = () => {
     </div>
     <EditModal />
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
-      Percentage of the remaining amount<br/>
+      Percentage of the remaining principal<br/>
       Principal: <span className="text-success">{remainingPrincipal}</span><br/>
-      Interest: <span className="text-danger">~ {remainingInterest}</span><br/>
+      Interest: <span className="text-danger">{remainingInterest} ~ </span><br/>
       Total: <span className="text-primary">{remainingTotal.toFixed(2)}</span>
     </Tooltip>
     <Tooltip anchorSelect="#prepaid-percentage" place="bottom-start">
