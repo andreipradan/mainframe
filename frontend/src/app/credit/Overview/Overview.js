@@ -39,6 +39,13 @@ const Credit = () => {
   const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
   const remainingTotal = (remainingPrincipal + remainingInterest + remainingInsurance).toFixed(2)
 
+  const [excludePrepayments, setExcludePrepayments] = useState(false)
+  const [barChartPrincipal, setBarChartPrincipal] = useState(null)
+  const [barChartInterest, setBarChartInterest] = useState(null)
+  const [barChartLabels, setBarChartLabels] = useState(null)
+  useEffect(() => setBarChartPrincipal(payment.results?.map(p => p.principal).reverse()), [payment.results])
+  useEffect(() => setBarChartInterest(payment.results?.map(p => p.interest).reverse()), [payment.results])
+  useEffect(() => setBarChartLabels(payment.results?.map(p => p.date).reverse()), [payment.results])
 
   const paidData = {
     datasets: [{
@@ -92,42 +99,82 @@ const Credit = () => {
   };
 
   const paymentsData = {
-        labels: payment.results?.map(p => p.date).reverse(),
-        datasets: [{
-          label: 'Ron',
-          data: payment.results?.map(p => p.total).reverse(),
-          backgroundColor: context => {
-            const ctx = context.chart.ctx;
-            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-            gradient.addColorStop(0, 'rgba(243,16,65,0.2)');
-            gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
-            gradient.addColorStop(1, 'rgba(75,192,126,0.2)');
-            return gradient;
-          },
-          borderColor: context => {
-            const ctx = context.chart.ctx;
-            const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
-            gradient.addColorStop(0, 'rgba(243,16,65,1)');
-            gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
-            gradient.addColorStop(1, 'rgb(75,192,126)');
-            return gradient;
-          },
-          borderWidth: 1,
-          fill: false
-        }]
-    };
+    labels: barChartLabels,
+    datasets: [
+      {
+        label: 'Principal',
+        data: barChartPrincipal,
+        backgroundColor: context => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, 'rgba(243,16,65,0.2)');
+          gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
+          gradient.addColorStop(1, 'rgba(47,113,190,0.2)');
+          return gradient;
+        },
+        borderColor: context => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
+          gradient.addColorStop(0, 'rgba(243,16,65,1)');
+          gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
+          gradient.addColorStop(1, 'rgb(47,113,190)');
+          return gradient;
+        },
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: "Interest",
+        data: barChartInterest,
+        backgroundColor: 'rgba(255,0,52,0.2)',
+        borderColor: 'rgba(255,0,52,1)',
+        borderWidth: 1,
+        fill: false,
+      },
+    ]
+  };
 
   const paymentsOptions = {
     scales: {
       yAxes: [{
         ticks: {beginAtZero: true},
-        gridLines: {color: "rgba(204, 204, 204,0.1)"}
+        gridLines: {color: "rgba(204, 204, 204,0.1)"},
+        stacked: true,
       }],
-      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
+      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
     },
-    legend: {display: false},
+    legend: {display: true},
     elements: {point: {radius: 0}},
+    tooltips: {
+      callbacks: {
+        label: (tooltipItem, data) => {
+          const otherValue = data.datasets[tooltipItem.datasetIndex === 0 ? 1 : 0].data[tooltipItem.index]
+          const currentValue = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+          const percentage = parseFloat((currentValue / (parseFloat(currentValue) + parseFloat(otherValue)) * 100).toFixed(1));
+          return data.datasets[tooltipItem.datasetIndex].label + ": " + currentValue + ' (' + percentage + '%)';
+        },
+        title: (tooltipItem, data) => {
+          const item = tooltipItem[0]
+          const otherValue = parseFloat(data.datasets[item.datasetIndex === 0 ? 1 : 0].data[item.index])
+          const currentValue = parseFloat(data.datasets[item.datasetIndex].data[item.index]);
+          return `Total: ${currentValue + otherValue}`
+        }
+      }
     }
+  }
+
+  const onExcludePrepaymentsChange = (e) => {
+    if (e.target.checked) {
+      setBarChartPrincipal(payment.results?.filter(p => !p.is_prepayment).map(p => p.principal).reverse())
+      setBarChartInterest(payment.results?.filter(p => !p.is_prepayment).map(p => p.interest).reverse())
+      setBarChartLabels(payment.results?.filter(p => !p.is_prepayment).map(p => p.date).reverse())
+    } else {
+      setBarChartPrincipal(payment.results?.map(p => p.principal).reverse())
+      setBarChartInterest(payment.results?.map(p => p.interest).reverse())
+      setBarChartLabels(payment.results?.map(p => p.date).reverse())
+    }
+    setExcludePrepayments(!excludePrepayments)
+  }
 
   return <div>
     <div className="page-header">
@@ -154,9 +201,7 @@ const Credit = () => {
       <div className="col-sm-12 col-md-4 col-lg-4 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h5>
-              Summary
-            </h5>
+            <h5>Summary</h5>
             {
               overview.loading
                 ? <Circles
@@ -254,7 +299,33 @@ const Credit = () => {
             </div>
           </div>
       </div>
-      <div className="col-sm-12 col-md-6 grid-margin stretch-card">
+      <div className="col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">Payments</h4>
+            <div className="form-check">
+              <label htmlFor="" className="form-check-label">
+                <input className="checkbox" type="checkbox"
+                  checked={excludePrepayments}
+                  onChange={onExcludePrepaymentsChange}
+                  />Exclude prepayments <i className="input-helper"/>
+              </label>
+            </div>
+            {
+              payment.loading
+                ? <Circles
+                    visible={true}
+                    height="100%"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{float: "right"}}
+                    color='orange'
+                  />
+                : <Bar data={paymentsData} height={100} options={paymentsOptions} />
+            }
+            </div>
+          </div>
+      </div>
+      <div className="col-sm-12 col-md-6 col-lg-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">Paid: {paidTotal} {credit?.currency}</h4>
@@ -262,31 +333,13 @@ const Credit = () => {
           <Doughnut data={paidData} options={doughnutPieOptions} />
         </div>
       </div>
-      <div className="col-sm-12 col-md-6 grid-margin stretch-card">
+      <div className="col-sm-12 col-md-6 col-lg-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">Remaining: {remainingTotal} {credit?.currency}</h4>
           </div>
           <Doughnut data={remainingData} options={doughnutPieOptions} />
         </div>
-      </div>
-      <div className="col-sm-12 col-md-12 grid-margin stretch-card">
-        <div className="card">
-          <div className="card-body">
-            <h4 className="card-title">Payments</h4>
-              {
-                overview.loading
-                  ? <Circles
-                      visible={true}
-                      height="100%"
-                      ariaLabel="ball-triangle-loading"
-                      wrapperStyle={{float: "right"}}
-                      color='orange'
-                    />
-                  : <Bar height={100} data={paymentsData} options={paymentsOptions} />
-              }
-            </div>
-          </div>
       </div>
     </div>
     <Tooltip anchorSelect="#progress-bar-tip" place={"bottom-start"}>

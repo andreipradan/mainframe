@@ -44,7 +44,7 @@ class CreditApi {
   static getTimetables = (token, page = null) => (dispatch) => {
     dispatch(setTimetableLoading(true));
     axios
-      .get(`${base}timetables/` + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}timetables/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTimetables(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
