@@ -41,7 +41,7 @@ class CronsApi {
     dispatch(setLoading(true));
     axios
       .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
-      .then(() => dispatch(setErrors({"errors": [`Process ${cronCommand} killed`]})))
+      .then(() => dispatch(setErrors([`Process ${cronCommand} killed`])))
       .catch((err) => {
         if (err.response.status === 404)
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
