@@ -78,6 +78,13 @@ const Crons = () =>  {
                                 <td>
                                   <div className="btn-group" role="group" aria-label="Basic example">
                                     <button
+                                        type="button"
+                                        className="btn btn-outline-secondary"
+                                        onClick={() => dispatch(CronsApi.kill(token, cron.id))}
+                                    >
+                                      <i className="mdi mdi-refresh"></i>
+                                    </button>
+                                    <button
                                       type="button"
                                       className="btn btn-outline-secondary"
                                       onClick={() => dispatch(select(cron.id))}

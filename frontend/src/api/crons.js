@@ -37,11 +37,11 @@ class CronsApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static sync = token => dispatch => {
+  static kill = (token, cronId) => dispatch => {
     dispatch(setLoading(true));
     axios
-      .put(`${base}/sync/`, {}, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
+      .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
+      .then(() => dispatch(setErrors({"errors": [`Process ${cronId} killed`]})))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updateCron = (token, cronId, data) => dispatch => {
