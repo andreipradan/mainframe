@@ -5,6 +5,8 @@ import {Audio, ColorRing} from "react-loader-spinner";
 import {select, setModalOpen} from "../../redux/cronsSlice";
 import Alert from "react-bootstrap/Alert";
 import EditModal from "../crons/components/EditModal";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 
 
 const Crons = () =>  {
@@ -12,6 +14,9 @@ const Crons = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {results: crons, errors, loading, loadingCrons } = useSelector(state => state.crons)
   const [alertOpen, setAlertOpen] = useState(false)
+
+  const [killModalOpen, setKillModalOpen] = useState(false)
+  const [selectedKillCron, setSelectedKillCron] = useState(null)
 
   useEffect(() => {
     !crons && dispatch(CronsApi.getList(token));
@@ -79,14 +84,17 @@ const Crons = () =>  {
                                   <div className="btn-group" role="group" aria-label="Basic example">
                                     <button
                                         type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() => dispatch(CronsApi.kill(token, cron.id))}
+                                        className="btn btn-outline-danger"
+                                        onClick={() => {
+                                          setKillModalOpen(true)
+                                          setSelectedKillCron(cron)
+                                        }}
                                     >
-                                      <i className="mdi mdi-refresh"></i>
+                                      <i className="mdi mdi-skull-crossbones"></i>
                                     </button>
                                     <button
                                       type="button"
-                                      className="btn btn-outline-secondary"
+                                      className="btn btn-outline-primary"
                                       onClick={() => dispatch(select(cron.id))}
                                     >
                                       <i className="mdi mdi-pencil"></i>
@@ -124,6 +132,34 @@ const Crons = () =>  {
         </div>
       </div>
       <EditModal />
+      <Modal centered show={killModalOpen} onHide={() => setKillModalOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <div className="row">
+              <div className="col-lg-12 grid-margin stretch-card">
+                Are you sure you want to kill "{selectedKillCron?.command}"?
+              </div>
+            </div>
+            <p className="text-muted mb-0">This may take a few moments, please be patient</p>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          This will kill any currently running processes for <b>{selectedKillCron?.command}</b><br/>
+          but will not remove or update the actual cron job
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={e => {
+            e.preventDefault()
+            setKillModalOpen(false)
+          }}>Close</Button>
+          <Button variant="danger" className="float-left" onClick={evt => {
+            evt.preventDefault()
+            dispatch(CronsApi.kill(token, selectedKillCron?.id, selectedKillCron?.command))
+            setKillModalOpen(false)
+          }}>Yes, kill it!
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   )
 }

@@ -37,12 +37,16 @@ class CronsApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static kill = (token, cronId) => dispatch => {
+  static kill = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));
     axios
       .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
-      .then(() => dispatch(setErrors({"errors": [`Process ${cronId} killed`]})))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .then(() => dispatch(setErrors({"errors": [`Process ${cronCommand} killed`]})))
+      .catch((err) => {
+        if (err.response.status === 404)
+          return dispatch(setErrors({"errors": [`Process ${cronCommand} does not exist`]}))
+        return handleErrors(err, dispatch, setErrors)
+      });
   };
   static updateCron = (token, cronId, data) => dispatch => {
     dispatch(setLoadingCron(cronId));
