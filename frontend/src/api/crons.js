@@ -44,7 +44,7 @@ class CronsApi {
       .then(() => dispatch(setErrors({"errors": [`Process ${cronCommand} killed`]})))
       .catch((err) => {
         if (err.response.status === 404)
-          return dispatch(setErrors({"errors": [`Process ${cronCommand} does not exist`]}))
+          return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
         return handleErrors(err, dispatch, setErrors)
       });
   };
