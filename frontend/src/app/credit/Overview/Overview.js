@@ -37,7 +37,7 @@ const Credit = () => {
   const remainingInterest = calculateSum(latestTimetable, "interest")
   const remainingInsurance = calculateSum(latestTimetable, "insurance")
   const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
-  const remainingTotal = (remainingPrincipal + remainingInterest + remainingInsurance).toFixed(2)
+  const remainingTotal = remainingPrincipal + remainingInterest + remainingInsurance
 
   const [excludePrepayments, setExcludePrepayments] = useState(false)
   const [barChartPrincipal, setBarChartPrincipal] = useState(null)

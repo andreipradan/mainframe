@@ -35,7 +35,8 @@ const Payments = () => {
 
   const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
   const remainingInterest = calculateSum(latestTimetable?.amortization_table, "interest")
-  const remainingTotal = remainingPrincipal + remainingInterest
+  const remainingInsurance = calculateSum(latestTimetable?.amortization_table, "insurance")
+  const remainingTotal = remainingPrincipal + remainingInterest + remainingInsurance
   return <div>
     <div className="page-header">
       <h3 className="page-title">
