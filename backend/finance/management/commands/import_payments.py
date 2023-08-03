@@ -13,8 +13,8 @@ from api.bots.webhooks.shared import chunks
 from clients.cron import remove_crons_for_command
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
-from credit.models import Payment
 from crons.models import Cron
+from finance.models import Payment
 
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"

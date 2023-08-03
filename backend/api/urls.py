@@ -3,13 +3,13 @@ from django.urls import path, include
 urlpatterns = [
     path("bots/", include(("api.bots.routers", "api"), namespace="bots")),
     path("camera/", include(("camera.routers", "api"), namespace="camera")),
-    path("credit/", include(("credit.routers", "api"), namespace="credit")),
     path("crons/", include(("crons.routers", "api"), namespace="crons")),
     path("devices/", include(("devices.routers", "api"), namespace="devices")),
     path(
         "earthquakes/",
         include(("api.earthquakes.routers", "api"), namespace="earthquakes"),
     ),
+    path("finance/", include(("finance.routers", "api"), namespace="finance")),
     path("hooks/", include("api.hooks.urls")),
     path("lights/", include(("api.lights.routers", "api"), namespace="lights")),
     path("logs/", include(("api.logs.routers", "api"), namespace="logs")),

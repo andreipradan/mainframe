@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from credit.models import Timetable, Payment, Credit
+from finance.models import Timetable, Payment, Credit
 
 
 class CreditSerializer(serializers.ModelSerializer):

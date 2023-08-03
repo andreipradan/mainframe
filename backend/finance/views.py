@@ -2,8 +2,8 @@ from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from credit.models import Payment, Timetable, get_default_credit
-from credit.serializers import PaymentSerializer, TimetableSerializer, CreditSerializer
+from finance.models import Payment, Timetable, get_default_credit
+from finance.serializers import PaymentSerializer, TimetableSerializer, CreditSerializer
 
 
 class OverviewViewSet(viewsets.ViewSet):

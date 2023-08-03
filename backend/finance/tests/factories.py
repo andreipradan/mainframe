@@ -3,7 +3,7 @@ import random
 import factory
 from environ import environ
 
-from credit.models import Payment, Credit, Account
+from finance.models import Payment, Credit, Account
 
 
 class AccountFactory(factory.django.DjangoModelFactory):
@@ -20,7 +20,7 @@ class CreditFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Credit
 
-    account = factory.SubFactory("backend.credit.tests.factories.AccountFactory")
+    account = factory.SubFactory("backend.finance.tests.factories.AccountFactory")
     currency = random.choice(["usd", "eur"])
     date = "2000-01-01"
     number = factory.Sequence(lambda n: n)
@@ -32,6 +32,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Payment
 
-    credit = factory.SubFactory("backend.credit.tests.factories.CreditFactory")
+    credit = factory.SubFactory("backend.finance.tests.factories.CreditFactory")
     date = factory.Sequence(lambda x: f"2000-01-0{x+1:>1}")
     remaining = 0

@@ -87,7 +87,7 @@ def call(data, instance: Bot):
                 else:
                     return logger.error("Unhandled pdf type")
                 cron_name = f"import_{doc_type}"
-                path = settings.BASE_DIR / "credit" / "data" / doc_type / file_name
+                path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
             else:
                 return logger.error(f"Unhandled extension: {extension}")
 

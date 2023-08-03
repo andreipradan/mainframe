@@ -36,7 +36,7 @@ class Account(TimeStampedModel):
 
 
 class Credit(TimeStampedModel):
-    account = models.ForeignKey(on_delete=models.CASCADE, to="credit.Account")
+    account = models.ForeignKey(on_delete=models.CASCADE, to="finance.Account")
     currency = models.CharField(max_length=3)
     date = models.DateField()
     number = models.IntegerField(unique=True)
@@ -55,7 +55,7 @@ class Payment(TimeStampedModel):
     credit = models.ForeignKey(
         default=get_default_credit,
         on_delete=models.CASCADE,
-        to="credit.Credit",
+        to="finance.Credit",
     )
     date = models.DateField()
     interest = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
@@ -86,7 +86,7 @@ class Payment(TimeStampedModel):
 
 class Timetable(TimeStampedModel):
     amortization_table = models.JSONField(validators=[validate_amortization_table])
-    credit = models.ForeignKey(on_delete=models.CASCADE, to="credit.Credit")
+    credit = models.ForeignKey(on_delete=models.CASCADE, to="finance.Credit")
     date = models.DateField()
     ircc = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
     margin = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)

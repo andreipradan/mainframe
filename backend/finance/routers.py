@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from credit.views import TimetableViewSet, PaymentViewSet, OverviewViewSet
+from finance.views import TimetableViewSet, PaymentViewSet, OverviewViewSet
 
 router = routers.SimpleRouter()
 
