@@ -14,7 +14,7 @@ import CreditApi from "../../../api/credit";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 
-const EditModal = () => {
+const PaymentEditModal = () => {
   const dispatch = useDispatch();
   const payment = useSelector(state => state.payment)
   const selectedPayment = useSelector(state => state.payment.selectedPayment)
@@ -85,4 +85,4 @@ const EditModal = () => {
     </Modal.Footer>
   </Modal>
 }
-export default EditModal;
+export default PaymentEditModal;

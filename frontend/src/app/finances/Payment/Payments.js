@@ -5,7 +5,7 @@ import { Circles } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
 import CreditApi from "../../../api/credit";
 import { selectPayment } from "../../../redux/paymentSlice";
-import EditModal from "./EditModal";
+import PaymentEditModal from "../components/PaymentEditModal";
 import {Tooltip} from "react-tooltip";
 import {useHistory} from "react-router-dom";
 import { calculateSum, getPercentage } from "../utils";
@@ -21,21 +21,21 @@ const Payments = () => {
   useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
   useEffect(() => {!overview.details && dispatch(CreditApi.getOverview(token))}, []);
   const credit = overview.details?.credit
-  const latestTimetable = overview.details?.latest_timetable
+  const latestTimetable = overview.details?.latest_timetable.amortization_table
 
   const payment = useSelector(state => state.payment)
   const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
   useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(CreditApi.getPayments(token))}, []);
 
-  const total = calculateSum(payment.results, "total")
-  const interest = calculateSum(payment.results, "interest")
-  const principal = calculateSum(payment.results, "principal")
-  const prepaid = calculateSum(payment.results, "total", "is_prepayment")
+  const paidTotal = calculateSum(payment.results, "total")
+  const paidInterest = calculateSum(payment.results, "interest")
+  const paidPrincipal = calculateSum(payment.results, "principal")
+  const paidPrepaid = calculateSum(payment.results, "total", "is_prepayment")
 
   const remainingPrincipal = parseFloat(-payment.results?.[0].remaining)
-  const remainingInterest = calculateSum(latestTimetable?.amortization_table, "interest")
-  const remainingInsurance = calculateSum(latestTimetable?.amortization_table, "insurance")
+  const remainingInterest = calculateSum(latestTimetable, "interest")
+  const remainingInsurance = calculateSum(latestTimetable, "insurance")
   const remainingTotal = remainingPrincipal + remainingInterest + remainingInsurance
   return <div>
     <div className="page-header">
@@ -77,16 +77,16 @@ const Payments = () => {
                           wrapperStyle={{float: "right"}}
                           color='orange'
                         />
-                      : total
+                      : paidTotal
                         ? <>
                           <i className="mdi mdi-cash-multiple text-primary"></i>&nbsp;
-                          <h4 className="mb-0">{total}</h4>
+                          <h4 className="mb-0">{paidTotal}</h4>
                         </>
                         : "-"
                   }
                 </div>
                 <h6 className="text-muted font-weight-normal">
-                  ~ { (total / remainingTotal * 100).toFixed(2)}%&nbsp;
+                  ~ { (paidTotal / remainingTotal * 100).toFixed(2)}%&nbsp;
                   <i id="paid-percentage" className="mdi mdi-information-outline"/>
                 </h6>
               </div>
@@ -108,18 +108,18 @@ const Payments = () => {
                         wrapperStyle={{float: "right"}}
                         color='orange'
                       />
-                  : prepaid
+                  : paidPrepaid
                     ? <>
                       <div className="col-8 col-sm-12 col-xl-8 my-auto">
                         <div className="d-flex d-sm-block d-md-flex align-items-center">
                           <i className="mdi mdi-cash text-success" />&nbsp;
-                          <h4 className="mb-0">{prepaid}</h4>
+                          <h4 className="mb-0">{paidPrepaid}</h4>
                           <p className="text-success ml-2 mb-0 font-weight-medium">
 
                           </p>
                         </div>
                         <h6 className="text-muted font-weight-normal">
-                          { (prepaid / total * 100).toFixed(2)}%&nbsp;
+                          { (paidPrepaid / paidTotal * 100).toFixed(2)}%&nbsp;
                           <i id="prepaid-percentage" className="mdi mdi-information-outline"/>
                         </h6>
                       </div>
@@ -144,18 +144,18 @@ const Payments = () => {
                         wrapperStyle={{float: "right"}}
                         color='orange'
                       />
-                  : principal
+                  : paidPrincipal
                     ? <>
                         <div className="col-8 col-sm-12 col-xl-8 my-auto">
                           <div className="d-flex d-sm-block d-md-flex align-items-center">
                             <i className="mdi mdi-cash text-success" />&nbsp;
-                            <h4 className="mb-0">{principal}</h4>
+                            <h4 className="mb-0">{paidPrincipal}</h4>
                             <p className="text-success ml-2 mb-0 font-weight-medium">
 
                             </p>
                           </div>
                           <h6 className="text-muted font-weight-normal">
-                            { (principal / credit?.total * 100).toFixed(2)}%&nbsp;
+                            { (paidPrincipal / credit?.total * 100).toFixed(2)}%&nbsp;
                             <i id="principal-percentage" className="mdi mdi-information-outline"/>
                           </h6>
                         </div>
@@ -180,18 +180,18 @@ const Payments = () => {
                         wrapperStyle={{float: "right"}}
                         color='orange'
                       />
-                  : interest
+                  : paidInterest
                     ? <>
                       <div className="col-8 col-sm-12 col-xl-8 my-auto">
                         <div className="d-flex d-sm-block d-md-flex align-items-center">
                           <i className="mdi mdi-cash text-danger" />&nbsp;
-                          <h4 className="mb-0">{interest}</h4>
+                          <h4 className="mb-0">{paidInterest}</h4>
                           <p className="text-success ml-2 mb-0 font-weight-medium">
 
                           </p>
                         </div>
                         <h6 className="text-muted font-weight-normal">
-                          ~ { getPercentage(interest, remainingInterest) }%&nbsp;
+                          ~ { getPercentage(paidInterest, remainingInterest) }%&nbsp;
                           <i id="interest-percentage" className="mdi mdi-information-outline"/>
                         </h6>
 
@@ -267,7 +267,7 @@ const Payments = () => {
         </div>
       </div>
     </div>
-    <EditModal />
+    <PaymentEditModal />
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
       Percentage of the remaining principal<br/>
       Principal: <span className="text-success">{remainingPrincipal}</span><br/>

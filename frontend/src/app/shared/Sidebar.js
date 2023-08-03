@@ -27,7 +27,7 @@ const Sidebar = () => {
 
   const [appsMenuOpen, setAppsMenuOpen] = useState(false)
   const [basicUiMenuOpen, setBasicUiMenuOpen] = useState(false)
-  const [creditMenuOpen, setCreditMenuOpen] = useState(false)
+  const [financesMenuOpen, setFinancesMenuOpen] = useState(false)
   const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false)
   const [tablesMenuOpen, setTablesMenuOpen] = useState(false)
   const [iconsMenuOpen, setIconsMenuOpen] = useState(false)
@@ -61,6 +61,7 @@ const Sidebar = () => {
   const closeAllMenus = () => {
     setAppsMenuOpen(false)
     setBasicUiMenuOpen(false)
+    setFinancesMenuOpen(false)
     setFormElementsMenuOpen(false)
     setTablesMenuOpen(false)
     setIconsMenuOpen(false)
@@ -76,7 +77,7 @@ const Sidebar = () => {
     const dropdownPaths = [
       {path:'/apps', setState: setAppsMenuOpen},
       {path:'/basic-ui', setState: setBasicUiMenuOpen},
-      {path:'/credit', setState: setCreditMenuOpen},
+      {path:'/finances', setState: setFinancesMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
       {path:'/tables', setState: setTablesMenuOpen},
       {path:'/icons', setState: setIconsMenuOpen},
@@ -257,29 +258,29 @@ const Sidebar = () => {
             </div>
           </Collapse>
         </li>
-        <li className={ isPathActive('/credit') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <div className={ appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setCreditMenuOpen(!creditMenuOpen) } data-toggle="collapse">
+        <li className={ isPathActive('/finances') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+          <div className={ appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setFinancesMenuOpen(!financesMenuOpen) } data-toggle="collapse">
             <span className="menu-icon">
-              <i className="mdi mdi-credit-card"></i>
+              <i className="mdi mdi-credit-card-outline"></i>
             </span>
-            <span className="menu-title"><Trans>Credit</Trans></span>
+            <span className="menu-title"><Trans>Finances</Trans></span>
             <i className="menu-arrow"></i>
           </div>
-          <Collapse in={ creditMenuOpen }>
+          <Collapse in={ financesMenuOpen }>
             <div>
               <ul className="nav flex-column sub-menu">
                 <li className="nav-item">
-                  <Link className={ isPathActive('/credit/overview') ? 'nav-link active' : 'nav-link' } to="/credit/overview">
+                  <Link className={ isPathActive('/finances/overview') ? 'nav-link active' : 'nav-link' } to="/finances/overview">
                     Overview
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={ isPathActive('/credit/payments') ? 'nav-link active' : 'nav-link' } to="/credit/payments">
+                  <Link className={ isPathActive('/finances/payments') ? 'nav-link active' : 'nav-link' } to="/finances/payments">
                     Payments
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={ isPathActive('/credit/timetables') ? 'nav-link active' : 'nav-link' } to="/credit/timetables">
+                  <Link className={ isPathActive('/finances/timetables') ? 'nav-link active' : 'nav-link' } to="/finances/timetables">
                     <span className="menu-title">Timetables</span>
                   </Link>
                 </li>

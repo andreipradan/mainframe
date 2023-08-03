@@ -6,15 +6,15 @@ import Spinner from '../app/shared/Spinner';
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
-const CreditOverview = lazy(() => import ("./credit/Overview/Overview"));
-const CreditPayments = lazy(() => import ("./credit/Payment/Payments"));
-const CreditTimetables = lazy(() => import ("./credit/Timetable/Timetable"));
 const Expenses = lazy(() => import ("./apps/Expenses"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
+const FinancesOverview = lazy(() => import ("./finances/Overview"));
+const FinancesPayments = lazy(() => import ("./finances/Payment/Payments"));
+const FinancesTimetables = lazy(() => import ("./finances/Timetable/Timetable"));
 const Meals = lazy(() => import('./meals/Meals'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
@@ -47,9 +47,9 @@ class AppRoutes extends Component {
           <Route exact path="/apps/logs" component={ Logs } />
           <Route exact path="/apps/todo" component={ Todo } />
           <Route exact path="/bots" component={ Bots } />
-          <Route exact path="/credit/overview" component={ CreditOverview } />
-          <Route exact path="/credit/payments" component={ CreditPayments } />
-          <Route exact path="/credit/timetables" component={ CreditTimetables } />
+          <Route exact path="/finances/overview" component={ FinancesOverview } />
+          <Route exact path="/finances/payments" component={ FinancesPayments } />
+          <Route exact path="/finances/timetables" component={ FinancesTimetables } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />
