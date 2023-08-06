@@ -76,25 +76,30 @@ def call(data, instance: Bot):
         if (extension := message.document.file_name[-4:]) in [".csv", ".pdf"]:
             logger.info(f"Got {extension} saving...")
             file_name = message.document.file_name
+            bank = None
             if extension == ".csv":
-                cron_name = "import_transactions"
-                path = settings.BASE_DIR / "transactions" / "data" / file_name
+                bank = "revolut"
+                doc_type = "statements"
             elif extension == ".pdf":
-                if file_name.startswith("Tranzactii"):
+                if file_name.startswith("Extras_de_cont"):
+                    bank = "raiffeisen"
+                    doc_type = "statements"
+                elif file_name.startswith("Tranzactii"):
                     doc_type = "payments"
                 elif file_name.startswith("Scadentar"):
                     doc_type = "timetables"
                 else:
                     return logger.error("Unhandled pdf type")
-                cron_name = f"import_{doc_type}"
-                path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
             else:
                 return logger.error(f"Unhandled extension: {extension}")
 
+            path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
             bot.get_file(message.document.file_id).download(path)
-            logger.info(f"Saved {file_name}")
-            cron.delay(cron_name)
-            return reply(update, f"Saved {file_name}")
+
+            msg = f"Saved {doc_type}: {file_name}"
+            logger.info(msg)
+            cron.delay(f"import_{doc_type}{f' --bank={bank}' if bank else ''}")
+            return reply(update, msg)
 
     if not message.text:
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")

@@ -12,7 +12,7 @@ from clients.cron import remove_crons_for_command
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
-from transactions.models import Transaction
+from finance.models import Transaction
 
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -40,15 +40,21 @@ def normalize(transaction):
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument("--bank", type=str)
+
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 
-        logger.info("Importing transactions")
+        if bank := options["bank"]:
+            pass
+
+        logger.info(f"Importing{f' {bank}' if bank else ''} statements")
         now = datetime.now()
 
         total = 0
-        data_path = settings.BASE_DIR / "transactions" / "data"
+        data_path = settings.BASE_DIR / "finance" / "data" / "statements"
         failed_imports = []
         for file_name in Path(data_path).glob("**/*.csv"):
             with open(file_name) as file:

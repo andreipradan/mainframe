@@ -92,11 +92,19 @@ const AccountDetails = () => {
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>Latest Transaction</h6>
+            <h6>
+              Latest Transaction
+              <button type="button"
+                className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                onClick={() => dispatch(FinanceApi.getTransactions(token))}
+              >
+                <i className="mdi mdi-refresh"></i>
+              </button>
+            </h6>
             {
               transactions.loading
                 ? <Circles />
-                : transactions.results
+                : transactions.results?.length
                   ? <Marquee duration={10000} pauseOnClick={true} >
                     <ListItem label={"Completed"} value={transactions.results[0].completed_at} className="mr-3" />
                     <ListItem label={"Started"} value={transactions.results[0].started_at} className="mr-3" />

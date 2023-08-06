@@ -30,7 +30,7 @@ import {
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
-} from "../redux/timetableSlice";
+} from "../redux/transactionsSlice";
 import {handleErrors} from "./errors";
 
 
