@@ -2,11 +2,25 @@ from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from finance.models import Payment, Timetable, get_default_credit
-from finance.serializers import PaymentSerializer, TimetableSerializer, CreditSerializer
+from finance.models import Account
+from finance.models import Payment
+from finance.models import Timetable
+from finance.models import Transaction
+from finance.models import get_default_credit
+from finance.serializers import AccountSerializer
+from finance.serializers import CreditSerializer
+from finance.serializers import PaymentSerializer
+from finance.serializers import TimetableSerializer
+from finance.serializers import TransactionSerializer
 
 
-class OverviewViewSet(viewsets.ViewSet):
+class AccountViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+
+
+class CreditViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request, **kwargs):
@@ -30,3 +44,9 @@ class TimetableViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Timetable.objects.all()
     serializer_class = TimetableSerializer
+
+
+class TransactionViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer

@@ -12,9 +12,9 @@ const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
-const FinancesOverview = lazy(() => import ("./finances/Overview"));
-const FinancesPayments = lazy(() => import ("./finances/Payment/Payments"));
-const FinancesTimetables = lazy(() => import ("./finances/Timetable/Timetable"));
+const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
+const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
+const FinancesCredit = lazy(() => import ("./finances/Credit/Credit"));
 const Meals = lazy(() => import('./meals/Meals'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
@@ -41,15 +41,15 @@ class AppRoutes extends Component {
     return (
       <Suspense fallback={<Spinner/>}>
         <Switch>
-          <Route exact path="/dashboard" component={ Dashboard } />
+          <Route exact path="/" component={ Dashboard } />
           <Route exact path="/apps/camera" component={ Camera } />
           <Route exact path="/apps/expenses" component={ Expenses } />
           <Route exact path="/apps/logs" component={ Logs } />
           <Route exact path="/apps/todo" component={ Todo } />
           <Route exact path="/bots" component={ Bots } />
-          <Route exact path="/finances/overview" component={ FinancesOverview } />
-          <Route exact path="/finances/payments" component={ FinancesPayments } />
-          <Route exact path="/finances/timetables" component={ FinancesTimetables } />
+          <Route exact path="/finances/accounts" component={ FinancesAccounts } />
+          <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />
+          <Route exact path="/finances/credit" component={ FinancesCredit } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />

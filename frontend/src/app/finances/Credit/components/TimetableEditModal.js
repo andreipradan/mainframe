@@ -9,10 +9,10 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
-import {selectTimetable} from "../../../redux/timetableSlice";
-import CreditApi from "../../../api/credit";
+import {selectTimetable} from "../../../../redux/timetableSlice";
+import FinanceApi from "../../../../api/finance";
 
-const EditModal = () => {
+const TimetableEditModal = () => {
   const dispatch = useDispatch();
   const loadingTimetables = useSelector(state => state.timetable.loadingTimetables)
   const timetable = useSelector(state => state.timetable.selectedTimetable)
@@ -24,7 +24,7 @@ const EditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card mb-1">
             Amortization Table
-            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CreditApi.getTimetable(token, timetable?.id))}>
+            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getTimetable(token, timetable?.id))}>
               <i className="mdi mdi-refresh"></i>
             </button>
           </div>
@@ -77,4 +77,4 @@ const EditModal = () => {
     </Modal.Footer>
   </Modal>
 }
-export default EditModal;
+export default TimetableEditModal;

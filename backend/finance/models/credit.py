@@ -6,6 +6,7 @@ from django.db.models import Q
 from core.models import TimeStampedModel
 
 DECIMAL_DEFAULT_KWARGS = {"decimal_places": 2, "max_digits": 8}
+NULLABLE_KWARGS = {"blank": True, "null": True}
 
 
 def get_default_credit():
@@ -26,10 +27,15 @@ def validate_amortization_table(value):
 
 
 class Account(TimeStampedModel):
+    bank = models.CharField(max_length=32)
     client_code = models.IntegerField()
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    number = models.BigIntegerField()
+    number = models.CharField(max_length=32)
+    type = models.CharField(default="current", max_length=24)
+
+    class Meta:
+        ordering = ("-updated_at",)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.number})"
@@ -62,7 +68,7 @@ class Payment(TimeStampedModel):
     is_prepayment = models.BooleanField(default=False)
     principal = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     remaining = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
-    reference = models.IntegerField(blank=True, null=True)
+    reference = models.IntegerField(**NULLABLE_KWARGS)
     saved = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     total = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
 

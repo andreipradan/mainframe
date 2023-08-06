@@ -217,8 +217,8 @@ const Sidebar = () => {
         <li className="nav-item nav-category">
           <span className="nav-link"><Trans>Mainframe</Trans></span>
         </li>
-        <li className={ isPathActive('/dashboard') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <Link className="nav-link" to="/dashboard">
+        <li className={ location.pathname === "/" ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+          <Link className="nav-link" to="/">
             <span className="menu-icon"><i className="mdi mdi-speedometer"></i></span>
             <span className="menu-title"><Trans>Dashboard</Trans></span>
           </Link>
@@ -270,18 +270,13 @@ const Sidebar = () => {
             <div>
               <ul className="nav flex-column sub-menu">
                 <li className="nav-item">
-                  <Link className={ isPathActive('/finances/overview') ? 'nav-link active' : 'nav-link' } to="/finances/overview">
-                    Overview
+                  <Link className={ isPathActive('/finances/accounts') ? 'nav-link active' : 'nav-link' } to="/finances/accounts">
+                    Accounts
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={ isPathActive('/finances/payments') ? 'nav-link active' : 'nav-link' } to="/finances/payments">
-                    Payments
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className={ isPathActive('/finances/timetables') ? 'nav-link active' : 'nav-link' } to="/finances/timetables">
-                    <span className="menu-title">Timetables</span>
+                  <Link className={ isPathActive('/finances/credit') ? 'nav-link active' : 'nav-link' } to="/finances/credit">
+                    Credit
                   </Link>
                 </li>
               </ul>

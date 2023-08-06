@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from finance.models import Timetable, Payment, Credit
+from finance.models import Timetable, Payment, Credit, Account, Transaction
+
+
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = "__all__"
 
 
 class CreditSerializer(serializers.ModelSerializer):
@@ -21,4 +27,10 @@ class TimetableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Timetable
+        fields = "__all__"
+
+
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
         fields = "__all__"

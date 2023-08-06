@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import accountsReducer from "../redux/accountsSlice";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
 import cameraReducer from "./cameraSlice";
@@ -16,6 +17,7 @@ import transactionsReducer from "../redux/transactionsSlice";
 
 export default configureStore({
   reducer: {
+    accounts: accountsReducer,
     auth: authReducer,
     bots: botReducer,
     camera: cameraReducer,

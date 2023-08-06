@@ -3,16 +3,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 
-import CreditApi from "../../api/credit";
-import ListItem from "./components/ListItem";
-import {calculateSum, getPercentage} from "./utils";
+import FinanceApi from "../../../api/finance";
+import ListItem from "../shared/ListItem";
+import {calculateSum, getPercentage} from "../utils";
 import Alert from "react-bootstrap/Alert";
 import { Bar, Doughnut } from "react-chartjs-2";
 import {ProgressBar} from "react-bootstrap";
 import {Tooltip} from "react-tooltip";
-import {selectPayment} from "../../redux/paymentSlice";
+import {selectPayment} from "../../../redux/paymentSlice";
 import PaymentEditModal from "./components/PaymentEditModal";
+import TimetableEditModal from "./components/TimetableEditModal";
 import Marquee from "react-fast-marquee";
+import {selectTimetable} from "../../../redux/timetableSlice";
 
 const Credit = () => {
   const dispatch = useDispatch();
@@ -21,14 +23,19 @@ const Credit = () => {
   const overview = useSelector(state => state.credit)
   const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
   useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
-  useEffect(() => {!overview.details && dispatch(CreditApi.getOverview(token))}, []);
+  useEffect(() => {!overview.details && dispatch(FinanceApi.getCredit(token))}, []);
   const credit = overview.details?.credit
   const latestTimetable = overview.details?.latest_timetable.amortization_table
 
   const payment = useSelector(state => state.payment)
   const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
   useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
-  useEffect(() => {!payment.results && dispatch(CreditApi.getPayments(token))}, []);
+  useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
+
+  const timetable = useSelector(state => state.timetable)
+  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
+  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
+  useEffect(() => {!timetable.results && dispatch(FinanceApi.getCreditTimetables(token))}, []);
 
   const paidTotal = calculateSum(payment.results, "total")
   const paidInterest = calculateSum(payment.results, "interest")
@@ -182,18 +189,18 @@ const Credit = () => {
   return <div>
     <div className="page-header">
       <h3 className="page-title">
-        Overview
+        Credit
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(CreditApi.getOverview(token))}
+          onClick={() => dispatch(FinanceApi.getCredit(token))}
         >
           <i className="mdi mdi-refresh"></i>
         </button>
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-        <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Credit</a></li>
-        <li className="breadcrumb-item active" aria-current="page">Overview</li>
+        <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
+        <li className="breadcrumb-item active" aria-current="page">Credit</li>
         </ol>
       </nav>
     </div>
@@ -272,13 +279,13 @@ const Credit = () => {
               overview.loading
                 ? <Circles />
                 : payment.results
-                  ? <Marquee duration={10000} >
+                  ? <Marquee duration={10000} pauseOnHover={true} >
                     <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"} className="mr-3" />
                     <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"} className="mr-3" />
                     <ListItem label={"Type"} value={payment.results[0].is_prepayment ? "Prepayment" : "Installment"} textType={payment.results[0].is_prepayment ? "success" : "warning"} className="mr-3" />
                     <ListItem label={"Principal"} value={payment.results[0].principal} textType={"success"} className="mr-3" />
-                    <ListItem label={"Saved"} value={payment.results[0].saved} textType={parseFloat(payment.results[0].saved) && "success"} className="mr-3" />
                     <ListItem label={"Interest"} value={payment.results[0].interest} textType={"danger"} className="mr-3" />
+                    <ListItem label={"Saved"} value={payment.results[0].saved} textType={parseFloat(payment.results[0].saved) && "success"} className="mr-3" />
                   </Marquee>
                   : "-"
             }
@@ -351,7 +358,7 @@ const Credit = () => {
           <div className="card-body">
             <h4 className="card-title">
               Payments
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CreditApi.getPayments(token))}>
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
             </h4>
@@ -408,6 +415,70 @@ const Credit = () => {
         </div>
       </div>
     </div>
+    <div className="row ">
+      <div className="col-12 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">
+              Timetables
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditTimetables(token))}>
+                <i className="mdi mdi-refresh" />
+              </button>
+            </h4>
+            <div className="table-responsive">
+              {timetableAlertOpen && <Alert variant="danger" dismissible onClose={() => setTimetableAlertOpen(false)}>{timetable.errors}</Alert>}
+
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th> Date </th>
+                    <th> Interest </th>
+                    <th> Margin </th>
+                    <th> IRCC </th>
+                    <th> Months </th>
+                    <th> Actions </th>
+                  </tr>
+                </thead>
+                <tbody>
+                {
+                  timetable.loading
+                    ? <Circles
+                        visible={true}
+                        width="100%"
+                        ariaLabel="ball-triangle-loading"
+                        wrapperStyle={{float: "right"}}
+                        color='orange'
+                      />
+                    : timetable.results?.length
+                        ? timetable.results.map((timetable, i) => <tr key={i}>
+                          <td> {timetable.date} </td>
+                          <td> {timetable.interest}% </td>
+                          <td> {timetable.margin}% </td>
+                          <td> {timetable.ircc}% </td>
+                          <td> {timetable.amortization_table.length} </td>
+                          <td>
+                            <i
+                              style={{cursor: "pointer"}}
+                              className="mr-2 mdi mdi-pencil text-secondary"
+                              onClick={() => dispatch(selectTimetable(timetable.id))}
+                            />
+                            <i
+                              style={{cursor: "pointer"}}
+                              className="mr-2 mdi mdi-trash-can-outline text-danger"
+                              onClick={() => dispatch(FinanceApi.deleteTimetable(token, timetable.id))}
+                            />
+                          </td>
+                        </tr>)
+                      : <tr><td colSpan={6}><span>No timetables found</span></td></tr>
+                }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <TimetableEditModal />
 
     <Tooltip anchorSelect="#progress-bar-tip" place={"bottom-start"}>
       Total paid of the remaining total

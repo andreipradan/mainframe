@@ -9,8 +9,8 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
-import {selectPayment} from "../../../redux/paymentSlice";
-import CreditApi from "../../../api/credit";
+import {selectPayment} from "../../../../redux/paymentSlice";
+import FinanceApi from "../../../../api/finance";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 
@@ -34,9 +34,6 @@ const PaymentEditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card mb-1">
             {selectedPayment?.is_prepayment ? "Prepayment" : "Installment"}
-            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CreditApi.getPayment(token, selectedPayment?.id))}>
-              <i className="mdi mdi-refresh"></i>
-            </button>
           </div>
         </div>
         <p className="text-muted mb-0">{selectedPayment?.date}</p>
@@ -56,7 +53,7 @@ const PaymentEditModal = () => {
         : <Form
             onSubmit={event => {
               event.preventDefault()
-              dispatch(CreditApi.updatePayment(token, selectedPayment.id, {saved: saved}))
+              dispatch(FinanceApi.updateCreditPayment(token, selectedPayment.id, {saved: saved}))
             }}
           >
             <Form.Group className="mb-3">
@@ -76,7 +73,7 @@ const PaymentEditModal = () => {
         Close
       </Button>
       <Button variant="primary" onClick={() => {
-        dispatch(CreditApi.updatePayment(token, selectedPayment.id, {
+        dispatch(FinanceApi.updateCreditPayment(token, selectedPayment.id, {
           saved: saved,
         }))
       }}>

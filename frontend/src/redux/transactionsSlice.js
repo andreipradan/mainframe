@@ -7,15 +7,17 @@ export const transactionsSlice = createSlice({
     errors: null,
     loading: false,
     next: null,
-    overview: null,
     previous: null,
     results: null,
+    selectedTransaction: null,
   },
   reducers: {
+    selectTransaction: (state, action) => {
+      state.selectedTransaction = action.payload ? state.results.find(t => t.id === action.payload) : null
+    },
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
-      state.loadingBots = null;
     },
     set: (state, action) => {
       state.count = action.payload.count
@@ -26,14 +28,8 @@ export const transactionsSlice = createSlice({
       state.results = action.payload.results;
     },
     setLoading: (state, action) => {state.loading = action.payload},
-    setOverview: (state, action) => {
-      state.overview = action.payload
-      state.loading = false
-    }
   },
 });
 
-export const { set, setErrors, setLoading, setOverview } =
-  transactionsSlice.actions;
-
+export const { set, setErrors, setLoading, selectTransaction } = transactionsSlice.actions;
 export default transactionsSlice.reducer;

@@ -28,7 +28,7 @@ class AuthApi {
       Cookie.set('token', response.data.token);
       Cookie.set('user', JSON.stringify(response.data.user));
       dispatch(login(response.data))
-      history.push("/dashboard")
+      history.push("/")
     })
     .catch((err) => handleErrors(err, dispatch));
   };
