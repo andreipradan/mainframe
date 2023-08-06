@@ -35,7 +35,7 @@ class Transaction(TimeStampedModel):
         default=PRODUCT_CURRENT,
         max_length=7,
     )
-    started_at = models.DateTimeField(**NULLABLE_KWARGS)
+    started_at = models.DateTimeField()
     state = models.CharField(max_length=24)
     type = models.CharField(
         choices=(
@@ -56,14 +56,13 @@ class Transaction(TimeStampedModel):
     )
 
     class Meta:
-        ordering = ["-started_at"]
+        ordering = ["-completed_at"]
         unique_together = (
             "amount",
             "currency",
             "description",
             "type",
             "started_at",
-            "balance",
         )
 
     def __str__(self):

@@ -12,8 +12,7 @@ from clients.cron import remove_crons_for_command
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
-from finance.models import Transaction
-
+from finance.models import Transaction, Account
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -41,14 +40,20 @@ def normalize(transaction):
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument("--bank", type=str)
+        parser.add_argument("--bank", type=str, required=True)
 
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 
-        if bank := options["bank"]:
-            pass
+        bank = options["bank"]
+        current_account = Account.objects.get(
+            bank__icontains=bank,
+            type=Account.TYPE_CURRENT,
+        )
+        savings_account = Account.objects.get(
+            bank__icontains=bank, type=Account.TYPE_SAVINGS
+        )
 
         logger.info(f"Importing{f' {bank}' if bank else ''} statements")
         now = datetime.now()
@@ -61,7 +66,14 @@ class Command(BaseCommand):
                 reader = csv.DictReader(file)
                 reader.fieldnames = list(map(get_field, reader.fieldnames))
                 transactions = map(
-                    lambda transaction_dict: Transaction(**normalize(transaction_dict)),
+                    lambda transaction_dict: Transaction(
+                        account=(
+                            current_account
+                            if transaction_dict["product"] == Account.TYPE_CURRENT
+                            else savings_account
+                        ),
+                        **normalize(transaction_dict),
+                    ),
                     reader,
                 )
                 try:
@@ -81,7 +93,6 @@ class Command(BaseCommand):
                             "description",
                             "type",
                             "started_at",
-                            "balance",
                         ),
                     )
                 except ValidationError as e:

@@ -83,10 +83,10 @@ class FinanceApi {
       .then((response) => dispatch(setTimetables(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
-  static getTransactions = (token, page = null) => (dispatch) => {
+  static getTransactions = (token, accountId, accountType, page = null) => (dispatch) => {
     dispatch(setTransactionsLoading(true));
     axios
-      .get(`${base}/transactions/?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}/transactions/?account_id=${accountId}&account_type=${accountType}&page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };

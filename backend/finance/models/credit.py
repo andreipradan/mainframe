@@ -27,12 +27,22 @@ def validate_amortization_table(value):
 
 
 class Account(TimeStampedModel):
+    TYPE_CURRENT = "Current"
+    TYPE_SAVINGS = "Savings"
+
     bank = models.CharField(max_length=32)
     client_code = models.IntegerField()
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     number = models.CharField(max_length=32)
-    type = models.CharField(default="current", max_length=24)
+    type = models.CharField(
+        choices=(
+            (TYPE_CURRENT, TYPE_CURRENT),
+            (TYPE_SAVINGS, TYPE_SAVINGS),
+        ),
+        default=TYPE_CURRENT,
+        max_length=7,
+    )
 
     class Meta:
         ordering = ("-updated_at",)

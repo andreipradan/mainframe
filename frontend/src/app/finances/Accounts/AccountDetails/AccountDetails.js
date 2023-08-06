@@ -23,7 +23,11 @@ const AccountDetails = () => {
   const transactions = useSelector(state => state.transactions)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
-  useEffect(() => {!transactions.results && dispatch(FinanceApi.getTransactions(token))}, []);
+  useEffect(() => {
+    !transactions.results &&
+    accounts.selectedAccount &&
+    dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type))
+  }, [accounts.selectedAccount])
 
   return <div>
     <div className="page-header">
@@ -96,7 +100,9 @@ const AccountDetails = () => {
               Latest Transaction
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getTransactions(token))}
+                onClick={() =>
+                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type))
+              }
               >
                 <i className="mdi mdi-refresh"></i>
               </button>
@@ -105,13 +111,15 @@ const AccountDetails = () => {
               transactions.loading
                 ? <Circles />
                 : transactions.results?.length
-                  ? <Marquee duration={10000} pauseOnClick={true} >
+                  ? <Marquee duration={10000} pauseOnHover={true} >
                     <ListItem label={"Completed"} value={transactions.results[0].completed_at} className="mr-3" />
                     <ListItem label={"Started"} value={transactions.results[0].started_at} className="mr-3" />
                     <ListItem label={"Amount"} value={transactions.results[0].amount} textType={parseFloat(transactions.results[0]) < 0 ? "success" : "warning"} className="mr-3" />
                     <ListItem label={"Fee"} value={transactions.results[0].fee} textType={parseFloat(transactions.results[0]) > 0 ? "danger" : ""} className="mr-3" />
                     <ListItem label={"State"} value={transactions.results[0].state} className="mr-3" />
                     <ListItem label={"Description"} value={transactions.results[0].description} className="mr-3" />
+                    <ListItem label={"Type"} value={transactions.results[0].type} className="mr-3" />
+                    <ListItem label={"Product"} value={transactions.results[0].product} className="mr-3" />
                   </Marquee>
                   : "-"
             }
@@ -125,7 +133,12 @@ const AccountDetails = () => {
           <div className="card-body">
             <h4 className="card-title">
               Transactions
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getTransactions(token))}>
+              <button
+                type="button"
+                className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                onClick={() =>
+                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type))
+              }>
                 <i className="mdi mdi-refresh" />
               </button>
             </h4>
@@ -139,6 +152,8 @@ const AccountDetails = () => {
                     <th> Fee </th>
                     <th> State </th>
                     <th> Description </th>
+                    <th> Type </th>
+                    <th> Product </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -159,6 +174,8 @@ const AccountDetails = () => {
                           <td> {t.fee} </td>
                           <td> {t.state} </td>
                           <td> {t.description} </td>
+                          <td> {t.type} </td>
+                          <td> {t.product} </td>
                           <td>
                             <i
                               style={{cursor: "pointer"}}
