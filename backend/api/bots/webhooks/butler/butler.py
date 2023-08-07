@@ -74,32 +74,32 @@ def call(data, instance: Bot):
 
     if message.document:
         file_name = message.document.file_name
-        if (extension := file_name.split(".")[-1].lower()) in ["csv", "pdf", "xlsx"]:
-            bank = None
-            if extension == ".csv":
-                bank = "revolut"
-                doc_type = "statements"
-            elif extension == ".xlsx" and file_name.startswith("Extras_de_cont"):
-                bank = "raiffeisen"
-                doc_type = "statements"
-            elif extension == ".pdf":
-                if file_name.startswith("Tranzactii"):
-                    doc_type = "payments"
-                elif file_name.startswith("Scadentar"):
-                    doc_type = "timetables"
-                else:
-                    return logger.error("Unhandled pdf type")
+        extension = file_name.split(".")[-1].lower()
+        bank = None
+        if extension == "csv" and file_name.startswith("account-statement"):
+            bank = "revolut"
+            doc_type = "statements"
+        elif extension == "xlsx" and file_name.startswith("Extras_de_cont"):
+            bank = "raiffeisen"
+            doc_type = "statements"
+        elif extension == "pdf":
+            if file_name.startswith("Tranzactii"):
+                doc_type = "payments"
+            elif file_name.startswith("Scadentar"):
+                doc_type = "timetables"
             else:
-                return logger.error(f"Unhandled extension: {extension}")
+                return logger.error("Unhandled pdf type")
+        else:
+            return logger.error(f"Unhandled extension: {extension}")
 
-            logger.info(f"Got {extension} saving...")
-            path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
-            bot.get_file(message.document.file_id).download(path)
+        logger.info(f"Got {extension} saving...")
+        path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
+        bot.get_file(message.document.file_id).download(path)
 
-            msg = f"Saved {doc_type}: {file_name}"
-            logger.info(msg)
-            cron.delay(f"import_{doc_type}{f' --bank={bank}' if bank else ''}")
-            return reply(update, msg)
+        msg = f"Saved {doc_type}: {file_name}"
+        logger.info(msg)
+        cron.delay(f"import_{doc_type}{f' --bank={bank}' if bank else ''}")
+        return reply(update, msg)
 
     if not message.text:
         return logger.info(f"No message text: {update.to_dict()}. From: {user}")
