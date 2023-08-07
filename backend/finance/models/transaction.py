@@ -7,6 +7,7 @@ from finance.models import DECIMAL_DEFAULT_KWARGS, NULLABLE_KWARGS
 class Transaction(TimeStampedModel):
     PRODUCT_CURRENT = "Current"
     PRODUCT_SAVINGS = "Savings"
+    PRODUCT_INVESTMENTS = "Investments"
 
     TYPE_ATM = "ATM"
     TYPE_CARD_CHARGEBACK = "CARD_CHARGEBACK"
@@ -32,9 +33,10 @@ class Transaction(TimeStampedModel):
         choices=(
             (PRODUCT_CURRENT, PRODUCT_CURRENT),
             (PRODUCT_SAVINGS, PRODUCT_SAVINGS),
+            (PRODUCT_INVESTMENTS, PRODUCT_INVESTMENTS),
         ),
         default=PRODUCT_CURRENT,
-        max_length=7,
+        max_length=11,
     )
     started_at = models.DateTimeField()
     state = models.CharField(max_length=24)

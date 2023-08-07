@@ -26,7 +26,6 @@ const AccountDetails = () => {
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
-    !transactions.results &&
     accounts.selectedAccount &&
     dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id))
   }, [accounts.selectedAccount])

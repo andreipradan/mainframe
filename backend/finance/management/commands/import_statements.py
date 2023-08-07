@@ -209,27 +209,9 @@ class Command(BaseCommand):
         bank = options["bank"]
         if bank == "raiffeisen":
             extension = "xlsx"
-            kwargs = {}
             parser = parse_raiffeisen_transactions
         elif bank == "revolut":
             extension = "csv"
-            kwargs = {
-                "update_conflicts": True,
-                "update_fields": (
-                    "balance",
-                    "completed_at",
-                    "fee",
-                    "product",
-                    "state",
-                ),
-                "unique_fields": (
-                    "amount",
-                    "currency",
-                    "description",
-                    "type",
-                    "started_at",
-                ),
-            }
             parser = parse_revolut_transactions
         else:
             raise NotImplementedError(f"Missing bank parser for: {bank}")
@@ -242,10 +224,11 @@ class Command(BaseCommand):
         failed_imports = []
 
         for file_name in Path(data_path).glob(f"**/*.{extension}"):
+            logger.info(f"Parsing {file_name.name}")
             transactions = parser(file_name, logger)
 
             try:
-                results = Transaction.objects.bulk_create(transactions, **kwargs)
+                results = Transaction.objects.bulk_create(transactions)
             except ValidationError as e:
                 logger.error(str(e))
                 file_name.rename(f"{file_name}.{now}.failed")
