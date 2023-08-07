@@ -8,12 +8,12 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
+from api.bots.webhooks.shared import chunks
 from clients.cron import remove_crons_for_command
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 from finance.models import Account
-from finance.models import RaiffeisenTransaction
 from finance.models import Transaction
 
 
@@ -79,8 +79,10 @@ def parse_raiffeisen_transactions(file_name, logger):
     ]
     assert rows[starting_index + 2][0].value == "Numar client:"
     client_code = rows[starting_index + 2][1].value
+    assert rows[starting_index + 4][0].value == "Unitate Bancara:"
+    bank = rows[starting_index + 4][1].value
     assert rows[starting_index + 6][0].value == "Cod IBAN:"
-    number = rows[starting_index + 6][1].value
+    number = " ".join(chunks(rows[starting_index + 6][1].value, 4))
     assert rows[starting_index + 6][2].value == "Tip cont:"
     account_type = "Current" if rows[starting_index + 6][3].value == "curent" else None
     assert rows[starting_index + 6][4].value == "Valuta:"
@@ -91,6 +93,7 @@ def parse_raiffeisen_transactions(file_name, logger):
     )
 
     account, created = Account.objects.get_or_create(
+        bank=bank,
         client_code=client_code,
         currency=currency,
         first_name=f"{middle_name} {first_name}",
@@ -127,7 +130,7 @@ def parse_raiffeisen_transactions(file_name, logger):
             completed_at, "%d/%m/%Y"
         ).replace(tzinfo=timezone.utc)
         transactions.append(
-            RaiffeisenTransaction(
+            Transaction(
                 account=account,
                 amount=credit if credit else -debit,
                 completed_at=completed_at,
@@ -180,12 +183,10 @@ class Command(BaseCommand):
         bank = options["bank"]
         if bank == "raiffeisen":
             extension = "xlsx"
-            model = RaiffeisenTransaction
             kwargs = {}
             parser = parse_raiffeisen_transactions
         elif bank == "revolut":
             extension = "csv"
-            model = Transaction
             kwargs = {
                 "update_conflicts": True,
                 "update_fields": (
@@ -218,7 +219,7 @@ class Command(BaseCommand):
             transactions = parser(file_name, logger)
 
             try:
-                results = model.objects.bulk_create(transactions, **kwargs)
+                results = Transaction.objects.bulk_create(transactions, **kwargs)
             except ValidationError as e:
                 logger.error(str(e))
                 file_name.rename(f"{file_name}.{now}.failed")

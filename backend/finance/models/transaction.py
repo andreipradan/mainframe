@@ -4,7 +4,7 @@ from core.models import TimeStampedModel
 from finance.models import DECIMAL_DEFAULT_KWARGS, NULLABLE_KWARGS
 
 
-class BaseTransaction(TimeStampedModel):
+class Transaction(TimeStampedModel):
     PRODUCT_CURRENT = "Current"
     PRODUCT_SAVINGS = "Savings"
 
@@ -18,7 +18,6 @@ class BaseTransaction(TimeStampedModel):
     TYPE_FEE = "FEE"
     TYPE_TOPUP = "TOPUP"
     TYPE_TRANSFER = "TRANSFER"
-    TYPE_UNIDENTIFIED = "UNIDENTIFIED"
 
     account = models.ForeignKey("finance.Account", on_delete=models.CASCADE)
     amount = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
@@ -49,31 +48,13 @@ class BaseTransaction(TimeStampedModel):
             (TYPE_FEE, TYPE_FEE.capitalize()),
             (TYPE_TOPUP, TYPE_TOPUP.capitalize()),
             (TYPE_TRANSFER, TYPE_TRANSFER.capitalize()),
-            (TYPE_UNIDENTIFIED, TYPE_UNIDENTIFIED.capitalize()),
         ),
-        default=TYPE_UNIDENTIFIED,
+        default=TYPE_CARD_PAYMENT,
         max_length=15,
     )
 
     class Meta:
-        abstract = True
+        ordering = ["-completed_at"]
 
     def __str__(self):
         return f"{self.started_at} - {self.get_type_display()} - {self.amount} {self.currency}"
-
-
-class Transaction(BaseTransaction):
-    class Meta:
-        ordering = ["-completed_at"]
-        unique_together = (
-            "amount",
-            "currency",
-            "description",
-            "type",
-            "started_at",
-        )
-
-
-class RaiffeisenTransaction(BaseTransaction):
-    class Meta:
-        ordering = ["-completed_at", "-started_at"]
