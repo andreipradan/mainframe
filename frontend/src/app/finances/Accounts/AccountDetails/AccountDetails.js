@@ -10,6 +10,8 @@ import Marquee from "react-fast-marquee";
 import {useHistory, useParams} from "react-router-dom";
 import {setSelectedAccount} from "../../../../redux/accountsSlice";
 import {selectTransaction} from "../../../../redux/transactionsSlice";
+import {Collapse} from "react-bootstrap";
+import EditModal from "./EditModal";
 
 const AccountDetails = () => {
   const dispatch = useDispatch();
@@ -26,8 +28,13 @@ const AccountDetails = () => {
   useEffect(() => {
     !transactions.results &&
     accounts.selectedAccount &&
-    dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type))
+    dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id))
   }, [accounts.selectedAccount])
+  const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
+  const lastPage = Math.ceil(transactions.count / transactions.results?.length)
+
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
 
   return <div>
     <div className="page-header">
@@ -43,9 +50,10 @@ const AccountDetails = () => {
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
-          <li className="breadcrumb-item"><a href="!#" onClick={() => {
+          <li className="breadcrumb-item"><a href="" onClick={e => {
+            e.preventDefault()
             dispatch(setSelectedAccount())
-            dispatch(selectTransaction())
+            transactions.selectedTransaction && dispatch(selectTransaction())
             history.push("/finances/accounts")
           }}>Accounts</a></li>
           <li className="breadcrumb-item active" aria-current="page">{accounts.selectedAccount?.number}</li>
@@ -101,7 +109,7 @@ const AccountDetails = () => {
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() =>
-                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type))
+                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id))
               }
               >
                 <i className="mdi mdi-refresh"></i>
@@ -137,16 +145,48 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() =>
-                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type))
+                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage))
               }>
                 <i className="mdi mdi-refresh" />
               </button>
+              <div className="mb-0 text-muted">
+                <small>Total: {transactions.count}</small>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm border-0 bg-transparent"
+                  onClick={() => setSearchOpen(!searchOpen)}
+                >
+                  <i className="mdi mdi-magnify" />
+                </button>
+              </div>
             </h4>
+            <Collapse in={ searchOpen }>
+              <ul className="navbar-nav w-100 rounded">
+                <li className="nav-item w-100">
+                  <form
+                    className="nav-link mt-2 mt-md-0 d-lg-flex search"
+                    onSubmit={e => {
+                      e.preventDefault()
+                      dispatch(
+                        FinanceApi.getTransactions(
+                          token,
+                          accounts.selectedAccount.id,
+                          currentPage,
+                          searchTerm,
+                        )
+                      )
+                    }}
+                  >
+                    <input type="search" className="form-control" placeholder="Search products" onChange={e => setSearchTerm(e.target.value)}/>
+                  </form>
+                </li>
+              </ul>
+            </Collapse>
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th> Completed at </th>
+                    <th> Completed </th>
                     <th> Started </th>
                     <th> Amount </th>
                     <th> Fee </th>
@@ -168,8 +208,8 @@ const AccountDetails = () => {
                     />
                     : transactions.results?.length
                         ? transactions.results.map((t, i) => <tr key={i}>
-                          <td> {t.completed_at} </td>
-                          <td> {t.started_at} </td>
+                          <td> {new Date(t.completed_at).toLocaleDateString()} </td>
+                          <td> {new Date(t.started_at).toLocaleDateString()} </td>
                           <td> {t.amount} </td>
                           <td> {t.fee} </td>
                           <td> {t.state} </td>
@@ -179,7 +219,7 @@ const AccountDetails = () => {
                           <td>
                             <i
                               style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-pencil text-secondary"
+                              className="mr-2 mdi mdi-eye text-secondary"
                               onClick={() => dispatch(selectTransaction(t.id))}
                             />
                           </td>
@@ -189,10 +229,93 @@ const AccountDetails = () => {
                 </tbody>
               </table>
             </div>
+            <div className="align-self-center btn-group mt-4 mr-4" role="group" aria-label="Basic example">
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  disabled={!transactions.previous}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, 1))}
+                >
+                  <i className="mdi mdi-skip-backward"/>
+                </button>
+                {currentPage - 4 > 0 && "..."}
+                {
+                  currentPage - 3 > 0 &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage - 3))}
+                  >
+                    {currentPage - 3}
+                  </button>
+                }
+                {
+                  currentPage - 2 > 0 &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage - 2))}
+                  >
+                    {currentPage - 2}
+                  </button>
+                }
+                {
+                  transactions.previous &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage - 1))}
+                  >
+                    {currentPage - 1}
+                  </button>
+                }
+                <button type="button" className="btn btn-primary rounded" disabled={true}>{currentPage}</button>
+                {
+                  transactions.next &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type, currentPage + 1))}
+                  >
+                    {currentPage + 1}
+                  </button>
+                }
+                {
+                  currentPage + 2 < lastPage &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, accounts.selectedAccount.type, currentPage + 2))}
+                  >
+                    {currentPage + 2}
+                  </button>
+                }
+                {
+                  currentPage + 3 < lastPage &&
+                  <button
+                    type="button"
+                    className="btn btn-default"
+                    onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage + 3))}
+                  >
+                    {currentPage + 3}
+                  </button>
+                }
+                {currentPage + 4 < lastPage && "..."}
+                <button
+                  type="button"
+                  className="btn btn-default"
+                  disabled={!transactions.next}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, lastPage))}
+                >
+                  <i className="mdi mdi-skip-forward"/>
+                </button>
+              </div>
           </div>
         </div>
       </div>
     </div>
+    <EditModal />
+
   </div>
 }
 

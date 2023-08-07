@@ -4,7 +4,11 @@ import { Circles } from "react-loader-spinner";
 
 import Alert from "react-bootstrap/Alert";
 import FinanceApi from "../../../api/finance";
-import { selectAccount, setModalOpen } from "../../../redux/accountsSlice";
+import {
+  selectAccount,
+  setModalOpen,
+  setSelectedAccount
+} from "../../../redux/accountsSlice";
 import {Tooltip} from "react-tooltip";
 import {useHistory} from "react-router-dom";
 import Marquee from "react-fast-marquee";
@@ -20,7 +24,10 @@ const Accounts = () => {
   const accounts = useSelector(state => state.accounts)
   const [alertOpen, setAlertOpen] = useState(false)
   useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
-  useEffect(() => {!accounts.results?.length && dispatch(FinanceApi.getAccounts(token))}, []);
+  useEffect(() => {
+    !accounts.results?.length && dispatch(FinanceApi.getAccounts(token))
+    return () => dispatch(setSelectedAccount())
+  }, []);
 
   return <div>
     <div className="page-header">
@@ -52,7 +59,7 @@ const Accounts = () => {
               accounts.loading
                 ? <Circles />
                 : accounts.results?.length
-                  ? <Marquee duration={10000} pauseOnClick={true} >
+                  ? <Marquee duration={10000} pauseOnHover={true} >
                     <ListItem label={"Total"} value={accounts.results.length} textType={"primary"} className="mr-3" />
                     {
                       [...new Set(accounts.results.map(p => p.type))].map((p, i) =>
@@ -134,9 +141,6 @@ const Accounts = () => {
     <EditModal />
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
       Percentage of the remaining principal<br/>
-      {/*Principal: <span className="text-success">{remainingPrincipal}</span><br/>*/}
-      {/*Interest: <span className="text-danger">{remainingInterest} ~ </span><br/>*/}
-      {/*Total: <span className="text-primary">{remainingTotal.toFixed(2)}</span>*/}
     </Tooltip>
     <Tooltip anchorSelect="#prepaid-percentage" place="bottom-start">
       Percentage of the paid amount

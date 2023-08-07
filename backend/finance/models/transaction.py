@@ -18,8 +18,10 @@ class Transaction(TimeStampedModel):
     TYPE_FEE = "FEE"
     TYPE_TOPUP = "TOPUP"
     TYPE_TRANSFER = "TRANSFER"
+    TYPE_UNIDENTIFIED = "UNIDENTIFIED"
 
     account = models.ForeignKey("finance.Account", on_delete=models.CASCADE)
+    additional_data = models.JSONField(blank=True, default=dict, null=True)
     amount = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
     balance = models.DecimalField(**DECIMAL_DEFAULT_KWARGS, **NULLABLE_KWARGS)
     completed_at = models.DateTimeField(**NULLABLE_KWARGS)
@@ -48,8 +50,9 @@ class Transaction(TimeStampedModel):
             (TYPE_FEE, TYPE_FEE.capitalize()),
             (TYPE_TOPUP, TYPE_TOPUP.capitalize()),
             (TYPE_TRANSFER, TYPE_TRANSFER.capitalize()),
+            (TYPE_UNIDENTIFIED, TYPE_UNIDENTIFIED.capitalize()),
         ),
-        default=TYPE_CARD_PAYMENT,
+        default=TYPE_UNIDENTIFIED,
         max_length=15,
     )
 

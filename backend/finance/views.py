@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -48,15 +49,14 @@ class TimetableViewSet(viewsets.ModelViewSet):
 
 class TransactionViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Transaction.objects.all()
+    queryset = Transaction.objects.order_by("-completed_at")
     serializer_class = TransactionSerializer
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(
-                account_id=self.request.query_params["account_id"],
-                account__type=self.request.query_params["account_type"],
-            )
-        )
+        params = self.request.query_params
+        queryset = super().get_queryset().filter(account_id=params["account_id"])
+        if search_term := params.get("search_term"):
+            queryset = queryset.annotate(
+                search=SearchVector("description", "additional_data"),
+            ).filter(search=search_term)
+        return queryset

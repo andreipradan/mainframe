@@ -83,10 +83,12 @@ class FinanceApi {
       .then((response) => dispatch(setTimetables(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
-  static getTransactions = (token, accountId, accountType, page = null) => (dispatch) => {
+  static getTransactions = (token, accountId, page = null, searchTerm = null) => (dispatch) => {
     dispatch(setTransactionsLoading(true));
+    const kwargs = {account_id: accountId, page: page || 1}
+    if (searchTerm) kwargs.search_term = searchTerm
     axios
-      .get(`${base}/transactions/?account_id=${accountId}&account_type=${accountType}&page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}/transactions/?${new URLSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };

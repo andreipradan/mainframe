@@ -48,14 +48,39 @@ def detect_started_at(description, default):
 
 
 def detect_transaction_type(description):
-    description_words = [item.lower() for item in description.split()]
-    if "atm" in description_words:
+    last_part = description.split("|")[-1].lower()
+    if "atm" in [item.lower() for item in description.split()]:
         return Transaction.TYPE_ATM
     if "Revolut" in description:
         return Transaction.TYPE_TRANSFER
-    if "Transfer" in description.split("|")[-1].split():
-        return Transaction.TYPE_TRANSFER
+    for key in ("transfer", "trz ib conturi proprii"):
+        if key in last_part:
+            return Transaction.TYPE_TRANSFER
+    if "schimb valutar" in last_part:
+        return Transaction.TYPE_EXCHANGE
+    for key in ("telemunca", "salar", "plata automata dob", "diurna"):
+        if key in last_part:
+            return Transaction.TYPE_TOPUP
+    if "refund" in description.lower():
+        return Transaction.TYPE_CARD_REFUND
     return Transaction.TYPE_CARD_PAYMENT
+
+
+def parse_additional_data(data):
+    fields = (
+        "nr_op",
+        "tax_code",
+        "final_ordinator",
+        "final_beneficiary",
+        "ord_ben_name",
+        "ord_ben_bank",
+        "acc_number",
+    )
+    additional_data = {}
+    for i, value in enumerate(data):
+        if value := value.strip():
+            additional_data[fields[i]] = value
+    return additional_data
 
 
 def parse_raiffeisen_transactions(file_name, logger):
@@ -125,13 +150,14 @@ def parse_raiffeisen_transactions(file_name, logger):
     rows = rows[header_index + 2 :]
     transactions = []
     while any((row := [x.value for x in rows.pop(0)])):
-        started_at, completed_at, debit, credit, *_, description = row
+        started_at, completed_at, debit, credit, *additional_data, description = row
         completed_at = completed_at and datetime.strptime(
             completed_at, "%d/%m/%Y"
         ).replace(tzinfo=timezone.utc)
         transactions.append(
             Transaction(
                 account=account,
+                additional_data=parse_additional_data(additional_data),
                 amount=credit if credit else -debit,
                 completed_at=completed_at,
                 currency=currency,
