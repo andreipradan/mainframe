@@ -74,8 +74,7 @@ def call(data, instance: Bot):
 
     if message.document:
         file_name = message.document.file_name
-        if (extension := file_name[-4:].lower()) in [".csv", ".pdf"]:
-            logger.info(f"Got {extension} saving...")
+        if (extension := file_name.split(".")[-1].lower()) in ["csv", "pdf", "xlsx"]:
             bank = None
             if extension == ".csv":
                 bank = "revolut"
@@ -93,6 +92,7 @@ def call(data, instance: Bot):
             else:
                 return logger.error(f"Unhandled extension: {extension}")
 
+            logger.info(f"Got {extension} saving...")
             path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
             bot.get_file(message.document.file_id).download(path)
 
