@@ -4,7 +4,7 @@ from core.models import TimeStampedModel
 from finance.models import DECIMAL_DEFAULT_KWARGS, NULLABLE_KWARGS
 
 
-class Transaction(TimeStampedModel):
+class BaseTransaction(TimeStampedModel):
     PRODUCT_CURRENT = "Current"
     PRODUCT_SAVINGS = "Savings"
 
@@ -56,6 +56,14 @@ class Transaction(TimeStampedModel):
     )
 
     class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f"{self.started_at} - {self.get_type_display()} - {self.amount} {self.currency}"
+
+
+class Transaction(BaseTransaction):
+    class Meta:
         ordering = ["-completed_at"]
         unique_together = (
             "amount",
@@ -65,5 +73,7 @@ class Transaction(TimeStampedModel):
             "started_at",
         )
 
-    def __str__(self):
-        return f"{self.started_at} - {self.get_type_display()} - {self.amount} {self.currency}"
+
+class RaiffeisenTransaction(BaseTransaction):
+    class Meta:
+        ordering = ["-completed_at", "-started_at"]

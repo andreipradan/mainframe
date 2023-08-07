@@ -32,6 +32,7 @@ class Account(TimeStampedModel):
 
     bank = models.CharField(max_length=32)
     client_code = models.IntegerField()
+    currency = models.CharField(max_length=3)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     number = models.CharField(max_length=32)

@@ -73,18 +73,18 @@ def call(data, instance: Bot):
         return logger.error(f"Ignoring message from: {user}")
 
     if message.document:
-        if (extension := message.document.file_name[-4:]) in [".csv", ".pdf"]:
+        file_name = message.document.file_name
+        if (extension := file_name[-4:].lower()) in [".csv", ".pdf"]:
             logger.info(f"Got {extension} saving...")
-            file_name = message.document.file_name
             bank = None
             if extension == ".csv":
                 bank = "revolut"
                 doc_type = "statements"
+            elif extension == ".xslx" and file_name.startswith("Extras_de_cont"):
+                bank = "raiffeisen"
+                doc_type = "statements"
             elif extension == ".pdf":
-                if file_name.startswith("Extras_de_cont"):
-                    bank = "raiffeisen"
-                    doc_type = "statements"
-                elif file_name.startswith("Tranzactii"):
+                if file_name.startswith("Tranzactii"):
                     doc_type = "payments"
                 elif file_name.startswith("Scadentar"):
                     doc_type = "timetables"
