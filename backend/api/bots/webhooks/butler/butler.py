@@ -80,7 +80,7 @@ def call(data, instance: Bot):
             if extension == ".csv":
                 bank = "revolut"
                 doc_type = "statements"
-            elif extension == ".xslx" and file_name.startswith("Extras_de_cont"):
+            elif extension == ".xlsx" and file_name.startswith("Extras_de_cont"):
                 bank = "raiffeisen"
                 doc_type = "statements"
             elif extension == ".pdf":
