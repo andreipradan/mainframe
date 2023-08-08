@@ -57,21 +57,59 @@ const Credit = () => {
   useEffect(() => setBarChartInterest(payment.results?.map(p => p.interest).reverse()), [payment.results])
   useEffect(() => setBarChartLabels(payment.results?.map(p => p.date).reverse()), [payment.results])
 
+  const [otherAmounts, setOtherAmounts] = useState(null)
+  const [calculatorAmount, setCalculatorAmount] = useState(0)
+  const [calculatorMonths, setCalculatorMonths] = useState(0)
+  const [calculatorSaved, setCalculatorSaved] = useState(0)
+  useEffect(() => latestTimetable?.length && updateAmount(parseInt(latestTimetable[0].principal)+1), [latestTimetable])
+
+  const setSuggestions = index => {
+    const suggestedAmounts = {}
+    if (index - 2 > 0) suggestedAmounts[index-2] = calculateSum(latestTimetable.slice(0, index-2), "principal")
+    if (index - 1 > 0) suggestedAmounts[index-1] = calculateSum(latestTimetable.slice(0, index-1), "principal")
+    if (index + 1 <= latestTimetable.length) suggestedAmounts[index+1] = calculateSum(latestTimetable.slice(0, index+1), "principal")
+    if (index + 2 <= latestTimetable.length) suggestedAmounts[index+2] = calculateSum(latestTimetable.slice(0, index+2), "principal")
+    setOtherAmounts(suggestedAmounts)
+    const saved = calculateSum(latestTimetable.slice(0, index), "interest")
+    setCalculatorSaved(saved)
+  }
+
+  const updateAmount = value => {
+    setCalculatorAmount(value)
+    if (!latestTimetable) return
+    let amount = 0
+    let index = 0
+    for (const [i, item] of latestTimetable.entries()) {
+      const principal = parseFloat(item.principal)
+      if (amount + principal > value) {
+        index = i
+        break;
+      }
+      amount += principal
+    }
+    setCalculatorMonths(index)
+    setSuggestions(index)
+  }
+  const updateMonths = value => {
+    setCalculatorMonths(value)
+    if (!latestTimetable) return
+    const amount = calculateSum(latestTimetable.slice(0, value), "principal")
+    setCalculatorAmount(amount)
+    setSuggestions(value)
+  }
   const paidData = {
     datasets: [{
-      data: [paidInterest, paidPrincipal, paidPrepaid],
+      data: [paidInterest, paidPrincipal],
       backgroundColor: [
         'rgba(255, 99, 132, 0.5)',
         'rgba(75, 192, 192, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
       ],
       borderColor: [
         'rgba(255,99,132,1)',
         'rgba(75, 192, 192, 1)',
-        'rgba(255, 206, 86, 1)',
       ],
     }],
-    labels: ['Interest', 'Principal', 'Prepaid']
+    labels: ['Interest', 'Principal']
   };
   const remainingData = {
     datasets: [{
@@ -253,40 +291,24 @@ const Credit = () => {
       <div className="col-sm-12 col-lg-4 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h5>Paid</h5>
+            <h5>
+              Paid
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
+                <i className="mdi mdi-refresh" />
+              </button>
+            </h5>
             {
-              overview.loading
+              payment.loading
                 ? <Circles />
-                : overview.details
+                : payment.results?.length
                   ? <>
                     <ListItem label={"Total"} value={paidTotal} textType={"primary"} tooltip="paid-percentage" />
                     <ListItem label={"Date"} value={new Date().toISOString().split("T")[0]} textType={"warning"} />
-                    <ListItem label={"Payments"} value={payment.results?.length} />
+                    <ListItem label={"Payments"} value={payment.results.length} />
                     <ListItem label={"Prepaid"} value={paidPrepaid} textType={"success"} tooltip="prepaid-percentage" />
                     <ListItem label={"Principal"} value={paidPrincipal} textType={"success"} tooltip={"principal-percentage"} />
                     <ListItem label={"Interest"} value={paidInterest} textType={"danger"} tooltip={"interest-percentage"} />
                   </>
-                  : "-"
-            }
-          </div>
-        </div>
-      </div>
-      <div className="col-sm-12 grid-margin">
-        <div className="card">
-          <div className="card-body">
-            <h6>Last Payment</h6>
-            {
-              overview.loading
-                ? <Circles />
-                : payment.results
-                  ? <Marquee duration={10000} pauseOnHover={true} >
-                    <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"} className="mr-3" />
-                    <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"} className="mr-3" />
-                    <ListItem label={"Type"} value={payment.results[0].is_prepayment ? "Prepayment" : "Installment"} textType={payment.results[0].is_prepayment ? "success" : "warning"} className="mr-3" />
-                    <ListItem label={"Principal"} value={payment.results[0].principal} textType={"success"} className="mr-3" />
-                    <ListItem label={"Interest"} value={payment.results[0].interest} textType={"danger"} className="mr-3" />
-                    <ListItem label={"Saved"} value={payment.results[0].saved} textType={parseFloat(payment.results[0].saved) && "success"} className="mr-3" />
-                  </Marquee>
                   : "-"
             }
           </div>
@@ -300,19 +322,110 @@ const Credit = () => {
               &nbsp;<i id="progress-bar-tip" className="mdi mdi-information-outline"/>
             </h5>
             {
-              overview.loading
+              overview.loading || payment.loading
                 ? <Circles />
                 : credit ? <ProgressBar now={paidPrincipal} max={credit.total}/> : "-"
             }
             </div>
           </div>
       </div>
+      <div className="col-sm-12 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h6>Last Payment</h6>
+            {
+              payment.loading
+                ? <Circles />
+                : payment.results?.length
+                  ? <Marquee duration={10000} pauseOnHover={true} >
+                    <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"} className="mr-3" />
+                    <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"} className="mr-3" />
+                    <ListItem label={"Type"} value={payment.results[0].is_prepayment ? "Prepayment" : "Installment"} textType={payment.results[0].is_prepayment ? "success" : "warning"} className="mr-3" />
+                    <ListItem label={"Principal"} value={payment.results[0].principal} textType={"success"} className="mr-3" />
+                    <ListItem label={"Interest"} value={payment.results[0].interest} textType={"danger"} className="mr-3" />
+                    <ListItem label={"Saved"} value={payment.results[0].saved} textType={parseFloat(payment.results[0].saved) && "success"} className="mr-3" />
+                  </Marquee>
+                  : "-"
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="row">
+      <div className="col-sm-12 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h6>
+              Prepayment calculator
+            <form className="nav-link mt-2 mt-md-0 search" onSubmit={e => e.preventDefault()}>
+              <div className="row">
+                <div className="col-md-4">
+                  <input
+                    disabled={!latestTimetable}
+                    type="search"
+                    className="form-control bg-transparent"
+                    placeholder="Amount"
+                    value={calculatorAmount}
+                    onChange={e => updateAmount(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <input
+                    disabled={!latestTimetable}
+                    type="search"
+                    className="form-control bg-transparent"
+                    placeholder="# of months"
+                    value={calculatorMonths}
+                    onChange={e => updateMonths(parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                <div className="col-md-4">
+                  <input
+                    disabled={true}
+                    type="search"
+                    className="form-control bg-transparent"
+                    placeholder="Saved"
+                    value={calculatorSaved}
+                    onChange={e => setCalculatorSaved(parseFloat(e.target.value))}
+                  />
+                </div>
+
+              </div>
+            </form>
+            {
+              otherAmounts && <div className="text-muted small">
+              Other Amounts:
+              <ul>
+                {Object.keys(otherAmounts).map(i => <li key={i}>
+                  {i} month(s): {otherAmounts[i].toFixed(2)}
+                </li>)}
+              </ul>
+              </div>
+            }
+            </h6>
+          </div>
+        </div>
+      </div>
     </div>
     <div className="row">
       <div className="col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">Payments</h4>
+            <h4 className="card-title">
+              Payments
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
+                <i className="mdi mdi-refresh" />
+              </button>
+              <div className="mb-0 text-muted">
+                <small>Total: {payment.count}</small>
+                {
+                  payment.count !== barChartPrincipal?.length && <>
+                    <br />
+                    <small>Filtered: {barChartPrincipal?.length}</small>
+                  </>
+                }
+              </div>
+            </h4>
             <div className="form-check">
               <label htmlFor="" className="form-check-label">
                 <input className="checkbox" type="checkbox"
@@ -332,7 +445,12 @@ const Credit = () => {
       <div className="col-sm-12 col-md-6 col-lg-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">Paid: {paidTotal} {credit?.currency}</h4>
+            <h4 className="card-title">
+              Paid: {paidTotal} {credit?.currency}
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
+                <i className="mdi mdi-refresh" />
+              </button>
+            </h4>
             {
               payment.loading
                 ? <Circles />
@@ -361,6 +479,9 @@ const Credit = () => {
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
+              <div className="mb-0 text-muted">
+                <small>Total: {payment.count}</small>
+              </div>
             </h4>
             <div className="table-responsive">
               {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
