@@ -156,7 +156,7 @@ class Command(BaseCommand):
         now = datetime.now()
 
         total = 0
-        data_path = settings.BASE_DIR / "credit" / "data" / "timetables"
+        data_path = settings.BASE_DIR / "finance" / "data" / "timetables"
         failed_imports = []
         for file_name in Path(data_path).glob("**/*.pdf"):
             reader = PdfReader(file_name)
