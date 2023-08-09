@@ -54,7 +54,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         params = self.request.query_params
-        queryset = super().get_queryset().filter(account_id=params["account_id"])
+        queryset = super().get_queryset()
+        if account_id := params.get("account_id"):
+            queryset = queryset.filter(account_id=account_id)
         if search_term := params.get("search_term"):
             queryset = queryset.annotate(
                 search=SearchVector("description", "additional_data"),

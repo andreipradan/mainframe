@@ -22,10 +22,18 @@ const Accounts = () => {
   const token = useSelector((state) => state.auth.token)
 
   const accounts = useSelector(state => state.accounts)
+  const transactions = useSelector(state => state.transactions)
+
   const [alertOpen, setAlertOpen] = useState(false)
+  const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
+
   useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
+  useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
+
   useEffect(() => {
-    !accounts.results?.length && dispatch(FinanceApi.getAccounts(token))
+    accounts.selectedAcount && dispatch(setSelectedAccount())
+    !accounts.results?.legend && dispatch(FinanceApi.getAccounts(token))
+    dispatch(FinanceApi.getTransactions(token))
     return () => dispatch(setSelectedAccount())
   }, []);
 
@@ -50,6 +58,9 @@ const Accounts = () => {
     {alertOpen && !accounts.modalOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
       {accounts.errors}
     </Alert>}
+    {transactionsAlertOpen && <Alert variant="danger" dismissible onClose={() => setTransactionsAlertOpen(false)}>
+      {transactions.errors}
+    </Alert>}
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">
@@ -71,6 +82,14 @@ const Accounts = () => {
                           className="mr-3"
                         />
                       )
+                    }
+                    {
+                      transactions.count && <ListItem
+                        label="Total transactions"
+                        value={transactions.count}
+                        textType="primary"
+                        className="mr-3"
+                      />
                     }
                   </Marquee>
                   : "-"

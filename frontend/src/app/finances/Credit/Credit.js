@@ -372,7 +372,7 @@ const Credit = () => {
                 <div className="col-md-4">
                   <input
                     disabled={!latestTimetable}
-                    type="search"
+                    type="number"
                     className="form-control bg-transparent"
                     placeholder="# of months"
                     value={calculatorMonths}
