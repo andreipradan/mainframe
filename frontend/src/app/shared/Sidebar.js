@@ -240,11 +240,6 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={ isPathActive('/apps/expenses') ? 'nav-link active' : 'nav-link' } to="/apps/expenses">
-                    <Trans>Expenses</Trans>
-                  </Link>
-                </li>
-                <li className="nav-item">
                   <Link className={ isPathActive('/apps/logs') ? 'nav-link active' : 'nav-link' } to="/apps/logs">
                     <span className="menu-title"><Trans>Logs</Trans></span>
                   </Link>

@@ -15,9 +15,5 @@ urlpatterns = [
     path("logs/", include(("api.logs.routers", "api"), namespace="logs")),
     path("meals/", include(("meals.routers", "api"), namespace="meals")),
     path("rpi/", include(("api.rpi.routers", "api"), namespace="rpi")),
-    path(
-        "transactions/",
-        include(("transactions.routers", "api"), namespace="transactions"),
-    ),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
 ]

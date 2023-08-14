@@ -75,7 +75,6 @@ INSTALLED_APPS = [
     "earthquakes",
     "finance",
     "meals",
-    "transactions",
     "transit_lines",
 ]
 
