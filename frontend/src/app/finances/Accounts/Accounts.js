@@ -85,7 +85,7 @@ const Accounts = () => {
                     }
                     {
                       transactions.count && <ListItem
-                        label="Total transactions"
+                        label="Transactions"
                         value={transactions.count}
                         textType="primary"
                         className="mr-3"
@@ -116,10 +116,11 @@ const Accounts = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
+                    <th> Type </th>
                     <th> Bank </th>
+                    <th> Transactions </th>
                     <th> Number </th>
                     <th> Client code </th>
-                    <th> Type </th>
                     <th> Actions </th>
                   </tr>
                 </thead>
@@ -136,10 +137,11 @@ const Accounts = () => {
                     : accounts.results?.length
                         ? accounts.results.map((p, i) =>
                         <tr key={i}>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.bank} </td>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.number} </td>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.client_code} </td>
                           <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.type[0].toUpperCase() + p.type.slice(1, p.length)} </td>
+                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.bank} </td>
+                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.transaction_count} </td>
+                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.number !== "0" ? p.number : "-"} </td>
+                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.client_code || "-"} </td>
                           <td>
                             <i
                               style={{cursor: "pointer"}}

@@ -4,9 +4,23 @@ from finance.models import Timetable, Payment, Credit, Account, Transaction
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    transaction_count = serializers.ReadOnlyField()
+
     class Meta:
         model = Account
-        fields = "__all__"
+        fields = (
+            "bank",
+            "client_code",
+            "created_at",
+            "currency",
+            "first_name",
+            "id",
+            "last_name",
+            "number",
+            "transaction_count",
+            "type",
+            "updated_at",
+        )
 
 
 class CreditSerializer(serializers.ModelSerializer):

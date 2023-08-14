@@ -1,9 +1,10 @@
+import datetime
 import random
 
 import factory
 from environ import environ
 
-from finance.models import Payment, Credit, Account
+from finance.models import Payment, Credit, Account, Transaction
 
 
 class AccountFactory(factory.django.DjangoModelFactory):
@@ -35,3 +36,15 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     credit = factory.SubFactory("backend.finance.tests.factories.CreditFactory")
     date = factory.Sequence(lambda x: f"2000-01-0{x+1:>1}")
     remaining = 0
+
+
+class TransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Transaction
+
+    account = factory.SubFactory("backend.finance.tests.factories.AccountFactory")
+    amount = random.choice(range(100))
+    currency = random.choice(["usd", "eur"])
+    product = Transaction.PRODUCT_CURRENT
+    started_at = datetime.datetime.now()
+    state = "Pending"

@@ -47,12 +47,20 @@ def detect_started_at(description, default):
     return datetime.strptime(started_at, "%d/%m/%Y").replace(tzinfo=timezone.utc)
 
 
-def detect_transaction_type(description):
+def detect_transaction_type(description, is_credit=False):
     last_part = description.split("|")[-1].lower()
     if "atm" in [item.lower() for item in description.split()]:
         return Transaction.TYPE_ATM
-    if "Revolut" in description:
-        return Transaction.TYPE_TRANSFER
+    for key in (
+        "revolut  " "revolutie Dublin ",
+        "www.revolutieinternal Dublin",
+        "Revolut ",
+        "Revolut*",
+        "REVOLUT**",
+        "|REVOLUT |" "| SENT FROM REVOLUT",
+    ):
+        if key in description:
+            return Transaction.TYPE_TOPUP if is_credit else Transaction.TYPE_TRANSFER
     for key in ("transfer", "trz ib conturi proprii"):
         if key in last_part:
             return Transaction.TYPE_TRANSFER
@@ -165,7 +173,7 @@ def parse_raiffeisen_transactions(file_name, logger):
                 product=account_type,
                 started_at=detect_started_at(description, default=started_at),
                 state=completed_at and "Completed",
-                type=detect_transaction_type(description),
+                type=detect_transaction_type(description, is_credit=bool(credit)),
             )
         )
     return transactions

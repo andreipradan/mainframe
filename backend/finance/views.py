@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import SearchVector
+from django.db.models import Count
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -17,7 +18,11 @@ from finance.serializers import TransactionSerializer
 
 class AccountViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Account.objects.all()
+    queryset = (
+        Account.objects.prefetch_related()
+        .annotate(transaction_count=Count("transaction"))
+        .order_by("-transaction_count")
+    )
     serializer_class = AccountSerializer
 
 
