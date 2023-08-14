@@ -1,7 +1,10 @@
+import django.utils.timezone
 from django.contrib.postgres.search import SearchVector
-from django.db.models import Count
+from django.db.models import Count, Sum, Q, Func
+from django.db.models.functions import TruncYear, TruncMonth
 from django.http import JsonResponse
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from finance.models import Account
@@ -24,6 +27,37 @@ class AccountViewSet(viewsets.ModelViewSet):
         .order_by("-transaction_count")
     )
     serializer_class = AccountSerializer
+
+    @action(methods=["get"], detail=True)
+    def analytics(self, *args, **kwargs):
+        per_month = (
+            Transaction.objects.filter(
+                account_id=kwargs["pk"],
+                started_at__year=django.utils.timezone.now().year,
+            )
+            .annotate(
+                year=TruncYear("started_at"),
+                month=TruncMonth("started_at"),
+            )
+            .values("month")
+            .annotate(
+                money_in=Sum("amount", filter=Q(amount__gt=0)),
+                money_out=Func(Sum("amount", filter=Q(amount__lt=0)), function="ABS"),
+            )
+            .order_by("month")
+        )
+        return JsonResponse(
+            data={
+                "per_month": [
+                    {
+                        "month": item["month"].strftime("%B"),
+                        "money_in": item["money_in"],
+                        "money_out": item["money_out"],
+                    }
+                    for item in per_month
+                ],
+            }
+        )
 
 
 class CreditViewSet(viewsets.ViewSet):

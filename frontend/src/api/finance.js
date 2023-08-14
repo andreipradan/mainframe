@@ -7,10 +7,10 @@ import {
 import {
   create as createAccount,
   set as setAccounts,
+  setAnalytics,
   setErrors as setAccountsErrors,
   setLoading as setAccountsLoading,
   setLoadingAccounts,
-  setSelectedAccount,
   update as updateAccount,
 } from "../redux/accountsSlice";
 import {
@@ -51,8 +51,8 @@ class FinanceApi {
   static getAccount = (token, accountId) => (dispatch) => {
     dispatch(setAccountsLoading(true));
     axios
-      .get(`${base}/accounts/${accountId}/`, { headers: { Authorization: token } })
-      .then(response => dispatch(setSelectedAccount(response.data)))
+      .get(`${base}/accounts/`, { headers: { Authorization: token } })
+      .then(response => dispatch(setAccounts({accountId: parseInt(accountId), ...response.data})))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
   static getAccounts = token => (dispatch) => {
@@ -60,6 +60,13 @@ class FinanceApi {
     axios
       .get(`${base}/accounts/`, { headers: { Authorization: token } })
       .then(response => dispatch(setAccounts(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
+  };
+  static getAnalytics = (token, accountId) => dispatch => {
+    dispatch(setAccountsLoading(true));
+    axios
+      .get(`${base}/accounts/${accountId}/analytics/`, { headers: { Authorization: token } })
+      .then(response => dispatch(setAnalytics(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
   static getCredit = token => (dispatch) => {

@@ -29,11 +29,6 @@ export const accountsSlice = createSlice({
       state.selectedAccount = action.payload ? state.results.find(t => t.id === action.payload) : null
       state.modalOpen = !!action.payload
     },
-    setErrors: (state, action) => {
-      state.errors = action.payload;
-      state.loading = false;
-      state.loadingAccounts = null
-    },
     set: (state, action) => {
       state.count = action.payload.count
       state.errors = null
@@ -41,6 +36,17 @@ export const accountsSlice = createSlice({
       state.next = action.payload.next
       state.previous = action.payload.previous
       state.results = action.payload.results;
+      state.selectedAccount = state.results.find(t => t.id === action.payload.accountId)
+    },
+    setAnalytics: (state, action) => {
+      state.analytics = action.payload
+      state.errors = null
+      state.loading = false
+    },
+    setErrors: (state, action) => {
+      state.errors = action.payload;
+      state.loading = false;
+      state.loadingAccounts = null
     },
     setLoading: (state, action) => {state.loading = action.payload},
     setLoadingAccounts: (state, action) => {
@@ -69,6 +75,7 @@ export const {
   create,
   selectAccount,
   set,
+  setAnalytics,
   setErrors,
   setLoading,
   setLoadingAccounts,

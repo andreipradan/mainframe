@@ -31,7 +31,7 @@ const Accounts = () => {
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
 
   useEffect(() => {
-    accounts.selectedAcount && dispatch(setSelectedAccount())
+    accounts.selectedAccount && dispatch(setSelectedAccount())
     !accounts.results?.legend && dispatch(FinanceApi.getAccounts(token))
     dispatch(FinanceApi.getTransactions(token))
     return () => dispatch(setSelectedAccount())
