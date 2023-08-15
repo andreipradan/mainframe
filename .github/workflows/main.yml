@@ -34,4 +34,4 @@ jobs:
         run: |
           pip install -r backend/requirements.test.txt
           black backend --check --exclude migrations
-          pytest backend --cov=.
+          pytest backend --cov=. --ds backend.core.settings --nomigrations
