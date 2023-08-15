@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 import django.utils.timezone
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Count, Sum, Q, Func
@@ -29,22 +31,29 @@ class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
 
     @action(methods=["get"], detail=True)
-    def analytics(self, *args, **kwargs):
+    def analytics(self, request, *args, **kwargs):
+        qs = Transaction.objects.filter(account_id=kwargs["pk"])
+        year = request.query_params.get("year", django.utils.timezone.now().year)
         per_month = (
-            Transaction.objects.filter(
-                account_id=kwargs["pk"],
-                started_at__year=django.utils.timezone.now().year,
+            qs.filter(
+                started_at__year=year,
             )
-            .annotate(
-                year=TruncYear("started_at"),
-                month=TruncMonth("started_at"),
-            )
+            .annotate(month=TruncMonth("started_at"))
             .values("month")
             .annotate(
                 money_in=Sum("amount", filter=Q(amount__gt=0)),
                 money_out=Func(Sum("amount", filter=Q(amount__lt=0)), function="ABS"),
             )
             .order_by("month")
+        )
+        years = list(
+            map(
+                attrgetter("year"),
+                qs.annotate(year=TruncYear("started_at"))
+                .values_list("year", flat=True)
+                .distinct("year")
+                .order_by("year"),
+            )
         )
         return JsonResponse(
             data={
@@ -56,6 +65,7 @@ class AccountViewSet(viewsets.ModelViewSet):
                     }
                     for item in per_month
                 ],
+                "years": years,
             }
         )
 

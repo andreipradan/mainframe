@@ -62,10 +62,12 @@ class FinanceApi {
       .then(response => dispatch(setAccounts(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
-  static getAnalytics = (token, accountId) => dispatch => {
+  static getAnalytics = (token, accountId, year = null) => dispatch => {
     dispatch(setAccountsLoading(true));
+    let url = `${base}/accounts/${accountId}/analytics/`
+    if (year) url += `?year=${year}`
     axios
-      .get(`${base}/accounts/${accountId}/analytics/`, { headers: { Authorization: token } })
+      .get(url, { headers: { Authorization: token } })
       .then(response => dispatch(setAnalytics(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };

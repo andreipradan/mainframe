@@ -13,6 +13,8 @@ import {selectTransaction} from "../../../../redux/transactionsSlice";
 import { Collapse, Dropdown } from "react-bootstrap";
 import EditModal from "./EditModal";
 import { Bar } from "react-chartjs-2";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const AccountDetails = () => {
   const dispatch = useDispatch();
@@ -21,6 +23,8 @@ const AccountDetails = () => {
   const { id } = useParams();
 
   const accounts = useSelector(state => state.accounts)
+  const [alertOpen, setAlertOpen] = useState(false)
+  useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
   useEffect(() => {!accounts.selectedAccount && dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]);
   useEffect(() => {!accounts.analytics && dispatch(FinanceApi.getAnalytics(token, id))}, [accounts.analytics]);
 
@@ -29,7 +33,6 @@ const AccountDetails = () => {
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
     if (accounts.selectedAccount) {
-      dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id))
       dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id))
     }
   }, [accounts.selectedAccount])
@@ -53,7 +56,7 @@ const AccountDetails = () => {
     labels: labels,
     datasets: [
       {
-        label: "Spent",
+        label: "Money Out",
         data: moneyOut,
         backgroundColor: 'rgba(255,0,52,0.2)',
         borderColor: 'rgba(255,0,52,1)',
@@ -61,7 +64,7 @@ const AccountDetails = () => {
         fill: false,
       },
       {
-        label: 'Gains',
+        label: 'Money In',
         data: moneyIn,
         backgroundColor: context => {
           const ctx = context.chart.ctx;
@@ -98,21 +101,25 @@ const AccountDetails = () => {
     elements: {point: {radius: 0}},
     tooltips: {
       callbacks: {
-        label: (tooltipItem, data) => {
-          const otherValue = data.datasets[tooltipItem.datasetIndex === 0 ? 1 : 0].data[tooltipItem.index]
-          const currentValue = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-          const percentage = parseFloat((currentValue / (parseFloat(currentValue) + parseFloat(otherValue)) * 100).toFixed(1));
-          return data.datasets[tooltipItem.datasetIndex].label + ": " + currentValue + ' (' + percentage + '%)';
-        },
         title: (tooltipItem, data) => {
           const item = tooltipItem[0]
           const otherValue = parseFloat(data.datasets[item.datasetIndex === 0 ? 1 : 0].data[item.index])
           const currentValue = parseFloat(data.datasets[item.datasetIndex].data[item.index]);
-          return `Total: ${(item.datasetIndex === 1 ? currentValue - otherValue : otherValue - currentValue).toFixed(2)}`
+          return `Balance: ${(item.datasetIndex === 1 ? currentValue - otherValue : otherValue - currentValue).toFixed(2)}`
         }
       }
     }
   }
+  const renderYearContent = (year) => {
+    const tooltipText = `Tooltip for year: ${year}`;
+    return <span title={tooltipText}>{year}</span>;
+  };
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  useEffect(() => {
+    accounts.selectedAccount && selectedDate &&
+    dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount?.id, selectedDate.getFullYear()))},
+    [selectedDate]
+  )
   return <div>
     <div className="page-header">
       <h3 className="page-title">
@@ -153,6 +160,7 @@ const AccountDetails = () => {
         </ol>
       </nav>
     </div>
+    {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{accounts.errors}</Alert>}
     <div className="row">
       <div className="col-sm-12 col-lg-6 grid-margin">
         <div className="card">
@@ -240,9 +248,24 @@ const AccountDetails = () => {
           <div className="card-body">
             <h4 className="card-title">
               Analytics
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id))}>
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))}>
                 <i className="mdi mdi-refresh" />
               </button>
+              {
+                accounts.analytics
+                ? <DatePicker
+                    className="btn btn-outline-secondary rounded small"
+                    dateFormat="yyyy"
+                    readOnly={accounts.loading}
+                    includeDates={accounts.analytics.years.map(y => new Date(y.toString()))}
+                    onChange={date => setSelectedDate(date)}
+                    renderMonthContent={renderYearContent}
+                    selected={selectedDate}
+                    showIcon
+                    showYearPicker
+                  />
+                : <Circles />
+              }
             </h4>
             {
               accounts.loading
