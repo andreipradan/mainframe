@@ -1,7 +1,9 @@
 import pytest
-from django.contrib.auth.backends import UserModel
 from django.urls import reverse
 
+from api.authentication.models import ActiveSession
+from api.authentication.serializers.login import _generate_jwt_token
+from api.user.models import User
 from finance.tests.factories import AccountFactory
 from finance.tests.factories import CreditFactory
 from finance.tests.factories import PaymentFactory
@@ -11,10 +13,9 @@ from finance.tests.factories import TransactionFactory
 @pytest.fixture
 def token(client):
     user_data = {"email": "foo@bar.com", "password": "password"}
-    UserModel._default_manager.create_superuser(**user_data, username="foo@bar.com")
-    response = client.post(reverse("users:login-list"), user_data)
-    assert response.status_code == 200, response.json()
-    return response.json()["token"]
+    user = User.objects.create(**user_data, username="foo@bar.com")
+    session = ActiveSession.objects.create(user=user, token=_generate_jwt_token(user))
+    return session.token
 
 
 @pytest.mark.django_db
