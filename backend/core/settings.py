@@ -20,7 +20,6 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env(
-    # set casting, default value
     ALLOWED_HOSTS=(list, []),
     CORS_ALLOWED_ORIGINS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
@@ -42,7 +41,7 @@ PYTHON_PATH = env("PYTHON_PATH")
 SECRET_KEY = env("SECRET_KEY")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
-if ENV != "local":
+if ENV not in ["ci", "local"]:
     sentry_sdk.init(
         dsn=env("SENTRY_DSN"),
         integrations=[
