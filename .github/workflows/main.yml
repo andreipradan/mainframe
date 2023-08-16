@@ -35,4 +35,4 @@ jobs:
         run: |
           pip install -r requirements.test.txt
           black . --check --exclude migrations
-          pytest . --cov=. --ds backend.core.settings --nomigrations
+          pytest . --cov=. --ds core.settings --nomigrations
