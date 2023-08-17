@@ -35,14 +35,67 @@ class TestAccounts:
         ] == [(account1.id, 2), (account2.id, 1), (account3.id, 0)]
 
     def test_analytics(self, client, django_assert_num_queries, token):
-        TransactionFactory.create_batch(2)
+        account = AccountFactory()
+        TransactionFactory(account=account, type="ATM", started_at="2022-03-04")
+        TransactionFactory(
+            account=account,
+            amount=13,
+            type="TOPUP",
+            started_at="2021-02-03",
+        )
+        TransactionFactory(
+            account=account,
+            amount=20,
+            type="TOPUP",
+            started_at="2021-02-06",
+        )
+        TransactionFactory(
+            account=account,
+            amount=20,
+            type="CARD_PAYMENT",
+            started_at="2021-05-03",
+        )
         with django_assert_num_queries(4):
             response = client.get(
-                reverse("finance:accounts-analytics"), HTTP_AUTHORIZATION=token
+                reverse("finance:accounts-analytics", args=(account.id,))
+                + "?year=2021",
+                HTTP_AUTHORIZATION=token,
             )
         assert response.status_code == 200
-        assert set(response.json().keys()) == {""}
-        assert response.json() == {}
+        assert response.json() == {
+            "per_month": [
+                {
+                    "ATM": "0",
+                    "CARD_CHARGEBACK": "0",
+                    "CARD_CREDIT": "0",
+                    "CARD_PAYMENT": "0",
+                    "CARD_REFUND": "0",
+                    "CASHBACK": "0",
+                    "EXCHANGE": "0",
+                    "FEE": "0",
+                    "TOPUP": "33.00",
+                    "TRANSFER": "0",
+                    "UNIDENTIFIED": "0",
+                    "month": "February",
+                },
+                {
+                    "ATM": "0",
+                    "CARD_CHARGEBACK": "0",
+                    "CARD_CREDIT": "0",
+                    "CARD_PAYMENT": "20.00",
+                    "CARD_REFUND": "0",
+                    "CASHBACK": "0",
+                    "EXCHANGE": "0",
+                    "FEE": "0",
+                    "TOPUP": "0",
+                    "TRANSFER": "0",
+                    "UNIDENTIFIED": "0",
+                    "month": "May",
+                },
+            ],
+            "transaction_types": ["CARD_PAYMENT", "TOPUP"],
+            "years": [2021, 2022],
+        }
 
 
 @pytest.mark.django_db

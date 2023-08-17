@@ -26,6 +26,7 @@ const TYPES = [
   "FEE",
   "TOPUP",
   "TRANSFER",
+  "UNIDENTIFIED",
 ]
 
 const EditModal = () => {
@@ -38,7 +39,7 @@ const EditModal = () => {
   const [alertOpen, setAlertOpen] = useState(false)
   useEffect(() => {setAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
-    !type && setType(transactions.selectedTransaction?.type)},
+    setType(transactions.selectedTransaction?.type)},
     [transactions.selectedTransaction]
   )
 
