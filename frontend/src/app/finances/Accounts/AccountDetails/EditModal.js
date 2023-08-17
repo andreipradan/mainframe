@@ -45,7 +45,7 @@ const EditModal = () => {
             <Form.Label>Started</Form.Label>
             <Form.Control
               readOnly={true}
-              className="bg-transparent text-primary"
+              className="bg-transparent text-muted"
               type="text"
               autoFocus
               value={new Date(transactions.selectedTransaction.started_at).toLocaleDateString()}
@@ -55,7 +55,7 @@ const EditModal = () => {
             <Form.Label>Completed</Form.Label>
             <Form.Control
               readOnly={true}
-              className="bg-transparent text-primary"
+              className="bg-transparent text-muted"
               type="text"
               autoFocus
               value={new Date(transactions.selectedTransaction.completed_at).toLocaleDateString()}
@@ -67,7 +67,7 @@ const EditModal = () => {
                   <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
                   <Form.Control
                     readOnly={true}
-                    className="bg-transparent text-primary"
+                    className="bg-transparent text-muted"
                     type="text"
                     autoFocus
                     value={transactions.selectedTransaction[item]}
@@ -80,7 +80,7 @@ const EditModal = () => {
             <Form.Control
               as="textarea"
               readOnly={true}
-              className="bg-transparent text-primary"
+              className="bg-transparent text-muted"
               type="text"
               autoFocus
               value={transactions.selectedTransaction.description}

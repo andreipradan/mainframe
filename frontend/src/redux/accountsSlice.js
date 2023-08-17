@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const accountsSlice = createSlice({
   name: "accounts",
   initialState: {
+    analytics: null,
     count: 0,
     errors: null,
     loading: false,

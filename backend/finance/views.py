@@ -1,4 +1,4 @@
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 
 import django.utils.timezone
 from django.contrib.postgres.search import SearchVector
@@ -33,16 +33,17 @@ class AccountViewSet(viewsets.ModelViewSet):
     @action(methods=["get"], detail=True)
     def analytics(self, request, *args, **kwargs):
         qs = Transaction.objects.filter(account_id=kwargs["pk"])
-        year = request.query_params.get("year", django.utils.timezone.now().year)
+        now = django.utils.timezone.now()
+        year = request.query_params.get("year", now.year)
         per_month = (
-            qs.filter(
-                started_at__year=year,
-            )
+            qs.filter(started_at__year=year)
             .annotate(month=TruncMonth("started_at"))
             .values("month")
             .annotate(
-                money_in=Sum("amount", filter=Q(amount__gt=0)),
-                money_out=Func(Sum("amount", filter=Q(amount__lt=0)), function="ABS"),
+                **{
+                    k: Sum("amount", filter=Q(type=k), default=0)
+                    for k, _ in Transaction.TYPE_CHOICES
+                }
             )
             .order_by("month")
         )
@@ -60,10 +61,14 @@ class AccountViewSet(viewsets.ModelViewSet):
                 "per_month": [
                     {
                         "month": item["month"].strftime("%B"),
-                        "money_in": item["money_in"],
-                        "money_out": item["money_out"],
+                        **{k: item[k] for k, _ in Transaction.TYPE_CHOICES},
                     }
                     for item in per_month
+                ],
+                "transaction_types": [
+                    t
+                    for t, _ in Transaction.TYPE_CHOICES
+                    if sum(map(itemgetter(t), per_month))
                 ],
                 "years": years,
             }
@@ -102,8 +107,14 @@ class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
 
     def get_queryset(self):
-        params = self.request.query_params
         queryset = super().get_queryset()
+        params = self.request.query_params
+        if year := params.get("year"):
+            queryset = queryset.filter(started_at__year=year)
+        if month := params.get("month"):
+            queryset = queryset.filter(started_at__month=month)
+        if transaction_type := params.get("type"):
+            queryset = queryset.filter(type=transaction_type)
         if account_id := params.get("account_id"):
             queryset = queryset.filter(account_id=account_id)
         if search_term := params.get("search_term"):

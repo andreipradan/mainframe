@@ -16,6 +16,28 @@ import { Bar } from "react-chartjs-2";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
+  return color;
+}
+
+const getColor = (type, border = false) => {
+  switch (type) {
+    case "ATM": return `rgba(255,245,64,${border ? 1 : 0.2})`
+    case "CARD_PAYMENT": return `rgba(255,0,52,${border ? 1 : 0.2})`
+    case "CARD_REFUND": return `rgba(75,192,126,${border ? 1 : 0.2})`
+    case "EXCHANGE": return `rgba(153,102,255,${border ? 1 : 0.2})`
+    case "FEE": return `rgba(255,0,0,${border ? 1 : 0.2})`
+    case "TOPUP": return `rgba(54,162,235, ${border ? 1 : 0.2})`
+    case "TRANSFER": return `rgba(255,159,64,${border ? 1 : 0.2})`
+    case "UNIDENTIFIED": return `rgba(255,255,255,${border ? 1 : 0.2})`
+    default:
+      return getRandomColor()
+  }
+}
+
 const AccountDetails = () => {
   const dispatch = useDispatch();
   const history = useHistory();
@@ -25,15 +47,24 @@ const AccountDetails = () => {
   const accounts = useSelector(state => state.accounts)
   const [alertOpen, setAlertOpen] = useState(false)
   useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
-  useEffect(() => {!accounts.selectedAccount && dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]);
-  useEffect(() => {!accounts.analytics && dispatch(FinanceApi.getAnalytics(token, id))}, [accounts.analytics]);
+  useEffect(() => {
+    !accounts.selectedAccount &&
+    dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]
+  )
+  useEffect(() => {
+    !accounts.analytics &&
+    dispatch(FinanceApi.getAnalytics(token, id))}, [accounts.analytics]
+  )
 
   const transactions = useSelector(state => state.transactions)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
-    if (accounts.selectedAccount) {
-      dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id))
+    if (accounts.selectedAccount && selectedDate) {
+      dispatch(FinanceApi.getTransactions(token, {
+        account_id: accounts.selectedAccount.id,
+        year: selectedDate.getFullYear(),
+      }))
     }
   }, [accounts.selectedAccount])
   const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
@@ -42,51 +73,20 @@ const AccountDetails = () => {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
-  const [moneyIn, setMoneyIn] = useState(null)
-  const [moneyOut, setMoneyOut] = useState(null)
-  const [labels, setLabels] = useState(null)
-
-  useEffect(() => {
-    setMoneyIn(accounts.analytics?.per_month.map(p => p.money_in))
-    setMoneyOut(accounts.analytics?.per_month.map(p => p.money_out))
-    setLabels(accounts.analytics?.per_month.map(p => p.month))
-  }, [accounts.analytics?.per_month.length])
-
   const paymentsData = {
-    labels: labels,
-    datasets: [
-      {
-        label: "Money Out",
-        data: moneyOut,
-        backgroundColor: 'rgba(255,0,52,0.2)',
-        borderColor: 'rgba(255,0,52,1)',
-        borderWidth: 1,
-        fill: false,
-      },
-      {
-        label: 'Money In',
-        data: moneyIn,
-        backgroundColor: context => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-          gradient.addColorStop(0, 'rgba(243,16,65,0.2)');
-          gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
-          gradient.addColorStop(1, 'rgba(47,113,190,0.2)');
-          return gradient;
-        },
-        borderColor: context => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
-          gradient.addColorStop(0, 'rgba(243,16,65,1)');
-          gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
-          gradient.addColorStop(1, 'rgb(47,113,190)');
-          return gradient;
-        },
-        borderWidth: 1,
-        fill: false
-      },
-    ]
-  };
+    labels: accounts.analytics?.per_month.map(p => p.month),
+    datasets: accounts.analytics
+      ? [
+        ...accounts.analytics?.transaction_types?.map(type => ({
+          label: type,
+          data: accounts.analytics?.per_month?.map(item => item[type]),
+          backgroundColor: getColor(type),
+          borderColor: getColor(type, true),
+          borderWidth: 1,
+          fill: false,
+        })),
+    ] : []
+  }
 
   const paymentsOptions = {
     scales: {
@@ -103,9 +103,16 @@ const AccountDetails = () => {
       callbacks: {
         title: (tooltipItem, data) => {
           const item = tooltipItem[0]
-          const otherValue = parseFloat(data.datasets[item.datasetIndex === 0 ? 1 : 0].data[item.index])
-          const currentValue = parseFloat(data.datasets[item.datasetIndex].data[item.index]);
-          return `Balance: ${(item.datasetIndex === 1 ? currentValue - otherValue : otherValue - currentValue).toFixed(2)}`
+          const all = data.datasets.map(d => d.data[item.index]).reduce(
+            (partialSum, p) => partialSum + parseFloat(p), 0
+          )
+          const moneyIn = data.datasets.filter(d => parseFloat(d.data[item.index]) > 0).map(d => d.data[item.index]).reduce(
+            (partialSum, p) => partialSum + parseFloat(p), 0
+          )
+          const moneyOut = data.datasets.filter(d => parseFloat(d.data[item.index]) < 0).map(d => d.data[item.index]).reduce(
+            (partialSum, p) => partialSum + parseFloat(p), 0
+          )
+          return `Balance: ${(all).toFixed(2)}\n(${moneyIn.toFixed(2)}${moneyOut.toFixed(2)})`
         }
       }
     }
@@ -116,16 +123,34 @@ const AccountDetails = () => {
   };
   const [selectedDate, setSelectedDate] = useState(new Date())
   useEffect(() => {
-    accounts.selectedAccount && selectedDate &&
-    dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount?.id, selectedDate.getFullYear()))},
+    if (accounts.selectedAccount && selectedDate) {
+      dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
+      dispatch(FinanceApi.getTransactions(token, {
+          account_id: accounts.selectedAccount.id,
+          year: selectedDate.getFullYear()
+        })
+      )
+    }},
     [selectedDate]
   )
+  const handleGetElementAtEvent = element => {
+    setSearchTerm("")
+    setSearchOpen(false)
+    const month = element[0]._model.label
+    const type = element[0]._model.datasetLabel
+    dispatch(FinanceApi.getTransactions(token, {
+      account_id: accounts.selectedAccount.id,
+      month: new Date(`${month} ${selectedDate.getFullYear()}`).getMonth() + 1,
+      type: type,
+      year: selectedDate.getFullYear(),
+    }))
+  }
   return <div>
     <div className="page-header">
       <h3 className="page-title">
         {
           !accounts.selectedAccount
-            ? ""
+            ? <Circles height={30}/>
             : <Dropdown className="btn btn-outline-primary">
               <Dropdown.Toggle as="a" className="cursor-pointer">
                 {accounts.selectedAccount.bank} ({accounts.selectedAccount.type})
@@ -216,7 +241,9 @@ const AccountDetails = () => {
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() =>
-                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id))
+                  dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                  }))
               }
               >
                 <i className="mdi mdi-refresh"></i>
@@ -253,24 +280,53 @@ const AccountDetails = () => {
               </button>
               {
                 accounts.analytics
-                ? <DatePicker
-                    className="btn btn-outline-secondary rounded small"
-                    dateFormat="yyyy"
-                    readOnly={accounts.loading}
-                    includeDates={accounts.analytics.years.map(y => new Date(y.toString()))}
-                    onChange={date => setSelectedDate(date)}
-                    renderMonthContent={renderYearContent}
-                    selected={selectedDate}
-                    showIcon
-                    showYearPicker
-                  />
+                ? <>
+                    {
+                      accounts.analytics.years.find(y => y === selectedDate.getFullYear() - 1) &&
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary rounded btn-sm"
+                        onClick={() => setSelectedDate(new Date(`${selectedDate.getFullYear() - 1}-01-01`))}
+                      >
+                        <i className="mdi mdi-skip-previous" />
+                      </button>
+                    }
+                    <DatePicker
+                      className="btn btn-outline-secondary rounded btn-sm"
+                      dateFormat="yyyy"
+                      readOnly={accounts.loading}
+                      includeDates={accounts.analytics.years.map(y => new Date(y.toString()))}
+                      onChange={date => setSelectedDate(date)}
+                      renderMonthContent={renderYearContent}
+                      selected={selectedDate}
+                      showIcon
+                      showYearPicker
+                    />
+                    {
+                      accounts.analytics.years.find(y => y === selectedDate.getFullYear() + 1) &&
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary rounded btn-sm"
+                        onClick={() => setSelectedDate(new Date(`${selectedDate.getFullYear() + 1}-01-01`))}
+                      >
+                        <i className="mdi mdi-skip-next" />
+                      </button>
+                    }
+                  </>
                 : <Circles />
               }
             </h4>
             {
               accounts.loading
                 ? <Circles />
-                : accounts.analytics ? <Bar data={paymentsData} options={paymentsOptions} height={100}/> : "-"
+                : accounts.analytics
+                  ? <Bar
+                    data={paymentsData}
+                    getElementAtEvent={handleGetElementAtEvent}
+                    options={paymentsOptions}
+                    height={100}
+                  />
+                  : "-"
             }
             </div>
           </div>
@@ -284,7 +340,12 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() =>
-                  dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage))
+                  dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))
               }>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -311,14 +372,23 @@ const AccountDetails = () => {
                       dispatch(
                         FinanceApi.getTransactions(
                           token,
-                          accounts.selectedAccount.id,
-                          currentPage,
-                          searchTerm,
+                          {
+                            account_id: accounts.selectedAccount.id,
+                            page: currentPage,
+                            search_term: searchTerm,
+                            year: selectedDate.getFullYear(),
+                          }
                         )
                       )
                     }}
                   >
-                    <input type="search" className="form-control" placeholder="Search products" onChange={e => setSearchTerm(e.target.value)}/>
+                    <input
+                      value={searchTerm}
+                      type="search"
+                      className="form-control"
+                      placeholder="Search products"
+                      onChange={e => setSearchTerm(e.target.value)}
+                    />
                   </form>
                 </li>
               </ul>
@@ -327,14 +397,13 @@ const AccountDetails = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th> Completed </th>
                     <th> Started </th>
                     <th> Amount </th>
                     <th> Fee </th>
                     <th> State </th>
                     <th> Description </th>
                     <th> Type </th>
-                    <th> Product </th>
+                    <th> Completed </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -349,14 +418,13 @@ const AccountDetails = () => {
                     />
                     : transactions.results?.length
                         ? transactions.results.map((t, i) => <tr key={i}>
-                          <td> {new Date(t.completed_at).toLocaleDateString()} </td>
                           <td> {new Date(t.started_at).toLocaleDateString()} </td>
                           <td> {t.amount} </td>
                           <td> {t.fee} </td>
                           <td> {t.state} </td>
                           <td> {t.description} </td>
                           <td> {t.type} </td>
-                          <td> {t.product} </td>
+                          <td> {new Date(t.completed_at).toLocaleDateString()} </td>
                           <td>
                             <i
                               style={{cursor: "pointer"}}
@@ -375,7 +443,10 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-default"
                 disabled={!transactions.previous}
-                onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, 1))}
+                onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  account_id: accounts.selectedAccount.id,
+                  year: selectedDate.getFullYear(),
+                }))}
               >
                 <i className="mdi mdi-skip-backward"/>
               </button>
@@ -383,7 +454,12 @@ const AccountDetails = () => {
                 currentPage - 5 > 0 && <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, 2))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: 2,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   2
                 </button>
@@ -394,7 +470,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage - 3))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage - 3,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   {currentPage - 3}
                 </button>
@@ -404,7 +485,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage - 2))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage - 2,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   {currentPage - 2}
                 </button>
@@ -414,7 +500,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage - 1))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage - 1,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   {currentPage - 1}
                 </button>
@@ -425,7 +516,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage + 1))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage + 1,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                 }))}
                 >
                   {currentPage + 1}
                 </button>
@@ -435,7 +531,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage + 2))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage + 2,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   {currentPage + 2}
                 </button>
@@ -445,7 +546,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, currentPage + 3))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: currentPage + 3,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   {currentPage + 3}
                 </button>
@@ -456,7 +562,12 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, lastPage - 1))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                    account_id: accounts.selectedAccount.id,
+                    page: lastPage - 1,
+                    search_term: searchTerm,
+                    year: selectedDate.getFullYear(),
+                  }))}
                 >
                   {lastPage - 1}
                 </button>
@@ -465,7 +576,12 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-default"
                 disabled={!transactions.next}
-                onClick={() => dispatch(FinanceApi.getTransactions(token, accounts.selectedAccount.id, lastPage))}
+                onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  account_id: accounts.selectedAccount.id,
+                  page: lastPage,
+                  search_term: searchTerm,
+                  year: selectedDate.getFullYear(),
+                }))}
               >
                 <i className="mdi mdi-skip-forward"/>
               </button>

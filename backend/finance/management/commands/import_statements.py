@@ -57,7 +57,8 @@ def detect_transaction_type(description, is_credit=False):
         "Revolut ",
         "Revolut*",
         "REVOLUT**",
-        "|REVOLUT |" "| SENT FROM REVOLUT",
+        "|REVOLUT |",
+        "| SENT FROM REVOLUT",
     ):
         if key in description:
             return Transaction.TYPE_TOPUP if is_credit else Transaction.TYPE_TRANSFER
@@ -71,7 +72,7 @@ def detect_transaction_type(description, is_credit=False):
             return Transaction.TYPE_TOPUP
     if "refund" in description.lower():
         return Transaction.TYPE_CARD_REFUND
-    return Transaction.TYPE_CARD_PAYMENT
+    return Transaction.TYPE_UNIDENTIFIED if is_credit else Transaction.TYPE_CARD_PAYMENT
 
 
 def parse_additional_data(data):

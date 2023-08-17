@@ -9,6 +9,12 @@ class Transaction(TimeStampedModel):
     PRODUCT_SAVINGS = "Savings"
     PRODUCT_INVESTMENTS = "Investments"
 
+    PRODUCT_CHOICES = (
+        (PRODUCT_CURRENT, PRODUCT_CURRENT),
+        (PRODUCT_SAVINGS, PRODUCT_SAVINGS),
+        (PRODUCT_INVESTMENTS, PRODUCT_INVESTMENTS),
+    )
+
     TYPE_ATM = "ATM"
     TYPE_CARD_CHARGEBACK = "CARD_CHARGEBACK"
     TYPE_CARD_CREDIT = "CARD_CREDIT"
@@ -21,6 +27,20 @@ class Transaction(TimeStampedModel):
     TYPE_TRANSFER = "TRANSFER"
     TYPE_UNIDENTIFIED = "UNIDENTIFIED"
 
+    TYPE_CHOICES = (
+        (TYPE_ATM, TYPE_ATM),
+        (TYPE_CARD_CHARGEBACK, "Card chargeback"),
+        (TYPE_CARD_CREDIT, "Card credit"),
+        (TYPE_CARD_PAYMENT, "Card payment"),
+        (TYPE_CARD_REFUND, "Card refund"),
+        (TYPE_CASHBACK, "Cashback"),
+        (TYPE_EXCHANGE, TYPE_EXCHANGE.capitalize()),
+        (TYPE_FEE, TYPE_FEE.capitalize()),
+        (TYPE_TOPUP, TYPE_TOPUP.capitalize()),
+        (TYPE_TRANSFER, TYPE_TRANSFER.capitalize()),
+        (TYPE_UNIDENTIFIED, TYPE_UNIDENTIFIED.capitalize()),
+    )
+
     account = models.ForeignKey("finance.Account", on_delete=models.CASCADE)
     additional_data = models.JSONField(blank=True, default=dict, null=True)
     amount = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
@@ -30,30 +50,14 @@ class Transaction(TimeStampedModel):
     description = models.CharField(max_length=256, default="")
     fee = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     product = models.CharField(
-        choices=(
-            (PRODUCT_CURRENT, PRODUCT_CURRENT),
-            (PRODUCT_SAVINGS, PRODUCT_SAVINGS),
-            (PRODUCT_INVESTMENTS, PRODUCT_INVESTMENTS),
-        ),
+        choices=PRODUCT_CHOICES,
         default=PRODUCT_CURRENT,
         max_length=11,
     )
     started_at = models.DateTimeField()
     state = models.CharField(max_length=24)
     type = models.CharField(
-        choices=(
-            (TYPE_ATM, TYPE_ATM),
-            (TYPE_CARD_CHARGEBACK, "Card chargeback"),
-            (TYPE_CARD_CREDIT, "Card credit"),
-            (TYPE_CARD_PAYMENT, "Card payment"),
-            (TYPE_CARD_REFUND, "Card refund"),
-            (TYPE_CASHBACK, "Cashback"),
-            (TYPE_EXCHANGE, TYPE_EXCHANGE.capitalize()),
-            (TYPE_FEE, TYPE_FEE.capitalize()),
-            (TYPE_TOPUP, TYPE_TOPUP.capitalize()),
-            (TYPE_TRANSFER, TYPE_TRANSFER.capitalize()),
-            (TYPE_UNIDENTIFIED, TYPE_UNIDENTIFIED.capitalize()),
-        ),
+        choices=TYPE_CHOICES,
         default=TYPE_UNIDENTIFIED,
         max_length=15,
     )

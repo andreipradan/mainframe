@@ -34,6 +34,16 @@ class TestAccounts:
             (x["id"], x["transaction_count"]) for x in response.json()["results"]
         ] == [(account1.id, 2), (account2.id, 1), (account3.id, 0)]
 
+    def test_analytics(self, client, django_assert_num_queries, token):
+        TransactionFactory.create_batch(2)
+        with django_assert_num_queries(4):
+            response = client.get(
+                reverse("finance:accounts-analytics"), HTTP_AUTHORIZATION=token
+            )
+        assert response.status_code == 200
+        assert set(response.json().keys()) == {""}
+        assert response.json() == {}
+
 
 @pytest.mark.django_db
 class TestCredit:
