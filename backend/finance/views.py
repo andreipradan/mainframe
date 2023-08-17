@@ -103,7 +103,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
 
 class TransactionViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Transaction.objects.order_by("-completed_at")
+    queryset = Transaction.objects.order_by("-started_at")
     serializer_class = TransactionSerializer
 
     def get_queryset(self):
@@ -119,6 +119,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(account_id=account_id)
         if search_term := params.get("search_term"):
             queryset = queryset.annotate(
-                search=SearchVector("description", "additional_data"),
+                search=SearchVector(
+                    "description", "additional_data", "amount", "type", "started_at"
+                ),
             ).filter(search=search_term)
         return queryset

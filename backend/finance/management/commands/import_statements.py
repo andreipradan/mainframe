@@ -52,6 +52,7 @@ def detect_transaction_type(description, is_credit=False):
     if "atm" in [item.lower() for item in description.split()]:
         return Transaction.TYPE_ATM
     for key in (
+        "PLATA LUNA ",
         "revolut  " "revolutie Dublin ",
         "www.revolutieinternal Dublin",
         "Revolut ",
