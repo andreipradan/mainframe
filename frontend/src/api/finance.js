@@ -30,6 +30,7 @@ import {
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
+  updateTransaction,
 } from "../redux/transactionsSlice";
 import {handleErrors} from "./errors";
 
@@ -114,6 +115,13 @@ class FinanceApi {
       .then((response) => dispatch(update(response.data)))
       .catch((err) => handleErrors(err, dispatch, setPaymentErrors))
   };
+  static updateTransaction = (token, id, data) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    axios
+      .patch(`${base}/transactions/${id}/`, data, { headers: { Authorization: token } })
+      .then((response) => dispatch(updateTransaction(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setAccountsErrors))
+  }
 }
 
 let base = "finance";

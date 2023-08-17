@@ -65,7 +65,7 @@ def detect_transaction_type(description, is_credit=False):
     for key in ("transfer", "trz ib conturi proprii"):
         if key in last_part:
             return Transaction.TYPE_TRANSFER
-    if "schimb valutar" in last_part:
+    if "schimb valutar" in description.lower():
         return Transaction.TYPE_EXCHANGE
     for key in ("telemunca", "salar", "plata automata dob", "diurna"):
         if key in last_part:

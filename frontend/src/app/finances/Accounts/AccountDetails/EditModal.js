@@ -12,17 +12,36 @@ import { selectTransaction } from "../../../../redux/transactionsSlice";
 import Alert from "react-bootstrap/Alert";
 import AceEditor from "react-ace";
 import Form from "react-bootstrap/Form";
+import {Dropdown} from "react-bootstrap";
+import FinanceApi from "../../../../api/finance";
+
+const TYPES = [
+  "ATM",
+  "CARD_CHARGEBACK",
+  "CARD_CREDIT",
+  "CARD_PAYMENT",
+  "CARD_REFUND",
+  "CASHBACK",
+  "EXCHANGE",
+  "FEE",
+  "TOPUP",
+  "TRANSFER",
+]
 
 const EditModal = () => {
+  const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
   const transactions = useSelector(state => state.transactions)
 
+  const closeModal = () => dispatch(selectTransaction())
+  const [type, setType] = useState("")
   const [alertOpen, setAlertOpen] = useState(false)
   useEffect(() => {setAlertOpen(!!transactions.errors)}, [transactions.errors])
+  useEffect(() => {
+    !type && setType(transactions.selectedTransaction?.type)},
+    [transactions.selectedTransaction]
+  )
 
-  const closeModal = () => {
-    dispatch(selectTransaction())
-  }
 
   return <Modal centered show={!!transactions.selectedTransaction} onHide={closeModal}>
     <Modal.Header closeButton>
@@ -40,7 +59,30 @@ const EditModal = () => {
         </Alert></div>
       }
       {
-        transactions.selectedTransaction && <Form onSubmit={e => e.preventDefault()}>
+        transactions.selectedTransaction && <Form onSubmit={e => {
+          e.preventDefault()
+          dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {type}))
+        }}>
+          <Form.Group>
+            <Form.Label>Type</Form.Label><br/>
+            <Dropdown className="btn btn-outline-primary">
+              <Dropdown.Toggle as="a" className="cursor-pointer">{type}</Dropdown.Toggle>
+              <Dropdown.Menu>
+                {
+                  TYPES.map((acc, i) =>
+                    <Dropdown.Item key={i} href="!#" onClick={evt => {
+                      evt.preventDefault()
+                      setType(acc)
+                    }} className="preview-item">
+                      <div className="preview-item-content">
+                        <p className="preview-subject mb-1">{acc}</p>
+                      </div>
+                    </Dropdown.Item>
+                  )
+                }
+              </Dropdown.Menu>
+            </Dropdown>
+          </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Started</Form.Label>
             <Form.Control
@@ -62,7 +104,7 @@ const EditModal = () => {
             />
           </Form.Group>
           {
-            ["amount", "fee", "state", "type", "product"].map((item, i) =>
+            ["amount", "fee", "state", "product"].map((item, i) =>
               <Form.Group className="mb-3" key={i}>
                   <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
                   <Form.Control
@@ -110,6 +152,16 @@ const EditModal = () => {
     </Modal.Body>
     <Modal.Footer>
       <Button variant="secondary" onClick={closeModal}>Close</Button>
+      <Button
+        disabled={type === transactions.selectedTransaction?.type}
+        variant="primary"
+        onClick={() => {
+          dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {type}))
+          dispatch(selectTransaction())
+        }}
+      >
+        Save Changes
+      </Button>
     </Modal.Footer>
   </Modal>
 }

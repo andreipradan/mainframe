@@ -28,8 +28,13 @@ export const transactionsSlice = createSlice({
       state.results = action.payload.results;
     },
     setLoading: (state, action) => {state.loading = action.payload},
+    updateTransaction: (state, action) => {
+      state.errors = null
+      state.loading = false
+      state.results = state.results.map(t => t.id === action.payload.id ? action.payload : t)
+    }
   },
 });
 
-export const { set, setErrors, setLoading, selectTransaction } = transactionsSlice.actions;
+export const { set, setErrors, setLoading, selectTransaction, updateTransaction } = transactionsSlice.actions;
 export default transactionsSlice.reducer;
