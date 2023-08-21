@@ -61,6 +61,7 @@ const AccountDetails = () => {
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
     if (accounts.selectedAccount && selectedDate) {
+      dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
       dispatch(FinanceApi.getTransactions(token, {
         account_id: accounts.selectedAccount.id,
         year: selectedDate.getFullYear(),
@@ -374,7 +375,6 @@ const AccountDetails = () => {
                           token,
                           {
                             account_id: accounts.selectedAccount.id,
-                            page: currentPage,
                             search_term: searchTerm,
                             year: selectedDate.getFullYear(),
                           }

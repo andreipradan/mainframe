@@ -84,6 +84,20 @@ const EditModal = () => {
               </Dropdown.Menu>
             </Dropdown>
           </Form.Group>
+          {
+            ["amount", "currency", "fee", "state", "product"].map((item, i) =>
+              <Form.Group className="mb-3" key={i}>
+                  <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
+                  <Form.Control
+                    readOnly={true}
+                    className="bg-transparent text-muted"
+                    type="text"
+                    autoFocus
+                    value={transactions.selectedTransaction[item]}
+                  />
+                </Form.Group>
+            )
+          }
           <Form.Group className="mb-3">
             <Form.Label>Started</Form.Label>
             <Form.Control
@@ -104,20 +118,6 @@ const EditModal = () => {
               value={new Date(transactions.selectedTransaction.completed_at).toLocaleDateString()}
             />
           </Form.Group>
-          {
-            ["amount", "fee", "state", "product"].map((item, i) =>
-              <Form.Group className="mb-3" key={i}>
-                  <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
-                  <Form.Control
-                    readOnly={true}
-                    className="bg-transparent text-muted"
-                    type="text"
-                    autoFocus
-                    value={transactions.selectedTransaction[item]}
-                  />
-                </Form.Group>
-            )
-          }
           <Form.Group className="mb-3">
             <Form.Label>Description</Form.Label>
             <Form.Control
