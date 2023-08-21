@@ -5,7 +5,7 @@ export const handleErrors = async (err, dispatch, setErrors) => {
   if (err.response) {
     const contentType = err.response.headers["content-type"];
     if (!contentType.startsWith("application/json"))
-      return dispatch(setErrors([`Unexpected response [${err.response.statusText}]`]));
+      return dispatch(setErrors([`Unexpected response [${err.response.statusText || `Status code: ${err.response.status}`}]`]));
   }
   if (err.response?.data) {
     if (err.response.data["msg"] === "User is not logged on.") {
