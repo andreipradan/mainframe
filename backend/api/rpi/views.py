@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from api.hooks.github import run_cmd
+from clients.os import run_cmd
 
 
 class RpiViewSet(viewsets.ViewSet):

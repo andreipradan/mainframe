@@ -1,8 +1,6 @@
 import hashlib
 import hmac
 import json
-import logging
-import subprocess
 from ipaddress import ip_address, ip_network
 
 import requests
@@ -16,27 +14,7 @@ from rest_framework.exceptions import MethodNotAllowed
 
 from clients import cron
 from clients.chat import send_telegram_message
-from clients.logs import MainframeHandler
-
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
-
-
-def run_cmd(cmd, prefix=None):
-    prefix = prefix.upper() if prefix else cmd
-    logger.info(f"[{prefix}] Starting")
-    try:
-        output = subprocess.check_output(cmd.split(" ")).decode("utf-8")
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(
-            "command '{}' return with error (code {}): {}".format(
-                e.cmd, e.returncode, e.output
-            )
-        )
-    if output:
-        logger.info(f"[{prefix}] Output: {str(output)}")
-    logger.info(f"[{prefix}] Done.")
-    return output
+from clients.os import run_cmd
 
 
 @csrf_exempt

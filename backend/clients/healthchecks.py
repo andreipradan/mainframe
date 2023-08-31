@@ -1,7 +1,7 @@
-import logging
-
 import environ
 import requests
+
+from clients.logs import get_default_logger
 
 
 def ping(service_name="URL", logger=None):
@@ -10,5 +10,5 @@ def ping(service_name="URL", logger=None):
     try:
         requests.post(url=url)
     except requests.exceptions.HTTPError as e:
-        logger = logger or logging.getLogger(__name__)
+        logger = logger or get_default_logger(__name__)
         logger.warning(str(e))

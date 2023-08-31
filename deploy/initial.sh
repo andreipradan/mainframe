@@ -65,6 +65,8 @@ echo "[env] Done."
 
 echo "[postgres] Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "[postgres] Done."
 
+echo "[postgres] Installing postgres client" && sudo apt-get -y install postgresql-client && echo "[postgres] Done."
+
 NGINX_DIR=/etc/nginx
 NGINX_AVAILABLE="${NGINX_DIR}/sites-available/mainframe"
 NGINX_ENABLED="${NGINX_DIR}/sites-enabled/mainframe"

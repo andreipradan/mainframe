@@ -1,11 +1,9 @@
 import json
 import logging
-import queue
 from functools import cached_property
-from logging.handlers import MemoryHandler
 
-import environ
 import axiom
+import environ
 
 FORMAT = "%(asctime)s - %(levelname)s - %(module)s.%(name)s - %(msg)s"
 logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -53,11 +51,7 @@ class MainframeHandler(AxiomHandler):
         super().__init__("mainframe")
 
 
-def get_logger(name):
-    from logging.handlers import QueueHandler, QueueListener
-
-    que = queue.Queue(-1)
+def get_default_logger(name):
     logger = logging.getLogger(name)
-    logger.addHandler(QueueHandler(que))
-    listener = QueueListener(que, MainframeHandler())
-    return logger, listener
+    logger.addHandler(MainframeHandler())
+    return logger
