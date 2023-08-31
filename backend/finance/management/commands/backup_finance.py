@@ -23,16 +23,16 @@ class Command(BaseCommand):
         logger.addHandler(ManagementCommandsHandler())
         healthchecks.ping("FINANCE_BACKUP", logger=logger)
 
-        model = options["model"]
-        model_suffix = f"_{model}" if model else ""
-        file_name = f"{timezone.now():%Y_%m_%d_%H_%M_%S}{model_suffix}.json.gz"
+        file_name = f"{timezone.now():%Y_%m_%d_%H_%M_%S}.json.gz"
 
+        model = options["model"]
         source = "finance" if not model else f"finance.{model.title()}"
         logger.info(f"Dumping '{source}' data")
 
         call_command("dumpdata", source, output=file_name, verbosity=2)
 
-        upload_blob_from_file(file_name, f"finance/{file_name}", logger)
+        path = f"/{model}" if model else f""
+        upload_blob_from_file(file_name, f"finance{path}/{file_name}", logger)
         run_cmd(f"rm {file_name}")
         msg = f"[Finance] Backup complete: {file_name}"
         send_telegram_message(text=msg, parse_mode=telegram.ParseMode.HTML)

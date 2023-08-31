@@ -194,6 +194,6 @@ class Command(BaseCommand):
         send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
-        cron.delay("backup_finance --model=Account")
+        cron.delay("backup_finance --model=Account", minutes=5)
         cron.delay("backup_finance --model=Credit", minutes=3)
-        cron.delay("backup_finance --model=Timetable", minutes=5)
+        cron.delay("backup_finance --model=Timetable")
