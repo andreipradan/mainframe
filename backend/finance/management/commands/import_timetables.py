@@ -189,7 +189,7 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error(msg)
 
-        remove_crons_for_command(Cron(command="import_timetable", is_management=True))
+        remove_crons_for_command(Cron(command="import_timetables", is_management=True))
 
         send_telegram_message(text=msg)
 

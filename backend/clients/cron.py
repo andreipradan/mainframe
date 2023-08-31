@@ -50,7 +50,7 @@ def remove_crons_for_command(cron: Cron) -> None:
         if not (crons_no := len(list(crontab.find_command(command)))):
             return logger.warning(f"No '{cron}' crons found")
 
-        logger.warning(f"Cleaning up {crons_no} existing '{cron}' crons")
+        logger.info(f"Cleaning up {crons_no} existing '{cron}' crons")
         crontab.remove_all(command=command)
 
 
