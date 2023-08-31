@@ -138,6 +138,7 @@ def parse_raiffeisen_transactions(file_name, logger):
     )
     if created:
         logger.warning(f"New account: {account}")
+        cron.delay("backup_finance --model=Account")
 
     header_index = starting_index + 11
     header = [x.value for x in rows[header_index]]
@@ -266,5 +267,4 @@ class Command(BaseCommand):
         send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
-        cron.delay("backup_finance --model=Account")
         cron.delay("backup_finance --model=Transaction")

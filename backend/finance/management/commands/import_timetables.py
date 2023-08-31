@@ -127,6 +127,7 @@ def extract_first_page(first_page, logger):
     )
     if created:
         logger.warning(f"New account: {account}")
+        cron.delay("backup_finance --model=Account")
 
     credit, created = Credit.objects.get_or_create(
         account_id=account.id,
@@ -138,6 +139,7 @@ def extract_first_page(first_page, logger):
 
     if created:
         logger.warning(f"New credit: {account}")
+        cron.delay("backup_finance --model=Credit")
 
     return Timetable(
         credit_id=credit.id,
@@ -194,6 +196,4 @@ class Command(BaseCommand):
         send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
-        cron.delay("backup_finance --model=Account")
-        cron.delay("backup_finance --model=Credit")
         cron.delay("backup_finance --model=Timetable")
