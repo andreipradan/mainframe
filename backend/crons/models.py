@@ -19,7 +19,8 @@ class Cron(TimeStampedModel):
 
     @property
     def management_command(self):
-        flock = f"/usr/bin/flock -n /tmp/{self.command.split()[0]}.lockfile"
+        lock_name = self.command.replace(" ", "_").replace("-", "_")
+        flock = f"/usr/bin/flock -n /tmp/{lock_name}.lockfile"
         manage_path = settings.BASE_DIR / "manage.py"
         return f"{flock} {settings.PYTHON_PATH} {manage_path} {self.command}"
 

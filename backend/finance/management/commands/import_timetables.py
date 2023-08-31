@@ -195,5 +195,5 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(msg))
         cron.delay("backup_finance --model=Account")
-        cron.delay("backup_finance --model=Credit")
-        cron.delay("backup_finance --model=Timetable")
+        cron.delay("backup_finance --model=Credit", minutes=3)
+        cron.delay("backup_finance --model=Timetable", minutes=5)
