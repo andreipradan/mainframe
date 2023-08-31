@@ -15,16 +15,31 @@ import Form from "react-bootstrap/Form";
 import {Dropdown} from "react-bootstrap";
 import FinanceApi from "../../../../api/finance";
 
+const TYPES = [
+  "ATM",
+  "CARD_CHARGEBACK",
+  "CARD_CREDIT",
+  "CARD_PAYMENT",
+  "CARD_REFUND",
+  "CASHBACK",
+  "EXCHANGE",
+  "FEE",
+  "TOPUP",
+  "TRANSFER",
+  "UNIDENTIFIED",
+]
+
 const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
-  const {categories, transaction_types: TYPES} = useSelector(state => state.accounts.analytics)
+  const categories = useSelector(state => state.categories)
   const transactions = useSelector(state => state.transactions)
 
   const closeModal = () => dispatch(selectTransaction())
   const [alertOpen, setAlertOpen] = useState(false)
   const [category, setCategory] = useState("")
   const [type, setType] = useState("")
+  useEffect(() => {!categories.results && dispatch(FinanceApi.getCategories(token))}, [])
   useEffect(() => {setAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
     setCategory(transactions.selectedTransaction?.category)
@@ -63,13 +78,13 @@ const EditModal = () => {
               <Dropdown.Toggle as="a" className="cursor-pointer">{category}</Dropdown.Toggle>
               <Dropdown.Menu>
                 {
-                  categories?.map((cat, i) =>
+                  categories.results?.map((cat, i) =>
                     <Dropdown.Item key={i} href="!#" onClick={evt => {
                       evt.preventDefault()
-                      setCategory(cat)
+                      setCategory(cat.id)
                     }} className="preview-item">
                       <div className="preview-item-content">
-                        <p className="preview-subject mb-1">{cat}</p>
+                        <p className="preview-subject mb-1">{cat.id}</p>
                       </div>
                     </Dropdown.Item>
                   )

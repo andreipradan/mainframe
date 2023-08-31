@@ -138,4 +138,4 @@ class Command(BaseCommand):
         remove_crons_for_command(Cron(command="import_payments", is_management=True))
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS(msg))
-        cron.delay("backup_finance --model=Payment")
+        total and cron.delay("backup_finance --model=Payment")

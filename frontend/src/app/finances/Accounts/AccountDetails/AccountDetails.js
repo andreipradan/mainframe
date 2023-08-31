@@ -33,6 +33,11 @@ const getColor = (type, border = false) => {
     case "TOPUP": return `rgba(54,162,235, ${border ? 1 : 0.2})`
     case "TRANSFER": return `rgba(255,159,64,${border ? 1 : 0.2})`
     case "UNIDENTIFIED": return `rgba(255,255,255,${border ? 1 : 0.2})`
+
+    case "Restaurants": return `rgba(153,102,255,${border ? 1 : 0.2})`
+    case "Transport": return `rgba(75,192,126,${border ? 1 : 0.2})`
+    case "Savings": return `rgba(54,162,235, ${border ? 1 : 0.2})`
+    case "Unidentified": return `rgba(255,245,64,${border ? 1 : 0.2})`
     default:
       return getRandomColor()
   }
@@ -78,11 +83,11 @@ const AccountDetails = () => {
     labels: accounts.analytics?.per_month.map(p => p.month),
     datasets: accounts.analytics
       ? [
-        ...accounts.analytics?.transaction_types?.map(type => ({
-          label: type,
-          data: accounts.analytics?.per_month?.map(item => item[type]),
-          backgroundColor: getColor(type),
-          borderColor: getColor(type, true),
+        ...accounts.analytics?.categories?.map(cat => ({
+          label: cat,
+          data: accounts.analytics?.per_month?.map(item => item[cat]),
+          backgroundColor: getColor(cat),
+          borderColor: getColor(cat, true),
           borderWidth: 1,
           fill: false,
         })),
@@ -135,14 +140,15 @@ const AccountDetails = () => {
     [selectedDate]
   )
   const handleGetElementAtEvent = element => {
+    if (!element.length) return
     setSearchTerm("")
     setSearchOpen(false)
     const month = element[0]._model.label
-    const type = element[0]._model.datasetLabel
+    const category = element[0]._model.datasetLabel
     dispatch(FinanceApi.getTransactions(token, {
       account_id: accounts.selectedAccount.id,
       month: new Date(`${month} ${selectedDate.getFullYear()}`).getMonth() + 1,
-      type: type,
+      category: category,
       year: selectedDate.getFullYear(),
     }))
   }
@@ -277,7 +283,7 @@ const AccountDetails = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              Analytics
+              Expenses
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))}>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -342,13 +348,14 @@ const AccountDetails = () => {
               <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() =>
+                onClick={() => {
                   dispatch(FinanceApi.getTransactions(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
                   }))
+                }
               }>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -401,8 +408,6 @@ const AccountDetails = () => {
                   <tr>
                     <th> Started </th>
                     <th> Amount </th>
-                    <th> Fee </th>
-                    <th> State </th>
                     <th> Description </th>
                     <th> Type </th>
                     <th> Category </th>
@@ -422,13 +427,11 @@ const AccountDetails = () => {
                     : transactions.results?.length
                         ? transactions.results.map((t, i) => <tr key={i} onClick={() => dispatch(selectTransaction(t.id))}>
                           <td> {new Date(t.started_at).toLocaleDateString()} </td>
-                          <td> {t.amount} </td>
-                          <td> {t.fee} </td>
-                          <td> {t.state} </td>
+                          <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
                           <td> {t.description} </td>
                           <td> {t.type} </td>
-                          <td> {t.category} </td>
-                          <td> {new Date(t.completed_at).toLocaleDateString()} </td>
+                          <td className={t.category === "Unidentified" ? "text-danger" : ""}> {t.category} </td>
+                          <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
                         </tr>)
                       : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
                 }

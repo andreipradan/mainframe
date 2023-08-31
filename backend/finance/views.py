@@ -19,6 +19,7 @@ from finance.models import (
 )
 from finance.serializers import (
     AccountSerializer,
+    CategorySerializer,
     CreditSerializer,
     PaymentSerializer,
     TimetableSerializer,
@@ -37,17 +38,18 @@ class AccountViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=True)
     def analytics(self, request, *args, **kwargs):
-        qs = Transaction.objects.filter(account_id=kwargs["pk"])
+        qs = Transaction.objects.filter(account_id=kwargs["pk"], amount__lte=0)
         now = django.utils.timezone.now()
         year = request.query_params.get("year", now.year)
+        categories = list(Category.objects.values_list("id", flat=True).order_by("id"))
         per_month = (
             qs.filter(started_at__year=year)
             .annotate(month=TruncMonth("started_at"))
             .values("month")
             .annotate(
                 **{
-                    k: Sum("amount", filter=Q(type=k), default=0)
-                    for k, _ in Transaction.TYPE_CHOICES
+                    k: Sum("amount", filter=Q(category=k), default=0)
+                    for k in categories
                 }
             )
             .order_by("month")
@@ -66,19 +68,22 @@ class AccountViewSet(viewsets.ModelViewSet):
                 "per_month": [
                     {
                         "month": item["month"].strftime("%B"),
-                        **{k: item[k] for k, _ in Transaction.TYPE_CHOICES},
+                        **{k: item[k] for k in categories},
                     }
                     for item in per_month
                 ],
-                "transaction_types": [
-                    t
-                    for t, _ in Transaction.TYPE_CHOICES
-                    if sum(map(itemgetter(t), per_month))
-                ],
                 "years": years,
-                "categories": list(Category.objects.values_list("id", flat=True)),
+                "categories": [
+                    cat for cat in categories if sum(map(itemgetter(cat), per_month))
+                ],
             }
         )
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = Category.objects.order_by("id")
+    serializer_class = CategorySerializer
 
 
 class CreditViewSet(viewsets.ViewSet):
@@ -119,6 +124,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(started_at__year=year)
         if month := params.get("month"):
             queryset = queryset.filter(started_at__month=month)
+        if category := params.get("category"):
+            queryset = queryset.filter(category=category)
         if transaction_type := params.get("type"):
             queryset = queryset.filter(type=transaction_type)
         if account_id := params.get("account_id"):

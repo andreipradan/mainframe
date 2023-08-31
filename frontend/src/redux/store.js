@@ -3,6 +3,7 @@ import accountsReducer from "../redux/accountsSlice";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
 import cameraReducer from "./cameraSlice";
+import categoriesReducer from "./categoriesSlice";
 import creditReducer from "../redux/creditSlice"
 import cronsReducer from "../redux/cronsSlice"
 import devicesReducer from "../redux/devicesSlice"
@@ -21,6 +22,7 @@ export default configureStore({
     auth: authReducer,
     bots: botReducer,
     camera: cameraReducer,
+    categories: categoriesReducer,
     credit: creditReducer,
     crons: cronsReducer,
     devices: devicesReducer,

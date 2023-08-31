@@ -14,6 +14,11 @@ import {
   update as updateAccount,
 } from "../redux/accountsSlice";
 import {
+  set as setCategories,
+  setErrors as setCategoriesErrors,
+  setLoading as setCategoriesLoading,
+} from "../redux/categoriesSlice";
+import {
   set as setPayments,
   setErrors as setPaymentErrors,
   setLoading as setPaymentLoading,
@@ -71,6 +76,13 @@ class FinanceApi {
       .get(url, { headers: { Authorization: token } })
       .then(response => dispatch(setAnalytics(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
+  };
+  static getCategories = token => (dispatch) => {
+    dispatch(setCategoriesLoading(true));
+    axios
+      .get(`${base}/categories/`, { headers: { Authorization: token } })
+      .then(response => dispatch(setCategories(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setCategoriesErrors));
   };
   static getCredit = token => (dispatch) => {
     dispatch(setLoading(true));
