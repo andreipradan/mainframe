@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from clients import healthchecks
+from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
 from clients.os import run_cmd
 from clients.storage import upload_blob_from_file
@@ -27,3 +28,7 @@ class Command(BaseCommand):
         run_cmd(cmd, logger=logger, env={"PGPASSWORD": config("DB_PASSWORD")})
         upload_blob_from_file(file_name, file_name, logger)
         run_cmd(f"rm {file_name}")
+        msg = f"[DB Backup] Complete: {file_name}"
+        send_telegram_message(text=msg)
+        logger.info(msg)
+        self.stdout.write(self.style.SUCCESS(msg))
