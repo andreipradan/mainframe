@@ -12,6 +12,6 @@ python manage.py loaddata <dump_name>.json --app=<app_name> --verbosity=2
 #### Entire database
 
 ```shell
-python manage.py db_backup
+pg_dump -U $DB_USER -p $DB_PORT -h $DB_HOST --column-insert --data-only $DB_DATABASE > `date +%Y_%m_%d_%H_%M_%S`_mainframe_dump.sql
 psql -U $DB_USER -p $DB_PORT -h $DB_HOST -d $DB_DATABASE < <dump_name>.sql
 ```
