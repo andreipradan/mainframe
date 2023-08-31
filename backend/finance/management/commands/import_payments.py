@@ -10,12 +10,12 @@ from django.db import IntegrityError
 from PyPDF2 import PdfReader
 
 from api.bots.webhooks.shared import chunks
-from clients.cron import remove_crons_for_command
+from clients import cron
 from clients.chat import send_telegram_message
+from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 from finance.models import Payment
-
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -138,3 +138,4 @@ class Command(BaseCommand):
         remove_crons_for_command(Cron(command="import_payments", is_management=True))
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS(msg))
+        cron.delay("backup_finance --model=Payment")

@@ -9,8 +9,9 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from PyPDF2 import PdfReader
 
-from clients.cron import remove_crons_for_command
+from clients import cron
 from clients.chat import send_telegram_message
+from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 from finance.models import Account, Credit, Timetable
@@ -193,3 +194,6 @@ class Command(BaseCommand):
         send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
+        cron.delay("backup_finance --model=Account")
+        cron.delay("backup_finance --model=Credit")
+        cron.delay("backup_finance --model=Timetable")
