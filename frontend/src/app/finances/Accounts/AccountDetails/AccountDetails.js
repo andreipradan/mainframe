@@ -161,7 +161,8 @@ const AccountDetails = () => {
                   accounts.results?.map((acc, i) =>
                     <Dropdown.Item key={i} href="!#" onClick={evt => {
                       evt.preventDefault()
-                      dispatch(FinanceApi.getAccount(token, acc.id))
+                      dispatch(setSelectedAccount(accounts.results.find(a => a.id === acc.id)))
+                      history.push(`/finances/accounts/${acc.id}`)
                     }} className="preview-item" active={acc.id === accounts.selectedAccount.id}>
                       <div className="preview-item-content">
                         <p className="preview-subject mb-1">{acc.bank} ({acc.type})</p>
@@ -262,6 +263,7 @@ const AccountDetails = () => {
                     <ListItem label={"State"} value={transactions.results[0].state} className="mr-3" />
                     <ListItem label={"Description"} value={transactions.results[0].description} className="mr-3" />
                     <ListItem label={"Type"} value={transactions.results[0].type} className="mr-3" />
+                    <ListItem label={"Category"} value={transactions.results[0].category} className="mr-3" />
                     <ListItem label={"Product"} value={transactions.results[0].product} className="mr-3" />
                   </Marquee>
                   : "-"
@@ -386,7 +388,7 @@ const AccountDetails = () => {
                       value={searchTerm}
                       type="search"
                       className="form-control"
-                      placeholder="Search products"
+                      placeholder="Search transactions"
                       onChange={e => setSearchTerm(e.target.value)}
                     />
                   </form>
@@ -403,6 +405,7 @@ const AccountDetails = () => {
                     <th> State </th>
                     <th> Description </th>
                     <th> Type </th>
+                    <th> Category </th>
                     <th> Completed </th>
                   </tr>
                 </thead>
@@ -417,21 +420,15 @@ const AccountDetails = () => {
                       color='orange'
                     />
                     : transactions.results?.length
-                        ? transactions.results.map((t, i) => <tr key={i}>
+                        ? transactions.results.map((t, i) => <tr key={i} onClick={() => dispatch(selectTransaction(t.id))}>
                           <td> {new Date(t.started_at).toLocaleDateString()} </td>
                           <td> {t.amount} </td>
                           <td> {t.fee} </td>
                           <td> {t.state} </td>
                           <td> {t.description} </td>
                           <td> {t.type} </td>
+                          <td> {t.category} </td>
                           <td> {new Date(t.completed_at).toLocaleDateString()} </td>
-                          <td>
-                            <i
-                              style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-eye text-secondary"
-                              onClick={() => dispatch(selectTransaction(t.id))}
-                            />
-                          </td>
                         </tr>)
                       : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
                 }

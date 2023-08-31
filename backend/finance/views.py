@@ -2,23 +2,28 @@ from operator import attrgetter, itemgetter
 
 import django.utils.timezone
 from django.contrib.postgres.search import SearchVector
-from django.db.models import Count, Sum, Q, Func
-from django.db.models.functions import TruncYear, TruncMonth
+from django.db.models import Count, Q, Sum
+from django.db.models.functions import TruncMonth, TruncYear
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from finance.models import Account
-from finance.models import Payment
-from finance.models import Timetable
-from finance.models import Transaction
-from finance.models import get_default_credit
-from finance.serializers import AccountSerializer
-from finance.serializers import CreditSerializer
-from finance.serializers import PaymentSerializer
-from finance.serializers import TimetableSerializer
-from finance.serializers import TransactionSerializer
+from finance.models import (
+    Account,
+    Category,
+    Payment,
+    Timetable,
+    Transaction,
+    get_default_credit,
+)
+from finance.serializers import (
+    AccountSerializer,
+    CreditSerializer,
+    PaymentSerializer,
+    TimetableSerializer,
+    TransactionSerializer,
+)
 
 
 class AccountViewSet(viewsets.ModelViewSet):
@@ -71,6 +76,7 @@ class AccountViewSet(viewsets.ModelViewSet):
                     if sum(map(itemgetter(t), per_month))
                 ],
                 "years": years,
+                "categories": list(Category.objects.values_list("id", flat=True)),
             }
         )
 

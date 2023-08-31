@@ -15,31 +15,21 @@ import Form from "react-bootstrap/Form";
 import {Dropdown} from "react-bootstrap";
 import FinanceApi from "../../../../api/finance";
 
-const TYPES = [
-  "ATM",
-  "CARD_CHARGEBACK",
-  "CARD_CREDIT",
-  "CARD_PAYMENT",
-  "CARD_REFUND",
-  "CASHBACK",
-  "EXCHANGE",
-  "FEE",
-  "TOPUP",
-  "TRANSFER",
-  "UNIDENTIFIED",
-]
-
 const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
+  const {categories, transaction_types: TYPES} = useSelector(state => state.accounts.analytics)
   const transactions = useSelector(state => state.transactions)
 
   const closeModal = () => dispatch(selectTransaction())
-  const [type, setType] = useState("")
   const [alertOpen, setAlertOpen] = useState(false)
+  const [category, setCategory] = useState("")
+  const [type, setType] = useState("")
   useEffect(() => {setAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
-    setType(transactions.selectedTransaction?.type)},
+    setCategory(transactions.selectedTransaction?.category)
+    setType(transactions.selectedTransaction?.type)
+    },
     [transactions.selectedTransaction]
   )
 
@@ -60,17 +50,40 @@ const EditModal = () => {
         </Alert></div>
       }
       {
-        transactions.selectedTransaction && <Form onSubmit={e => {
+        transactions.selectedTransaction &&
+        <Form onSubmit={e => {
           e.preventDefault()
-          dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {type}))
+          dispatch(FinanceApi.updateTransaction(
+            token, transactions.selectedTransaction.id, {type, category}
+          ))
         }}>
           <Form.Group>
-            <Form.Label>Type</Form.Label><br/>
-            <Dropdown className="btn btn-outline-primary">
+            <Form.Label>Category</Form.Label>&nbsp;
+            <Dropdown className="btn btn-outline-primary btn-sm float-right">
+              <Dropdown.Toggle as="a" className="cursor-pointer">{category}</Dropdown.Toggle>
+              <Dropdown.Menu>
+                {
+                  categories?.map((cat, i) =>
+                    <Dropdown.Item key={i} href="!#" onClick={evt => {
+                      evt.preventDefault()
+                      setCategory(cat)
+                    }} className="preview-item">
+                      <div className="preview-item-content">
+                        <p className="preview-subject mb-1">{cat}</p>
+                      </div>
+                    </Dropdown.Item>
+                  )
+                }
+              </Dropdown.Menu>
+            </Dropdown>
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Type</Form.Label>&nbsp;
+            <Dropdown className="btn btn-outline-primary btn-sm float-right">
               <Dropdown.Toggle as="a" className="cursor-pointer">{type}</Dropdown.Toggle>
               <Dropdown.Menu>
                 {
-                  TYPES.map((acc, i) =>
+                  TYPES?.map((acc, i) =>
                     <Dropdown.Item key={i} href="!#" onClick={evt => {
                       evt.preventDefault()
                       setType(acc)
@@ -154,10 +167,13 @@ const EditModal = () => {
     <Modal.Footer>
       <Button variant="secondary" onClick={closeModal}>Close</Button>
       <Button
-        disabled={type === transactions.selectedTransaction?.type}
+        disabled={
+          type === transactions.selectedTransaction?.type &&
+          category === transactions.selectedTransaction?.category
+      }
         variant="primary"
         onClick={() => {
-          dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {type}))
+          dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {category, type}))
           dispatch(selectTransaction())
         }}
       >

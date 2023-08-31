@@ -4,6 +4,11 @@ from core.models import TimeStampedModel
 from finance.models import DECIMAL_DEFAULT_KWARGS, NULLABLE_KWARGS
 
 
+class Category(TimeStampedModel):
+    UNIDENTIFIED = "Unidentified"
+    id = models.CharField(max_length=20, primary_key=True, default=UNIDENTIFIED)
+
+
 class Transaction(TimeStampedModel):
     PRODUCT_CURRENT = "Current"
     PRODUCT_SAVINGS = "Savings"
@@ -45,6 +50,11 @@ class Transaction(TimeStampedModel):
     additional_data = models.JSONField(blank=True, default=dict, null=True)
     amount = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
     balance = models.DecimalField(**DECIMAL_DEFAULT_KWARGS, **NULLABLE_KWARGS)
+    category = models.ForeignKey(
+        "finance.Category",
+        on_delete=models.SET_DEFAULT,
+        default=Category.UNIDENTIFIED,
+    )
     completed_at = models.DateTimeField(**NULLABLE_KWARGS)
     currency = models.CharField(max_length=3)
     description = models.CharField(max_length=256, default="")
