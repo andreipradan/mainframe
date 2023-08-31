@@ -31,10 +31,10 @@ class Command(BaseCommand):
 
         call_command("dumpdata", source, output=file_name, verbosity=2)
 
-        path = f"/{model}" if model else f""
-        upload_blob_from_file(file_name, f"finance{path}/{file_name}", logger)
+        destination = f"finance{f'/{model}' if model else ''}/{file_name}"
+        upload_blob_from_file(file_name, destination, logger)
         run_cmd(f"rm {file_name}")
-        msg = f"[Finance] Backup complete: {file_name}"
+        msg = f"[Finance] Backup complete: {destination}"
         send_telegram_message(text=msg, parse_mode=telegram.ParseMode.HTML)
         logger.info(msg)
         self.stdout.write(self.style.SUCCESS(msg))
