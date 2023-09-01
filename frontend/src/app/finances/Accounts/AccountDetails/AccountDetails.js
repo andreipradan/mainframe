@@ -1,20 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { Circles } from "react-loader-spinner";
-import "nouislider/distribute/nouislider.css";
+import { useHistory, useParams } from "react-router-dom";
 
+import { Bar } from "react-chartjs-2";
+import { Circles } from "react-loader-spinner";
+import { Collapse, Dropdown } from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
+import DatePicker from "react-datepicker";
+import Marquee from "react-fast-marquee";
+import "nouislider/distribute/nouislider.css";
+import "react-datepicker/dist/react-datepicker.css";
+
+import EditModal, { getTypeLabel } from "./EditModal";
 import FinanceApi from "../../../../api/finance";
 import ListItem from "../../shared/ListItem";
-import Alert from "react-bootstrap/Alert";
-import Marquee from "react-fast-marquee";
-import {useHistory, useParams} from "react-router-dom";
-import {setSelectedAccount} from "../../../../redux/accountsSlice";
-import {selectTransaction} from "../../../../redux/transactionsSlice";
-import { Collapse, Dropdown } from "react-bootstrap";
-import EditModal from "./EditModal";
-import { Bar } from "react-chartjs-2";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { setSelectedAccount } from "../../../../redux/accountsSlice";
+import { selectTransaction } from "../../../../redux/transactionsSlice";
 
 const getRandomColor = () => {
   const letters = '0123456789ABCDEF';
@@ -55,10 +56,6 @@ const AccountDetails = () => {
   useEffect(() => {
     !accounts.selectedAccount &&
     dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]
-  )
-  useEffect(() => {
-    !accounts.analytics &&
-    dispatch(FinanceApi.getAnalytics(token, id))}, [accounts.analytics]
   )
 
   const transactions = useSelector(state => state.transactions)
@@ -426,10 +423,12 @@ const AccountDetails = () => {
                     />
                     : transactions.results?.length
                         ? transactions.results.map((t, i) => <tr key={i} onClick={() => dispatch(selectTransaction(t.id))}>
-                          <td> {new Date(t.started_at).toLocaleDateString()} </td>
+                          <td> {new Date(t.started_at).toLocaleDateString()}<br />
+                            <small>{new Date(t.started_at).toLocaleTimeString()}</small>
+                          </td>
                           <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
                           <td> {t.description} </td>
-                          <td> {t.type} </td>
+                          <td> {getTypeLabel(t.type)} </td>
                           <td className={t.category === "Unidentified" ? "text-danger" : ""}> {t.category} </td>
                           <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
                         </tr>)

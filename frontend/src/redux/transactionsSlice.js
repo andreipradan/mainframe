@@ -6,6 +6,7 @@ export const transactionsSlice = createSlice({
     count: 0,
     errors: null,
     loading: false,
+    loadingTransactions: null,
     next: null,
     previous: null,
     results: null,
@@ -28,13 +29,31 @@ export const transactionsSlice = createSlice({
       state.results = action.payload.results;
     },
     setLoading: (state, action) => {state.loading = action.payload},
+    setLoadingTransactions: (state, action) => {
+      state.loadingTransactions = state.loadingTransactions
+        ? [...state.loadingTransactions, action.payload]
+        : [action.payload]
+    },
     updateTransaction: (state, action) => {
       state.errors = null
       state.loading = false
       state.results = state.results.map(t => t.id === action.payload.id ? action.payload : t)
+      state.selectedTransaction = action.payload.id === state.selectedTransaction?.id
+        ? action.payload
+        : state.selectedTransaction
+      state.loadingTransactions = state.loadingTransactions?.length
+        ? state.loadingTransactions.filter(id => id !== action.payload.id)
+        : null
     }
   },
 });
 
-export const { set, setErrors, setLoading, selectTransaction, updateTransaction } = transactionsSlice.actions;
+export const {
+  selectTransaction,
+  set,
+  setErrors,
+  setLoading,
+  setLoadingTransactions,
+  updateTransaction
+} = transactionsSlice.actions;
 export default transactionsSlice.reducer;

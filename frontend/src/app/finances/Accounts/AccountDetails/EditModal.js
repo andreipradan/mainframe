@@ -1,19 +1,23 @@
 import React, {useEffect, useState} from "react";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
+
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
-import { selectTransaction } from "../../../../redux/transactionsSlice";
-import Alert from "react-bootstrap/Alert";
+
 import AceEditor from "react-ace";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import CreatableSelect from 'react-select/creatable';
 import Form from "react-bootstrap/Form";
-import {Dropdown} from "react-bootstrap";
+import Modal from "react-bootstrap/Modal";
+import Select from "react-select";
+
 import FinanceApi from "../../../../api/finance";
+import { Circles } from "react-loader-spinner";
+import { selectTransaction } from "../../../../redux/transactionsSlice";
 
 const TYPES = [
   "ATM",
@@ -28,6 +32,21 @@ const TYPES = [
   "TRANSFER",
   "UNIDENTIFIED",
 ]
+export const getTypeLabel = type =>
+  type ? `${(type[0].toUpperCase() + type.slice(1, type.length).toLowerCase()).replace("_", " ")}` : ""
+
+const selectStyles = {
+  control: (defaultStyles) => ({
+    ...defaultStyles,
+    borderColor: "#212529",
+    backgroundColor: "transparent",
+  }),
+  option: (defaultStyles, state) => ({
+    ...defaultStyles,
+    backgroundColor: state.isSelected ? "#2f84d3" : state.isFocused ? "#829fbb": "#212529",
+  }),
+  singleValue: (styles, { data }) => ({ ...styles, color:"#ccc"}),
+}
 
 const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
@@ -47,15 +66,27 @@ const EditModal = () => {
     },
     [transactions.selectedTransaction]
   )
-
+  const createOption = label => ({label: getTypeLabel(label), value: label})
 
   return <Modal centered show={!!transactions.selectedTransaction} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
-          <div className="col-lg-12 grid-margin stretch-card mb-1">Transaction details</div>
+          <div className="col-lg-12 grid-margin stretch-card mb-1">
+            Transaction details
+            <button
+              type="button"
+              className="btn btn-outline-success btn-sm border-0 bg-transparent"
+              onClick={() => {
+                dispatch(FinanceApi.getCategories(token))
+                dispatch(FinanceApi.getTransaction(token, transactions.selectedTransaction.id))
+              }}
+            >
+              <i className="mdi mdi-refresh" />
+            </button>
+          </div>
         </div>
-        <p className="text-muted mb-0">{transactions.selectedAccount?.started_at}</p>
+        <p className="text-muted mb-0">{transactions.selectedTransaction?.started_at}</p>
       </Modal.Title>
     </Modal.Header>
     <Modal.Body>
@@ -65,118 +96,107 @@ const EditModal = () => {
         </Alert></div>
       }
       {
-        transactions.selectedTransaction &&
-        <Form onSubmit={e => {
-          e.preventDefault()
-          dispatch(FinanceApi.updateTransaction(
-            token, transactions.selectedTransaction.id, {type, category}
-          ))
-        }}>
-          <Form.Group>
-            <Form.Label>Category</Form.Label>&nbsp;
-            <Dropdown className="btn btn-outline-primary btn-sm float-right">
-              <Dropdown.Toggle as="a" className="cursor-pointer">{category}</Dropdown.Toggle>
-              <Dropdown.Menu>
-                {
-                  categories.results?.map((cat, i) =>
-                    <Dropdown.Item key={i} href="!#" onClick={evt => {
-                      evt.preventDefault()
-                      setCategory(cat.id)
-                    }} className="preview-item">
-                      <div className="preview-item-content">
-                        <p className="preview-subject mb-1">{cat.id}</p>
-                      </div>
-                    </Dropdown.Item>
-                  )
-                }
-              </Dropdown.Menu>
-            </Dropdown>
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>Type</Form.Label>&nbsp;
-            <Dropdown className="btn btn-outline-primary btn-sm float-right">
-              <Dropdown.Toggle as="a" className="cursor-pointer">{type}</Dropdown.Toggle>
-              <Dropdown.Menu>
-                {
-                  TYPES?.map((acc, i) =>
-                    <Dropdown.Item key={i} href="!#" onClick={evt => {
-                      evt.preventDefault()
-                      setType(acc)
-                    }} className="preview-item">
-                      <div className="preview-item-content">
-                        <p className="preview-subject mb-1">{acc}</p>
-                      </div>
-                    </Dropdown.Item>
-                  )
-                }
-              </Dropdown.Menu>
-            </Dropdown>
-          </Form.Group>
-          {
-            ["amount", "currency", "fee", "state", "product"].map((item, i) =>
-              <Form.Group className="mb-3" key={i}>
-                  <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
-                  <Form.Control
-                    readOnly={true}
-                    className="bg-transparent text-muted"
-                    type="text"
-                    autoFocus
-                    value={transactions.selectedTransaction[item]}
-                  />
-                </Form.Group>
-            )
-          }
-          <Form.Group className="mb-3">
-            <Form.Label>Started</Form.Label>
-            <Form.Control
-              readOnly={true}
-              className="bg-transparent text-muted"
-              type="text"
-              autoFocus
-              value={new Date(transactions.selectedTransaction.started_at).toLocaleDateString()}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Completed</Form.Label>
-            <Form.Control
-              readOnly={true}
-              className="bg-transparent text-muted"
-              type="text"
-              autoFocus
-              value={new Date(transactions.selectedTransaction.completed_at).toLocaleDateString()}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Description</Form.Label>
-            <Form.Control
-              as="textarea"
-              readOnly={true}
-              className="bg-transparent text-muted"
-              type="text"
-              autoFocus
-              value={transactions.selectedTransaction.description}
-            />
-          </Form.Group>
+        !transactions.selectedTransaction ||
+        transactions.loadingTransactions?.find(tId => tId === transactions.selectedTransaction.id)
+          ? <Circles />
+          : <Form onSubmit={e => {
+            e.preventDefault()
+            dispatch(FinanceApi.updateTransaction(
+              token, transactions.selectedTransaction.id, {type, category}
+            ))
+          }}>
+            <Form.Group>
+              <Form.Label>Category</Form.Label>&nbsp;
+              <CreatableSelect
+                isClearable
+                isDisabled={categories.loading}
+                isLoading={categories.loading}
+                options={categories.results?.map(c => createOption(c.id))}
+                onChange={newValue => newValue.value ? setCategory(newValue.value) : ""}
+                onCreateOption={id => {
+                  dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {category: id}))
+                }}
+                styles={selectStyles}
+                value={createOption(category)}
 
-          <Form.Group className="mb-3">
-            <Form.Label>Additional data</Form.Label>
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Type</Form.Label>&nbsp;
+              <Select
+                isDisabled={categories.loading}
+                isLoading={categories.loading}
+                onChange={newValue => newValue.value ? setType(newValue.value) : ""}
+                options={TYPES.map(t => createOption(t))}
+                styles={selectStyles}
+                value={createOption(type)}
+              />
+            </Form.Group>
             {
-              transactions.selectedTransaction.additional_data
-                ? <AceEditor
-                    placeholder="Additional Data"
-                    mode="python"
-                    theme="monokai"
-                    readOnly={true}
-                    fontSize={12}
-                    showGutter={false}
-                    value={JSON.stringify(transactions.selectedTransaction?.additional_data, null, "\t")}
-                    width="100%"
-                    height="150px"
-                  />
-                : "-"
+              ["amount", "currency", "fee", "state", "product"].map((item, i) =>
+                <Form.Group className="mb-3" key={i}>
+                    <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
+                    <Form.Control
+                      readOnly={true}
+                      className="bg-transparent text-muted"
+                      type="text"
+                      autoFocus
+                      value={transactions.selectedTransaction[item]}
+                    />
+                  </Form.Group>
+              )
             }
-          </Form.Group>
-        </Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Started</Form.Label>
+              <Form.Control
+                readOnly={true}
+                className="bg-transparent text-muted"
+                type="text"
+                autoFocus
+                value={new Date(transactions.selectedTransaction.started_at).toLocaleDateString()}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Completed</Form.Label>
+              <Form.Control
+                readOnly={true}
+                className="bg-transparent text-muted"
+                type="text"
+                autoFocus
+                value={new Date(transactions.selectedTransaction.completed_at).toLocaleDateString()}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                readOnly={true}
+                className="bg-transparent text-muted"
+                type="text"
+                autoFocus
+                value={transactions.selectedTransaction.description}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Additional data</Form.Label>
+              {
+                transactions.selectedTransaction.additional_data
+                  ? <AceEditor
+                      placeholder="Additional Data"
+                      mode="python"
+                      theme="monokai"
+                      readOnly={true}
+                      fontSize={12}
+                      showGutter={false}
+                      value={JSON.stringify(transactions.selectedTransaction?.additional_data, null, "\t")}
+                      width="100%"
+                      height="150px"
+                    />
+                  : "-"
+              }
+            </Form.Group>
+          </Form>
       }
     </Modal.Body>
     <Modal.Footer>

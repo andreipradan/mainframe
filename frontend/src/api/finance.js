@@ -14,6 +14,7 @@ import {
   update as updateAccount,
 } from "../redux/accountsSlice";
 import {
+  create as createCategory,
   set as setCategories,
   setErrors as setCategoriesErrors,
   setLoading as setCategoriesLoading,
@@ -35,22 +36,30 @@ import {
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
+  setLoadingTransactions,
   updateTransaction,
 } from "../redux/transactionsSlice";
 import {handleErrors} from "./errors";
 
 
 class FinanceApi {
-  static createAccount = (token, data) => (dispatch) => {
+  static createAccount = (token, data) => dispatch => {
     dispatch(setLoadingAccounts(true));
     axios
       .post(`${base}/accounts/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(createAccount(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   }
+  static createCategory = (token, data) => dispatch => {
+    dispatch(setCategoriesLoading(true));
+    axios
+      .post(`${base}/categories/`, data, { headers: { Authorization: token } })
+      .then((response) => dispatch(createCategory(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setCategoriesErrors));
+  }
   static deleteTimetable = (token, timetableId) => (dispatch) => {
     axios
-      .delete(`${base}timetables/${timetableId}/`, { headers: { Authorization: token } })
+      .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
       .then(() => {dispatch(deleteTimetable(timetableId))})
       .catch((err) => handleErrors(err, dispatch));
   };
@@ -104,6 +113,13 @@ class FinanceApi {
       .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTimetables(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
+  static getTransaction = (token, transactionId) => dispatch => {
+    dispatch(setLoadingTransactions(transactionId));
+    axios
+      .get(`${base}/transactions/${transactionId}/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(updateTransaction(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
   static getTransactions = (token, kwargs = null) => (dispatch) => {
     dispatch(setTransactionsLoading(true));

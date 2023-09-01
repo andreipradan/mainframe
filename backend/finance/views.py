@@ -137,3 +137,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 ),
             ).filter(search=search_term)
         return queryset
+
+    def partial_update(self, request, *args, **kwargs):
+        Category.objects.get_or_create(id=request.data["category"])
+        return super().partial_update(request, *args, **kwargs)
