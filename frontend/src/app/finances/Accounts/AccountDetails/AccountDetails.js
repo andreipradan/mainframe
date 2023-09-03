@@ -11,9 +11,10 @@ import Marquee from "react-fast-marquee";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import EditModal, { getTypeLabel } from "./EditModal";
+import EditModal from "./EditModal";
 import FinanceApi from "../../../../api/finance";
 import ListItem from "../../shared/ListItem";
+import { getTypeLabel } from "../../Categorize/EditModal";
 import { setSelectedAccount } from "../../../../redux/accountsSlice";
 import { selectTransaction } from "../../../../redux/transactionsSlice";
 
@@ -35,6 +36,7 @@ const getColor = (type, border = false) => {
     case "TRANSFER": return `rgba(255,159,64,${border ? 1 : 0.2})`
     case "UNIDENTIFIED": return `rgba(255,255,255,${border ? 1 : 0.2})`
 
+    case "Heating": return `rgba(255,0,52,${border ? 1 : 0.2})`
     case "Restaurants": return `rgba(153,102,255,${border ? 1 : 0.2})`
     case "Transport": return `rgba(75,192,126,${border ? 1 : 0.2})`
     case "Savings": return `rgba(54,162,235, ${border ? 1 : 0.2})`

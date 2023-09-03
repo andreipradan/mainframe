@@ -41,6 +41,15 @@ import {
 } from "../redux/transactionsSlice";
 import {handleErrors} from "./errors";
 
+const createSearchParams = params => {
+  return new URLSearchParams(
+    Object.entries(params).flatMap(([key, values]) =>
+      Array.isArray(values)
+        ? values.map((value) => [key, value])
+        : [[key, values]]
+    )
+  )
+}
 
 class FinanceApi {
   static createAccount = (token, data) => dispatch => {
@@ -49,13 +58,6 @@ class FinanceApi {
       .post(`${base}/accounts/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(createAccount(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
-  }
-  static createCategory = (token, data) => dispatch => {
-    dispatch(setCategoriesLoading(true));
-    axios
-      .post(`${base}/categories/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(createCategory(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setCategoriesErrors));
   }
   static deleteTimetable = (token, timetableId) => (dispatch) => {
     axios
@@ -125,7 +127,7 @@ class FinanceApi {
     dispatch(setTransactionsLoading(true));
     kwargs = kwargs || {};
     axios
-      .get(`${base}/transactions/?${new URLSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .get(`${base}/transactions/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
@@ -145,9 +147,20 @@ class FinanceApi {
   };
   static updateTransaction = (token, id, data) => dispatch => {
     dispatch(setTransactionsLoading(true))
+    data.confirmed_by = data.category === "Unidentified" ? 0 : 1
+    debugger
     axios
       .patch(`${base}/transactions/${id}/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(updateTransaction(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setAccountsErrors))
+  }
+  static updateTransactions = (token, data) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    axios
+      .put(`${base}/transactions/update-all/?${createSearchParams({category: data.category, description: data.description})}`,
+        data,
+        { headers: { Authorization: token } })
+      .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors))
   }
 }

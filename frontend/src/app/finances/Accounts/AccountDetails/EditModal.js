@@ -14,10 +14,11 @@ import CreatableSelect from 'react-select/creatable';
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Select from "react-select";
+import { Circles } from "react-loader-spinner";
 
 import FinanceApi from "../../../../api/finance";
-import { Circles } from "react-loader-spinner";
 import { selectTransaction } from "../../../../redux/transactionsSlice";
+import { createOption, selectStyles } from "../../Categorize/EditModal";
 
 const TYPES = [
   "ATM",
@@ -32,21 +33,6 @@ const TYPES = [
   "TRANSFER",
   "UNIDENTIFIED",
 ]
-export const getTypeLabel = type =>
-  type ? `${(type[0].toUpperCase() + type.slice(1, type.length).toLowerCase()).replace("_", " ")}` : ""
-
-const selectStyles = {
-  control: (defaultStyles) => ({
-    ...defaultStyles,
-    borderColor: "#212529",
-    backgroundColor: "transparent",
-  }),
-  option: (defaultStyles, state) => ({
-    ...defaultStyles,
-    backgroundColor: state.isSelected ? "#2f84d3" : state.isFocused ? "#829fbb": "#212529",
-  }),
-  singleValue: (styles, { data }) => ({ ...styles, color:"#ccc"}),
-}
 
 const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
@@ -66,7 +52,6 @@ const EditModal = () => {
     },
     [transactions.selectedTransaction]
   )
-  const createOption = label => ({label: getTypeLabel(label), value: label})
 
   return <Modal centered show={!!transactions.selectedTransaction} onHide={closeModal}>
     <Modal.Header closeButton>

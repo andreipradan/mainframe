@@ -32,7 +32,7 @@ const Accounts = () => {
 
   useEffect(() => {
     accounts.selectedAccount && dispatch(setSelectedAccount())
-    !accounts.results?.legend && dispatch(FinanceApi.getAccounts(token))
+    !accounts.results?.length && dispatch(FinanceApi.getAccounts(token))
     dispatch(FinanceApi.getTransactions(token))
     return () => dispatch(setSelectedAccount())
   }, []);

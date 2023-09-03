@@ -13,6 +13,7 @@ const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
+const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
 const FinancesCredit = lazy(() => import ("./finances/Credit/Credit"));
 const Meals = lazy(() => import('./meals/Meals'));
 
@@ -47,6 +48,7 @@ class AppRoutes extends Component {
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/finances/accounts" component={ FinancesAccounts } />
           <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />
+          <Route exact path="/finances/categorize" component={ FinancesCategorize } />
           <Route exact path="/finances/credit" component={ FinancesCredit } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />

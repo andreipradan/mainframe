@@ -10,6 +10,16 @@ class Category(TimeStampedModel):
 
 
 class Transaction(TimeStampedModel):
+    CONFIRMED_BY_UNCONFIRMED = 0
+    CONFIRMED_BY_HUMAN = 1
+    CONFIRMED_BY_ML = 2
+
+    CONFIRMED_BY_CHOICES = (
+        (CONFIRMED_BY_UNCONFIRMED, "Unconfirmed"),
+        (CONFIRMED_BY_HUMAN, "Human"),
+        (CONFIRMED_BY_ML, "ML"),
+    )
+
     PRODUCT_CURRENT = "Current"
     PRODUCT_SAVINGS = "Savings"
     PRODUCT_INVESTMENTS = "Investments"
@@ -56,6 +66,10 @@ class Transaction(TimeStampedModel):
         default=Category.UNIDENTIFIED,
     )
     completed_at = models.DateTimeField(**NULLABLE_KWARGS)
+    confirmed_by = models.SmallIntegerField(
+        choices=CONFIRMED_BY_CHOICES,
+        default=CONFIRMED_BY_UNCONFIRMED,
+    )
     currency = models.CharField(max_length=3)
     description = models.CharField(max_length=256, default="")
     fee = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)

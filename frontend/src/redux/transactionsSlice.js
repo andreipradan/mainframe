@@ -3,14 +3,18 @@ import { createSlice } from "@reduxjs/toolkit";
 export const transactionsSlice = createSlice({
   name: "transactions",
   initialState: {
+    categories: null,
+    confirmedByChoices: null,
     count: 0,
     errors: null,
     loading: false,
     loadingTransactions: null,
     next: null,
+    pending: null,
     previous: null,
     results: null,
     selectedTransaction: null,
+    types: null,
   },
   reducers: {
     selectTransaction: (state, action) => {
@@ -21,12 +25,15 @@ export const transactionsSlice = createSlice({
       state.loading = false;
     },
     set: (state, action) => {
+      state.categories = action.payload.categories
+      state.confirmedByChoices = action.payload.confirmed_by_choices
       state.count = action.payload.count
       state.errors = null
       state.loading = false
       state.next = action.payload.next
       state.previous = action.payload.previous
       state.results = action.payload.results;
+      state.types = action.payload.types;
     },
     setLoading: (state, action) => {state.loading = action.payload},
     setLoadingTransactions: (state, action) => {
@@ -50,10 +57,7 @@ export const transactionsSlice = createSlice({
 
 export const {
   selectTransaction,
-  set,
-  setErrors,
-  setLoading,
-  setLoadingTransactions,
+  set, setErrors, setLoading, setLoadingTransactions,
   updateTransaction
 } = transactionsSlice.actions;
 export default transactionsSlice.reducer;

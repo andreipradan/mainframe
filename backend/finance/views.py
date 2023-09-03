@@ -117,27 +117,60 @@ class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.order_by("-started_at")
     serializer_class = TransactionSerializer
 
+    @action(methods=["put"], detail=False, url_path="update-all")
+    def bulk_change_category(self, request, *args, **kwargs):
+        category = self.request.data["category"]
+        Transaction.objects.filter(description=self.request.data["description"]).update(
+            category=category,
+            confirmed_by=(
+                Transaction.CONFIRMED_BY_ML
+                if category != Category.UNIDENTIFIED
+                else Transaction.CONFIRMED_BY_UNCONFIRMED
+            ),
+        )
+        return self.list(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
-        if year := params.get("year"):
-            queryset = queryset.filter(started_at__year=year)
-        if month := params.get("month"):
-            queryset = queryset.filter(started_at__month=month)
-        if category := params.get("category"):
-            queryset = queryset.filter(category=category)
-        if transaction_type := params.get("type"):
-            queryset = queryset.filter(type=transaction_type)
         if account_id := params.get("account_id"):
             queryset = queryset.filter(account_id=account_id)
+        if category := params.get("category"):
+            queryset = queryset.filter(category=category)
+        if confirmed_by := params.get("confirmed_by"):
+            queryset = queryset.filter(confirmed_by=confirmed_by)
+        if description := params.get("description"):
+            queryset = queryset.filter(description=description)
+        if params.get("expense") == "true":
+            queryset = queryset.filter(amount__lt=0)
+        if month := params.get("month"):
+            queryset = queryset.filter(started_at__month=month)
+        if ml_confirmed := params.get("ml_confirmed"):
+            queryset = queryset.filter(ml_confirmed=ml_confirmed == "true")
         if search_term := params.get("search_term"):
             queryset = queryset.annotate(
                 search=SearchVector(
                     "description", "additional_data", "amount", "type", "started_at"
                 ),
             ).filter(search=search_term)
+        if types := params.getlist("type"):
+            queryset = queryset.filter(type__in=types)
+        if year := params.get("year"):
+            queryset = queryset.filter(started_at__year=year)
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.data["types"] = (
+            Transaction.objects.filter(amount__lt=0)
+            .values_list("type", flat=True)
+            .distinct("type")
+            .order_by("type")
+        )
+        response.data["confirmed_by_choices"] = Transaction.CONFIRMED_BY_CHOICES
+        response.data["categories"] = Category.objects.values_list("id", flat=True)
+        return response
+
     def partial_update(self, request, *args, **kwargs):
-        Category.objects.get_or_create(id=request.data["category"])
+        Category.objects.get_or_create(id=request.data["category"].capitalize())
         return super().partial_update(request, *args, **kwargs)
