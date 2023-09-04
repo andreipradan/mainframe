@@ -51,6 +51,12 @@ class TimetableSerializer(serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
+    account_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Transaction
         fields = "__all__"
+
+    def get_account_name(self, obj):
+        account = AccountSerializer(obj.account).data
+        return f"{account['bank']} | {account['type']}"

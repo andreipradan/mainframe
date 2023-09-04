@@ -79,7 +79,7 @@ const EditModal = () => {
         <ListItem label={"Product"} value={transaction.product} />
         <ListItem label={"Started"} value={transaction.started_at} datetime={true}/>
         {
-          transaction.state === "Completed"
+          transaction.state === "COMPLETED"
             ? <ListItem label={"Completed"} value={transaction.completed_at} datetime={true} />
             : <ListItem label={"State"} value={transaction.state} />
         }
@@ -91,6 +91,11 @@ const EditModal = () => {
               ? "warning"
               : transaction.confirmed_by === 2 ? "success" : "muted"
           }
+        />
+        <ListItem
+          label={"Category suggestion"}
+          value={transaction.category_suggestion || "-"}
+          textType={"warning"}
         />
       </Modal.Title>
     </Modal.Header>

@@ -14,7 +14,6 @@ import {
   update as updateAccount,
 } from "../redux/accountsSlice";
 import {
-  create as createCategory,
   set as setCategories,
   setErrors as setCategoriesErrors,
   setLoading as setCategoriesLoading,
@@ -33,6 +32,7 @@ import {
   setLoading as setTimetableLoading,
 } from "../redux/timetableSlice";
 import {
+  clearAccuracy,
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
@@ -52,6 +52,20 @@ const createSearchParams = params => {
 }
 
 class FinanceApi {
+  static acceptSuggestions = (token, data) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    axios
+      .put(`${base}/transactions/accept-suggestions/`, data, {headers: {Authorization: token}})
+      .then(response => dispatch(setTransactions(response.data)))
+      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
+  }
+  static clearSuggestions = (token, data) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    axios
+      .put(`${base}/transactions/clear-suggestions/`, data, {headers: {Authorization: token}})
+      .then(response => dispatch(setTransactions(response.data)))
+      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
+  }
   static createAccount = (token, data) => dispatch => {
     dispatch(setLoadingAccounts(true));
     axios
@@ -131,6 +145,21 @@ class FinanceApi {
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
+  static predict = (token, data) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    axios
+      .put(`${base}/transactions/predict/`, data, {headers: {Authorization: token}})
+      .then(response => dispatch(setTransactions(response.data)))
+      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
+  }
+  static train = (token, kwargs) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    dispatch(clearAccuracy())
+    axios
+      .put(`${base}/transactions/train/?${createSearchParams(kwargs)}`, {}, {headers: {Authorization: token}})
+      .then(response => dispatch(setTransactions(response.data)))
+      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
+  }
   static updateAccount = (token, id, data) => dispatch => {
     dispatch(setLoadingAccounts(id))
     axios
@@ -148,20 +177,20 @@ class FinanceApi {
   static updateTransaction = (token, id, data) => dispatch => {
     dispatch(setTransactionsLoading(true))
     data.confirmed_by = data.category === "Unidentified" ? 0 : 1
-    debugger
     axios
       .patch(`${base}/transactions/${id}/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(updateTransaction(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
   }
   static updateTransactions = (token, data) => dispatch => {
     dispatch(setTransactionsLoading(true))
+    const kwargs = {category: data.category, description: data.description}
     axios
-      .put(`${base}/transactions/update-all/?${createSearchParams({category: data.category, description: data.description})}`,
+      .put(`${base}/transactions/update-all/?${createSearchParams(kwargs)}`,
         data,
         { headers: { Authorization: token } })
       .then((response) => dispatch(setTransactions(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
   }
 }
 

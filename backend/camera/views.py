@@ -27,9 +27,9 @@ def download_blob(blob_name, destination_path):
     bucket.blob(blob_name).download_to_filename(f"{destination_path}/{blob_name}")
 
 
-def download_blob_into_memory(blob_name):
+def download_blob_into_memory(blob_name, bucket_var=None):
     storage_client = storage.Client()
-    bucket = storage_client.bucket(config("GOOGLE_STORAGE_BUCKET"))
+    bucket = storage_client.bucket(config(bucket_var or "GOOGLE_STORAGE_BUCKET"))
     return bucket.blob(blob_name).download_as_string()
 
 

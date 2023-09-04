@@ -65,6 +65,13 @@ class Transaction(TimeStampedModel):
         on_delete=models.SET_DEFAULT,
         default=Category.UNIDENTIFIED,
     )
+    category_suggestion = models.ForeignKey(
+        "finance.Category",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="suggestions",
+    )
     completed_at = models.DateTimeField(**NULLABLE_KWARGS)
     confirmed_by = models.SmallIntegerField(
         choices=CONFIRMED_BY_CHOICES,

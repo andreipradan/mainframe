@@ -2,13 +2,15 @@ from operator import attrgetter, itemgetter
 
 import django.utils.timezone
 from django.contrib.postgres.search import SearchVector
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncMonth, TruncYear
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
+from clients.classifier import predict, train
 from finance.models import (
     Account,
     Category,
@@ -117,10 +119,33 @@ class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.order_by("-started_at")
     serializer_class = TransactionSerializer
 
+    @action(methods=["put"], detail=False, url_path="accept-suggestions")
+    def accept_suggestions(self, request, *args, **kwargs):
+        descriptions = self.request.data["descriptions"]
+        queryset = Transaction.objects.filter(
+            amount__lt=0,
+            description__in=descriptions,
+        )
+        queryset.update(
+            category_id=F("category_suggestion_id"),
+            confirmed_by=Transaction.CONFIRMED_BY_ML,
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.populate_filters(self.get_paginated_response(serializer.data))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return self.populate_filters(Response(serializer.data))
+
     @action(methods=["put"], detail=False, url_path="update-all")
     def bulk_change_category(self, request, *args, **kwargs):
         category = self.request.data["category"]
-        Transaction.objects.filter(description=self.request.data["description"]).update(
+        Transaction.objects.filter(
+            amount__lt=0,
+            description=self.request.data["description"],
+        ).update(
             category=category,
             confirmed_by=(
                 Transaction.CONFIRMED_BY_ML
@@ -129,6 +154,46 @@ class TransactionViewSet(viewsets.ModelViewSet):
             ),
         )
         return self.list(request, *args, **kwargs)
+
+    @action(methods=["put"], detail=False, url_path="clear-suggestions")
+    def clear_suggestions(self, request, *args, **kwargs):
+        transaction_ids = self.request.data["transaction_ids"]
+        queryset = Transaction.objects.filter(id__in=transaction_ids).order_by("id")
+        queryset.update(category_suggestion_id=None)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.populate_filters(self.get_paginated_response(serializer.data))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return self.populate_filters(Response(serializer.data))
+
+    @action(methods=["put"], detail=False)
+    def predict(self, request, *args, **kwargs):
+        descriptions = self.request.data["descriptions"]
+        queryset = Transaction.objects.filter(
+            amount__lt=0, description__in=descriptions
+        )
+        if descriptions:
+            Transaction.objects.bulk_update(
+                predict(queryset), fields=("category_suggestion_id",)
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.populate_filters(self.get_paginated_response(serializer.data))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return self.populate_filters(Response(serializer.data))
+
+    @action(methods=["put"], detail=False)
+    def train(self, request, *args, **kwargs):
+        accuracy = train()
+        response = self.list(request, *args, **kwargs)
+        response.data["accuracy"] = accuracy
+        return response
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -157,10 +222,22 @@ class TransactionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(type__in=types)
         if year := params.get("year"):
             queryset = queryset.filter(started_at__year=year)
-        return queryset
+
+        return (
+            queryset.select_related("account")
+            # .distinct("description")
+            # .order_by("description")
+        )
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
+        return self.populate_filters(response)
+
+    def partial_update(self, request, *args, **kwargs):
+        Category.objects.get_or_create(id=request.data["category"].capitalize())
+        return super().partial_update(request, *args, **kwargs)
+
+    def populate_filters(self, response):
         response.data["types"] = (
             Transaction.objects.filter(amount__lt=0)
             .values_list("type", flat=True)
@@ -170,7 +247,3 @@ class TransactionViewSet(viewsets.ModelViewSet):
         response.data["confirmed_by_choices"] = Transaction.CONFIRMED_BY_CHOICES
         response.data["categories"] = Category.objects.values_list("id", flat=True)
         return response
-
-    def partial_update(self, request, *args, **kwargs):
-        Category.objects.get_or_create(id=request.data["category"].capitalize())
-        return super().partial_update(request, *args, **kwargs)

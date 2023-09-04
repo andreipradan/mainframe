@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const transactionsSlice = createSlice({
   name: "transactions",
   initialState: {
+    accuracy: null,
     categories: null,
     confirmedByChoices: null,
     count: 0,
@@ -17,6 +18,9 @@ export const transactionsSlice = createSlice({
     types: null,
   },
   reducers: {
+    clearAccuracy: (state, action) => {
+      state.accuracy = null
+    },
     selectTransaction: (state, action) => {
       state.selectedTransaction = action.payload ? state.results.find(t => t.id === action.payload) : null
     },
@@ -25,6 +29,7 @@ export const transactionsSlice = createSlice({
       state.loading = false;
     },
     set: (state, action) => {
+      state.accuracy = action.payload.accuracy
       state.categories = action.payload.categories
       state.confirmedByChoices = action.payload.confirmed_by_choices
       state.count = action.payload.count
@@ -56,6 +61,7 @@ export const transactionsSlice = createSlice({
 });
 
 export const {
+  clearAccuracy,
   selectTransaction,
   set, setErrors, setLoading, setLoadingTransactions,
   updateTransaction
