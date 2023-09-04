@@ -16,15 +16,17 @@ import Modal from "react-bootstrap/Modal";
 
 import FinanceApi from "../../../api/finance";
 import ListItem from "../shared/ListItem";
+import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
+import { create as createCategory } from "../../../redux/categoriesSlice"
 import { selectTransaction } from "../../../redux/transactionsSlice";
 
 export const createOption = label => ({label: getTypeLabel(label), value: label})
 
 export const getTypeLabel = type =>
   type
-    ? type !== "ATM"
-      ?`${(type[0].toUpperCase() + type.slice(1, type.length).toLowerCase()).replace("_", " ")}`
-      : type
+    ? type === "ATM"
+      ? type
+      : `${capitalize(type).replace("_", " ")}`
     : ""
 
 export const selectStyles = {
@@ -44,6 +46,7 @@ const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
   const categories = useSelector(state => state.categories)
+  const kwargs = useSelector(state => state.transactions.kwargs) || {}
   const transactions = useSelector(state => state.transactions)
   const transaction = transactions.selectedTransaction
 
@@ -122,10 +125,10 @@ const EditModal = () => {
             onChange={newValue => setCategory(newValue?.value ? newValue.value : "Unidentified")}
             onCreateOption={id => {
               dispatch(FinanceApi.updateTransaction(token, transaction.id, {category: id}))
+              dispatch(createCategory({id: id, value: capitalize(id).replace("-", " ")}))
             }}
             styles={selectStyles}
             value={createOption(category)}
-
           />
         </Form.Group>
         <Form.Group className="mb-3">
@@ -194,10 +197,7 @@ const EditModal = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(FinanceApi.updateTransactions(token, {
-              category,
-              description: transaction.description,
-            }))
+            dispatch(FinanceApi.updateTransactions(token, {category, description: transaction.description}, kwargs))
             dispatch(selectTransaction())
             setShowSaveAllModal(false)
           }}

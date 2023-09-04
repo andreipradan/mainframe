@@ -3,17 +3,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 
 import Alert from "react-bootstrap/Alert";
+import { Tooltip } from "react-tooltip";
+import { useHistory } from "react-router-dom";
+import Marquee from "react-fast-marquee";
+
+import EditModal from "./EditModal";
 import FinanceApi from "../../../api/finance";
+import ListItem from "../shared/ListItem";
 import {
   selectAccount,
   setModalOpen,
   setSelectedAccount
 } from "../../../redux/accountsSlice";
-import {Tooltip} from "react-tooltip";
-import {useHistory} from "react-router-dom";
-import Marquee from "react-fast-marquee";
-import ListItem from "../shared/ListItem";
-import EditModal from "./EditModal";
+
+import { capitalize } from "./AccountDetails/AccountDetails";
 
 const Accounts = () => {
   const dispatch = useDispatch();
@@ -76,7 +79,7 @@ const Accounts = () => {
                       [...new Set(accounts.results.map(p => p.type))].map((p, i) =>
                         <ListItem
                           key={i}
-                          label={p[0].toUpperCase() + p.slice(1, p.length)}
+                          label={capitalize(p)}
                           value={accounts.results.filter(a => a.type === p).length}
                           textType={"primary"}
                           className="mr-3"
@@ -137,7 +140,7 @@ const Accounts = () => {
                     : accounts.results?.length
                         ? accounts.results.map((p, i) =>
                         <tr key={i}>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.type[0].toUpperCase() + p.type.slice(1, p.length)} </td>
+                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {capitalize(p.type)} </td>
                           <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.bank} </td>
                           <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.transaction_count} </td>
                           <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.number !== "0" ? p.number : "-"} </td>

@@ -13,7 +13,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
 import FinanceApi from "../../../api/finance";
-import { selectTransaction } from "../../../redux/transactionsSlice";
+import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
+import {selectTransaction, setKwargs} from "../../../redux/transactionsSlice";
 
 const Categorize = () => {
   const dispatch = useDispatch();
@@ -21,64 +22,83 @@ const Categorize = () => {
   const token = useSelector((state) => state.auth.token)
   const categories = useSelector(state => state.categories)
   const transactions = useSelector(state => state.transactions)
+  const kwargs = useSelector(state => state.transactions.kwargs) || {}
 
-  const [accuracyAlertOpen, setAccuracyAlertOpen] = useState(false)
+  const [messageAlertOpen, setMessageAlertOpen] = useState(false)
   const [alertOpen, setAlertOpen] = useState(false)
-  const [category, setCategory] = useState("")
   const [allChecked, setAllChecked] = useState(false)
-  const [checked, setChecked] = useState(null)
-  const [confirmedBy, setConfirmedBy] = useState(0)
+  const [predictModalOpen, setPredictModalOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedTypes, setSelectedTypes] = useState(null)
+  const [specificCategoriesModalOpen, setSpecificCategoriesModalOpen] = useState(false)
+  const [specificCategories, setSpecificCategories] = useState(null)
   const [trainModalOpen, setTrainModalOpen] = useState(false)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
 
-  const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
-  const isChecked = tId => checked?.length ? checked.find(id => id === tId) : false
+  const currentPage = !transactions.previous
+    ? 1
+    : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
+
   const lastPage = Math.ceil(transactions.count / 25)
-  const kwargs = {
-    category: category,
-    expense: true,
-    confirmed_by: confirmedBy,
-    page: currentPage,
-    search_term: searchTerm,
-    type: selectedTypes || [],
-  }
+
+  const getSpecificCategory = description => specificCategories?.find(c => c.description === description)?.category
 
   const onCategoryChange = newValue => {
     const newCategory = newValue ? newValue.value : ""
-    setCategory(newCategory)
+    dispatch(setKwargs({...(kwargs || {}), category: newCategory}))
     dispatch(FinanceApi.getTransactions(token, {...kwargs, category: newCategory}))
   }
 
+  const onSpecificCategoryChange = (newValue, description) => {
+    const newCategory = {description: description, category: newValue.value}
+    setSpecificCategories(
+      !specificCategories?.length
+        ? newCategory.category !== "Unidentified" ? [newCategory] : null
+        : specificCategories.find(c => c.description === description)
+          ? newCategory.category !== "Unidentified"
+            ? specificCategories.map(c =>
+              c.description === description
+                ? {...c, category: newValue.value}
+                : c)
+            : specificCategories.filter(c => c.description !== description)
+          : newCategory.category !== "Unidentified"
+            ? [...specificCategories, newCategory]
+            : specificCategories
+    )
+  }
   const onTypeChange = newValue => {
-    setSelectedTypes(newValue.map(v => v.value))
-    !newValue.length && dispatch(FinanceApi.getTransactions(token, kwargs))
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargs({...(kwargs || {}), type: newTypes, page: 1}))
+    !newValue.length && dispatch(FinanceApi.getTransactions(token, {...kwargs, type: newTypes, page: 1}))
   }
   const onConfirmedByChange = newValue => {
     const newConfirmedBy = !newValue ? 0 : newValue.value
-    setConfirmedBy(newConfirmedBy)
-    dispatch(FinanceApi.getTransactions(token, {...kwargs, confirmed_by: newConfirmedBy}))
+    dispatch(setKwargs({...(kwargs || {}), confirmed_by: newConfirmedBy, page: 1}))
+    dispatch(FinanceApi.getTransactions(token, {...kwargs, confirmed_by: newConfirmedBy, page: 1}))
   }
 
-  useEffect(() => {setAccuracyAlertOpen(!!transactions.accuracy)}, [transactions.accuracy])
+  useEffect(() => {setMessageAlertOpen(!!transactions.msg)}, [transactions.msg])
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
-  useEffect(() => {!transactions.results && setSelectedTypes(null)}, [])
+  useEffect(() => {!transactions.results && dispatch(setKwargs({...kwargs, type: null}))}, [])
   useEffect(() => {
     !allChecked
-      ? setChecked(null)
-      : setChecked(transactions.results?.map(t => t.id))
+      ? setSpecificCategories(null)
+      : setSpecificCategories(transactions.results?.map(t => ({
+        description: t.description, category: t.category_suggestion
+      })))
   }, [allChecked])
   useEffect(() => {
     if(!transactions.loading) {
-      setChecked(null)
+      setSpecificCategories(null)
       setAllChecked(false)
     }},
     [transactions.loading])
   useEffect(() => {
     !transactions.results && dispatch(FinanceApi.getTransactions(token, kwargs))
     !categories.results && dispatch(FinanceApi.getCategories(token))
+    setSpecificCategories(null)
+    dispatch(setKwargs({...kwargs, page: !transactions.previous
+        ? 1
+        : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1}))
   }, [categories.results, transactions.results])
 
   return <div>
@@ -96,7 +116,7 @@ const Categorize = () => {
     </div>
     {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{transactions.errors}</Alert>}
     <div className="row">
-      <div className="col-9 grid-margin">
+      <div className="col-md-9 grid-margin">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
@@ -110,42 +130,32 @@ const Categorize = () => {
               >
                 <i className="mdi mdi-refresh"></i>
               </button>
-              <Button
-                className={"btn btn-sm btn-primary mr-1"}
-                onClick={() => dispatch(FinanceApi.predict(token,
-                  {descriptions: transactions.results.map(t => t.description)}
-                ))}
-              >
-                Predict
-              </Button>
-              <Button
-                className={"btn btn-sm btn-warning mr-1"}
-                onClick={() => setTrainModalOpen(true)}
-              >
-                Train model
-              </Button>
+              <div className="float-right">
+                {
+                  transactions.results?.find(t => t.category === "Unidentified") &&
+                  <Button
+                    className={"btn btn-sm btn-primary mr-1"}
+                    onClick={() => setPredictModalOpen(true)}
+                  >
+                    Predict {specificCategories?.length || "all"}
+                  </Button>
+                }
+                <Button className={"btn btn-sm btn-warning mr-1"} onClick={() => setTrainModalOpen(true)}>
+                  Train model
+                </Button>
+              </div>
               {
-                checked?.length
-                  ? <>
-                  <Button
-                    className="btn btn-sm btn-outline-danger mr-1"
-                    onClick={() => dispatch(FinanceApi.acceptSuggestions(token,
-                      {descriptions: transactions.results.filter(t => checked.includes(t.id)).map(t => t.description)}
-                    ))}
+                specificCategories?.length
+                  ? <Button
+                    className="btn btn-sm btn-outline-warning ml-1"
+                    onClick={() => setSpecificCategoriesModalOpen(true)}
                   >
-                    Accept {checked.length} suggestion{checked.length === 1 ? '' : 's'}
+                    Update {specificCategories.length} categories
                   </Button>
-                  <Button
-                    className={"btn btn-sm btn-outline-secondary"}
-                    onClick={() => dispatch(FinanceApi.clearSuggestions(token, {transaction_ids: checked}))}
-                  >
-                    Clear suggestions
-                  </Button>
-                  </>
                   : null
               }
               <div className="mb-0 text-muted">
-                <small>Total: {transactions.count}</small>
+                <small>Unique: {transactions.count} | Total: {transactions.unidentified_count}</small>
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm border-0 bg-transparent"
@@ -155,9 +165,13 @@ const Categorize = () => {
                 </button>
               </div>
               {
-                accuracyAlertOpen &&
-                <Alert variant="success" dismissible onClose={() => setAccuracyAlertOpen(false)}>
-                  Training completed with <b>{(parseFloat(transactions.accuracy) * 100).toFixed(2)}%</b> accuracy 🎉
+                messageAlertOpen &&
+                <Alert
+                  variant={transactions.msg?.level || "primary"}
+                  dismissible
+                  onClose={() => setMessageAlertOpen(false)}
+                >
+                  {transactions.msg?.message}
                 </Alert>
               }
             </h4>
@@ -170,22 +184,23 @@ const Categorize = () => {
                     className="nav-link mt-2 mt-md-0 d-lg-flex search"
                     onSubmit={e => {
                       e.preventDefault()
-                      dispatch(FinanceApi.getTransactions(token, kwargs))
+                      dispatch(setKwargs({...kwargs, page: 1}))
+                      dispatch(FinanceApi.getTransactions(token, {...kwargs, page: 1}))
                     }}
                   >
                     <input
-                      value={searchTerm}
+                      value={kwargs.search_term}
                       type="search"
                       className="form-control"
                       placeholder="Search transactions"
-                      onChange={e => setSearchTerm(e.target.value)}
+                      onChange={e => dispatch(setKwargs({...kwargs, search_term: e.target.value}))}
                     />
                   </form>
                 </li>
               </ul>
             </Collapse>
             <div className="table-responsive">
-              <table className="table table-hover">
+              <table className="table">
                 <thead>
                   <tr>
                     <th>
@@ -208,6 +223,7 @@ const Categorize = () => {
                     <th> Type </th>
                     <th> Category </th>
                     <th> Completed </th>
+                    <th><i className="mdi mdi-pencil" /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,12 +240,13 @@ const Categorize = () => {
                         ? transactions.results.map((t, i) =>
                         <tr
                           key={i}
-                          className={isChecked(t.id) ? "text-warning" : ""}
-                          onClick={() => isChecked(t.id)
-                                      ? setChecked(checked.filter(id => id !== t.id))
-                                      : checked?.length
-                                        ? setChecked([...checked, t.id])
-                                        : setChecked([t.id])}
+                          className={
+                            getSpecificCategory(t.description) ? "text-warning": ""
+                        }
+                          onClick={
+                            () => onSpecificCategoryChange({
+                              value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
+                            }, t.description)}
                         >
                           <td>
                             <div className="form-check form-check-muted m-0 bordered">
@@ -237,13 +254,11 @@ const Categorize = () => {
                                 <input
                                   type="checkbox"
                                   className="form-check-input"
-                                  checked={isChecked(t.id)}
+                                  checked={getSpecificCategory(t.description)}
                                   onChange={() =>
-                                    isChecked(t.id)
-                                      ? setChecked(checked.filter(id => id !== t.id))
-                                      : checked?.length
-                                        ? setChecked([...checked, t.id])
-                                        : setChecked([t.id])
+                                    onSpecificCategoryChange({
+                              value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
+                            }, t.description)
                                 }
                                 />
                                 <i className="input-helper"></i>
@@ -257,18 +272,40 @@ const Categorize = () => {
                           <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
                           <td> {t.description} </td>
                           <td> {getTypeLabel(t.type)} </td>
-                          <td
-                            className={t.category === "Unidentified" ? "text-danger" : ""}
-                            onClick={e => {
-                              e.stopPropagation()
-                              dispatch(selectTransaction(t.id))
-                            }}
-                            style={{cursor: "pointer"}}
-                          >
-                            {t.category}
-                            <p className={"text-warning"}>{t.category_suggestion}</p>
+                          <td onClick={e => e.stopPropagation()} style={{minWidth: "180px"}}>
+                            <Select
+                              onChange={newValue => onSpecificCategoryChange(newValue, t.description)}
+                              options={categories.results?.map(c => ({label: c.verbose, value: c.id}))}
+                              styles={selectStyles}
+                              value={{
+                                label: capitalize(getSpecificCategory(t.description) || t.category).replace("-", " "),
+                                value: getSpecificCategory(t.description) || t.category}}
+                            />
+                            <p className={"text-warning ml-2"}>{t.category_suggestion ? capitalize(t.category_suggestion).replace("-", " "): null}</p>
+                            {
+                              getSpecificCategory(t.description) &&
+                              <a href={"!#"} onClick={e => {
+                                const currentCategory = getSpecificCategory(t.description)
+                                e.preventDefault()
+                                setSpecificCategories(transactions.results.map(t =>
+                                  ({description: t.description, category: currentCategory})
+                                ))
+                              }}>
+                                Set {capitalize(getSpecificCategory(t.description)).replace("-", " ")} to all
+                              </a>
+                          }
                           </td>
                           <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
+                          <td>
+                            <i
+                              className="mdi mdi-pencil text-primary"
+                              onClick={e => {
+                                e.stopPropagation()
+                                dispatch(selectTransaction(t.id))
+                              }}
+                              style={{cursor: "pointer"}}
+                            />
+                          </td>
                         </tr>)
                       : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
                 }
@@ -289,10 +326,7 @@ const Categorize = () => {
                 currentPage - 5 > 0 && <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                    page: 2,
-                    search_term: searchTerm,
-                  }))}
+                  onClick={() => dispatch(FinanceApi.getTransactions(token, {...kwargs, page: 2}))}
                 >
                   2
                 </button>
@@ -412,8 +446,8 @@ const Categorize = () => {
                   options={transactions.confirmedByChoices?.map(c => ({label: c[1], value: c[0]}))}
                   styles={selectStyles}
                   value={{
-                    label: transactions.confirmedByChoices?.find(c => c[0] === confirmedBy)?.[1],
-                    value: confirmedBy}}
+                    label: transactions.confirmedByChoices?.find(c => c[0] === kwargs.confirmed_by)?.[1],
+                    value: kwargs.confirmed_by}}
                 />
               </Form.Group>
               <Form.Group>
@@ -423,11 +457,11 @@ const Categorize = () => {
                   isDisabled={categories.loading || transactions.loading}
                   isLoading={categories.loading || transactions.loading}
                   onChange={onCategoryChange}
-                  options={categories.results?.map(c => ({label: c.id, value: c.id}))}
+                  options={categories.results?.map(c => ({label: c.verbose, value: c.id}))}
                   styles={selectStyles}
                   value={{
-                    label: categories.results?.find(c => c.id === category)?.id,
-                    value: category}}
+                    label: categories.results?.find(c => c.id === kwargs.category)?.verbose,
+                    value: kwargs.category}}
                 />
               </Form.Group>
               <Form.Group>
@@ -441,7 +475,7 @@ const Categorize = () => {
                   onChange={onTypeChange}
                   options={transactions.types?.map(t => ({label: getTypeLabel(t), value: t}))}
                   styles={selectStyles}
-                  value={selectedTypes?.map(t => ({label: getTypeLabel(t), value: t}))}
+                  value={kwargs.types?.map(t => ({label: getTypeLabel(t), value: t}))}
                 />
               </Form.Group>
             </Form>
@@ -478,6 +512,78 @@ const Categorize = () => {
           }}
         >
           Yes, train model!
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    <Modal centered show={specificCategoriesModalOpen} onHide={() => setSpecificCategoriesModalOpen(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <div className="row">
+            <div className="col-lg-12 grid-margin stretch-card mb-1">
+              Update multiple categories?
+            </div>
+          </div>
+          <p className="text-muted mb-0">Update categories in bulk</p>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="mb-0">This will update all the transactions</p>
+        <p>with the descriptions below as follows:</p>
+        <ul>
+          {specificCategories?.map((c, i) => <li key={i}>
+            {c.description}<span className="text-warning"> -> New category ->&nbsp;</span>
+            <span className="text-success">{capitalize(c.category).replace("-", " ")}</span>
+          </li>)}
+        </ul>
+        Proceed?
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="success" onClick={() => setSpecificCategoriesModalOpen(false)}>No, go back</Button>
+        <Button
+          variant="danger"
+          onClick={() => {
+            dispatch(FinanceApi.bulkUpdateTransactions(token, specificCategories, kwargs))
+            setSpecificCategoriesModalOpen(false)
+          }}
+        >
+          Yes, bulk update!
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    <Modal centered show={predictModalOpen} onHide={() => setPredictModalOpen(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <div className="row">
+            <div className="col-lg-12 grid-margin stretch-card mb-1">
+              Predict transactions?
+            </div>
+          </div>
+          <p className="text-muted mb-0">Predict categories for {specificCategories?.length || "all the"} transactions</p>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="mb-0">This will start predicting the categories for <span className="text-danger">  {specificCategories?.length || "all the"} transactions</span></p>
+        <p className="mb-0">Depending on the number it might take a while so please be patient</p>
+        Proceed?
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="success" onClick={() => setPredictModalOpen(false)}>No, go back</Button>
+        <Button
+          variant="danger"
+          onClick={() => {
+            dispatch(FinanceApi.predict(token,
+              {
+                descriptions:
+                  specificCategories?.length
+                    ? specificCategories.map(t => t.description)
+                    : []
+              },
+              kwargs
+            ))
+            setPredictModalOpen(false)
+          }}
+        >
+          Yes, start!
         </Button>
       </Modal.Footer>
     </Modal>

@@ -1,11 +1,16 @@
 from django.contrib import admin
 
-from finance.models import Account, Credit, Timetable, Payment
+from finance.models import Account, Category, Credit, Payment, Timetable
 
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
     list_display = "first_name", "last_name", "number", "created_at", "updated_at"
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = "id", "verbose"
 
 
 @admin.register(Credit)

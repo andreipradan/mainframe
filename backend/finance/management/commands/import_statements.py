@@ -165,10 +165,19 @@ def parse_raiffeisen_transactions(file_name, logger):
         completed_at = completed_at and datetime.strptime(
             completed_at, "%d/%m/%Y"
         ).replace(tzinfo=timezone.utc)
+
+        from_description = []
+        if "|" in description:
+            description, *from_description = description.split("|")
+            description = description.strip()
+            from_description = [part.strip() for part in from_description]
+
+        additional_data = parse_additional_data(additional_data)
+        additional_data["from_description"] = from_description
         transactions.append(
             Transaction(
                 account=account,
-                additional_data=parse_additional_data(additional_data),
+                additional_data=additional_data,
                 amount=credit if credit else -debit,
                 completed_at=completed_at,
                 currency=currency,

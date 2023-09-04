@@ -52,12 +52,14 @@ const createSearchParams = params => {
 }
 
 class FinanceApi {
-  static acceptSuggestions = (token, data) => dispatch => {
+  static bulkUpdateTransactions = (token, data, kwargs) => dispatch => {
     dispatch(setTransactionsLoading(true))
     axios
-      .put(`${base}/transactions/accept-suggestions/`, data, {headers: {Authorization: token}})
-      .then(response => dispatch(setTransactions(response.data)))
-      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
+      .put(`${base}/transactions/bulk-update/?${createSearchParams(kwargs)}`,
+        data,
+        { headers: { Authorization: token } })
+      .then((response) => dispatch(setTransactions(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
   }
   static clearSuggestions = (token, data) => dispatch => {
     dispatch(setTransactionsLoading(true))
@@ -145,10 +147,10 @@ class FinanceApi {
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
-  static predict = (token, data) => dispatch => {
+  static predict = (token, data, kwargs) => dispatch => {
     dispatch(setTransactionsLoading(true))
     axios
-      .put(`${base}/transactions/predict/`, data, {headers: {Authorization: token}})
+      .put(`${base}/transactions/predict/?${createSearchParams(kwargs)}`, data, {headers: {Authorization: token}})
       .then(response => dispatch(setTransactions(response.data)))
       .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
   }
@@ -182,9 +184,8 @@ class FinanceApi {
       .then((response) => dispatch(updateTransaction(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
   }
-  static updateTransactions = (token, data) => dispatch => {
+  static updateTransactions = (token, data, kwargs) => dispatch => {
     dispatch(setTransactionsLoading(true))
-    const kwargs = {category: data.category, description: data.description}
     axios
       .put(`${base}/transactions/update-all/?${createSearchParams(kwargs)}`,
         data,

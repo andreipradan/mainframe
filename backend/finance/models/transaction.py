@@ -8,6 +8,19 @@ class Category(TimeStampedModel):
     UNIDENTIFIED = "Unidentified"
     id = models.CharField(max_length=20, primary_key=True, default=UNIDENTIFIED)
 
+    @property
+    def verbose(self):
+        return self.id.replace("-", " ").capitalize()
+
+    def save(self, *args, **kwargs):
+        self.id = self.id.replace(" ", "-").lower()
+        return super().save(*args, **kwargs)
+
+
+class TransactionQuerySet(models.QuerySet):
+    def expenses(self):
+        return self.filter(amount__lt=0)
+
 
 class Transaction(TimeStampedModel):
     CONFIRMED_BY_UNCONFIRMED = 0
@@ -92,6 +105,8 @@ class Transaction(TimeStampedModel):
         default=TYPE_UNIDENTIFIED,
         max_length=15,
     )
+
+    objects = TransactionQuerySet.as_manager()
 
     class Meta:
         ordering = ["-completed_at"]

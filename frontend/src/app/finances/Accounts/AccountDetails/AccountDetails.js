@@ -18,6 +18,8 @@ import { getTypeLabel } from "../../Categorize/EditModal";
 import { setSelectedAccount } from "../../../../redux/accountsSlice";
 import { selectTransaction } from "../../../../redux/transactionsSlice";
 
+export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`
+
 const getRandomColor = () => {
   const letters = '0123456789ABCDEF';
   let color = '#';
@@ -83,7 +85,7 @@ const AccountDetails = () => {
     datasets: accounts.analytics
       ? [
         ...accounts.analytics?.categories?.map(cat => ({
-          label: cat,
+          label: capitalize(cat).replace("-", " "),
           data: accounts.analytics?.per_month?.map(item => item[cat]),
           backgroundColor: getColor(cat),
           borderColor: getColor(cat, true),
@@ -268,7 +270,7 @@ const AccountDetails = () => {
                     <ListItem label={"State"} value={transactions.results[0].state} className="mr-3" />
                     <ListItem label={"Description"} value={transactions.results[0].description} className="mr-3" />
                     <ListItem label={"Type"} value={transactions.results[0].type} className="mr-3" />
-                    <ListItem label={"Category"} value={transactions.results[0].category} className="mr-3" />
+                    <ListItem label={"Category"} value={capitalize(transactions.results[0].category).replace("-", " ")} className="mr-3" />
                     <ListItem label={"Product"} value={transactions.results[0].product} className="mr-3" />
                   </Marquee>
                   : "-"
@@ -431,7 +433,7 @@ const AccountDetails = () => {
                           <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
                           <td> {t.description} </td>
                           <td> {getTypeLabel(t.type)} </td>
-                          <td className={t.category === "Unidentified" ? "text-danger" : ""}> {t.category} </td>
+                          <td className={t.category === "Unidentified" ? "text-danger" : ""}> {capitalize(t.category).replace("-", " ")} </td>
                           <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
                         </tr>)
                       : <tr><td colSpan={6}><span>No transactions found</span></td></tr>

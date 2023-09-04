@@ -17,8 +17,9 @@ import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 
 import FinanceApi from "../../../../api/finance";
-import { selectTransaction } from "../../../../redux/transactionsSlice";
+import { capitalize } from "./AccountDetails";
 import { createOption, selectStyles } from "../../Categorize/EditModal";
+import { selectTransaction } from "../../../../redux/transactionsSlice";
 
 const TYPES = [
   "ATM",
@@ -120,7 +121,7 @@ const EditModal = () => {
             {
               ["amount", "currency", "fee", "state", "product"].map((item, i) =>
                 <Form.Group className="mb-3" key={i}>
-                    <Form.Label>{item[0].toUpperCase() + item.slice(1, item.length)}</Form.Label>
+                    <Form.Label>{capitalize(item)}</Form.Label>
                     <Form.Control
                       readOnly={true}
                       className="bg-transparent text-muted"

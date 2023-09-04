@@ -28,6 +28,8 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = "__all__"
 
+    verbose = serializers.ReadOnlyField()
+
 
 class CreditSerializer(serializers.ModelSerializer):
     class Meta:

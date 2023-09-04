@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         call_command("dumpdata", source, output=file_name, verbosity=2)
 
-        destination = f"finance{f'/{model.lower()}' if model else ''}/{file_name}"
+        destination = f"finance{f'_{model.lower()}' if model else ''}_{file_name}"
         upload_blob_from_file(file_name, destination, logger)
         run_cmd(f"rm {file_name}")
         msg = f"[Finance] Backup complete: {destination}"
