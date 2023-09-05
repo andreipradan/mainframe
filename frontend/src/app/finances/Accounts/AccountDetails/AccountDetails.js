@@ -149,7 +149,7 @@ const AccountDetails = () => {
     dispatch(FinanceApi.getTransactions(token, {
       account_id: accounts.selectedAccount.id,
       month: new Date(`${month} ${selectedDate.getFullYear()}`).getMonth() + 1,
-      category: category,
+      category: category.toLowerCase().replace(" ", "-"),
       year: selectedDate.getFullYear(),
     }))
   }

@@ -73,6 +73,8 @@ def detect_transaction_type(description, is_credit=False):
             return Transaction.TYPE_TOPUP
     if "refund" in description.lower():
         return Transaction.TYPE_CARD_REFUND
+    if "comision" in description.lower():
+        return Transaction.TYPE_FEE
     return Transaction.TYPE_UNIDENTIFIED if is_credit else Transaction.TYPE_CARD_PAYMENT
 
 
@@ -166,10 +168,10 @@ def parse_raiffeisen_transactions(file_name, logger):
             completed_at, "%d/%m/%Y"
         ).replace(tzinfo=timezone.utc)
 
-        from_description = []
+        cleaned_description, from_description = description, []
         if "|" in description:
-            description, *from_description = description.split("|")
-            description = description.strip()
+            cleaned_description, *from_description = description.split("|")
+            cleaned_description = cleaned_description.strip()
             from_description = [part.strip() for part in from_description]
 
         additional_data = parse_additional_data(additional_data)
@@ -181,7 +183,7 @@ def parse_raiffeisen_transactions(file_name, logger):
                 amount=credit if credit else -debit,
                 completed_at=completed_at,
                 currency=currency,
-                description=description,
+                description=cleaned_description,
                 product=account_type,
                 started_at=detect_started_at(description, default=started_at),
                 state=completed_at and "Completed",

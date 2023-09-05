@@ -163,8 +163,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
             queryset = queryset.expenses()
         if month := params.get("month"):
             queryset = queryset.filter(started_at__month=month)
-        if ml_confirmed := params.get("ml_confirmed"):
-            queryset = queryset.filter(ml_confirmed=ml_confirmed == "true")
         if search_term := params.get("search_term"):
             queryset = queryset.annotate(
                 search=SearchVector(
@@ -178,7 +176,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         if year := params.get("year"):
             queryset = queryset.filter(started_at__year=year)
 
-        return queryset
+        return queryset.select_related("account")
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
@@ -186,7 +184,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         Category.objects.get_or_create(id=request.data["category"])
-        return super().partial_update(request, *args, **kwargs)
+        response = super().partial_update(request, *args, **kwargs)
+        response.data["msg"] = {"message": f"Successfully updated 1 transaction"}
+        return response
 
     @action(methods=["put"], detail=False)
     def predict(self, request, *args, **kwargs):
@@ -194,7 +194,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             category=Category.UNIDENTIFIED,
             confirmed_by=Transaction.CONFIRMED_BY_UNCONFIRMED,
         )
-        if descriptions := self.request.data["descriptions"]:
+        if descriptions := self.request.data:
             queryset = queryset.filter(description__in=descriptions)
 
         transactions = predict(queryset.values("description", "id"), logger)
