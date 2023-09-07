@@ -552,7 +552,7 @@ const Categorize = () => {
         Proceed?
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="success" onClick={() => setCheckedCategories(false)}>No, go back</Button>
+        <Button variant="success" onClick={() => setSpecificCategoriesModalOpen(false)}>No, go back</Button>
         <Button
           variant="danger"
           onClick={() => {

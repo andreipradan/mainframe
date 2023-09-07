@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from clients.logs import MainframeHandler
-from clients.os import get_folder_contents
+from clients.system import get_folder_contents
 
 config = environ.Env()
 

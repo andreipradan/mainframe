@@ -11,7 +11,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from clients.classifier import predict, train
 from clients.logs import MainframeHandler
 from finance.models import (
     Account,
@@ -29,6 +28,7 @@ from finance.serializers import (
     TimetableSerializer,
     TransactionSerializer,
 )
+from finance.tasks import predict, train
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -197,7 +197,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         if descriptions := self.request.data:
             queryset = queryset.filter(description__in=descriptions)
 
-        transactions = predict(queryset.values("description", "id"), logger)
+        transactions = predict(queryset.values("description", "id"), logger)(
+            blocking=True
+        )
         logger.info(f"Bulk updating {len(transactions)}")
         total = Transaction.objects.bulk_update(
             transactions,
@@ -213,7 +215,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     @action(methods=["put"], detail=False)
     def train(self, request, *args, **kwargs):
-        accuracy = train(logger)
+        accuracy = train(logger)(blocking=True)
         response = self.list(request, *args, **kwargs)
         success = accuracy > 0.95
         response.data["msg"] = {

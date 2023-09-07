@@ -14,7 +14,7 @@ from rest_framework.exceptions import MethodNotAllowed
 
 from clients import cron
 from clients.chat import send_telegram_message
-from clients.os import run_cmd
+from clients.system import run_cmd
 
 
 @csrf_exempt

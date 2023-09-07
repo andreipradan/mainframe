@@ -69,6 +69,12 @@ echo "[sklearn] Installing scikit-learn deps..." && \
   sudo apt-get install gfortran libatlas-base-dev libopenblas-dev liblapack-dev -y && \
   echo "[sklearn] Done."
 
+echo "[redis] Installing redis..." && \
+  sudo apt install redis-server -y && \
+  sudo systemctl enable redis && \
+  sudo systemctl start redis && \
+  echo "[redis] Done."
+
 NGINX_DIR=/etc/nginx
 NGINX_AVAILABLE="${NGINX_DIR}/sites-available/mainframe"
 NGINX_ENABLED="${NGINX_DIR}/sites-enabled/mainframe"

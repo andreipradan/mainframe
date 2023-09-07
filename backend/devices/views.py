@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from clients.logs import MainframeHandler
-from clients.os import run_cmd
+from clients.system import run_cmd
 from devices.models import Device
 from devices.serializers import DeviceSerializer
 

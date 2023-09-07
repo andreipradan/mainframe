@@ -73,8 +73,9 @@ def detect_transaction_type(description, is_credit=False):
             return Transaction.TYPE_TOPUP
     if "refund" in description.lower():
         return Transaction.TYPE_CARD_REFUND
-    if "comision" in description.lower():
-        return Transaction.TYPE_FEE
+    for key in ("comision", "dobanda", "taxa"):
+        if key in description.lower():
+            return Transaction.TYPE_FEE
     return Transaction.TYPE_UNIDENTIFIED if is_credit else Transaction.TYPE_CARD_PAYMENT
 
 

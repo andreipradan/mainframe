@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from django.http import JsonResponse, FileResponse
+from django.http import FileResponse, JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from clients.os import get_folder_contents
+from clients.system import get_folder_contents
 
 
 class LogsViewSet(viewsets.ViewSet):

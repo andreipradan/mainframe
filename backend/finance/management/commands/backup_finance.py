@@ -9,8 +9,8 @@ from clients import healthchecks
 from clients.chat import send_telegram_message
 from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from clients.os import run_cmd
 from clients.storage import upload_blob_from_file
+from clients.system import run_cmd
 from crons.models import Cron
 
 

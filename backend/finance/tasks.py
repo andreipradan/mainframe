@@ -2,6 +2,7 @@ import pickle
 
 import pandas as pd
 from django.utils import timezone
+from huey.contrib.djhuey import task
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -16,6 +17,7 @@ def load(model_file_name):
     return pickle.loads(file)
 
 
+@task()
 def predict(queryset, logger):
     total = queryset.count()
     logger.info(f"{total} distinct descriptions")
@@ -40,6 +42,7 @@ def save(item, item_type, prefix, logger):
     )
 
 
+@task()
 def train(logger):
     qs = (
         Transaction.objects.filter(
