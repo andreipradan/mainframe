@@ -88,9 +88,9 @@ def train(logger, external_id):
         log_status(external_id, status="failed", accuracy=accuracy)
         return accuracy
 
+    log_status(external_id, status="success", accuracy=accuracy)
+
     prefix = f"{timezone.now():%Y_%m_%d_%H_%M_%S}_{accuracy}"
     save(model, "model", prefix, logger=logger)
     save(vect, "vectorizer", prefix, logger=logger)
-
-    log_status(external_id, status="success", accuracy=accuracy)
     return accuracy

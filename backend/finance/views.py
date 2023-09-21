@@ -277,8 +277,7 @@ class TrainingViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk, *args, **kwargs):
         client = HUEY.storage.redis_client()
-        task = client.get(pk)
-        if not task:
+        if not (task := client.get(pk)):
             raise Http404
         return JsonResponse(data={"id": pk, **json.loads(task)})
 
