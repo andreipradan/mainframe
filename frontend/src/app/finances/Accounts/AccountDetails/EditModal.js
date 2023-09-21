@@ -16,7 +16,7 @@ import Modal from "react-bootstrap/Modal";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 
-import FinanceApi from "../../../../api/finance";
+import { FinanceApi } from "../../../../api/finance";
 import { capitalize } from "./AccountDetails";
 import { createOption, selectStyles } from "../../Categorize/EditModal";
 import { selectTransaction } from "../../../../redux/transactionsSlice";

@@ -9,8 +9,8 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
+import { FinanceApi } from "../../../../api/finance";
 import {selectPayment} from "../../../../redux/paymentSlice";
-import FinanceApi from "../../../../api/finance";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 

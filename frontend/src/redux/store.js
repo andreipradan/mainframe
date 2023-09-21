@@ -14,6 +14,7 @@ import mealsReducer from "../redux/mealsSlice";
 import paymentReducer from "../redux/paymentSlice";
 import rpiReducer from "../redux/rpiSlice";
 import timetableReducer from "./timetableSlice";
+import trainingReducer from "../redux/trainingSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 
 export default configureStore({
@@ -33,6 +34,7 @@ export default configureStore({
     payment: paymentReducer,
     rpi: rpiReducer,
     timetable: timetableReducer,
+    training: trainingReducer,
     transactions: transactionsReducer,
   },
 });

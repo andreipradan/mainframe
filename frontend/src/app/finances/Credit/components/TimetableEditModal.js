@@ -9,8 +9,8 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
+import { FinanceApi } from "../../../../api/finance";
 import {selectTimetable} from "../../../../redux/timetableSlice";
-import FinanceApi from "../../../../api/finance";
 
 const TimetableEditModal = () => {
   const dispatch = useDispatch();

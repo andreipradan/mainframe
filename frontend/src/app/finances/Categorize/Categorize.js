@@ -12,15 +12,17 @@ import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
-import FinanceApi from "../../../api/finance";
+import { FinanceApi, TrainingApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
-import {selectTransaction, setKwargs} from "../../../redux/transactionsSlice";
+import { selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
+
+const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.replace("-", " ")) : ""
 
 const Categorize = () => {
   const dispatch = useDispatch();
 
   const token = useSelector((state) => state.auth.token)
-  const categories = useSelector(state => state.categories)
+  const training = useSelector(state => state.training)
   const transactions = useSelector(state => state.transactions)
   const kwargs = useSelector(state => state.transactions.kwargs) || {}
 
@@ -31,7 +33,9 @@ const Categorize = () => {
   const [predictModalOpen, setPredictModalOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [specificCategoriesModalOpen, setSpecificCategoriesModalOpen] = useState(false)
-  const [trainModalOpen, setTrainModalOpen] = useState(false)
+  const [trainingAlertOpen, setTrainingAlertOpen] = useState(false)
+  const [trainingModalOpen, setTrainingModalOpen] = useState(false)
+  const [trainingTasksOpen, setTrainingTasksOpen] = useState(false)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
 
   const currentPage = !transactions.previous
@@ -43,6 +47,11 @@ const Categorize = () => {
 
   const getSpecificCategory = description => checkedCategories?.find(c => c.description === description)?.category
 
+  const onAccountChange = newValue => {
+    const newAccount = newValue ? newValue.value : ""
+    dispatch(setKwargs({...(kwargs || {}), account_id: newAccount, page: 1}))
+    dispatch(FinanceApi.getTransactions(token, {...kwargs, account_id: newAccount, page: 1}))
+  }
   const onCategoryChange = newValue => {
     const newCategory = newValue ? newValue.value : ""
     dispatch(setKwargs({...(kwargs || {}), category: newCategory, page: 1}))
@@ -79,6 +88,7 @@ const Categorize = () => {
   }
 
   useEffect(() => {setMessageAlertOpen(!!transactions.msg)}, [transactions.msg])
+  useEffect(() => {setTrainingAlertOpen(!!training.errors)}, [training.errors])
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {!transactions.results && dispatch(setKwargs({...kwargs, type: null}))}, [])
   useEffect(() => {
@@ -98,12 +108,12 @@ const Categorize = () => {
     [transactions.loading])
   useEffect(() => {
     !transactions.results && dispatch(FinanceApi.getTransactions(token, kwargs))
-    !categories.results && dispatch(FinanceApi.getCategories(token))
+    !training.results && dispatch(TrainingApi.getTasks(token))
     setCheckedCategories(null)
     dispatch(setKwargs({...kwargs, page: !transactions.previous
         ? 1
         : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1}))
-  }, [categories.results, transactions.results])
+  }, [transactions.results])
 
   return <div>
     <div className="page-header">
@@ -119,21 +129,146 @@ const Categorize = () => {
       </nav>
     </div>
     {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{transactions.errors}</Alert>}
+
+    <div className="row">
+      <div className="col-md-12 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title"
+                onClick={ () => setTrainingTasksOpen(!trainingTasksOpen) } data-toggle="collapse"
+                style={{cursor: "pointer"}}
+            >
+              Training tasks
+              {
+                training.loading
+                  ? <Circles
+                    visible={true}
+                    height={20}
+                    width={20}
+                    wrapperClass="btn"
+                    wrapperStyle={{display: "default"}}
+                    ariaLabel="ball-triangle-loading"
+                    color='green'
+                  />
+                  : <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                    onClick={e => {
+                      e.stopPropagation()
+                      dispatch(TrainingApi.getTasks(token))
+                    }}
+                  >
+                      <i className="mdi mdi-refresh"></i>
+                    </button>
+              }
+              <div className="float-right">
+                <Button className={"btn btn-sm btn-warning mr-1"} onClick={e => {
+                  e.stopPropagation()
+                  setTrainingModalOpen(true)
+                }}>
+                  Train model
+                </Button>
+              </div>
+              {
+                trainingAlertOpen &&
+                <Alert
+                  variant={"danger"}
+                  dismissible
+                  onClose={() => setTrainingAlertOpen(false)}
+                >
+                  {training.errors}
+                </Alert>
+              }
+              {
+                trainingTasksOpen ? null : <small className="small text-muted">Click to expand</small>
+              }
+            </h4>
+             <Collapse in={ trainingTasksOpen }>
+              <div className="table-responsive">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Task</th>
+                      <th>Last Updated</th>
+                      <th>Status</th>
+                      <th>Accuracy</th>
+                      <th>Actions</th>
+                      {/*<th>History</th>*/}
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    training.results?.length
+                      ? training.results.map((t, i) =>
+                        <tr key={i}>
+                          <td>{t.id}</td>
+                          <td>{new Date(t.timestamp).toLocaleString()}</td>
+                          <td>{t.status.toUpperCase()}</td>
+                          <td>{(parseFloat(t.accuracy) * 100).toFixed(1)}%</td>
+                          <td>
+                            {
+                              training.loadingTasks?.find(id => id === t.id)
+                                ? <Circles
+                                    height={12}
+                                    width={12}
+                                    wrapperClass="btn"
+                                    wrapperStyle={{display: "default"}}
+                                    ariaLabel="ball-triangle-loading"
+                                    color='orange'
+                                />
+                                : <button
+                                    type="button"
+                                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                                    onClick={() => dispatch(TrainingApi.getTask(token, t.id))}
+                                  >
+                                    <i className="mdi mdi-refresh"></i>
+                                  </button>
+                            }
+                          </td>
+                          {/*<td>*/}
+                          {/*  <ul>*/}
+                          {/*    {t.history.map(t=> <li>{t.status}<br/><small>{new Date(t.timestamp).toLocaleString()}</small></li>)}*/}
+                          {/*  </ul>*/}
+                          {/*</td>*/}
+                        </tr>)
+                      : "No tasks found"
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </Collapse>
+          </div>
+        </div>
+      </div>
+    </div>
     <div className="row">
       <div className="col-md-9 grid-margin">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
               Transactions
-              <button type="button"
-                className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => {
-                  dispatch(FinanceApi.getCategories(token))
-                  dispatch(FinanceApi.getTransactions(token, kwargs))
-                }}
-              >
-                <i className="mdi mdi-refresh"></i>
-              </button>
+              {
+                transactions.loading
+                  ? <Circles
+                    visible={true}
+                    height={20}
+                    width={20}
+                    wrapperClass="btn"
+                    wrapperStyle={{display: "default"}}
+                    ariaLabel="ball-triangle-loading"
+                    color='green'
+                  />
+                  : <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                    onClick={() => {
+                      dispatch(FinanceApi.getTransactions(token, kwargs))
+                      dispatch(TrainingApi.getTasks(token))
+                    }}
+                  >
+                      <i className="mdi mdi-refresh"></i>
+                    </button>
+              }
               <div className="float-right">
                 {
                   unpredictedCategories?.length
@@ -154,9 +289,6 @@ const Categorize = () => {
                     Predict {checkedCategories?.length || "all"}
                   </Button>
                 }
-                <Button className={"btn btn-sm btn-warning mr-1"} onClick={() => setTrainModalOpen(true)}>
-                  Train model
-                </Button>
               </div>
               {
                 checkedCategories?.length
@@ -224,6 +356,7 @@ const Categorize = () => {
                             type="checkbox"
                             className="form-check-input"
                             checked={allChecked}
+                            disabled={transactions.loading}
                             onChange={() => setAllChecked(!allChecked)}
                           />
                           <i className="input-helper"></i>
@@ -242,86 +375,78 @@ const Categorize = () => {
                 </thead>
                 <tbody>
                 {
-                  transactions.loading
-                    ? <Circles
-                      visible={true}
-                      width="100%"
-                      ariaLabel="ball-triangle-loading"
-                      wrapperStyle={{float: "right"}}
-                      color='orange'
-                    />
-                    : transactions.results?.length
-                        ? transactions.results.map((t, i) =>
-                        <tr
-                          style={{cursor: `${t.category_suggestion ? 'default': 'not-allowed'}`}}
-                          key={i}
-                          className={getSpecificCategory(t.description) ? "text-warning": ""}
-                          onClick={
-                            () => onCheckedCategoryChange({
-                              value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
-                            }, t.description)}
-                        >
-                          <td>
-                            <div className="form-check form-check-muted m-0 bordered">
-                              <label className="form-check-label">
-                                <input
-                                  disabled={!t.category_suggestion}
-                                  type="checkbox"
-                                  className="form-check-input"
-                                  checked={getSpecificCategory(t.description)}
-                                  onChange={() =>
-                                    onCheckedCategoryChange({
-                              value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
-                            }, t.description)
-                                }
-                                />
-                                <i className="input-helper"></i>
-                              </label>
-                            </div>
-                          </td>
-                          <td>{t.account_name}</td>
-                          <td> {new Date(t.started_at).toLocaleDateString()}<br />
-                            <small>{new Date(t.started_at).toLocaleTimeString()}</small>
-                          </td>
-                          <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
-                          <td> {t.description} </td>
-                          <td> {getTypeLabel(t.type)} </td>
-                          <td onClick={e => e.stopPropagation()} style={{minWidth: "180px"}}>
-                            <Select
-                              onChange={newValue => onCheckedCategoryChange(newValue, t.description)}
-                              options={categories.results?.map(c => ({label: c.verbose, value: c.id}))}
-                              styles={selectStyles}
-                              value={{
-                                label: capitalize(getSpecificCategory(t.description) || t.category).replace("-", " "),
-                                value: getSpecificCategory(t.description) || t.category}}
-                            />
-                            <p className={"text-warning ml-2"}>{t.category_suggestion ? capitalize(t.category_suggestion).replace("-", " "): null}</p>
-                            {
-                              getSpecificCategory(t.description) &&
-                              <a href={"!#"} onClick={e => {
-                                const currentCategory = getSpecificCategory(t.description)
-                                e.preventDefault()
-                                setCheckedCategories(transactions.results.map(t =>
-                                  ({description: t.description, category: currentCategory})
-                                ))
-                              }}>
-                                Set {capitalize(getSpecificCategory(t.description)).replace("-", " ")} to all
-                              </a>
-                          }
-                          </td>
-                          <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
-                          <td>
-                            <i
-                              className="mdi mdi-pencil text-primary"
-                              onClick={e => {
-                                e.stopPropagation()
-                                dispatch(selectTransaction(t.id))
-                              }}
-                              style={{cursor: "pointer"}}
-                            />
-                          </td>
-                        </tr>)
-                      : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
+                  transactions.results?.length
+                    ? transactions.results.map((t, i) =>
+                      <tr
+                        style={{cursor: `${t.category_suggestion ? 'default': 'not-allowed'}`}}
+                        key={i}
+                        className={getSpecificCategory(t.description) ? "text-warning": ""}
+                        onClick={
+                          () => onCheckedCategoryChange({
+                            value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
+                          }, t.description)}
+                      >
+                        <td>
+                          <div className="form-check form-check-muted m-0 bordered">
+                            <label className="form-check-label">
+                              <input
+                                disabled={!t.category_suggestion || transactions.loading}
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={getSpecificCategory(t.description)}
+                                onChange={() =>
+                                  onCheckedCategoryChange({
+                            value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
+                          }, t.description)
+                              }
+                              />
+                              <i className="input-helper"></i>
+                            </label>
+                          </div>
+                        </td>
+                        <td>{t.account_name}</td>
+                        <td> {new Date(t.started_at).toLocaleDateString()}<br />
+                          <small>{new Date(t.started_at).toLocaleTimeString()}</small>
+                        </td>
+                        <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
+                        <td> {t.description} </td>
+                        <td> {getTypeLabel(t.type)} </td>
+                        <td onClick={e => e.stopPropagation()} style={{minWidth: "180px"}}>
+                          <Select
+                            onChange={newValue => onCheckedCategoryChange(newValue, t.description)}
+                            options={transactions.categories?.map(c => ({label: getCategoryVerbose(c.id), value: c.id}))}
+                            styles={selectStyles}
+                            value={{
+                              label: capitalize(getSpecificCategory(t.description) || t.category).replace("-", " "),
+                              value: getSpecificCategory(t.description) || t.category}}
+                          />
+                          <p className={"text-warning ml-2"}>{t.category_suggestion ? capitalize(t.category_suggestion).replace("-", " "): null}</p>
+                          {
+                            getSpecificCategory(t.description) &&
+                            <a href={"!#"} onClick={e => {
+                              const currentCategory = getSpecificCategory(t.description)
+                              e.preventDefault()
+                              setCheckedCategories(transactions.results.map(t =>
+                                ({description: t.description, category: currentCategory})
+                              ))
+                            }}>
+                              Set {capitalize(getSpecificCategory(t.description)).replace("-", " ")} to all
+                            </a>
+                        }
+                        </td>
+                        <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
+                        <td>
+                          <i
+                            className="mdi mdi-pencil text-primary"
+                            onClick={e => {
+                              e.stopPropagation()
+                              dispatch(selectTransaction(t.id))
+                            }}
+                            style={{cursor: "pointer"}}
+                          />
+                        </td>
+                      </tr>)
+                    : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
                 }
                 </tbody>
               </table>
@@ -468,13 +593,13 @@ const Categorize = () => {
                 <Form.Label>Category</Form.Label>&nbsp;
                 <Select
                   isClearable
-                  isDisabled={categories.loading || transactions.loading}
-                  isLoading={categories.loading || transactions.loading}
+                  isDisabled={transactions.loading}
+                  isLoading={transactions.loading}
                   onChange={onCategoryChange}
-                  options={categories.results?.map(c => ({label: c.verbose, value: c.id}))}
+                  options={transactions.categories?.map(c => ({label: getCategoryVerbose(c.id), value: c.id}))}
                   styles={selectStyles}
                   value={{
-                    label: categories.results?.find(c => c.id === kwargs.category)?.verbose,
+                    label: kwargs.category,
                     value: kwargs.category}}
                 />
               </Form.Group>
@@ -492,13 +617,28 @@ const Categorize = () => {
                   value={kwargs.types?.map(t => ({label: getTypeLabel(t), value: t}))}
                 />
               </Form.Group>
+              <Form.Group>
+                <Form.Label>Account</Form.Label>&nbsp;
+                <Select
+                  isClearable
+                  isDisabled={transactions.loading}
+                  isLoading={transactions.loading}
+                  onChange={onAccountChange}
+                  options={transactions.accounts?.map(account => ({label: `${account.bank} - ${account.type}`, value: account.id}))}
+                  styles={selectStyles}
+                  value={{
+                    label: transactions.accounts?.find(c => c.id === kwargs.account_id)?.bank,
+                    value: kwargs.account_id}}
+                />
+              </Form.Group>
+
             </Form>
           </div>
         </div>
       </div>
     </div>
     <EditModal />
-    <Modal centered show={trainModalOpen} onHide={() => setTrainModalOpen(false)}>
+    <Modal centered show={trainingModalOpen} onHide={() => setTrainingModalOpen(false)}>
       <Modal.Header closeButton>
         <Modal.Title>
           <div className="row">
@@ -517,12 +657,12 @@ const Categorize = () => {
         Proceed?
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="success" onClick={() => setTrainModalOpen(false)}>No, go back</Button>
+        <Button variant="success" onClick={() => setTrainingModalOpen(false)}>No, go back</Button>
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(FinanceApi.train(token, kwargs))
-            setTrainModalOpen(false)
+            dispatch(TrainingApi.start(token, kwargs))
+            setTrainingModalOpen(false)
           }}
         >
           Yes, train model!

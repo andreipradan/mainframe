@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 
-import FinanceApi from "../../../api/finance";
 import ListItem from "../shared/ListItem";
+import { FinanceApi } from "../../../api/finance";
 import {calculateSum, getPercentage} from "../utils";
 import Alert from "react-bootstrap/Alert";
 import { Bar, Doughnut } from "react-chartjs-2";

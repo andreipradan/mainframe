@@ -14,8 +14,8 @@ import CreatableSelect from 'react-select/creatable';
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
-import FinanceApi from "../../../api/finance";
 import ListItem from "../shared/ListItem";
+import { FinanceApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { create as createCategory } from "../../../redux/categoriesSlice"
 import { selectTransaction } from "../../../redux/transactionsSlice";

@@ -1,11 +1,15 @@
+import json
 import logging
+import uuid
 from operator import attrgetter, itemgetter
 
 import django.utils.timezone
+import redis
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncMonth, TruncYear
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
+from huey.contrib.djhuey import HUEY
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -28,7 +32,7 @@ from finance.serializers import (
     TimetableSerializer,
     TransactionSerializer,
 )
-from finance.tasks import predict, train
+from finance.tasks import log_status, predict, train
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -139,15 +143,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
         }
         return response
 
-    @action(methods=["put"], detail=False, url_path="clear-suggestions")
-    def clear_suggestions(self, request, *args, **kwargs):
-        queryset = Transaction.objects.expenses().filter(
-            description__in=self.request.data["descriptions"],
-        )
-        queryset.update(category_suggestion_id=None)
-
-        return self._aggregate_results(queryset)
-
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
@@ -213,19 +208,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
         }
         return response
 
-    @action(methods=["put"], detail=False)
-    def train(self, request, *args, **kwargs):
-        accuracy = train(logger)(blocking=True)
-        response = self.list(request, *args, **kwargs)
-        success = accuracy > 0.95
-        response.data["msg"] = {
-            "level": "success" if success else "danger",
-            "message": f"Training {'completed' if success else 'failed'} - "
-            f"{accuracy * 100:.2f}% accuracy "
-            f"{'🎉' if success else '😢'}",
-        }
-        return response
-
     @action(methods=["put"], detail=False, url_path="update-all")
     def update_all(self, request, *args, **kwargs):
         category = self.request.data["category"]
@@ -270,6 +252,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         )
         response.data["confirmed_by_choices"] = Transaction.CONFIRMED_BY_CHOICES
         response.data["categories"] = Category.objects.values_list("id", flat=True)
+        response.data["accounts"] = Account.objects.values("id", "bank", "type")
         response.data["unidentified_count"] = (
             Transaction.objects.expenses()
             .filter(
@@ -278,3 +261,34 @@ class TransactionViewSet(viewsets.ModelViewSet):
             .count()
         )
         return response
+
+
+class TrainingViewSet(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request, *args, **kwargs):
+        client = HUEY.storage.redis_client()
+        tasks = [
+            {"id": key.decode("utf-8"), **json.loads(client.get(key))}
+            for key in client.keys()
+            if key not in [b"huey.results.mainframe", b"huey.redis.huey"]
+        ]
+        return JsonResponse({"count": len(tasks), "results": tasks})
+
+    def retrieve(self, request, pk, *args, **kwargs):
+        client = HUEY.storage.redis_client()
+        task = client.get(pk)
+        if not task:
+            raise Http404
+        return JsonResponse(data={"id": pk, **json.loads(task)})
+
+    @action(methods=["put"], detail=False)
+    def start(self, request, *args, **kwargs):
+        external_id = str(uuid.uuid4())
+        try:
+            task_result = train(logger, external_id)
+        except redis.exceptions.ConnectionError as e:
+            logger.exception(e)
+            return JsonResponse({"error": "training task unable to start"}, status=400)
+        details = log_status(external_id, status="pending", task_id=task_result.id)
+        return JsonResponse(data={"id": external_id, **details})

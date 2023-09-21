@@ -18,7 +18,6 @@ export const transactionsSlice = createSlice({
     msg: null,
     next: null,
     pending: null,
-    predictionInProgress: false,
     previous: null,
     results: null,
     selectedTransaction: null,
@@ -26,9 +25,6 @@ export const transactionsSlice = createSlice({
     unidentified_count: null,
   },
   reducers: {
-    clearAccuracy: (state, action) => {
-      state.accuracy = null
-    },
     selectTransaction: (state, action) => {
       state.selectedTransaction = action.payload ? state.results.find(t => t.id === action.payload) : null
     },
@@ -37,6 +33,7 @@ export const transactionsSlice = createSlice({
       state.loading = false;
     },
     set: (state, action) => {
+      state.accounts = action.payload.accounts
       state.accuracy = action.payload.accuracy
       state.categories = action.payload.categories
       state.confirmedByChoices = action.payload.confirmed_by_choices
@@ -52,7 +49,6 @@ export const transactionsSlice = createSlice({
     },
     setKwargs: (state, action) => {state.kwargs = action.payload},
     setLoading: (state, action) => {state.loading = action.payload},
-    setPredictionInProgress: (state, action) => {state.predictionInProgress = action.payload},
     setLoadingTransactions: (state, action) => {
       state.loadingTransactions = state.loadingTransactions
         ? [...state.loadingTransactions, action.payload]
@@ -73,7 +69,6 @@ export const transactionsSlice = createSlice({
 });
 
 export const {
-  clearAccuracy,
   selectTransaction,
   set, setErrors, setKwargs, setLoading, setLoadingTransactions,
   updateTransaction

@@ -1,0 +1,14 @@
+[Unit]
+Description=huey task queue service
+
+[Service]
+User=rpi
+WorkingDirectory=/home/rpi/projects/mainframe/backend
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_huey
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat/py [[huey]] up
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[huey]] down
+Restart=on-success
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target

@@ -32,13 +32,19 @@ import {
   setLoading as setTimetableLoading,
 } from "../redux/timetableSlice";
 import {
-  clearAccuracy,
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
   setLoadingTransactions,
   updateTransaction,
 } from "../redux/transactionsSlice";
+import {
+  set as setTrainingResults,
+  setErrors as setTrainingErrors,
+  setLoading as setTrainingLoading,
+  setLoadingTask as setLoadingTrainingTask,
+  setTrainingTask,
+} from "../redux/trainingSlice"
 import {handleErrors} from "./errors";
 
 const createSearchParams = params => {
@@ -51,7 +57,7 @@ const createSearchParams = params => {
   )
 }
 
-class FinanceApi {
+export class FinanceApi {
   static bulkUpdateTransactions = (token, data, kwargs) => dispatch => {
     dispatch(setTransactionsLoading(true))
     axios
@@ -60,13 +66,6 @@ class FinanceApi {
         { headers: { Authorization: token } })
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
-  }
-  static clearSuggestions = (token, data) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    axios
-      .put(`${base}/transactions/clear-suggestions/`, data, {headers: {Authorization: token}})
-      .then(response => dispatch(setTransactions(response.data)))
-      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
   }
   static createAccount = (token, data) => dispatch => {
     dispatch(setLoadingAccounts(true));
@@ -154,14 +153,6 @@ class FinanceApi {
       .then(response => dispatch(setTransactions(response.data)))
       .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
   }
-  static train = (token, kwargs) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    dispatch(clearAccuracy())
-    axios
-      .put(`${base}/transactions/train/?${createSearchParams(kwargs)}`, {}, {headers: {Authorization: token}})
-      .then(response => dispatch(setTransactions(response.data)))
-      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
-  }
   static updateAccount = (token, id, data) => dispatch => {
     dispatch(setLoadingAccounts(id))
     axios
@@ -195,6 +186,28 @@ class FinanceApi {
   }
 }
 
-let base = "finance";
+export class TrainingApi {
+  static getTask = (token, taskId) => dispatch => {
+    dispatch(setLoadingTrainingTask(taskId));
+    axios
+      .get(`${base}/training/${taskId}/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setTrainingTask(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTrainingErrors));
+  };
+  static getTasks = token => dispatch => {
+    dispatch(setTrainingLoading(true))
+    axios
+      .get(`${base}/training/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setTrainingResults(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTrainingErrors));
+  };
+  static start = (token, kwargs) => dispatch => {
+    dispatch(setTrainingLoading(true))
+    axios
+      .put(`${base}/training/start/?${createSearchParams(kwargs)}`, {}, {headers: {Authorization: token}})
+      .then(response => dispatch(setTrainingTask(response.data)))
+      .catch(err => handleErrors(err, dispatch, setTrainingErrors))
+  }
+}
 
-export default FinanceApi;
+let base = "finance";

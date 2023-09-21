@@ -1,8 +1,9 @@
+import json
 import pickle
 
 import pandas as pd
 from django.utils import timezone
-from huey.contrib.djhuey import task
+from huey.contrib.djhuey import HUEY, db_task
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -11,13 +12,28 @@ from camera.views import download_blob_into_memory
 from clients.storage import upload_blob_from_string
 from finance.models import Category, Transaction
 
+redis_client = HUEY.storage.redis_client()
+
 
 def load(model_file_name):
     file = download_blob_into_memory(model_file_name, "GOOGLE_STORAGE_MODEL_BUCKET")
     return pickle.loads(file)
 
 
-@task()
+def log_status(external_id, status, **kwargs):
+    new_event = {"status": status, "timestamp": str(timezone.now()), **kwargs}
+
+    details = json.loads(redis_client.get(external_id) or "{}")
+    if not details:
+        details = {"history": [new_event], **new_event}
+    else:
+        details.update(new_event)
+        details["history"].insert(0, new_event)
+    redis_client.set(external_id, json.dumps(details))
+    return details
+
+
+@db_task()
 def predict(queryset, logger):
     total = queryset.count()
     logger.info(f"{total} distinct descriptions")
@@ -42,8 +58,10 @@ def save(item, item_type, prefix, logger):
     )
 
 
-@task()
-def train(logger):
+@db_task()
+def train(logger, external_id):
+    log_status(external_id, status="in_progress")
+
     qs = (
         Transaction.objects.filter(
             amount__lt=0, confirmed_by=Transaction.CONFIRMED_BY_ML
@@ -67,10 +85,12 @@ def train(logger):
     accuracy = model.score(X_test, y_test)
 
     if accuracy < 0.95:
+        log_status(external_id, status="failed", accuracy=accuracy)
         return accuracy
 
     prefix = f"{timezone.now():%Y_%m_%d_%H_%M_%S}_{accuracy}"
     save(model, "model", prefix, logger=logger)
     save(vect, "vectorizer", prefix, logger=logger)
 
+    log_status(external_id, status="success", accuracy=accuracy)
     return accuracy
