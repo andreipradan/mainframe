@@ -58,11 +58,10 @@ def predict(queryset, logger):
         if i and not i % 50:
             progress = i / total * 100
             logger.info(f"{progress:.2f}%")
-            if progress < 90:
-                log_status("predict", progress=f"{progress:.2f}")
+            log_status("predict", progress=f"{progress / 2:.2f}")
 
     logger.info(f"Bulk updating {len(transactions)}")
-    log_status("predict", progress=90)
+    log_status("predict", progress=70)
     Transaction.objects.bulk_update(
         transactions,
         fields=("category_suggestion_id",),

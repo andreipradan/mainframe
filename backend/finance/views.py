@@ -244,7 +244,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
             .order_by("type")
         )
         response.data["confirmed_by_choices"] = Transaction.CONFIRMED_BY_CHOICES
-        response.data["categories"] = Category.objects.values_list("id", flat=True)
+        response.data["categories"] = Category.objects.values_list(
+            "id", flat=True
+        ).order_by("id")
         response.data["accounts"] = Account.objects.values("id", "bank", "type")
         response.data["unidentified_count"] = (
             Transaction.objects.expenses()
