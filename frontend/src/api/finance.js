@@ -180,11 +180,12 @@ export class FinanceApi {
 }
 
 export class PredictionApi {
-  static getTask = (token, type) => dispatch => {
-    dispatch(setLoadingTask({type: type, loading: true}))
+  static getTask = (token, type, updateLoading = true) => dispatch => {
+    if (updateLoading)
+      dispatch(setLoadingTask({type: type, loading: true}))
     axios
       .get(`${base}/prediction/${type}-status/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTask({type: type, data: response.data})))
+      .then((response) => dispatch(setTask({type: type, data: response.data, updateLoading: updateLoading})))
       .catch((err) => handleErrors(err, dispatch, setPredictionErrors));
   };
   static getTasks = token => dispatch => {

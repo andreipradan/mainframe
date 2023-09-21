@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
 
 import Alert from "react-bootstrap/Alert";
@@ -15,6 +15,7 @@ import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
 import { FinanceApi, PredictionApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
+import {setLoadingTask} from "../../../redux/predictionSlice";
 
 const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.replace("-", " ")) : ""
 
@@ -108,12 +109,59 @@ const Categorize = () => {
     [transactions.loading])
   useEffect(() => {
     !transactions.results && dispatch(FinanceApi.getTransactions(token, kwargs))
-    !prediction.results && dispatch(PredictionApi.getTasks(token))
+    !prediction.predict && !prediction.train && dispatch(PredictionApi.getTasks(token))
     setCheckedCategories(null)
     dispatch(setKwargs({...kwargs, page: !transactions.previous
         ? 1
         : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1}))
   }, [transactions.results])
+
+  const predictTimerIdRef = useRef(null);
+  const trainTimerIdRef = useRef(null);
+  const [predictPollingCount, setPredictPollingCount] = useState(0)
+  const [trainPollingCount, setTrainPollingCount] = useState(0)
+
+  useEffect(() => {
+    const startPolling = () => {
+      trainTimerIdRef.current = setInterval( () => {
+        setTrainPollingCount(trainPollingCount + 1)
+        dispatch(PredictionApi.getTask(token, "train", false))
+      }, 1000)
+      dispatch(setLoadingTask({type: "train", loading: true}))
+    };
+
+    const stopPolling = () => {
+      setTrainPollingCount(0)
+      clearInterval(trainTimerIdRef.current);
+      dispatch(setLoadingTask({type: "train", loading: false}))
+    };
+
+    if (["executing", "initial"].includes(prediction.train?.status)) startPolling()
+    else stopPolling()
+
+    return () => stopPolling()
+  }, [prediction.train])
+
+  useEffect(() => {
+    const startPolling = () => {
+      predictTimerIdRef.current = setInterval( () => {
+        setPredictPollingCount(predictPollingCount + 1)
+        dispatch(PredictionApi.getTask(token, "predict", false))
+      }, 1000)
+      dispatch(setLoadingTask({type: "predict", loading: true}))
+    };
+
+    const stopPolling = () => {
+      setPredictPollingCount(0)
+      clearInterval(predictTimerIdRef.current);
+      dispatch(setLoadingTask({type: "predict", loading: false}))
+    };
+
+    if (["executing", "initial", "progress"].includes(prediction.predict?.status)) startPolling()
+    else stopPolling()
+
+    return () => stopPolling()
+  }, [prediction.predict])
 
   return <div>
     <div className="page-header">
@@ -213,18 +261,19 @@ const Categorize = () => {
                                   </span>
                                   : "-"
                               }
+                              {trainPollingCount ? <><br />Poll count: {trainPollingCount}</> : null}
                             </td>
                             <td>
                               {
                                 prediction.loadingTrain
                                   ? <Circles
-                                      height={12}
-                                      width={12}
-                                      wrapperClass="btn"
-                                      wrapperStyle={{display: "default"}}
-                                      ariaLabel="ball-triangle-loading"
-                                      color='orange'
-                                  />
+                                        height={12}
+                                        width={12}
+                                        wrapperClass="btn"
+                                        wrapperStyle={{display: "default"}}
+                                        ariaLabel="ball-triangle-loading"
+                                        color='orange'
+                                    />
                                   : <button
                                       type="button"
                                       className="btn btn-outline-success btn-sm border-0 bg-transparent"
@@ -255,7 +304,10 @@ const Categorize = () => {
                               prediction.predict.progress
                                 ? `${prediction.predict.progress}%`
                                 : "-"
-                            }</td>
+                            }
+                            {predictPollingCount ? <><br />Poll count: {predictPollingCount}</> : null}
+
+                            </td>
                             <td>
                               {
                                 prediction.loadingPredict

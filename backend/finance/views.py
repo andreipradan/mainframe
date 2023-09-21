@@ -40,7 +40,7 @@ from finance.serializers import (
     TimetableSerializer,
     TransactionSerializer,
 )
-from finance.tasks import predict, train
+from finance.tasks import predict, train, log_status
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -271,11 +271,10 @@ class PredictionViewSet(viewsets.ViewSet):
     def start_prediction(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
         redis_entry = client.get("predict")
-        details = json.loads(redis_entry) if redis_entry else {"status": "initial"}
-        if (status := details.get("status")) not in ["initial", *FINAL_STATUSES]:
+        details = json.loads(redis_entry) if redis_entry else {}
+        if (status := details.get("status")) not in FINAL_STATUSES:
             return JsonResponse({"error": f"prediction - {status}"}, status=400)
-
-        if status != "initial":
+        else:
             client.delete("predict")
 
         queryset = Transaction.objects.expenses().filter(
@@ -286,17 +285,18 @@ class PredictionViewSet(viewsets.ViewSet):
             queryset = queryset.filter(description__in=descriptions)
 
         predict(queryset.values("description", "id"), logger)
-        return JsonResponse(data={"type": "predict", **details})
+        return JsonResponse(
+            data={"type": "predict", **log_status("predict", status="initial")}
+        )
 
     @action(methods=["put"], detail=False, url_path="start-training")
     def start_training(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
         redis_entry = client.get("train")
-        details = json.loads(redis_entry) if redis_entry else {"status": "initial"}
-        if (status := details.get("status")) not in ["initial", *FINAL_STATUSES]:
+        details = json.loads(redis_entry) if redis_entry else {}
+        if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"error": f"training - {status}"}, status=400)
-
-        if status != "initial":
+        else:
             client.delete("train")
 
         try:
@@ -304,7 +304,9 @@ class PredictionViewSet(viewsets.ViewSet):
         except redis.exceptions.ConnectionError as e:
             logger.exception(e)
             return JsonResponse({"error": "training task unable to start"}, status=400)
-        return JsonResponse(data={"type": "train", **details})
+        return JsonResponse(
+            data={"type": "train", **log_status("train", status="initial")}
+        )
 
     @action(methods=["get"], detail=False, url_path="predict-status")
     def predict_status(self, request, *args, **kwargs):
