@@ -155,6 +155,8 @@ const Categorize = () => {
       setPredictPollingCount(0)
       clearInterval(predictTimerIdRef.current);
       dispatch(setLoadingTask({type: "predict", loading: false}))
+      if (prediction.predict?.status === "complete")
+        dispatch(FinanceApi.getTransactions(token, kwargs))
     };
 
     if (["executing", "initial", "progress"].includes(prediction.predict?.status)) startPolling()
@@ -262,6 +264,11 @@ const Categorize = () => {
                                   : "-"
                               }
                               {trainPollingCount ? <><br />Poll count: {trainPollingCount}</> : null}
+                              {
+                                prediction.train.error
+                                  ? <><br/>Error: {prediction.train.error}</>
+                                  : null
+                              }
                             </td>
                             <td>
                               {
@@ -307,6 +314,11 @@ const Categorize = () => {
                             }
                             {predictPollingCount ? <><br />Poll count: {predictPollingCount}</> : null}
 
+                              {
+                                prediction.predict.error
+                                  ? <><br/>Error: {prediction.predict.error}</>
+                                  : null
+                              }
                             </td>
                             <td>
                               {

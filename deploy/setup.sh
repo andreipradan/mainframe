@@ -28,7 +28,7 @@ if [[ $2 == restart ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup][services] Done."
 else
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup] Restarting backend"
-  sudo systemctl restart backend
+  sudo systemctl restart backend huey
 fi
 
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [setup] done."

@@ -21,7 +21,7 @@ redis_client = HUEY.storage.redis_client()
 def signal_expired(signal, task, exc=None):
     kwargs = {"task_type": task.name, "status": signal}
     if exc:
-        kwargs["reason"] = str(exc)
+        kwargs["error"] = str(exc)
     log_status(**kwargs)
 
 
@@ -30,8 +30,8 @@ def load(model_file_name):
     return pickle.loads(file)
 
 
-def log_status(task_type, status, **kwargs):
-    new_event = {"status": status, "timestamp": str(timezone.now()), **kwargs}
+def log_status(task_type, **kwargs):
+    new_event = {"timestamp": str(timezone.now()), **kwargs}
 
     details = json.loads(redis_client.get(task_type) or "{}")
     if not details:
@@ -55,16 +55,20 @@ def predict(queryset, logger):
     transactions = []
     for i, (item, category) in enumerate(zip(queryset, predictions)):
         transactions.append(Transaction(id=item["id"], category_suggestion_id=category))
-        i and not i % 50 and logger.info(f"{i / total * 100:.2f}%")
+        if i and not i % 50:
+            progress = i / total * 100
+            logger.info(f"{progress:.2f}%")
+            if progress < 90:
+                log_status("predict", progress=f"{progress:.2f}")
 
     logger.info(f"Bulk updating {len(transactions)}")
-    log_status("predict", status="progress", progress=50)
+    log_status("predict", progress=90)
     Transaction.objects.bulk_update(
         transactions,
         fields=("category_suggestion_id",),
         batch_size=1000,
     )
-    log_status("predict", status="progress", progress=100)
+    log_status("predict", progress=100)
     logger.info("Done.")
     return transactions
 
@@ -102,7 +106,7 @@ def train(logger):
 
     accuracy = model.score(X_test, y_test)
 
-    log_status("train", status="accuracy", accuracy=accuracy)
+    log_status("train", accuracy=accuracy)
     if accuracy < 0.95:
         log_status("train", status=SIGNAL_ERROR, accuracy=accuracy)
         return accuracy
