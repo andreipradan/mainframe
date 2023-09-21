@@ -461,7 +461,7 @@ const Categorize = () => {
                         <td onClick={e => e.stopPropagation()} style={{minWidth: "180px"}}>
                           <Select
                             onChange={newValue => onCheckedCategoryChange(newValue, t.description)}
-                            options={transactions.categories?.map(c => ({label: getCategoryVerbose(c.id), value: c.id}))}
+                            options={transactions.categories?.map(c => ({label: getCategoryVerbose(c), value: c}))}
                             styles={selectStyles}
                             value={{
                               label: capitalize(getSpecificCategory(t.description) || t.category).replace("-", " "),
@@ -643,10 +643,10 @@ const Categorize = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   onChange={onCategoryChange}
-                  options={transactions.categories?.map(c => ({label: getCategoryVerbose(c.id), value: c.id}))}
+                  options={transactions.categories?.map(c => ({label: getCategoryVerbose(c), value: c}))}
                   styles={selectStyles}
                   value={{
-                    label: kwargs.category,
+                    label: getCategoryVerbose(kwargs.category),
                     value: kwargs.category}}
                 />
               </Form.Group>
