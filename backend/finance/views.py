@@ -1,6 +1,5 @@
 import json
 import logging
-import uuid
 from operator import attrgetter, itemgetter
 
 import django.utils.timezone
@@ -10,6 +9,15 @@ from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncMonth, TruncYear
 from django.http import Http404, JsonResponse
 from huey.contrib.djhuey import HUEY
+from huey.signals import (
+    SIGNAL_CANCELED,
+    SIGNAL_COMPLETE,
+    SIGNAL_ERROR,
+    SIGNAL_EXPIRED,
+    SIGNAL_INTERRUPTED,
+    SIGNAL_LOCKED,
+    SIGNAL_REVOKED,
+)
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -32,10 +40,20 @@ from finance.serializers import (
     TimetableSerializer,
     TransactionSerializer,
 )
-from finance.tasks import log_status, predict, train
+from finance.tasks import predict, train
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
+
+FINAL_STATUSES = [
+    SIGNAL_CANCELED,
+    SIGNAL_COMPLETE,
+    SIGNAL_ERROR,
+    SIGNAL_EXPIRED,
+    SIGNAL_INTERRUPTED,
+    SIGNAL_LOCKED,
+    SIGNAL_REVOKED,
+]
 
 
 class AccountViewSet(viewsets.ModelViewSet):
@@ -183,31 +201,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
         response.data["msg"] = {"message": f"Successfully updated 1 transaction"}
         return response
 
-    @action(methods=["put"], detail=False)
-    def predict(self, request, *args, **kwargs):
-        queryset = Transaction.objects.expenses().filter(
-            category=Category.UNIDENTIFIED,
-            confirmed_by=Transaction.CONFIRMED_BY_UNCONFIRMED,
-        )
-        if descriptions := self.request.data:
-            queryset = queryset.filter(description__in=descriptions)
-
-        transactions = predict(queryset.values("description", "id"), logger)(
-            blocking=True
-        )
-        logger.info(f"Bulk updating {len(transactions)}")
-        total = Transaction.objects.bulk_update(
-            transactions,
-            fields=("category_suggestion_id",),
-            batch_size=1000,
-        )
-        logger.info("Done.")
-        response = self.list(request, *args, **kwargs)
-        response.data["msg"] = {
-            "message": f"Completed predicting categories for {total} transactions 🎉"
-        }
-        return response
-
     @action(methods=["put"], detail=False, url_path="update-all")
     def update_all(self, request, *args, **kwargs):
         category = self.request.data["category"]
@@ -263,31 +256,66 @@ class TransactionViewSet(viewsets.ModelViewSet):
         return response
 
 
-class TrainingViewSet(viewsets.ViewSet):
+class PredictionViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
-        tasks = [
-            {"id": key.decode("utf-8"), **json.loads(client.get(key))}
-            for key in client.keys()
-            if key not in [b"huey.results.mainframe", b"huey.redis.huey"]
-        ]
-        return JsonResponse({"count": len(tasks), "results": tasks})
+        train_data = client.get("train")
+        train_data = json.loads(train_data) if train_data else None
+        predict_data = client.get("predict")
+        predict_data = json.loads(predict_data) if predict_data else None
+        return JsonResponse({"train": train_data, "predict": predict_data})
 
-    def retrieve(self, request, pk, *args, **kwargs):
+    @action(methods=["put"], detail=False, url_path="start-prediction")
+    def start_prediction(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
-        if not (task := client.get(pk)):
-            raise Http404
-        return JsonResponse(data={"id": pk, **json.loads(task)})
+        redis_entry = client.get("predict")
+        details = json.loads(redis_entry) if redis_entry else {"status": "initial"}
+        if (status := details.get("status")) not in ["initial", *FINAL_STATUSES]:
+            return JsonResponse({"error": f"prediction - {status}"}, status=400)
 
-    @action(methods=["put"], detail=False)
-    def start(self, request, *args, **kwargs):
-        external_id = str(uuid.uuid4())
+        if status != "initial":
+            client.delete("predict")
+
+        queryset = Transaction.objects.expenses().filter(
+            category=Category.UNIDENTIFIED,
+            confirmed_by=Transaction.CONFIRMED_BY_UNCONFIRMED,
+        )
+        if descriptions := self.request.data:
+            queryset = queryset.filter(description__in=descriptions)
+
+        predict(queryset.values("description", "id"), logger)
+        return JsonResponse(data={"type": "predict", **details})
+
+    @action(methods=["put"], detail=False, url_path="start-training")
+    def start_training(self, request, *args, **kwargs):
+        client = HUEY.storage.redis_client()
+        redis_entry = client.get("train")
+        details = json.loads(redis_entry) if redis_entry else {"status": "initial"}
+        if (status := details.get("status")) not in ["initial", *FINAL_STATUSES]:
+            return JsonResponse({"error": f"training - {status}"}, status=400)
+
+        if status != "initial":
+            client.delete("train")
+
         try:
-            task_result = train(logger, external_id)
+            train(logger)
         except redis.exceptions.ConnectionError as e:
             logger.exception(e)
             return JsonResponse({"error": "training task unable to start"}, status=400)
-        details = log_status(external_id, status="pending", task_id=task_result.id)
-        return JsonResponse(data={"id": external_id, **details})
+        return JsonResponse(data={"type": "train", **details})
+
+    @action(methods=["get"], detail=False, url_path="predict-status")
+    def predict_status(self, request, *args, **kwargs):
+        client = HUEY.storage.redis_client()
+        if not (task := client.get("predict")):
+            raise Http404
+        return JsonResponse(data={"type": "predict", **json.loads(task)})
+
+    @action(methods=["get"], detail=False, url_path="train-status")
+    def train_status(self, request, *args, **kwargs):
+        client = HUEY.storage.redis_client()
+        if not (task := client.get("train")):
+            raise Http404
+        return JsonResponse(data={"type": "train", **json.loads(task)})

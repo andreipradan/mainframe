@@ -12,7 +12,7 @@ import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
-import { FinanceApi, TrainingApi } from "../../../api/finance";
+import { FinanceApi, PredictionApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
 
@@ -21,21 +21,21 @@ const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.repl
 const Categorize = () => {
   const dispatch = useDispatch();
 
-  const token = useSelector((state) => state.auth.token)
-  const training = useSelector(state => state.training)
-  const transactions = useSelector(state => state.transactions)
   const kwargs = useSelector(state => state.transactions.kwargs) || {}
+  const prediction = useSelector(state => state.prediction)
+  const token = useSelector((state) => state.auth.token)
+  const transactions = useSelector(state => state.transactions)
 
   const [messageAlertOpen, setMessageAlertOpen] = useState(false)
   const [alertOpen, setAlertOpen] = useState(false)
   const [allChecked, setAllChecked] = useState(false)
   const [checkedCategories, setCheckedCategories] = useState(null)
   const [predictModalOpen, setPredictModalOpen] = useState(false)
+  const [predictionAlertOpen, setPredictionAlertOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [specificCategoriesModalOpen, setSpecificCategoriesModalOpen] = useState(false)
-  const [trainingAlertOpen, setTrainingAlertOpen] = useState(false)
   const [trainingModalOpen, setTrainingModalOpen] = useState(false)
-  const [trainingTasksOpen, setTrainingTasksOpen] = useState(false)
+  const [predictionTasksOpen, setPredictionTasksOpen] = useState(false)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
 
   const currentPage = !transactions.previous
@@ -88,7 +88,7 @@ const Categorize = () => {
   }
 
   useEffect(() => {setMessageAlertOpen(!!transactions.msg)}, [transactions.msg])
-  useEffect(() => {setTrainingAlertOpen(!!training.errors)}, [training.errors])
+  useEffect(() => {setPredictionAlertOpen(!!prediction.errors)}, [prediction.errors])
   useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {!transactions.results && dispatch(setKwargs({...kwargs, type: null}))}, [])
   useEffect(() => {
@@ -108,7 +108,7 @@ const Categorize = () => {
     [transactions.loading])
   useEffect(() => {
     !transactions.results && dispatch(FinanceApi.getTransactions(token, kwargs))
-    !training.results && dispatch(TrainingApi.getTasks(token))
+    !prediction.results && dispatch(PredictionApi.getTasks(token))
     setCheckedCategories(null)
     dispatch(setKwargs({...kwargs, page: !transactions.previous
         ? 1
@@ -135,12 +135,12 @@ const Categorize = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title"
-                onClick={ () => setTrainingTasksOpen(!trainingTasksOpen) } data-toggle="collapse"
+                onClick={ () => setPredictionTasksOpen(!predictionTasksOpen) } data-toggle="collapse"
                 style={{cursor: "pointer"}}
             >
-              Training tasks
+              Tasks
               {
-                training.loading
+                prediction.loading
                   ? <Circles
                     visible={true}
                     height={20}
@@ -155,7 +155,7 @@ const Categorize = () => {
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={e => {
                       e.stopPropagation()
-                      dispatch(TrainingApi.getTasks(token))
+                      dispatch(PredictionApi.getTasks(token))
                     }}
                   >
                       <i className="mdi mdi-refresh"></i>
@@ -170,20 +170,20 @@ const Categorize = () => {
                 </Button>
               </div>
               {
-                trainingAlertOpen &&
+                predictionAlertOpen &&
                 <Alert
                   variant={"danger"}
                   dismissible
-                  onClose={() => setTrainingAlertOpen(false)}
+                  onClose={() => setPredictionAlertOpen(false)}
                 >
-                  {training.errors}
+                  {prediction.errors}
                 </Alert>
               }
               {
-                trainingTasksOpen ? null : <small className="small text-muted">Click to expand</small>
+                predictionTasksOpen ? null : <small className="small text-muted">Click to expand</small>
               }
             </h4>
-             <Collapse in={ trainingTasksOpen }>
+             <Collapse in={ predictionTasksOpen }>
               <div className="table-responsive">
                 <table className="table">
                   <thead>
@@ -191,48 +191,95 @@ const Categorize = () => {
                       <th>Task</th>
                       <th>Last Updated</th>
                       <th>Status</th>
-                      <th>Accuracy</th>
+                      <th>Details</th>
                       <th>Actions</th>
                       {/*<th>History</th>*/}
                     </tr>
                   </thead>
                   <tbody>
-                  {
-                    training.results?.length
-                      ? training.results.map((t, i) =>
-                        <tr key={i}>
-                          <td>{t.id}</td>
-                          <td>{new Date(t.timestamp).toLocaleString()}</td>
-                          <td>{t.status.toUpperCase()}</td>
-                          <td>{(parseFloat(t.accuracy) * 100).toFixed(1)}%</td>
-                          <td>
-                            {
-                              training.loadingTasks?.find(id => id === t.id)
-                                ? <Circles
-                                    height={12}
-                                    width={12}
-                                    wrapperClass="btn"
-                                    wrapperStyle={{display: "default"}}
-                                    ariaLabel="ball-triangle-loading"
-                                    color='orange'
-                                />
-                                : <button
-                                    type="button"
-                                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                                    onClick={() => dispatch(TrainingApi.getTask(token, t.id))}
-                                  >
-                                    <i className="mdi mdi-refresh"></i>
-                                  </button>
-                            }
-                          </td>
-                          {/*<td>*/}
-                          {/*  <ul>*/}
-                          {/*    {t.history.map(t=> <li>{t.status}<br/><small>{new Date(t.timestamp).toLocaleString()}</small></li>)}*/}
-                          {/*  </ul>*/}
-                          {/*</td>*/}
-                        </tr>)
-                      : "No tasks found"
-                  }
+                  <tr>
+                    <td>Train</td>
+                    {
+                      prediction.train
+                        ? <>
+                            <td>{new Date(prediction.train.timestamp).toLocaleString()}</td>
+                            <td>{prediction.train.status.toUpperCase()}</td>
+                            <td>
+                              {
+                                prediction.train.accuracy
+                                  ? <span>
+                                      Accuracy:&nbsp;
+                                      {(parseFloat(prediction.train.accuracy) * 100).toFixed(1)}%
+                                  </span>
+                                  : "-"
+                              }
+                            </td>
+                            <td>
+                              {
+                                prediction.loadingTrain
+                                  ? <Circles
+                                      height={12}
+                                      width={12}
+                                      wrapperClass="btn"
+                                      wrapperStyle={{display: "default"}}
+                                      ariaLabel="ball-triangle-loading"
+                                      color='orange'
+                                  />
+                                  : <button
+                                      type="button"
+                                      className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                                      onClick={() => dispatch(PredictionApi.getTask(token, "train"))}
+                                    >
+                                      <i className="mdi mdi-refresh"></i>
+                                    </button>
+                              }
+                            </td>
+                            {/*<td>*/}
+                            {/*  <ul>*/}
+                            {/*    {t.history.map(t=> <li>{t.status}<br/><small>{new Date(t.timestamp).toLocaleString()}</small></li>)}*/}
+                            {/*  </ul>*/}
+                            {/*</td>*/}
+                          </>
+                        : <td colSpan={4}> No training task found</td>
+                    }
+
+                  </tr>
+                  <tr>
+                    <td>Predict</td>
+                    {
+                      prediction.predict
+                        ? <>
+                            <td>{new Date(prediction.predict.timestamp).toLocaleString()}</td>
+                            <td>{prediction.predict.status.toUpperCase()}</td>
+                            <td>{
+                              prediction.predict.progress
+                                ? `${prediction.predict.progress}%`
+                                : "-"
+                            }</td>
+                            <td>
+                              {
+                                prediction.loadingPredict
+                                  ? <Circles
+                                      height={12}
+                                      width={12}
+                                      wrapperClass="btn"
+                                      wrapperStyle={{display: "default"}}
+                                      ariaLabel="ball-triangle-loading"
+                                      color='orange'
+                                  />
+                                  : <button
+                                      type="button"
+                                      className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                                      onClick={() => dispatch(PredictionApi.getTask(token, "predict"))}
+                                    >
+                                      <i className="mdi mdi-refresh"></i>
+                                    </button>
+                              }
+                            </td>
+                          </>
+                        : <td colSpan={4}>No prediction task found</td>
+                    }
+                  </tr>
                   </tbody>
                 </table>
               </div>
@@ -263,7 +310,7 @@ const Categorize = () => {
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => {
                       dispatch(FinanceApi.getTransactions(token, kwargs))
-                      dispatch(TrainingApi.getTasks(token))
+                      dispatch(PredictionApi.getTasks(token))
                     }}
                   >
                       <i className="mdi mdi-refresh"></i>
@@ -274,7 +321,7 @@ const Categorize = () => {
                   unpredictedCategories?.length
                     ? <Button
                       className={"btn btn-sm btn-secondary mr-1"}
-                      onClick={() => dispatch(FinanceApi.predict(token, unpredictedCategories, kwargs))}
+                      onClick={() => dispatch(PredictionApi.predict(token, unpredictedCategories, kwargs))}
                     >
                       Predict latest {unpredictedCategories.length}
                     </Button>
@@ -661,7 +708,7 @@ const Categorize = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(TrainingApi.start(token, kwargs))
+            dispatch(PredictionApi.train(token))
             setTrainingModalOpen(false)
           }}
         >
@@ -725,7 +772,7 @@ const Categorize = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(FinanceApi.predict(token, checkedCategories?.map(t => t.description) || [], kwargs))
+            dispatch(PredictionApi.predict(token, checkedCategories?.map(t => t.description) || [], kwargs))
             setPredictModalOpen(false)
           }}
         >

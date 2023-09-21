@@ -12,9 +12,9 @@ import lightsReducer from "../redux/lightsSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
 import paymentReducer from "../redux/paymentSlice";
+import predictionReducer from "./predictionSlice";
 import rpiReducer from "../redux/rpiSlice";
 import timetableReducer from "./timetableSlice";
-import trainingReducer from "../redux/trainingSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 
 export default configureStore({
@@ -32,9 +32,9 @@ export default configureStore({
     logs: logsReducer,
     meals: mealsReducer,
     payment: paymentReducer,
+    prediction: predictionReducer,
     rpi: rpiReducer,
     timetable: timetableReducer,
-    training: trainingReducer,
     transactions: transactionsReducer,
   },
 });

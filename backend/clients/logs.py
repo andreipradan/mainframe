@@ -4,6 +4,7 @@ from functools import cached_property
 
 import axiom
 import environ
+from django.conf import settings
 
 FORMAT = "%(asctime)s - %(levelname)s - %(module)s.%(name)s - %(msg)s"
 logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -38,7 +39,10 @@ class AxiomHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         self.format(record)
-        self.client.ingest_events(self.dataset, [parse_record(record)])
+        if settings.ENV == "local":
+            logging.warning(record.msg)
+        else:
+            self.client.ingest_events(self.dataset, [parse_record(record)])
 
 
 class ManagementCommandsHandler(AxiomHandler):

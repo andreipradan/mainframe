@@ -2,8 +2,10 @@ import json
 import pickle
 
 import pandas as pd
+from django.conf import settings
 from django.utils import timezone
 from huey.contrib.djhuey import HUEY, db_task
+from huey.signals import SIGNAL_ERROR
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -15,21 +17,29 @@ from finance.models import Category, Transaction
 redis_client = HUEY.storage.redis_client()
 
 
+@HUEY.signal()
+def signal_expired(signal, task, exc=None):
+    kwargs = {"task_type": task.name, "status": signal}
+    if exc:
+        kwargs["reason"] = str(exc)
+    log_status(**kwargs)
+
+
 def load(model_file_name):
     file = download_blob_into_memory(model_file_name, "GOOGLE_STORAGE_MODEL_BUCKET")
     return pickle.loads(file)
 
 
-def log_status(external_id, status, **kwargs):
+def log_status(task_type, status, **kwargs):
     new_event = {"status": status, "timestamp": str(timezone.now()), **kwargs}
 
-    details = json.loads(redis_client.get(external_id) or "{}")
+    details = json.loads(redis_client.get(task_type) or "{}")
     if not details:
         details = {"history": [new_event], **new_event}
     else:
         details.update(new_event)
         details["history"].insert(0, new_event)
-    redis_client.set(external_id, json.dumps(details))
+    redis_client.set(task_type, json.dumps(details))
     return details
 
 
@@ -46,6 +56,16 @@ def predict(queryset, logger):
     for i, (item, category) in enumerate(zip(queryset, predictions)):
         transactions.append(Transaction(id=item["id"], category_suggestion_id=category))
         i and not i % 50 and logger.info(f"{i / total * 100:.2f}%")
+
+    logger.info(f"Bulk updating {len(transactions)}")
+    log_status("predict", status="progress", progress=50)
+    Transaction.objects.bulk_update(
+        transactions,
+        fields=("category_suggestion_id",),
+        batch_size=1000,
+    )
+    log_status("predict", status="progress", progress=100)
+    logger.info("Done.")
     return transactions
 
 
@@ -58,10 +78,8 @@ def save(item, item_type, prefix, logger):
     )
 
 
-@db_task()
-def train(logger, external_id):
-    log_status(external_id, status="in_progress")
-
+@db_task(expires=10)
+def train(logger):
     qs = (
         Transaction.objects.filter(
             amount__lt=0, confirmed_by=Transaction.CONFIRMED_BY_ML
@@ -84,13 +102,13 @@ def train(logger, external_id):
 
     accuracy = model.score(X_test, y_test)
 
+    log_status("train", status="accuracy", accuracy=accuracy)
     if accuracy < 0.95:
-        log_status(external_id, status="failed", accuracy=accuracy)
+        log_status("train", status=SIGNAL_ERROR, accuracy=accuracy)
         return accuracy
 
-    log_status(external_id, status="success", accuracy=accuracy)
-
-    prefix = f"{timezone.now():%Y_%m_%d_%H_%M_%S}_{accuracy}"
-    save(model, "model", prefix, logger=logger)
-    save(vect, "vectorizer", prefix, logger=logger)
+    if settings.ENV != "local":
+        prefix = f"{timezone.now():%Y_%m_%d_%H_%M_%S}_{accuracy}"
+        save(model, "model", prefix, logger=logger)
+        save(vect, "vectorizer", prefix, logger=logger)
     return accuracy

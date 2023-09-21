@@ -39,12 +39,12 @@ import {
   updateTransaction,
 } from "../redux/transactionsSlice";
 import {
-  set as setTrainingResults,
-  setErrors as setTrainingErrors,
-  setLoading as setTrainingLoading,
-  setLoadingTask as setLoadingTrainingTask,
-  setTrainingTask,
-} from "../redux/trainingSlice"
+  set as setPredictionResults,
+  setErrors as setPredictionErrors,
+  setLoading as setPredictionLoading,
+  setLoadingTask,
+  setTask,
+} from "../redux/predictionSlice"
 import {handleErrors} from "./errors";
 
 const createSearchParams = params => {
@@ -146,13 +146,6 @@ export class FinanceApi {
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
-  static predict = (token, data, kwargs) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    axios
-      .put(`${base}/transactions/predict/?${createSearchParams(kwargs)}`, data, {headers: {Authorization: token}})
-      .then(response => dispatch(setTransactions(response.data)))
-      .catch(err => handleErrors(err, dispatch, setTransactionsErrors))
-  }
   static updateAccount = (token, id, data) => dispatch => {
     dispatch(setLoadingAccounts(id))
     axios
@@ -186,27 +179,34 @@ export class FinanceApi {
   }
 }
 
-export class TrainingApi {
-  static getTask = (token, taskId) => dispatch => {
-    dispatch(setLoadingTrainingTask(taskId));
+export class PredictionApi {
+  static getTask = (token, type) => dispatch => {
+    dispatch(setLoadingTask({type: type, loading: true}))
     axios
-      .get(`${base}/training/${taskId}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTrainingTask(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTrainingErrors));
+      .get(`${base}/prediction/${type}-status/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setTask({type: type, data: response.data})))
+      .catch((err) => handleErrors(err, dispatch, setPredictionErrors));
   };
   static getTasks = token => dispatch => {
-    dispatch(setTrainingLoading(true))
+    dispatch(setPredictionLoading(true))
     axios
-      .get(`${base}/training/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTrainingResults(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTrainingErrors));
+      .get(`${base}/prediction/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setPredictionResults(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setPredictionErrors));
   };
-  static start = (token, kwargs) => dispatch => {
-    dispatch(setTrainingLoading(true))
+  static predict = (token, data) => dispatch => {
+    dispatch(setLoadingTask({type: "predict", loading: true}))
     axios
-      .put(`${base}/training/start/?${createSearchParams(kwargs)}`, {}, {headers: {Authorization: token}})
-      .then(response => dispatch(setTrainingTask(response.data)))
-      .catch(err => handleErrors(err, dispatch, setTrainingErrors))
+      .put(`${base}/prediction/start-prediction/`, data, {headers: {Authorization: token}})
+      .then(response => dispatch(setTask({type: "predict", data: response.data})))
+      .catch(err => handleErrors(err, dispatch, setPredictionErrors))
+  }
+  static train = token => dispatch => {
+    dispatch(setLoadingTask({type: "train", loading: true}))
+    axios
+      .put(`${base}/prediction/start-training/`, {}, {headers: {Authorization: token}})
+      .then(response => dispatch(setTask({type: "train", data: response.data})))
+      .catch(err => handleErrors(err, dispatch, setPredictionErrors))
   }
 }
 
