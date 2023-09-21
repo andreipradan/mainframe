@@ -272,7 +272,7 @@ class PredictionViewSet(viewsets.ViewSet):
         client = HUEY.storage.redis_client()
         redis_entry = client.get("predict")
         details = json.loads(redis_entry) if redis_entry else {}
-        if (status := details.get("status")) not in FINAL_STATUSES:
+        if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"error": f"prediction - {status}"}, status=400)
         else:
             client.delete("predict")
