@@ -11,6 +11,7 @@ google-cloud-translate==3.10.1  #--no-cache-dir
 gunicorn==20.1.0
 huey==2.4.5
 ipython==8.13.2
+lxml==4.9.3
 openpyxl==3.1.2
 pandas==2.0.3
 Pillow==9.5.0

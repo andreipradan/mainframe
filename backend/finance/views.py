@@ -31,6 +31,7 @@ from finance.models import (
     Timetable,
     Transaction,
     get_default_credit,
+    ExchangeRate,
 )
 from finance.serializers import (
     AccountSerializer,
@@ -39,6 +40,7 @@ from finance.serializers import (
     PaymentSerializer,
     TimetableSerializer,
     TransactionSerializer,
+    ExchangeRateSerializer,
 )
 from finance.tasks import predict, train, log_status
 
@@ -121,12 +123,27 @@ class CreditViewSet(viewsets.ViewSet):
     def list(self, request, **kwargs):
         credit = get_default_credit()
         latest_timetable = credit.latest_timetable
+        rates = (
+            ExchangeRate.objects.filter(
+                Q(symbol__startswith=credit.currency)
+                | Q(symbol__endswith=credit.currency)
+            )
+            .distinct("symbol")
+            .order_by("symbol", "-date")
+        )
         return JsonResponse(
             data={
                 "credit": CreditSerializer(credit).data,
                 "latest_timetable": TimetableSerializer(latest_timetable).data,
+                "rates": ExchangeRateSerializer(rates, many=True).data,
             }
         )
+
+
+class ExchangeRateViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = ExchangeRate.objects.all()
+    serializer_class = ExchangeRateSerializer
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -260,10 +277,15 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 class PredictionViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
+    error = "Tasks backend unreachable"
 
     def list(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
-        train_data = client.get("train")
+        try:
+            train_data = client.get("train")
+        except redis.exceptions.ConnectionError:
+            logger.exception(self.error)
+            return JsonResponse({"error": self.error}, status=400)
         train_data = json.loads(train_data) if train_data else None
         predict_data = client.get("predict")
         predict_data = json.loads(predict_data) if predict_data else None
@@ -272,7 +294,11 @@ class PredictionViewSet(viewsets.ViewSet):
     @action(methods=["put"], detail=False, url_path="start-prediction")
     def start_prediction(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
-        redis_entry = client.get("predict")
+        try:
+            redis_entry = client.get("predict")
+        except redis.exceptions.ConnectionError:
+            logger.exception(self.error)
+            return JsonResponse({"error": self.error}, status=400)
         details = json.loads(redis_entry) if redis_entry else {}
         if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"error": f"prediction - {status}"}, status=400)
@@ -294,7 +320,12 @@ class PredictionViewSet(viewsets.ViewSet):
     @action(methods=["put"], detail=False, url_path="start-training")
     def start_training(self, request, *args, **kwargs):
         client = HUEY.storage.redis_client()
-        redis_entry = client.get("train")
+        try:
+            redis_entry = client.get("train")
+        except redis.exceptions.ConnectionError:
+            logger.exception(self.error)
+            return JsonResponse({"error": self.error}, status=400)
+
         details = json.loads(redis_entry) if redis_entry else {}
         if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"error": f"training - {status}"}, status=400)
@@ -305,7 +336,7 @@ class PredictionViewSet(viewsets.ViewSet):
             train(logger)
         except redis.exceptions.ConnectionError as e:
             logger.exception(e)
-            return JsonResponse({"error": "training task unable to start"}, status=400)
+            return JsonResponse({"error": self.error}, status=400)
         return JsonResponse(
             data={"type": "train", **log_status("train", status="initial")}
         )

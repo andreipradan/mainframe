@@ -8,6 +8,7 @@ from finance.views import (
     TimetableViewSet,
     PredictionViewSet,
     TransactionViewSet,
+    ExchangeRateViewSet,
 )
 
 router = routers.SimpleRouter()
@@ -15,6 +16,7 @@ router = routers.SimpleRouter()
 router.register("accounts", AccountViewSet, basename="accounts")
 router.register("categories", CategoryViewSet, basename="categories")
 router.register("credit", CreditViewSet, basename="credit")
+router.register("exchange-rate", ExchangeRateViewSet, basename="exchange_rate")
 router.register("payments", PaymentViewSet, basename="payments")
 router.register("prediction", PredictionViewSet, basename="prediction")
 router.register("timetables", TimetableViewSet, basename="timetables")

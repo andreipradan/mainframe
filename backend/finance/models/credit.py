@@ -68,6 +68,17 @@ class Credit(TimeStampedModel):
         return self.timetable_set.order_by("-date").first()
 
 
+class ExchangeRate(TimeStampedModel):
+    date = models.DateField()
+    source = models.CharField(max_length=64)
+    symbol = models.CharField(max_length=6)
+    value = models.DecimalField(decimal_places=4, max_digits=10)
+
+    class Meta:
+        ordering = ("-date", "symbol")
+        unique_together = "date", "source", "symbol"
+
+
 class Payment(TimeStampedModel):
     credit = models.ForeignKey(
         default=get_default_credit,

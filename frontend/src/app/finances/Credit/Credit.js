@@ -1,20 +1,22 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { Bar, Doughnut } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
+import { ProgressBar } from "react-bootstrap";
+import { Tooltip } from "react-tooltip";
+import Alert from "react-bootstrap/Alert";
+import Marquee from "react-fast-marquee";
+import Select from "react-select";
 import "nouislider/distribute/nouislider.css";
 
-import ListItem from "../shared/ListItem";
 import { FinanceApi } from "../../../api/finance";
-import {calculateSum, getPercentage} from "../utils";
-import Alert from "react-bootstrap/Alert";
-import { Bar, Doughnut } from "react-chartjs-2";
-import {ProgressBar} from "react-bootstrap";
-import {Tooltip} from "react-tooltip";
-import {selectPayment} from "../../../redux/paymentSlice";
+import { calculateSum, getPercentage } from "../utils";
+import { selectPayment } from "../../../redux/paymentSlice";
+import { selectStyles } from "../Categorize/EditModal";
+import { selectTimetable } from "../../../redux/timetableSlice";
+import ListItem from "../shared/ListItem";
 import PaymentEditModal from "./components/PaymentEditModal";
 import TimetableEditModal from "./components/TimetableEditModal";
-import Marquee from "react-fast-marquee";
-import {selectTimetable} from "../../../redux/timetableSlice";
 
 const Credit = () => {
   const dispatch = useDispatch();
@@ -23,8 +25,13 @@ const Credit = () => {
   const overview = useSelector(state => state.credit)
   const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
   useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
-  useEffect(() => {!overview.details && dispatch(FinanceApi.getCredit(token))}, []);
+  useEffect(() => {
+    if (!overview.details) dispatch(FinanceApi.getCredit(token))
+    else onChangeCurrency()
+    }, [overview.details]
+  );
   const credit = overview.details?.credit
+  const rates = overview.details?.rates
   const latestTimetable = overview.details?.latest_timetable.amortization_table
 
   const payment = useSelector(state => state.payment)
@@ -37,22 +44,13 @@ const Credit = () => {
   useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
   useEffect(() => {!timetable.results && dispatch(FinanceApi.getCreditTimetables(token))}, []);
 
-  const paidTotal = calculateSum(payment.results, "total")
-  const paidInterest = calculateSum(payment.results, "interest")
-  const paidPrincipal = calculateSum(payment.results, "principal")
-  const paidPrepaid = calculateSum(payment.results, "total", "is_prepayment")
-
-  const remainingPrincipal = calculateSum(latestTimetable, "principal")
-  const remainingInterest = calculateSum(latestTimetable, "interest")
-  const remainingInsurance = calculateSum(latestTimetable, "insurance")
-  const remainingTotal = (remainingPrincipal + remainingInterest + remainingInsurance).toFixed(2)
-
   const saved = calculateSum(payment.results, "saved")
 
   const [excludePrepayments, setExcludePrepayments] = useState(false)
   const [barChartPrincipal, setBarChartPrincipal] = useState(null)
   const [barChartInterest, setBarChartInterest] = useState(null)
   const [barChartLabels, setBarChartLabels] = useState(null)
+
   useEffect(() => setBarChartPrincipal(payment.results?.map(p => p.principal).reverse()), [payment.results])
   useEffect(() => setBarChartInterest(payment.results?.map(p => p.interest).reverse()), [payment.results])
   useEffect(() => setBarChartLabels(payment.results?.map(p => p.date).reverse()), [payment.results])
@@ -61,6 +59,7 @@ const Credit = () => {
   const [calculatorAmount, setCalculatorAmount] = useState(0)
   const [calculatorMonths, setCalculatorMonths] = useState(0)
   const [calculatorSaved, setCalculatorSaved] = useState(0)
+
   useEffect(() => latestTimetable?.length && updateAmount(parseInt(latestTimetable[0].principal)+1), [latestTimetable])
 
   const setSuggestions = index => {
@@ -97,36 +96,7 @@ const Credit = () => {
     setCalculatorAmount(amount)
     setSuggestions(value)
   }
-  const paidData = {
-    datasets: [{
-      data: [paidInterest, paidPrincipal],
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.5)',
-        'rgba(75, 192, 192, 0.5)',
-      ],
-      borderColor: [
-        'rgba(255,99,132,1)',
-        'rgba(75, 192, 192, 1)',
-      ],
-    }],
-    labels: ['Interest', 'Principal']
-  };
-  const remainingData = {
-    datasets: [{
-      data: [remainingInterest, remainingPrincipal, remainingInsurance],
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.5)',
-        'rgba(75, 192, 192, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
-      ],
-      borderColor: [
-        'rgba(255,99,132,1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(255, 206, 86, 1)',
-      ],
-    }],
-    labels: ['Interest', 'Principal', 'Insurance']
-  };
+
 
   const doughnutPieOptions = {
     responsive: true,
@@ -224,8 +194,98 @@ const Credit = () => {
     setExcludePrepayments(!excludePrepayments)
   }
 
+  const [selectedCurrency, setSelectedCurrency] = useState(null)
+  const [summaryCredit, setSummaryCredit] = useState(null)
+  const [summarySaved, setSummarySaved] = useState(null)
+  const [summaryTotal, setSummaryTotal] = useState(null)
+  const [summaryInterest, setSummaryInterest] = useState(null)
+
+  const [remainingInterest, setRemainingInterest] = useState(null)
+  const [remainingInsurance, setRemainingInsurance] = useState(null)
+  const [remainingPrincipal, setRemainingPrincipal] = useState(null)
+  const [remainingTotal, setRemainingtotal] = useState(null)
+
+  const [paidTotal, setPaidTotal] = useState(null)
+  const [paidPrepaid, setPaidPrepaid] = useState(null)
+  const [paidPrincipal, setPaidPrincipal] = useState(null)
+  const [paidInterest, setPaidInterest] = useState(null)
+
+  const getAmountInCurrency = (amount, currency = selectedCurrency) => {
+    const rate = currency
+      ? currency.label === credit.currency
+        ? 1
+        : rates.find(r => r.symbol === currency.value).value
+      : 1
+    return parseFloat(amount / rate).toFixed(2)
+  }
+  const onChangeCurrency = newValue => {
+    const currency = !newValue
+      ? {
+          label: credit?.currency,
+          value: `${credit.currency}${credit.currency}`
+        }
+      : newValue
+
+    const totalPaid = calculateSum(payment.results, "total")
+    const interestPaid = calculateSum(payment.results, "interest")
+
+    const principalRemaining = calculateSum(latestTimetable, "principal")
+    const interestRemaining = calculateSum(latestTimetable, "interest")
+    const insuranceRemaining = calculateSum(latestTimetable, "insurance")
+    const totalRemaining = principalRemaining + interestRemaining + insuranceRemaining
+
+    setSelectedCurrency(currency)
+    setSummaryCredit(getAmountInCurrency(credit.total, currency))
+    setSummarySaved(getAmountInCurrency(saved, currency))
+    setSummaryTotal(getAmountInCurrency(totalPaid + totalRemaining, currency))
+    setSummaryInterest(getAmountInCurrency(interestPaid + interestRemaining, currency))
+
+    setRemainingInterest(getAmountInCurrency(interestRemaining, currency))
+    setRemainingPrincipal(getAmountInCurrency(principalRemaining, currency))
+    setRemainingInsurance(getAmountInCurrency(insuranceRemaining, currency))
+    setRemainingtotal(getAmountInCurrency(totalRemaining, currency))
+
+    setPaidTotal(getAmountInCurrency(totalPaid, currency))
+    setPaidInterest(getAmountInCurrency(interestPaid, currency))
+    setPaidPrepaid(getAmountInCurrency(calculateSum(payment.results, "total", "is_prepayment"), currency))
+    setPaidPrincipal(getAmountInCurrency(calculateSum(payment.results, "principal"), currency))
+    // setRemainingTotal(getAmountInCurrency((remainingPrincipal + remainingInterest + remainingInsurance), currency))
+    // setRemainingInsurance(getAmountInCurrency(calculateSum(latestTimetable, "insurance"), rate))
+    setBarChartPrincipal(payment.results?.map(p => getAmountInCurrency(p.principal, currency)).reverse())
+    setBarChartInterest(payment.results?.map(p => getAmountInCurrency(p.interest, currency)).reverse())
+  }
+  const remainingData = {
+    datasets: [{
+      data: [remainingInterest, remainingPrincipal, remainingInsurance],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.5)',
+        'rgba(75, 192, 192, 0.5)',
+        'rgba(255, 206, 86, 0.5)',
+      ],
+      borderColor: [
+        'rgba(255,99,132,1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 206, 86, 1)',
+      ],
+    }],
+    labels: ['Interest', 'Principal', 'Insurance']
+  };
+  const paidData = {
+    datasets: [{
+      data: [paidInterest, paidPrincipal],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.5)',
+        'rgba(75, 192, 192, 0.5)',
+      ],
+      borderColor: [
+        'rgba(255,99,132,1)',
+        'rgba(75, 192, 192, 1)',
+      ],
+    }],
+    labels: ['Interest', 'Principal']
+  };
   return <div>
-    <div className="page-header">
+    <div className="page-header mb-0">
       <h3 className="page-title">
         Credit
         <button type="button"
@@ -237,10 +297,32 @@ const Credit = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-        <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
-        <li className="breadcrumb-item active" aria-current="page">Credit</li>
+          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
+          <li className="breadcrumb-item active" aria-current="page">Credit</li>
         </ol>
       </nav>
+    </div>
+    <div className="page-header">
+      <h6 className="page-title">
+      {
+        selectedCurrency?.label && selectedCurrency.label !== credit?.currency
+          ? <small className="text-warning">
+              Rate: 1 {selectedCurrency.label} = {rates.find(r => r.symbol === selectedCurrency.value)?.value} {credit?.currency}<br/>
+              From: {rates.find(r => r.symbol === selectedCurrency.value)?.date}<br/>
+              Source: {rates.find(r => r.symbol === selectedCurrency.value)?.source}
+            </small>
+          : null
+      }
+      </h6>
+      <Select
+        placeholder={"Currency"}
+        value={{label: selectedCurrency?.label || "Currency", value: selectedCurrency?.value || "Currency"}}
+        onChange={onChangeCurrency}
+        options={rates?.map(c => ({label: c.symbol.replace(credit?.currency, ""), value: c.symbol}))}
+        styles={selectStyles}
+        isClearable={true}
+        closeMenuOnSelect={true}
+      />
     </div>
     {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
     {paymentAlertOpen && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
@@ -249,18 +331,18 @@ const Credit = () => {
       <div className="col-sm-12 col-lg-4 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h5>Summary</h5>
+            <h5>Summary  {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h5>
             {
               overview.loading
                 ? <Circles />
                 : credit
                   ? <>
-                    <ListItem label={"Credit"} value={credit.total} textType={"primary"}/>
+                    <ListItem label={"Credit"} value={summaryCredit} textType={"primary"}/>
                     <ListItem label={"Date"} value={credit.date} textType={"warning"}/>
                     <ListItem label={"Months"} value={`${credit.number_of_months} (${credit.number_of_months / 12} yrs)`} />
-                    <ListItem label={"Saved"} value={saved} textType={"success"}/>
-                    <ListItem label={"~Total"} value={(paidTotal + parseFloat(remainingTotal)).toFixed(2)} textType={"warning"}/>
-                    <ListItem label={"~Interest"} value={(paidInterest + remainingInterest).toFixed(2)} textType={"danger"}/>
+                    <ListItem label={"Saved"} value={summarySaved} textType={"success"}/>
+                    <ListItem label={"~Total"} value={summaryTotal} textType={"warning"}/>
+                    <ListItem label={"~Interest"} value={summaryInterest} textType={"danger"}/>
                   </>
                   : "-"
             }
@@ -270,7 +352,7 @@ const Credit = () => {
       <div className="col-sm-12 col-lg-4 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h5>Remaining</h5>
+            <h5>Remaining {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h5>
             {
               overview.loading
                 ? <Circles />
@@ -292,7 +374,7 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h5>
-              Paid
+              Paid {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -304,7 +386,7 @@ const Credit = () => {
                   ? <>
                     <ListItem label={"Total"} value={paidTotal} textType={"primary"} tooltip="paid-percentage" />
                     <ListItem label={"Date"} value={new Date().toISOString().split("T")[0]} textType={"warning"} />
-                    <ListItem label={"Payments"} value={payment.results.length} />
+                    <ListItem label={"Payments"} value={payment.count} />
                     <ListItem label={"Prepaid"} value={paidPrepaid} textType={"success"} tooltip="prepaid-percentage" />
                     <ListItem label={"Principal"} value={paidPrincipal} textType={"success"} tooltip={"principal-percentage"} />
                     <ListItem label={"Interest"} value={paidInterest} textType={"danger"} tooltip={"interest-percentage"} />
@@ -324,7 +406,7 @@ const Credit = () => {
             {
               overview.loading || payment.loading
                 ? <Circles />
-                : credit ? <ProgressBar now={paidPrincipal} max={credit.total}/> : "-"
+                : credit ? <ProgressBar now={paidPrincipal | 0} max={summaryCredit | 0}/> : "-"
             }
             </div>
           </div>
@@ -332,18 +414,18 @@ const Credit = () => {
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>Last Payment</h6>
+            <h6>Last Payment {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h6>
             {
               payment.loading
                 ? <Circles />
                 : payment.results?.length
                   ? <Marquee duration={10000} pauseOnHover={true} >
-                    <ListItem label={"Total"} value={payment.results[0].total} textType={"primary"} className="mr-3" />
+                    <ListItem label={"Total"} value={getAmountInCurrency(payment.results[0].total)} textType={"primary"} className="mr-3" />
                     <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"} className="mr-3" />
                     <ListItem label={"Type"} value={payment.results[0].is_prepayment ? "Prepayment" : "Installment"} textType={payment.results[0].is_prepayment ? "success" : "warning"} className="mr-3" />
-                    <ListItem label={"Principal"} value={payment.results[0].principal} textType={"success"} className="mr-3" />
-                    <ListItem label={"Interest"} value={payment.results[0].interest} textType={"danger"} className="mr-3" />
-                    <ListItem label={"Saved"} value={payment.results[0].saved} textType={parseFloat(payment.results[0].saved) && "success"} className="mr-3" />
+                    <ListItem label={"Principal"} value={getAmountInCurrency(payment.results[0].principal)} textType={"success"} className="mr-3" />
+                    <ListItem label={"Interest"} value={getAmountInCurrency(payment.results[0].interest)} textType={"danger"} className="mr-3" />
+                    <ListItem label={"Saved"} value={getAmountInCurrency(payment.results[0].saved)} textType={parseFloat(payment.results[0].saved) && "success"} className="mr-3" />
                   </Marquee>
                   : "-"
             }
@@ -356,7 +438,7 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h6>
-              Prepayment calculator
+              Prepayment calculator {credit?.currency ? `(${credit.currency})` : null}
             <form className="nav-link mt-2 mt-md-0 search" onSubmit={e => e.preventDefault()}>
               <div className="row">
                 <div className="col-md-4">
@@ -412,7 +494,7 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              Payments
+              Payments {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -446,7 +528,7 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              Paid: {paidTotal} {credit?.currency}
+              Paid: {paidTotal} {selectedCurrency.label}
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
