@@ -60,8 +60,8 @@ const ExchangeRate = () => {
     dispatch(FinanceApi.getExchangeRates(token, kwargs))
   }
 
-  const uniqueFrom = [...new Set(exchange.results.map(e => e.symbol.slice(0, 3)))]
-  const uniqueTo = [...new Set(exchange.results.map(e => e.symbol.slice(3)))]
+  const uniqueFrom = [...new Set(exchange.results?.map(e => e.symbol.slice(0, 3)))]
+  const uniqueTo = [...new Set(exchange.results?.map(e => e.symbol.slice(3)))]
   const exchangeData = {
     labels: exchange.results?.map(e => e.date).reverse(),
     datasets: [
