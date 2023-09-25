@@ -14,7 +14,11 @@ const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
 const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
-const FinancesCredit = lazy(() => import ("./finances/Credit/Credit"));
+const FinancesCredit = lazy(() => import ("./finances/Credit"));
+const FinancesCalculator = lazy(() => import ("./finances/Calculator"));
+const FinancesExchangeRate = lazy(() => import ("./finances/ExchangeRate"));
+const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
+const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
 const Meals = lazy(() => import('./meals/Meals'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
@@ -48,8 +52,12 @@ class AppRoutes extends Component {
           <Route exact path="/bots" component={ Bots } />
           <Route exact path="/finances/accounts" component={ FinancesAccounts } />
           <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />
+          <Route exact path="/finances/calculator" component={ FinancesCalculator } />
           <Route exact path="/finances/categorize" component={ FinancesCategorize } />
-          <Route exact path="/finances/credit" component={ FinancesCredit } />
+          <Route exact path="/finances/credit/details" component={ FinancesCredit } />
+          <Route exact path="/finances/credit/payments" component={ FinancesPayments } />
+          <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />
+          <Route exact path="/finances/exchange-rate" component={ FinancesExchangeRate } />
           <Route exact path="/crons" component={ Crons } />
           <Route exact path="/devices" component={ Devices } />
           <Route exact path="/earthquakes" component={ Earthquakes } />

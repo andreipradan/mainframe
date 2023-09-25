@@ -19,6 +19,11 @@ import {
   setLoading as setCategoriesLoading,
 } from "../redux/categoriesSlice";
 import {
+  set as setExchangeRates,
+  setErrors as setExchangeErrors,
+  setLoading as setExchangeLoading,
+} from "../redux/exchangeSlice";
+import {
   set as setPayments,
   setErrors as setPaymentErrors,
   setLoading as setPaymentLoading,
@@ -130,6 +135,14 @@ export class FinanceApi {
       .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTimetables(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
+  static getExchangeRates = (token, kwargs = null) => (dispatch) => {
+    dispatch(setExchangeLoading(true));
+    kwargs = kwargs || {};
+    axios
+      .get(`${base}/exchange-rate/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setExchangeRates(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setExchangeErrors));
   };
   static getTransaction = (token, transactionId) => dispatch => {
     dispatch(setLoadingTransactions(transactionId));
