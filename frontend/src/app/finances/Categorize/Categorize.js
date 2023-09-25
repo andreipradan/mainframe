@@ -263,6 +263,7 @@ const Categorize = () => {
                                   </span>
                                   : "-"
                               }
+                              {prediction.train.count ? <><br />Trained on {prediction.train.count} objects</> : null}
                               {trainPollingCount ? <><br />Poll count: {trainPollingCount}</> : null}
                               {
                                 prediction.train.error

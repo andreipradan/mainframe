@@ -32,12 +32,6 @@ export const predictionSlice = createSlice({
         state.loadingPredict = action.payload.loading
       else console.log("Invalid loading task type: " + action.payload.type)
     },
-    setPredictTask: (state, action) => {
-      state.errors = null
-      state.loading = false
-      state.loadingPredict = false
-      state.predict = action.payload
-    },
     setTask: (state, action) => {
       state.errors = null
       state.loading = false

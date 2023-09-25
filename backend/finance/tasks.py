@@ -90,7 +90,9 @@ def train(logger):
         .exclude(category=Category.UNIDENTIFIED)
         .values("description", "category")
     )
-    logger.info(f"Training on {qs.count()} confirmed transactions...")
+    count = qs.count()
+    log_status("train", count=count)
+    logger.info(f"Training on {count} confirmed transactions...")
     df = pd.DataFrame(qs)
     X_train, X_test, y_train, y_test = train_test_split(
         df["description"], df["category"], test_size=0.2, random_state=42
