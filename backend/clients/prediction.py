@@ -52,9 +52,7 @@ def log_status(task_type, **kwargs):
 def load(file_name):
     file_name = f"{file_name}.pkl"
     if settings.ENV != "local":
-        file = download_blob_into_memory(
-            f"{file_name}.pkl", "GOOGLE_STORAGE_MODEL_BUCKET"
-        )
+        file = download_blob_into_memory(file_name, "GOOGLE_STORAGE_MODEL_BUCKET")
         return pickle.loads(file)
     model_path = f"{settings.BASE_DIR}/finance/data/model"
     with open(f"{model_path}/{file_name}", "rb") as file:
