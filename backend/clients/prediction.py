@@ -12,8 +12,8 @@ from huey.signals import SIGNAL_ERROR
 
 # import nltk
 # nltk.download("punkt")
-from nltk.tokenize import word_tokenize
-from sentence_transformers import SentenceTransformer
+# from nltk.tokenize import word_tokenize
+# from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
