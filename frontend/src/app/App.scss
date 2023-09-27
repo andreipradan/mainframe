@@ -88,3 +88,8 @@
 }
 .close {color: gray}
 .close:hover {color: deepskyblue}
+
+.pagination > .page-item > .page-link {
+  background: transparent;
+  border: 0;
+}

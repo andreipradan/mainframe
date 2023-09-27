@@ -12,10 +12,11 @@ import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
+import BottomPagination from "../../shared/BottomPagination";
 import { FinanceApi, PredictionApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
-import {setLoadingTask} from "../../../redux/predictionSlice";
+import { setLoadingTask } from "../../../redux/predictionSlice";
 
 const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.replace("-", " ")) : ""
 
@@ -41,11 +42,6 @@ const Categorize = () => {
   const [trainingModalOpen, setTrainingModalOpen] = useState(false)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
 
-  const currentPage = !transactions.previous
-    ? 1
-    : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
-
-  const lastPage = Math.ceil(transactions.count / 25)
   const unpredictedCategories = transactions.results?.filter(t => !t.category_suggestion)?.map(t => t.description)
 
   const getSpecificCategory = description => checkedCategories?.find(c => c.description === description)?.category
@@ -360,8 +356,8 @@ const Categorize = () => {
                               }
                               {
                                 prediction.predict.progress
-                                  ? <> {prediction.predict.progress}</>
-                                  : "-"
+                                  ? <><br/>Progress {prediction.predict.progress}%</>
+                                  : null
                               }
                               {
                                 prediction.predict.error
@@ -632,119 +628,7 @@ const Categorize = () => {
                 </tbody>
               </table>
             </div>
-            <div className="align-self-center btn-group mt-4 mr-4" role="group" aria-label="Basic example">
-              <button
-                type="button"
-                className="btn btn-default"
-                disabled={!transactions.previous}
-                onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                }))}
-              >
-                <i className="mdi mdi-skip-backward"/>
-              </button>
-              {
-                currentPage - 5 > 0 && <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {...kwargs, page: 2}))}
-                >
-                  2
-                </button>
-              }
-              {currentPage - 4 > 0 && "..."}
-              {
-                currentPage - 3 > 0 &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {...kwargs,page: currentPage - 3}))}
-                >
-                  {currentPage - 3}
-                </button>
-              }
-              {
-                currentPage - 2 > 0 &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {...kwargs, page: currentPage - 2}))}
-                >
-                  {currentPage - 2}
-                </button>
-              }
-              {
-                transactions.previous &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                    ...kwargs, page: currentPage - 1,
-                  }))}
-                >
-                  {currentPage - 1}
-                </button>
-              }
-              <button type="button" className="btn btn-primary rounded" disabled={true}>{currentPage}</button>
-              {
-                transactions.next &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                    ...kwargs, page: currentPage + 1,
-                 }))}
-                >
-                  {currentPage + 1}
-                </button>
-              }
-              {
-                currentPage + 2 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                    ...kwargs, page: currentPage + 2,
-                  }))}
-                >
-                  {currentPage + 2}
-                </button>
-              }
-              {
-                currentPage + 3 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                    ...kwargs, page: currentPage + 3,
-                  }))}
-                >
-                  {currentPage + 3}
-                </button>
-              }
-              {currentPage + 4 < lastPage && "..."}
-              {
-                currentPage + 5 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                    ...kwargs, page: lastPage - 1,
-                  }))}
-                >
-                  {lastPage - 1}
-                </button>
-              }
-              <button
-                type="button"
-                className="btn btn-default"
-                disabled={!transactions.next}
-                onClick={() => dispatch(FinanceApi.getTransactions(token, {
-                  ...kwargs, page: lastPage,
-                }))}
-              >
-                <i className="mdi mdi-skip-forward"/>
-              </button>
-            </div>
+            <BottomPagination transactions={transactions}/>
           </div>
         </div>
       </div>
