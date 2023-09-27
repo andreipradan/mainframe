@@ -31,12 +31,14 @@ const Categorize = () => {
   const [alertOpen, setAlertOpen] = useState(false)
   const [allChecked, setAllChecked] = useState(false)
   const [checkedCategories, setCheckedCategories] = useState(null)
+  const [predictHistoryOpen, setPredictHistoryOpen] = useState(false)
   const [predictModalOpen, setPredictModalOpen] = useState(false)
   const [predictionAlertOpen, setPredictionAlertOpen] = useState(false)
+  const [predictionTasksOpen, setPredictionTasksOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [specificCategoriesModalOpen, setSpecificCategoriesModalOpen] = useState(false)
+  const [trainHistoryOpen, setTrainHistoryOpen] = useState(false)
   const [trainingModalOpen, setTrainingModalOpen] = useState(false)
-  const [predictionTasksOpen, setPredictionTasksOpen] = useState(false)
   const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
 
   const currentPage = !transactions.previous
@@ -253,7 +255,18 @@ const Categorize = () => {
                       prediction.train
                         ? <>
                             <td>{new Date(prediction.train.timestamp).toLocaleString()}</td>
-                            <td>{prediction.train.status.toUpperCase()}</td>
+                            <td>
+                              {prediction.train.status.toUpperCase()}
+                              {trainPollingCount
+                                  ? <Circles
+                                      height={12}
+                                      width={12}
+                                      wrapperStyle={{display: "default"}}
+                                      wrapperClass="btn pl-1"
+                                  />
+                                  : null
+                              }
+                            </td>
                             <td>
                               {
                                 prediction.train.accuracy
@@ -261,15 +274,35 @@ const Categorize = () => {
                                       Accuracy:&nbsp;
                                       {(parseFloat(prediction.train.accuracy) * 100).toFixed(1)}%
                                   </span>
-                                  : "-"
+                                  : null
                               }
-                              {prediction.train.count ? <><br />Trained on {prediction.train.count} objects</> : null}
-                              {trainPollingCount ? <><br />Poll count: {trainPollingCount}</> : null}
+                              {prediction.train.count ? <><br />Training objects count: {prediction.train.count}</> : null}
                               {
                                 prediction.train.error
                                   ? <><br/>Error: {prediction.train.error}</>
                                   : null
                               }
+                              <br/>
+                              <a href={""} onClick={ e => {
+                                e.preventDefault()
+                                setTrainHistoryOpen(!trainHistoryOpen)
+                              } } data-toggle="collapse">
+                                History <i className={`mdi mdi-chevron-${trainHistoryOpen ? 'down' : 'right'}`}></i>
+                              </a>
+                              <Collapse in={ trainHistoryOpen }>
+                                <ul>
+                                  {
+                                    prediction.train.history.map((h, i) =>
+                                      <li key={i}>
+                                        {new Date(h.timestamp).toLocaleString()}
+                                        <ul>
+                                          {Object.keys(h).filter(k => k !== "timestamp").map((k, i) => <li key={i}>{k}: {h[k]}</li>)}
+                                        </ul>
+
+                                      </li>
+                                  )}
+                                </ul>
+                              </Collapse>
                             </td>
                             <td>
                               {
@@ -307,19 +340,55 @@ const Categorize = () => {
                       prediction.predict
                         ? <>
                             <td>{new Date(prediction.predict.timestamp).toLocaleString()}</td>
-                            <td>{prediction.predict.status.toUpperCase()}</td>
-                            <td>{
-                              prediction.predict.progress
-                                ? `${prediction.predict.progress}%`
-                                : "-"
-                            }
-                            {predictPollingCount ? <><br />Poll count: {predictPollingCount}</> : null}
-
+                            <td>
+                              {prediction.predict.status.toUpperCase()}
+                              {predictPollingCount
+                                  ? <Circles
+                                      height={12}
+                                      width={12}
+                                      wrapperStyle={{display: "default"}}
+                                      wrapperClass="btn pl-1"
+                                  />
+                                  : null
+                              }
+                            </td>
+                            <td>
+                              {
+                                prediction.predict.operation
+                                  ? <><br/><i>{prediction.predict.operation}</i></>
+                                  : null
+                              }
+                              {
+                                prediction.predict.progress
+                                  ? <> {prediction.predict.progress}</>
+                                  : "-"
+                              }
                               {
                                 prediction.predict.error
                                   ? <><br/>Error: {prediction.predict.error}</>
                                   : null
                               }
+                              <br/>
+                              <a href={""} onClick={ e => {
+                                e.preventDefault()
+                                setPredictHistoryOpen(!predictHistoryOpen)
+                              } } data-toggle="collapse">
+                                History <i className={`mdi mdi-chevron-${predictHistoryOpen ? 'down' : 'right'}`}></i>
+                              </a>
+                              <Collapse in={ predictHistoryOpen }>
+                                <ul>
+                                  {
+                                    prediction.predict.history.map((h, i) =>
+                                      <li key={i}>
+                                        {new Date(h.timestamp).toLocaleString()}
+                                        <ul>
+                                          {Object.keys(h).filter(k => k !== "timestamp").map((k, i) => <li key={i}>{k}: {h[k]}</li>)}
+                                        </ul>
+
+                                      </li>
+                                  )}
+                                </ul>
+                              </Collapse>
                             </td>
                             <td>
                               {

@@ -96,7 +96,7 @@ const EditModal = () => {
           }
         />
         <ListItem
-          label={"Category suggestion"}
+          label={"Suggestion"}
           value={transaction.category_suggestion || "-"}
           textType={"warning"}
         />
