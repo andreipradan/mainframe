@@ -24,7 +24,7 @@ const Calculator = () => {
   useEffect(() => {!timetable.selectedTimetable && dispatch(TimetableApi.getTimetables(token))}, [timetable.selectedTimetable])
 
   const latestTimetable = timetable.selectedTimetable?.amortization_table
-  const currency = timetable?.results?.[0].credit?.currency
+  const currency = timetable.selectedTimetable?.credit?.currency
 
   const [calculatorAmount, setCalculatorAmount] = useState(0)
   const [calculatorMonths, setCalculatorMonths] = useState(0)
@@ -74,7 +74,7 @@ const Calculator = () => {
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
-        Credit
+        Calculator
         {
           timetable.loading
             ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
@@ -102,7 +102,7 @@ const Calculator = () => {
         {
           timetable.selectedTimetable
             ? <small className="text-muted">
-                Date: {timetable.selectedTimetable.date}<br/>
+                Timetable: {timetable.selectedTimetable.id === timetable.results[0].id ? `${timetable.selectedTimetable.date} (latest)` : timetable.selectedTimetable.date}<br/>
                 Interest: {timetable.selectedTimetable.interest}%<br/>
                 IRCC: {timetable.selectedTimetable.ircc}%<br/>
               </small>
@@ -113,9 +113,9 @@ const Calculator = () => {
         timetable.selectedTimetable
           ? <Select
             placeholder={"Timetable"}
-            value={{label: timetable.selectedTimetable.date, value: timetable.selectedTimetable.id}}
+            value={{label: `${timetable.selectedTimetable.id === timetable.results[0].id ? `${timetable.selectedTimetable.date} (latest)` : timetable.selectedTimetable.date}`, value: timetable.selectedTimetable.id}}
             onChange={onChangeTimetable}
-            options={timetable.results.map(t => ({label: t.date, value: t.id}))}
+            options={timetable.results.map((t, i) => ({label: `${i === 0 ? `${t.date} (latest)` : t.date}`, value: t.id}))}
             styles={selectStyles}
             closeMenuOnSelect={true}
           />
