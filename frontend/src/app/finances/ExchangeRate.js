@@ -13,6 +13,7 @@ import { useHistory } from "react-router-dom";
 import { selectStyles } from "./Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
 import {Bar} from "react-chartjs-2";
+import BottomPagination from "../shared/BottomPagination";
 
 
 const ExchangeRate = () => {
@@ -23,13 +24,6 @@ const ExchangeRate = () => {
   const exchange = useSelector(state => state.exchange)
 
   const [alertOpen, setAlertOpen] = useState(false)
-
-  const currentPage = !exchange.previous
-    ? 1
-    : (parseInt(new URL(exchange.previous).searchParams.get("page")) || 1) + 1
-
-  const lastPage = Math.ceil(exchange.count / 25)
-
 
   useEffect(() => {setAlertOpen(!!exchange.errors)}, [exchange.errors])
   useEffect(() => {
@@ -177,118 +171,8 @@ const ExchangeRate = () => {
                 </tbody>
               </table>
             </div>
-            <div className="align-self-center btn-group mt-4 mr-4" role="group" aria-label="Basic example">
-              <button
-                type="button"
-                className="btn btn-default"
-                disabled={!exchange.previous}
-                onClick={() => dispatch(FinanceApi.getExchangeRates(token, {page: 1}))}
-              >
-                <i className="mdi mdi-skip-backward"/>
-              </button>
-              {
-                currentPage - 5 > 0 && <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {page: 2}))}
-                >
-                  2
-                </button>
-              }
-              {currentPage - 4 > 0 && "..."}
-              {
-                currentPage - 3 > 0 &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {page: currentPage - 3}))}
-                >
-                  {currentPage - 3}
-                </button>
-              }
-              {
-                currentPage - 2 > 0 &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {page: currentPage - 2}))}
-                >
-                  {currentPage - 2}
-                </button>
-              }
-              {
-                exchange.previous &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {
-                    page: currentPage - 1,
-                  }))}
-                >
-                  {currentPage - 1}
-                </button>
-              }
-              <button type="button" className="btn btn-primary rounded" disabled={true}>{currentPage}</button>
-              {
-                exchange.next &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {
-                    page: currentPage + 1,
-                 }))}
-                >
-                  {currentPage + 1}
-                </button>
-              }
-              {
-                currentPage + 2 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {
-                    page: currentPage + 2,
-                  }))}
-                >
-                  {currentPage + 2}
-                </button>
-              }
-              {
-                currentPage + 3 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {
-                    page: currentPage + 3,
-                  }))}
-                >
-                  {currentPage + 3}
-                </button>
-              }
-              {currentPage + 4 < lastPage && "..."}
-              {
-                currentPage + 5 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getExchangeRates(token, {
-                    page: lastPage - 1,
-                  }))}
-                >
-                  {lastPage - 1}
-                </button>
-              }
-              <button
-                type="button"
-                className="btn btn-default"
-                disabled={!exchange.next}
-                onClick={() => dispatch(FinanceApi.getExchangeRates(token, {
-                  page: lastPage,
-                }))}
-              >
-                <i className="mdi mdi-skip-forward"/>
-              </button>
-            </div>
+            <BottomPagination items={exchange} fetchMethod={FinanceApi.getExchangeRates} perPage={31}/>
+
           </div>
         </div>
       </div>

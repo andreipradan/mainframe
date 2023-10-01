@@ -8,6 +8,7 @@ import { FinanceApi } from "../../../api/finance";
 import { selectPayment } from "../../../redux/paymentSlice";
 import PaymentEditModal from "./components/PaymentEditModal";
 import { useHistory } from "react-router-dom";
+import BottomPagination from "../../shared/BottomPagination";
 
 const Payments = () => {
   const history = useHistory()
@@ -47,6 +48,7 @@ const Payments = () => {
           <div className="card-body">
             <div className="table-responsive">
               {paymentAlertOpen && !payment.selectedPayment && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
+              <div className="mb-0 text-muted">Total: {payment.count}</div>
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -92,6 +94,8 @@ const Payments = () => {
                 </tbody>
               </table>
             </div>
+            <BottomPagination items={payment} fetchMethod={FinanceApi.getCreditPayments} />
+
           </div>
         </div>
       </div>

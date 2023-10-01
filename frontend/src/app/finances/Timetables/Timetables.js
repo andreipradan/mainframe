@@ -4,7 +4,7 @@ import { Circles } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
 import "nouislider/distribute/nouislider.css";
 
-import { FinanceApi } from "../../../api/finance";
+import { FinanceApi, TimetableApi } from "../../../api/finance";
 import { selectTimetable } from "../../../redux/timetableSlice";
 import TimetableEditModal from "./components/TimetableEditModal";
 import Modal from "react-bootstrap/Modal";
@@ -14,33 +14,21 @@ import {useHistory} from "react-router-dom";
 const Timetables = () => {
   const history = useHistory()
   const dispatch = useDispatch();
+
   const token = useSelector((state) => state.auth.token)
-
-  const overview = useSelector(state => state.credit)
-  const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
-  useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
-  useEffect(() => {
-    if (!overview.details) dispatch(FinanceApi.getCredit(token))
-    }, [overview.details]
-  );
-
-  const payment = useSelector(state => state.payment)
-  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
-  const [timetableToDelete, setTimetableToDelete] = useState(false)
-  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
-  useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
-
   const timetable = useSelector(state => state.timetable)
-  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
-  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
-  useEffect(() => {!timetable.results && dispatch(FinanceApi.getCreditTimetables(token))}, []);
 
+  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
+  const [timetableToDelete, setTimetableToDelete] = useState(false)
+
+  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
+  useEffect(() => {!timetable.results && dispatch(TimetableApi.getTimetables(token))}, []);
 
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
         Timetables
-        <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditTimetables(token))}>
+        <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getTimetables(token))}>
           <i className="mdi mdi-refresh" />
         </button>
       </h3>
@@ -56,15 +44,13 @@ const Timetables = () => {
         </ol>
       </nav>
     </div>
-    {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
-    {paymentAlertOpen && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
-
     <div className="row ">
       <div className="col-12 grid-margin">
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
               {timetableAlertOpen && <Alert variant="danger" dismissible onClose={() => setTimetableAlertOpen(false)}>{timetable.errors}</Alert>}
+              <div className="mb-0 text-muted">Total: {timetable.count}</div>
               <table className="table">
                 <thead>
                   <tr>

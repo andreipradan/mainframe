@@ -122,19 +122,13 @@ export class FinanceApi {
       .then(response => {dispatch(set(response.data))})
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static getCreditPayments = (token, page = null) => (dispatch) => {
+  static getCreditPayments = (token, kwargs = null) => (dispatch) => {
+    kwargs = kwargs || {}
     dispatch(setPaymentLoading(true));
     axios
-      .get(`${base}/payments/` + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}/payments/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setPayments(response.data)))
       .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
-  };
-  static getCreditTimetables = (token, page = null) => (dispatch) => {
-    dispatch(setTimetableLoading(true));
-    axios
-      .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTimetables(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
   static getExchangeRates = (token, kwargs = null) => (dispatch) => {
     dispatch(setExchangeLoading(true));
@@ -222,6 +216,16 @@ export class PredictionApi {
       .then(response => dispatch(setTask({type: "train", data: response.data})))
       .catch(err => handleErrors(err, dispatch, setPredictionErrors))
   }
+}
+
+export class TimetableApi {
+  static getTimetables = (token, page = null) => (dispatch) => {
+    dispatch(setTimetableLoading(true));
+    axios
+      .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setTimetables(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
 }
 
 let base = "finance";

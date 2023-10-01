@@ -32,9 +32,12 @@ export const timetableSlice = createSlice({
       state.next = action.payload.next
       state.previous = action.payload.previous
       state.results = action.payload.results;
+      state.selectedTimetable = state.selectedTimetable
+        ? action.payload.results.find(r => r.id === state.selectedTimetable.id)
+        : action.payload.results[0]
     },
     setLoading: (state, action) => {state.loading = action.payload},
   },
 });
-export const { deleteTimetable, selectTimetable, set, setErrors, setLoading, setOverview } = timetableSlice.actions;
+export const { deleteTimetable, selectTimetable, set, setErrors, setLoading } = timetableSlice.actions;
 export default timetableSlice.reducer;
