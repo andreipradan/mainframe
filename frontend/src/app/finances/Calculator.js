@@ -3,41 +3,48 @@ import { useDispatch, useSelector } from "react-redux";
 import Alert from "react-bootstrap/Alert";
 import "nouislider/distribute/nouislider.css";
 
-import { FinanceApi } from "../../api/finance";
+import { TimetableApi } from "../../api/finance";
 import { calculateSum } from "./utils";
 import { useHistory } from "react-router-dom";
+import { Circles } from "react-loader-spinner";
+import Select from "react-select";
+import { selectStyles } from "./Categorize/EditModal";
+import { selectTimetable } from "../../redux/timetableSlice";
 
 const Calculator = () => {
   const history = useHistory();
   const dispatch = useDispatch();
+
   const token = useSelector((state) => state.auth.token)
+  const timetable = useSelector(state => state.timetable)
 
-  const overview = useSelector(state => state.credit)
-  const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
-  useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
-  useEffect(() => {
-    if (!overview.details) dispatch(FinanceApi.getCredit(token))
-    }, [overview.details]
-  );
-  const credit = overview.details?.credit
-  const latestTimetable = overview.details?.latest_timetable.amortization_table
+  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
 
-  const [otherAmounts, setOtherAmounts] = useState(null)
+  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
+  useEffect(() => {!timetable.selectedTimetable && dispatch(TimetableApi.getTimetables(token))}, [timetable.selectedTimetable])
+
+  const latestTimetable = timetable.selectedTimetable?.amortization_table
+  const currency = timetable?.results?.[0].credit?.currency
+
   const [calculatorAmount, setCalculatorAmount] = useState(0)
   const [calculatorMonths, setCalculatorMonths] = useState(0)
   const [calculatorSaved, setCalculatorSaved] = useState(0)
+  const [otherAmounts, setOtherAmounts] = useState(null)
 
-  useEffect(() => latestTimetable?.length && updateAmount(parseInt(latestTimetable[0].principal)+1), [latestTimetable])
+  useEffect(() => latestTimetable?.length && updateAmount(6000), [latestTimetable])
 
   const setSuggestions = index => {
     const suggestedAmounts = {}
-    if (index - 2 > 0) suggestedAmounts[index-2] = calculateSum(latestTimetable.slice(0, index-2), "principal")
-    if (index - 1 > 0) suggestedAmounts[index-1] = calculateSum(latestTimetable.slice(0, index-1), "principal")
-    if (index + 1 <= latestTimetable.length) suggestedAmounts[index+1] = calculateSum(latestTimetable.slice(0, index+1), "principal")
-    if (index + 2 <= latestTimetable.length) suggestedAmounts[index+2] = calculateSum(latestTimetable.slice(0, index+2), "principal")
+    Array.from(new Array(7), (x, i) => i + index - 3).filter(i => i > 0).map(i => {
+      suggestedAmounts[i] = calculateSum(latestTimetable.slice(0, i), "principal")
+    })
     setOtherAmounts(suggestedAmounts)
     const saved = calculateSum(latestTimetable.slice(0, index), "interest")
     setCalculatorSaved(saved)
+  }
+
+  const onChangeTimetable = newValue => {
+    dispatch(selectTimetable(newValue.value))
   }
 
   const updateAmount = value => {
@@ -68,12 +75,16 @@ const Calculator = () => {
     <div className="page-header mb-0">
       <h3 className="page-title">
         Credit
-        <button type="button"
-          className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(FinanceApi.getCredit(token))}
-        >
-          <i className="mdi mdi-refresh"></i>
-        </button>
+        {
+          timetable.loading
+            ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
+            : <button type="button"
+                className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                onClick={() => dispatch(TimetableApi.getTimetables(token))}
+              >
+                <i className="mdi mdi-refresh"></i>
+              </button>
+        }
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
@@ -86,19 +97,44 @@ const Calculator = () => {
         </ol>
       </nav>
     </div>
-    {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
+    <div className={"page-header"}>
+      <h6 className={"page-title"}>
+        {
+          timetable.selectedTimetable
+            ? <small className="text-muted">
+                Date: {timetable.selectedTimetable.date}<br/>
+                Interest: {timetable.selectedTimetable.interest}%<br/>
+                IRCC: {timetable.selectedTimetable.ircc}%<br/>
+              </small>
+            : null
+        }
+      </h6>
+      {
+        timetable.selectedTimetable
+          ? <Select
+            placeholder={"Timetable"}
+            value={{label: timetable.selectedTimetable.date, value: timetable.selectedTimetable.id}}
+            onChange={onChangeTimetable}
+            options={timetable.results.map(t => ({label: t.date, value: t.id}))}
+            styles={selectStyles}
+            closeMenuOnSelect={true}
+          />
+        : null
+      }
+    </div>
+    {timetableAlertOpen && <Alert variant="danger" dismissible onClose={() => setTimetableAlertOpen(false)}>{timetable.errors}</Alert>}
 
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
             <h6>
-              Prepayment calculator {credit?.currency ? `(${credit.currency})` : null}
+              Prepayment calculator {currency ? `(${currency})` : null}
             <form className="nav-link mt-2 mt-md-0 search" onSubmit={e => e.preventDefault()}>
               <div className="row">
                 <div className="col-md-4">
                   <input
-                    disabled={!latestTimetable}
+                    disabled={!latestTimetable || timetable.loading}
                     type="search"
                     className="form-control bg-transparent"
                     placeholder="Amount"
@@ -108,7 +144,7 @@ const Calculator = () => {
                 </div>
                 <div className="col-md-4">
                   <input
-                    disabled={!latestTimetable}
+                    disabled={!latestTimetable || timetable.loading}
                     type="number"
                     className="form-control bg-transparent"
                     placeholder="# of months"
@@ -133,7 +169,7 @@ const Calculator = () => {
               otherAmounts && <div className="text-muted small">
               Other Amounts:
               <ul>
-                {Object.keys(otherAmounts).map(i => <li key={i}>
+                {Object.keys(otherAmounts).map(i => <li key={i} className={parseInt(i) === calculatorMonths ? "text-success" : "text-muted"}>
                   {i} month(s): {otherAmounts[i].toFixed(2)}
                 </li>)}
               </ul>

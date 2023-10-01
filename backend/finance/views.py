@@ -178,7 +178,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
 class TimetableViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Timetable.objects.all()
+    queryset = Timetable.objects.select_related("credit")
     serializer_class = TimetableSerializer
 
 

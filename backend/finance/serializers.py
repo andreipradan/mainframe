@@ -62,8 +62,9 @@ class TimetableSerializer(serializers.ModelSerializer):
     number_of_months = serializers.ReadOnlyField()
 
     class Meta:
-        model = Timetable
+        depth = 1
         fields = "__all__"
+        model = Timetable
 
 
 class TransactionSerializer(serializers.ModelSerializer):

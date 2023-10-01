@@ -628,7 +628,7 @@ const Categorize = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination transactions={transactions}/>
+            <BottomPagination items={transactions} fetchMethod={FinanceApi.getTransactions}/>
           </div>
         </div>
       </div>

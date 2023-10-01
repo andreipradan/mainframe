@@ -159,6 +159,7 @@ const Credit = () => {
   const [paidInterest, setPaidInterest] = useState(null)
 
   const getAmountInCurrency = (amount, currency = selectedCurrency) => {
+    if (!rates?.length) return amount
     const rate = currency
       ? currency.label === credit.currency
         ? 1
@@ -252,7 +253,7 @@ const Credit = () => {
     <div className="page-header">
       <h6 className="page-title">
       {
-        selectedCurrency?.label && selectedCurrency.label !== credit?.currency
+        rates?.length && selectedCurrency?.label && selectedCurrency.label !== credit?.currency
           ? <small className="text-warning">
               Rate: 1 {selectedCurrency.label} = {rates.find(r => r.symbol === selectedCurrency.value)?.value} {credit?.currency}<br/>
               From: {rates.find(r => r.symbol === selectedCurrency.value)?.date}<br/>
@@ -261,24 +262,28 @@ const Credit = () => {
           : null
       }
       </h6>
-      <Select
-        placeholder={"Currency"}
-        value={{label: selectedCurrency?.label || "Currency", value: selectedCurrency?.value || "Currency"}}
-        onChange={onChangeCurrency}
-        options={
-          [
-            {label: credit?.currency, value: credit?.currency},
-            {label: "EUR", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "EUR").symbol},
-            {label: "USD", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "USD").symbol},
-            ...rates?.map(c =>
-                ({label: c.symbol.replace(credit?.currency, ""), value: c.symbol})
-            ).filter(r => !["RON", "EUR", "USD"].includes(r.label))
-          ]
-        }
-        styles={selectStyles}
-        isClearable={true}
-        closeMenuOnSelect={true}
-      />
+      {
+        rates?.length
+          ? <Select
+            placeholder={"Currency"}
+            value={{label: selectedCurrency?.label || "Currency", value: selectedCurrency?.value || "Currency"}}
+            onChange={onChangeCurrency}
+            options={
+              [
+                {label: credit?.currency, value: credit?.currency},
+                {label: "EUR", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "EUR").symbol},
+                {label: "USD", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "USD").symbol},
+                ...rates.map(c =>
+                    ({label: c.symbol.replace(credit?.currency, ""), value: c.symbol})
+                ).filter(r => !["RON", "EUR", "USD"].includes(r.label))
+              ]
+            }
+            styles={selectStyles}
+            isClearable={true}
+            closeMenuOnSelect={true}
+          />
+        : null
+      }
     </div>
     {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
     {paymentAlertOpen && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
@@ -356,13 +361,19 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h5>
-              Progress: {getPercentage(paidTotal, remainingTotal)}%
+              Progress: {getPercentage(paidPrincipal, summaryCredit)}%
               &nbsp;<i id="progress-bar-tip" className="mdi mdi-information-outline"/>
             </h5>
             {
               overview.loading || payment.loading
                 ? <Circles />
-                : credit ? <ProgressBar now={paidPrincipal | 0} max={summaryCredit | 0}/> : "-"
+                : credit
+                  ? <ProgressBar
+                      now={paidPrincipal | 0}
+                      max={summaryCredit | 0}
+                      label={`${paidPrincipal} / ${summaryCredit}`}
+                    />
+                  : "-"
             }
             </div>
           </div>
@@ -454,7 +465,7 @@ const Credit = () => {
     </div>
 
     <Tooltip anchorSelect="#progress-bar-tip" place={"bottom-start"}>
-      Total paid of the remaining total
+      Paid principal related to the total of the borrowed amount
     </Tooltip>
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
       ~ {getPercentage(paidTotal, remainingTotal)}% of the remaining total
