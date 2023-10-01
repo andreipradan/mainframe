@@ -4,7 +4,7 @@
   "homepage": "https://pradan.dev/",
   "private": true,
   "dependencies": {
-    "@amcharts/amcharts5": "^5.3.3",
+    "@amcharts/amcharts5": "^5.4.6",
     "@amcharts/amcharts5-geodata": "^5.1.0",
     "@fullcalendar/core": "^6.1.8",
     "@fullcalendar/daygrid": "^6.1.8",
