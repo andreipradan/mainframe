@@ -86,13 +86,13 @@ def mainframe(request):
     elif event == "workflow_run":
         action = " ".join(payload["action"].split("_")).title()
         wf_run = payload["workflow_run"]
+        name = wf_run["name"]
         conclusion = wf_run.get("conclusion", "")
-        if branch == "main" and wf_run["name"] == "CI" and conclusion == "success":
+        if branch == "main" and name == "CI" and conclusion == "success":
             schedule_deploy()
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         send_telegram_message(
-            text=f"{PREFIX}[Action] {wf_run['name']} (#{wf_run['run_number']})"
-            f"\nStatus: {action}{conclusion}"
+            text=f"{PREFIX} <b>{name}</b> - {action}{conclusion}"
             f"\nBranch: {wf_run['head_branch']}"
             f"\n<a href='{wf_run['html_url']}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,

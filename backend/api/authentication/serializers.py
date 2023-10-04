@@ -1,20 +1,22 @@
 import jwt
-from rest_framework import serializers, exceptions
 from django.contrib.auth import authenticate
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import serializers, exceptions
 
 from api.authentication.models import ActiveSession
+from api.user.models import User
 
 
 def _generate_jwt_token(user):
-    token = jwt.encode(
-        {"id": user.pk, "exp": datetime.utcnow() + timedelta(days=7)},
-        settings.SECRET_KEY,
-    )
-
+    payload = {"id": user.pk, "exp": datetime.utcnow() + timedelta(days=7)}
+    token = jwt.encode(payload, settings.SECRET_KEY)
     return token
+
+
+def get_error(msg):
+    return {"success": False, "msg": msg}
 
 
 class LoginSerializer(serializers.Serializer):
@@ -26,24 +28,18 @@ class LoginSerializer(serializers.Serializer):
         password = data.get("password", None)
 
         if email is None:
-            raise exceptions.ValidationError(
-                {"success": False, "msg": "Email is required to login"}
-            )
+            error = get_error(get_error("Email is required to login"))
+            raise exceptions.ValidationError(error)
         if password is None:
-            raise exceptions.ValidationError(
-                {"success": False, "msg": "Password is required to log in."}
-            )
+            error = get_error("Password is required to log in.")
+            raise exceptions.ValidationError(error)
         user = authenticate(username=email, password=password)
 
         if user is None:
-            raise exceptions.AuthenticationFailed(
-                {"success": False, "msg": "Wrong credentials"}
-            )
+            raise exceptions.AuthenticationFailed(get_error("Wrong credentials"))
 
         if not user.is_active:
-            raise exceptions.ValidationError(
-                {"success": False, "msg": "User is not active"}
-            )
+            raise exceptions.ValidationError(get_error("User is not active"))
 
         try:
             session = ActiveSession.objects.get(user=user)
@@ -72,3 +68,30 @@ class LoginSerializer(serializers.Serializer):
                 "name": user.name,
             },
         }
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(min_length=4, max_length=128, write_only=True)
+    username = serializers.CharField(max_length=255, required=True)
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "password", "email", "is_active", "date"]
+
+    def validate_username(self, value):
+        try:
+            User.objects.get(username=value)
+        except ObjectDoesNotExist:
+            return value
+        raise exceptions.ValidationError(get_error("Username already taken."))
+
+    def validate_email(self, value):
+        try:
+            User.objects.get(email=value)
+        except ObjectDoesNotExist:
+            return value
+        raise exceptions.ValidationError(get_error("Email already taken."))
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
