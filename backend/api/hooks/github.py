@@ -84,10 +84,10 @@ def mainframe(request):
         wf_run = payload["workflow_run"]
         name = wf_run["name"]
         conclusion = wf_run.get("conclusion", "")
-        conclusion = f" ({conclusion.title()})" if conclusion else ""
         branch = wf_run["head_branch"]
         message = (
-            f"{PREFIX} <b>{name}</b> - {branch} - {action}{conclusion} "
+            f"{PREFIX} <b>{name}</b> - {branch} - {action}"
+            f"{f' ({conclusion.title()})' if conclusion else ''} "
             f"<a href='{wf_run['html_url']}'>Details</a>"
         )
         if branch == "main" and name == "CI" and conclusion == "success":
