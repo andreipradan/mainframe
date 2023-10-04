@@ -15,12 +15,15 @@ def schedule_deploy():
 
     prefix = "[Deploy]"
     if not (output := run_cmd("git pull origin main", logger=logger)):
-        return send_telegram_message(text=f"{prefix} Could not git pull")
+        send_telegram_message(text=f"{prefix} Could not git pull")
+        return False
     if output.strip() == "Already up to date.":
-        return send_telegram_message(text=f"[{prefix}] {output.strip()}")
+        send_telegram_message(text=f"[{prefix}] {output.strip()}")
+        return False
 
     if output.strip().startswith("CONFLICT"):
-        return send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
+        send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
+        return False
 
     cmd_params = []
     msg_extra = []
@@ -46,5 +49,5 @@ def schedule_deploy():
 
     deploy_cmd = f"$HOME/projects/mainframe/deploy/setup.sh {' '.join(cmd_params)}"
     command = f"{mkdir} && {deploy_cmd} >> {output}"
-    cron.delay(command, is_management=False)
-    return msg
+    run_cmd(command)
+    # cron.delay(command, is_management=False)
