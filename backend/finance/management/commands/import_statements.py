@@ -167,7 +167,7 @@ def parse_raiffeisen_transactions(file_name, logger):
     ]:
         raise AssertionError
 
-    if any([x.value for x in rows[header_index + 1]]):
+    if any(x.value for x in rows[header_index + 1]):
         raise AssertionError
     rows = rows[header_index + 2 :]
     transactions = []
