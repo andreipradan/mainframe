@@ -65,9 +65,9 @@ def mainframe(request):
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
 
     payload = json.loads(request.body)
+    branch = payload.get("ref", "").replace("refs/heads/", "")
 
     if event != "workflow_run":
-        branch = payload.get("ref", "").replace("refs/heads/", "")
         branch_message = f"\nBranch: {branch}" if branch else ""
         pusher = payload.get("pusher", {}).get("name", "")
         author = f"\nAuthor: {pusher}" if pusher else ""
@@ -87,7 +87,7 @@ def mainframe(request):
         action = " ".join(payload["action"].split("_")).title()
         wf_run = payload["workflow_run"]
         conclusion = wf_run.get("conclusion", "")
-        if conclusion == "success":
+        if branch == "main" and wf_run['name'] == "CI" and conclusion == "success":
             schedule_deploy()
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         send_telegram_message(
