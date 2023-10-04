@@ -88,8 +88,6 @@ def mainframe(request):
         wf_run = payload["workflow_run"]
         name = wf_run["name"]
         conclusion = wf_run.get("conclusion", "")
-        if wf_run["head_branch"] == "main" and name == "CI" and conclusion == "success":
-            schedule_deploy()
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         head_branch = wf_run["head_branch"]
         send_telegram_message(
@@ -97,6 +95,8 @@ def mainframe(request):
             f"\n<a href='{wf_run['html_url']}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
+        if wf_run["head_branch"] == "main" and name == "CI" and conclusion == "success":
+            schedule_deploy()
     return HttpResponse(status=204)
 
 
@@ -133,7 +133,7 @@ def schedule_deploy():
     if msg_extra:
         msg += f" (+ {' & '.join(msg_extra)})"
 
-    send_telegram_message(text=msg)
+    logger.info(msg)
 
     logs_path = f"/var/log/mainframe/deploy/"
     mkdir = f"mkdir -p {logs_path}`date +%Y`"
