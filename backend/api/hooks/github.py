@@ -92,6 +92,6 @@ def mainframe(request):
     )
     if branch == "main" and name == "CI" and conclusion == "success":
         schedule_deploy()
-        message += f"\nDeployment scheduled"
+        message += "\nDeployment scheduled"
     send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
