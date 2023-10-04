@@ -37,7 +37,7 @@ def deploy():
     else:
         msg_extra.append("Restart backend")
 
-    msg = "[Mainframe] Local setup scheduled in ~1 min"
+    msg = f"{prefix} Starting local setup"
     if msg_extra:
         msg += f" (+ {' & '.join(msg_extra)})"
 

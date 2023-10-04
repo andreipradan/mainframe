@@ -90,7 +90,7 @@ def mainframe(request):
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         head_branch = wf_run["head_branch"]
         send_telegram_message(
-            text=f"{PREFIX} <b>{name}</b> - {head_branch} -{action}{conclusion}"
+            text=f"{PREFIX} <b>{name}</b> - {head_branch} - {action}{conclusion}"
             f"\n<a href='{wf_run['html_url']}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
