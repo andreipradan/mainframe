@@ -12,6 +12,7 @@ from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
+from api.tasks import schedule_deploy
 from clients.chat import send_telegram_message
 
 PREFIX = "[GitHub]"
@@ -91,6 +92,7 @@ def mainframe(request):
             f"<a href='{wf_run['html_url']}'>Details</a>"
         )
         if branch == "main" and name == "CI" and conclusion == "success":
+            schedule_deploy()
             message += f"\nDeploy incoming"
         send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
