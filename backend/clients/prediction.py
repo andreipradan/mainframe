@@ -10,10 +10,6 @@ from django.utils import timezone
 from huey.contrib.djhuey import HUEY
 from huey.signals import SIGNAL_ERROR
 
-# import nltk
-# nltk.download("punkt")
-# from nltk.tokenize import word_tokenize
-# from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
@@ -104,7 +100,6 @@ class BERT:
                 operation="1/3 predicting",
                 progress=f"{i} / {total}",
             )
-        # bert_test = np.array(model.encode(bert.tolist(), show_progress_bar=True))
         similarity_new_data = cosine_similarity(embeddings, trained_embeddings)
         index_similarity = pd.DataFrame(similarity_new_data).idxmax(axis=1)
 
