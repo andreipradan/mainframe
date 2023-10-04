@@ -14,9 +14,9 @@ def schedule_deploy():
     logger.addHandler(MainframeHandler())
 
     prefix = "[Deploy]"
-    if not (output := run_cmd("git pull origin main")):
+    if not (output := run_cmd("git pull origin main", logger=logger)):
         return send_telegram_message(text=f"{prefix} Could not git pull")
-    if output.strip() == b"Already up to date.":
+    if output.decode("utf-8").strip() == "Already up to date.":
         return send_telegram_message(text=f"[{prefix}] {output.strip()}")
 
     if output.strip().startswith("CONFLICT"):
