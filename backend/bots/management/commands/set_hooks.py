@@ -23,6 +23,8 @@ def get_ngrok_url(name="mainframe"):
         if tunnel["name"] == name:
             return tunnel["public_url"]
 
+    logger.warning(f"Tunnel not found: {name}")
+
 
 def set_github_hook(ngrok_url):
     env = environ.Env()
