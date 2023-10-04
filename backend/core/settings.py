@@ -9,9 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import environ
@@ -208,7 +206,6 @@ if DEBUG:
 # ##################################################################### #
 
 TESTING = False
-TEST_RUNNER = "core.test_runner.CoreTestRunner"
 
 LOGGING = {
     "version": 1,

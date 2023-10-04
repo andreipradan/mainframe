@@ -4,7 +4,7 @@ import random
 import factory
 from environ import environ
 
-from finance.models import Payment, Credit, Account, Transaction
+from finance.models import Payment, Credit, Account, Transaction, Category
 
 
 class AccountFactory(factory.django.DjangoModelFactory):
@@ -17,11 +17,18 @@ class AccountFactory(factory.django.DjangoModelFactory):
     number = factory.Sequence(lambda n: n)
 
 
+class CategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Category
+
+    id = factory.Sequence(lambda n: f"id-{n}")
+
+
 class CreditFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Credit
 
-    account = factory.SubFactory("finance.tests.factories.AccountFactory")
+    account = factory.SubFactory("tests.finance.factories.AccountFactory")
     currency = random.choice(["usd", "eur"])
     date = "2000-01-01"
     number = factory.Sequence(lambda n: n)
@@ -33,7 +40,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Payment
 
-    credit = factory.SubFactory("finance.tests.factories.CreditFactory")
+    credit = factory.SubFactory("tests.finance.factories.CreditFactory")
     date = factory.Sequence(lambda x: f"2000-01-0{x+1:>1}")
     remaining = 0
 
@@ -42,8 +49,9 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Transaction
 
-    account = factory.SubFactory("finance.tests.factories.AccountFactory")
+    account = factory.SubFactory("tests.finance.factories.AccountFactory")
     amount = random.choice(range(100))
+    category = factory.SubFactory("tests.finance.factories.CategoryFactory")
     currency = random.choice(["usd", "eur"])
     product = Transaction.PRODUCT_CURRENT
     started_at = datetime.datetime.now()
