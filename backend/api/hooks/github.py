@@ -12,9 +12,8 @@ from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import MethodNotAllowed
 
-from clients import cron
+from api.tasks import deploy
 from clients.chat import send_telegram_message
-from clients.system import run_cmd
 
 PREFIX = "[GitHub]"
 
@@ -80,16 +79,14 @@ def mainframe(request):
             f"{branch_message}{author}{compare_message}",
             parse_mode=telegram.ParseMode.HTML,
         )
-    if event == "ping":
         return HttpResponse("pong")
-
-    elif event == "workflow_run":
+    else:
         action = " ".join(payload["action"].split("_")).title()
         wf_run = payload["workflow_run"]
         name = wf_run["name"]
         conclusion = wf_run.get("conclusion", "")
-        if branch == "main" and name == "CI" and conclusion == "success":
-            schedule_deploy()
+        if name == "CI" and conclusion == "success":
+            deploy()
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         send_telegram_message(
             text=f"{PREFIX} <b>{name}</b> - {action}{conclusion}"
@@ -97,46 +94,4 @@ def mainframe(request):
             f"\n<a href='{wf_run['html_url']}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
-
     return HttpResponse(status=204)
-
-
-def schedule_deploy():
-    if not (output := run_cmd("git pull origin main")):
-        send_telegram_message(text=f"{PREFIX} Could not git pull")
-        return HttpResponse("ok")
-    if output.strip() == b"Already up to date.":
-        send_telegram_message(text=f"[{PREFIX}] {output.strip()}")
-        return HttpResponse("ok")
-
-    if output.strip().startswith("CONFLICT"):
-        send_telegram_message(text=f"[{PREFIX}] Could not git pull - conflict")
-        return HttpResponse("ok")
-
-    cmd_params = []
-    msg_extra = []
-    if "requirements.txt" in output.strip():
-        cmd_params.append("requirements")
-        msg_extra.append("requirements")
-    else:
-        cmd_params.append("no-requirements")
-
-    if "deploy/" in output.strip():
-        cmd_params.append("restart")
-        msg_extra.append("Restart all services")
-    else:
-        msg_extra.append("Restart backend")
-
-    msg = "[Mainframe] Local setup scheduled in ~1 min"
-    if msg_extra:
-        msg += f" (+ {' & '.join(msg_extra)})"
-
-    send_telegram_message(text=msg)
-
-    logs_path = f"/var/log/mainframe/deploy/"
-    mkdir = f"mkdir -p {logs_path}`date +%Y`"
-    output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
-
-    deploy_cmd = f"$HOME/projects/mainframe/deploy/setup.sh {' '.join(cmd_params)}"
-    command = f"{mkdir} && {deploy_cmd} >> {output}"
-    cron.delay(command, is_management=False)
