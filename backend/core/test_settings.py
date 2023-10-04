@@ -12,5 +12,6 @@ DATABASES = {
 }
 DEBUG = False
 ENV = "test"
+PYTHON_PATH = ""
 SECRET_KEY = "test-key"
 TESTING = True
