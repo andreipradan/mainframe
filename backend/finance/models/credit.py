@@ -19,7 +19,7 @@ def validate_amortization_table(value):
         raise ValidationError("amortization_table must be a list")
 
     month_fields = {"date", "insurance", "interest", "principal", "remaining", "total"}
-    if not all([set(month) == month_fields for month in value]):
+    if not all(set(month) == month_fields for month in value):
         raise ValidationError(
             "amortization_table contains items that do not have "
             f"these exact keys: {month_fields}"
