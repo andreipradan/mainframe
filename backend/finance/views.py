@@ -326,8 +326,7 @@ class PredictionViewSet(viewsets.ViewSet):
         details = json.loads(redis_entry) if redis_entry else {}
         if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"error": f"prediction - {status}"}, status=400)
-        else:
-            client.delete("predict")
+        client.delete("predict")
 
         queryset = Transaction.objects.expenses().filter(
             category=Category.UNIDENTIFIED,
@@ -353,8 +352,7 @@ class PredictionViewSet(viewsets.ViewSet):
         details = json.loads(redis_entry) if redis_entry else {}
         if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"error": f"training - {status}"}, status=400)
-        else:
-            client.delete("train")
+        client.delete("train")
 
         try:
             train(logger)

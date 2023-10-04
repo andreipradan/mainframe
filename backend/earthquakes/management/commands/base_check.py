@@ -22,8 +22,7 @@ def get_magnitude_icon(magnitude):
         return "🟡"
     if magnitude < 6:
         return "🟠"
-    else:
-        return "🔴"
+    return "🔴"
 
 
 def parse_event(event: Earthquake):
