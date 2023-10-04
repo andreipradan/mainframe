@@ -80,19 +80,18 @@ def mainframe(request):
             parse_mode=telegram.ParseMode.HTML,
         )
         return HttpResponse("pong")
-    else:
-        action = " ".join(payload["action"].split("_")).title()
-        wf_run = payload["workflow_run"]
-        name = wf_run["name"]
-        conclusion = wf_run.get("conclusion", "")
-        branch = wf_run["head_branch"]
-        message = (
-            f"{PREFIX} <b>{name}</b> - {branch} - {action}"
-            f"{f' ({conclusion.title()})' if conclusion else ''} "
-            f"<a href='{wf_run['html_url']}'>Details</a>"
-        )
-        if branch == "main" and name == "CI" and conclusion == "success":
-            schedule_deploy()
-            message += f"\nDeployment scheduled"
-        send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
+    action = " ".join(payload["action"].split("_")).title()
+    wf_run = payload["workflow_run"]
+    name = wf_run["name"]
+    conclusion = wf_run.get("conclusion", "")
+    branch = wf_run["head_branch"]
+    message = (
+        f"{PREFIX} <b>{name}</b> - {branch} - {action}"
+        f"{f' ({conclusion.title()})' if conclusion else ''} "
+        f"<a href='{wf_run['html_url']}'>Details</a>"
+    )
+    if branch == "main" and name == "CI" and conclusion == "success":
+        schedule_deploy()
+        message += "\nDeployment scheduled"
+    send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
