@@ -111,19 +111,25 @@ def parse_raiffeisen_transactions(file_name, logger):
     if not starting_index:
         raise ValidationError("Could not find starting index")
 
-    assert rows[starting_index][0].value == "Nume client:"
+    if rows[starting_index][0].value != "Nume client:":
+        raise AssertionError
     middle_name, first_name, last_name = [
         n.capitalize() for n in rows[starting_index][1].value.split()
     ]
-    assert rows[starting_index + 2][0].value == "Numar client:"
+    if rows[starting_index + 2][0].value != "Numar client:":
+        raise AssertionError
     client_code = rows[starting_index + 2][1].value
-    assert rows[starting_index + 4][0].value == "Unitate Bancara:"
+    if rows[starting_index + 4][0].value != "Unitate Bancara:":
+        raise AssertionError
     bank = rows[starting_index + 4][1].value
-    assert rows[starting_index + 6][0].value == "Cod IBAN:"
+    if rows[starting_index + 6][0].value != "Cod IBAN:":
+        raise AssertionError
     number = " ".join(chunks(rows[starting_index + 6][1].value, 4))
-    assert rows[starting_index + 6][2].value == "Tip cont:"
+    if rows[starting_index + 6][2].value != "Tip cont:":
+        raise AssertionError
     account_type = "Current" if rows[starting_index + 6][3].value == "curent" else None
-    assert rows[starting_index + 6][4].value == "Valuta:"
+    if rows[starting_index + 6][4].value != "Valuta:":
+        raise AssertionError
     currency = (
         "RON"
         if rows[starting_index + 6][5].value == "LEI"
@@ -145,7 +151,7 @@ def parse_raiffeisen_transactions(file_name, logger):
 
     header_index = starting_index + 11
     header = [x.value for x in rows[header_index]]
-    assert header == [
+    if header != [
         "Data inregistrare",
         "Data tranzactiei",
         "Suma debit",
@@ -158,9 +164,11 @@ def parse_raiffeisen_transactions(file_name, logger):
         "Denumire Banca \nordonator/ beneficiar",
         "Nr. cont in/din care se \n efectueaza tranzactiile",
         "Descrierea tranzactiei",
-    ]
+    ]:
+        raise AssertionError
 
-    assert not any([x.value for x in rows[header_index + 1]])
+    if any(x.value for x in rows[header_index + 1]):
+        raise AssertionError
     rows = rows[header_index + 2 :]
     transactions = []
     while any((row := [x.value for x in rows.pop(0)])):
