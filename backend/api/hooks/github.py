@@ -87,7 +87,7 @@ def mainframe(request):
         action = " ".join(payload["action"].split("_")).title()
         wf_run = payload["workflow_run"]
         conclusion = wf_run.get("conclusion", "")
-        if branch == "main" and wf_run['name'] == "CI" and conclusion == "success":
+        if branch == "main" and wf_run["name"] == "CI" and conclusion == "success":
             schedule_deploy()
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         send_telegram_message(
