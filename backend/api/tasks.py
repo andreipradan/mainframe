@@ -16,7 +16,7 @@ def schedule_deploy():
     prefix = "[Deploy]"
     if not (output := run_cmd("git pull origin main", logger=logger)):
         return send_telegram_message(text=f"{prefix} Could not git pull")
-    if output.decode("utf-8").strip() == "Already up to date.":
+    if output.strip() == "Already up to date.":
         return send_telegram_message(text=f"[{prefix}] {output.strip()}")
 
     if output.strip().startswith("CONFLICT"):
