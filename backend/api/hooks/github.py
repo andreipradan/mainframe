@@ -90,23 +90,18 @@ def mainframe(request):
         conclusion = wf_run.get("conclusion", "")
         conclusion = f" ({conclusion.title()})" if conclusion else ""
         head_branch = wf_run["head_branch"]
-        send_telegram_message(
-            text=f"{PREFIX} <b>{name}</b> - {head_branch} - {action}{conclusion}"
-            f"\n<a href='{wf_run['html_url']}'>Details</a>",
-            parse_mode=telegram.ParseMode.HTML,
+        message = (
+            f"{PREFIX} <b>{name}</b> - {head_branch} - {action}{conclusion}"
+            f"\n<a href='{wf_run['html_url']}'>Details</a>"
         )
-        if wf_run["head_branch"] == "main" and name == "CI" and conclusion == "success":
-            schedule_deploy()
+        if head_branch == "main" and name == "CI" and conclusion == "success":
+            message += f"\n\n{schedule_deploy()}"
+        send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
 
 
 def schedule_deploy():
-    logger = logging.getLogger(__name__)
-    logger.addHandler(MainframeHandler())
-
     prefix = "[Deploy]"
-    logger.info(f"Starting deployment...")
-
     if not (output := run_cmd("git pull origin main")):
         return send_telegram_message(text=f"{prefix} Could not git pull")
     if output.strip() == b"Already up to date.":
@@ -133,8 +128,6 @@ def schedule_deploy():
     if msg_extra:
         msg += f" (+ {' & '.join(msg_extra)})"
 
-    logger.info(msg)
-
     logs_path = f"/var/log/mainframe/deploy/"
     mkdir = f"mkdir -p {logs_path}`date +%Y`"
     output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
@@ -142,3 +135,4 @@ def schedule_deploy():
     deploy_cmd = f"$HOME/projects/mainframe/deploy/setup.sh {' '.join(cmd_params)}"
     command = f"{mkdir} && {deploy_cmd} >> {output}"
     cron.delay(command, is_management=False)
+    return msg
