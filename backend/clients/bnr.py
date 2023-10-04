@@ -12,7 +12,6 @@ class FetchExchangeRatesException(Exception):
 
 
 def fetch_exchange_rates(logger):
-    # url = f"https://bnr.ro/files/xml/years/nbrfxrates{year}.xml"
     url = "https://www.bnr.ro/nbrfxrates.xml"
     resp = requests.get(url)
     try:
