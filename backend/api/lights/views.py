@@ -22,7 +22,8 @@ class LightsViewSet(viewsets.ViewSet):
     lookup_field = "ip"
     permission_classes = (IsAuthenticated,)
 
-    def _request(self, what, **kwargs):
+    @staticmethod
+    def _request(what, **kwargs):
         logger.info(f"Lights: {what}, args: {kwargs}")
         try:
             data = {"data": getattr(LightsClient, what)(**kwargs)}
@@ -36,7 +37,8 @@ class LightsViewSet(viewsets.ViewSet):
             logger.info(data["data"])
         return JsonResponse(data=data, status=status)
 
-    def list(self, request):
+    @staticmethod
+    def list(request):
         return JsonResponse(data=LightsClient.get_bulbs(), safe=False)
 
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-brightness")

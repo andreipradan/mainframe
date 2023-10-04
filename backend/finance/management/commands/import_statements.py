@@ -230,7 +230,8 @@ def parse_revolut_transactions(file_name, _):
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
+    @staticmethod
+    def add_arguments(parser):
         parser.add_argument("--bank", type=str, required=True)
 
     def handle(self, *args, **options):

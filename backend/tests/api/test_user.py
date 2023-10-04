@@ -3,7 +3,8 @@ from rest_framework import status
 
 
 class TestUserViewSet:
-    def test_edit(self, client, db, session):
+    @staticmethod
+    def test_edit(client, db, session):
         data = {"email": "new@admin.com", "userID": session.user_id}
         url = reverse("api:user-edit-list")
         response = client.post(url, data=data, HTTP_AUTHORIZATION=session.token)

@@ -116,7 +116,8 @@ class TournamentClient:
     def participants_by_name(self):
         return self._get_related("participant", by="name")
 
-    def _adjust_dates(self, obj):
+    @staticmethod
+    def _adjust_dates(obj):
         for k, v in obj.items():
             if k.endswith("_at") or k.endswith("_time"):
                 obj[k] = convert_to_timezone(obj[k])

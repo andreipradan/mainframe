@@ -121,7 +121,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class CreditViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
-    def list(self, request, **kwargs):
+    @staticmethod
+    def list(request, **kwargs):
         credit = get_default_credit()
         latest_timetable = credit.latest_timetable
         rates = (
@@ -277,7 +278,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return self._populate_filters(Response(serializer.data))
 
-    def _populate_filters(self, response):
+    @staticmethod
+    def _populate_filters(response):
         response.data["types"] = (
             Transaction.objects.filter(amount__lt=0)
             .values_list("type", flat=True)

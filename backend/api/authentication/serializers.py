@@ -23,7 +23,8 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
 
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         email = data.get("email", None)
         password = data.get("password", None)
 
@@ -79,19 +80,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "password", "email", "is_active", "date"]
 
-    def validate_username(self, value):
+    @staticmethod
+    def validate_username(value):
         try:
             User.objects.get(username=value)
         except ObjectDoesNotExist:
             return value
         raise exceptions.ValidationError(get_error("Username already taken."))
 
-    def validate_email(self, value):
+    @staticmethod
+    def validate_email(value):
         try:
             User.objects.get(email=value)
         except ObjectDoesNotExist:
             return value
         raise exceptions.ValidationError(get_error("Email already taken."))
 
-    def create(self, validated_data):
+    @staticmethod
+    def create(validated_data):
         return User.objects.create_user(**validated_data)

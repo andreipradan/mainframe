@@ -9,7 +9,8 @@ class CronSerializer(serializers.ModelSerializer):
         model = Cron
         fields = "__all__"
 
-    def validate_expression(self, value):
+    @staticmethod
+    def validate_expression(value):
         if value:
             cron = CronTab().new()
             try:

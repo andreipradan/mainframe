@@ -50,7 +50,8 @@ class TestLogin:
 
 
 class TestAuthentication:
-    def test_register(self, client, session):
+    @staticmethod
+    def test_register(client, session):
         data = {"username": "test", "password": "pass", "email": "test@appseed.us"}
         url = reverse("api:register-list")
 
@@ -59,7 +60,8 @@ class TestAuthentication:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json()["success"] is True
 
-    def test_logout(self, client, session):
+    @staticmethod
+    def test_logout(client, session):
         url = reverse("api:logout-list")
 
         response = client.post(url, HTTP_AUTHORIZATION=session.token)
@@ -67,7 +69,8 @@ class TestAuthentication:
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["success"] is True
 
-    def test_check_session(self, client, session):
+    @staticmethod
+    def test_check_session(client, session):
         url = reverse("api:check-session-list")
 
         response = client.post(url, HTTP_AUTHORIZATION=session.token)
