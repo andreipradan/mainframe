@@ -57,7 +57,7 @@ def reply(update, text):
 
 def validate_message(message, bot, logger):
     if not message:
-        logger.warning(f"No message")
+        logger.warning("No message")
         return ""
 
     text = message.text

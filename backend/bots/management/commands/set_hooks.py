@@ -57,7 +57,7 @@ class Command(BaseCommand):
             raise CommandError("Tunnel 'mainframe' not found")
 
         set_github_hook(ngrok_url)
-        logger.info(f"[Hooks][GitHub] Done")
+        logger.info("[Hooks][GitHub] Done")
         for bot in Bot.objects.filter(is_active=True):
             url = f"{ngrok_url}/api/bots/{bot.id}/webhook/"
             try:

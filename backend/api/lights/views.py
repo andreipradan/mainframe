@@ -54,11 +54,11 @@ class LightsViewSet(viewsets.ViewSet):
         body = json.loads(request.body)
         return self._request("set_rgb", ip=ip, rgb=body["rgb"])
 
-    @action(detail=False, methods=["put"], url_path=f"turn-all-off")
+    @action(detail=False, methods=["put"], url_path="turn-all-off")
     def turn_all_off(self, request):
         return self._request("turn_all_off")
 
-    @action(detail=False, methods=["put"], url_path=f"turn-all-on")
+    @action(detail=False, methods=["put"], url_path="turn-all-on")
     def turn_all_on(self, request):
         return self._request("turn_all_on")
 

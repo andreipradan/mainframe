@@ -77,7 +77,7 @@ class BusInline(BaseInlines):
             0, Button("♻️", callback_data=f"bus sync {line_type}")
         )
         if line_type != "favorites":
-            line_type_buttons[0].append(Button("⭐️", callback_data=f"bus start"))
+            line_type_buttons[0].append(Button("⭐️", callback_data="bus start"))
         if line_type != TransitLine.LINE_TYPE_URBAN:
             line_type_buttons[0].append(
                 Button("🚍", callback_data=f"bus start {TransitLine.LINE_TYPE_URBAN}")

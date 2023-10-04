@@ -105,7 +105,7 @@ def call(data, bot):
 
         try:
             if tournament.is_started:
-                msg = f"Not possible - tournament already started"
+                msg = "Not possible - tournament already started"
                 logger.warning(msg)
                 return reply(update, msg)
         except requests.exceptions.HTTPError as e:

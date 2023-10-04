@@ -119,7 +119,7 @@ def call(data, instance: Bot):
         if not earthquake or not (
             latest := Earthquake.objects.order_by("-timestamp").first()
         ):
-            return reply(update, text=f"No earthquakes stored")
+            return reply(update, text="No earthquakes stored")
         if len(args) == 2 and args[0] == "set_min_magnitude":
             instance.additional_data["earthquake"]["min_magnitude"] = args[1]
             instance.save()
@@ -179,7 +179,7 @@ def call(data, instance: Bot):
 
 def translate_text(text):
     if len(text) > 255:
-        return f"Too many characters. Try sending less than 255 characters"
+        return "Too many characters. Try sending less than 255 characters"
 
     if not text.strip():
         return "Missing text to translate"

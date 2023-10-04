@@ -43,7 +43,7 @@ def schedule_deploy():
     if msg_extra:
         msg += f" (+ {' & '.join(msg_extra)})"
 
-    logs_path = f"/var/log/mainframe/deploy/"
+    logs_path = "/var/log/mainframe/deploy/"
     mkdir = f"mkdir -p {logs_path}`date +%Y`"
     output = f"{logs_path}`date +%Y`/`date +%Y-%m`.log 2>&1"
 
