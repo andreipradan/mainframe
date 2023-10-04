@@ -64,9 +64,9 @@ def mainframe(request):
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
 
     payload = json.loads(request.body)
-    branch = payload.get("ref", "").replace("refs/heads/", "")
 
     if event != "workflow_run":
+        branch = payload.get("ref", "").replace("refs/heads/", "")
         branch_message = f"\nBranch: {branch}" if branch else ""
         pusher = payload.get("pusher", {}).get("name", "")
         author = f"\nAuthor: {pusher}" if pusher else ""
@@ -85,12 +85,12 @@ def mainframe(request):
         wf_run = payload["workflow_run"]
         name = wf_run["name"]
         conclusion = wf_run.get("conclusion", "")
-        if name == "CI" and conclusion == "success":
+        if wf_run["head_branch"] == "main" and name == "CI" and conclusion == "success":
             deploy()
         conclusion = f" ({conclusion.title()})" if conclusion else ""
+        head_branch = wf_run["head_branch"]
         send_telegram_message(
-            text=f"{PREFIX} <b>{name}</b> - {action}{conclusion}"
-            f"\nBranch: {wf_run['head_branch']}"
+            text=f"{PREFIX} <b>{name}</b> - {head_branch} -{action}{conclusion}"
             f"\n<a href='{wf_run['html_url']}'>Details</a>",
             parse_mode=telegram.ParseMode.HTML,
         )
