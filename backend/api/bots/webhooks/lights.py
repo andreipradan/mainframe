@@ -124,7 +124,7 @@ def call(data, bot):
         return logger.error(f"Ignoring message from: {who}")
 
     if not hasattr(message, "text") or not message.text:
-        return logger.warning(f"Got no text")
+        return logger.warning("Got no text")
 
     if not message.text.startswith("/"):
         return logger.warning(f"Not a command: {message.text}")

@@ -29,4 +29,4 @@ class RpiViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["put"], url_path="restart-backend")
     def restart_backend(self, request, **kwargs):
-        return self.run_command(f"sudo systemctl restart backend")
+        return self.run_command("sudo systemctl restart backend")

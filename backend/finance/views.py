@@ -239,7 +239,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         Category.objects.get_or_create(id=request.data["category"])
         response = super().partial_update(request, *args, **kwargs)
-        response.data["msg"] = {"message": f"Successfully updated 1 transaction"}
+        response.data["msg"] = {"message": "Successfully updated 1 transaction"}
         return response
 
     @action(methods=["put"], detail=False, url_path="update-all")

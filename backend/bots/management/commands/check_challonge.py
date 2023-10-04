@@ -96,6 +96,6 @@ class Command(BaseCommand):
             results = database.bulk_update(updates).bulk_api_result
             return logger.info(results)
 
-        logger.info(f"No matches updates")
+        logger.info("No matches updates")
 
         self.stdout.write(self.style.SUCCESS("Done."))

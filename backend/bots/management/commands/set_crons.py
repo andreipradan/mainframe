@@ -14,13 +14,13 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 
-        logger.info(f"[Crons] Setting")
+        logger.info("[Crons] Setting")
         crons = Cron.objects.filter(is_active=True)
         if not crons:
             logger.error("No active crons in the database")
         set_crons(crons, clear_all=True)
-        logger.info(f"[Crons] Done")
+        logger.info("[Crons] Done")
 
         healthchecks.ping() and logger.info("[Healthcheck] Done")
-        send_telegram_message(text=f"[[backend]] up")
+        send_telegram_message(text="[[backend]] up")
         self.stdout.write(self.style.SUCCESS("[Crons] Done."))

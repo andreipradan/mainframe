@@ -48,7 +48,7 @@ class Command(BaseCommand):
         set_crons(
             [
                 Cron(
-                    command=f"be_real",
+                    command="be_real",
                     expression=expression,
                     is_active=True,
                     is_management=True,
