@@ -105,7 +105,7 @@ const EditModal = () => {
         <Form.Group className="mb-3">
           <Form.Label>Additional Data</Form.Label>
           <AceEditor
-            className={!!annotations ? "form-control is-invalid" : ""}
+            className={(annotations) ? "form-control is-invalid" : ""}
             annotations={annotations}
             placeholder="Additional Data"
             mode="python"
