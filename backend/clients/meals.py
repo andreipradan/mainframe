@@ -111,7 +111,7 @@ def parse_week(args) -> List[Meal]:
 
     rows = soup.select(".slider-menu-for-day > div > .row")
     if not rows:
-        logger.error(f"URL: {url}. No rows found")
+        logger.error("URL: %s. No rows found", url)
         return []
 
     meals = []

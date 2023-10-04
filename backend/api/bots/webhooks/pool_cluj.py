@@ -90,7 +90,7 @@ def call(data, bot):
         return reply(update, msg)
 
     if base_command == "join":
-        logger.info(f"{user_text} is trying to join")
+        logger.info("%s is trying to join", user_text)
         db_results = database.set_stats(
             get_stats_from_user(user),
             collection="participants",
@@ -119,15 +119,15 @@ def call(data, bot):
             return reply(update, e.args[0])
 
         if results:
-            logger.info(f"Added {user_text} to the tournament")
+            logger.info("Added %s to the tournament", user_text)
             return reply(update, "You successfully joined the tournament! 🎉")
-        logger.info(f"Couldn't add {user_text} to the tournament")
+        logger.info("Couldn't add %s to the tournament", user_text)
         return reply(update, "Couldn't add you to the tournament")
 
     if base_command == "leave":
-        logger.info(f"{user_text} is trying to leave")
+        logger.info("%s is trying to leave", user_text)
         if not tournament.get_player_by_telegram_id(user.id):
-            logger.warning(f"Player {user_text} not found in tournament")
+            logger.warning("Player %s not found in tournament", user_text)
             return reply(update, "You are not registered to this tournament")
 
         try:
@@ -150,7 +150,7 @@ def call(data, bot):
 
         if results:
             how_many = len(results)
-            logger.info(f"Populated {how_many}")
+            logger.info("Populated %d", how_many)
             return reply(
                 update,
                 f"{how_many} participant{'s' if how_many > 1 else ''} added: "
@@ -196,7 +196,7 @@ def call(data, bot):
         return reply(update, msg)
 
     if base_command == "score":
-        logger.info(f"Set score: {command}")
+        logger.info("Set score: %s", command)
         if not tournament.is_started:
             logger.info("Tournament not started")
             return reply(update, "Not possible - tournament not started")
@@ -227,7 +227,7 @@ def call(data, bot):
             logger.exception(e)
             return reply(update, e.args[0])
 
-        logger.info(f"Tournament {response['tournament']['url']} started.")
+        logger.info("Tournament %s started.", response["tournament"]["url"])
         return reply(
             update,
             f"Started tournament 🎉\nGood Luck everyone!\n{tournament.get_footer()}",

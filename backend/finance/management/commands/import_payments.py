@@ -120,14 +120,14 @@ class Command(BaseCommand):
                 failed_imports.append(file_name.stem)
                 continue
             except IntegrityError as e:
-                logger.error(f"{e}\nFile: {file_name.stem}")
+                logger.error("%s\nFile: %s", e, file_name.stem)
                 file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
                 failed_imports.append(file_name.stem)
                 continue
             else:
-                logger.info(f"{file_name.stem} - done")
+                logger.info("%s - done", file_name.stem)
                 total += len(results)
-                logger.info(f"Import completed - Deleting {file_name.stem}")
+                logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
         msg = f"Imported {total} payments"

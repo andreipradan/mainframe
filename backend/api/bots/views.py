@@ -54,7 +54,8 @@ class BotViewSet(viewsets.ModelViewSet):
             instance.call(request.data)
         except ModuleNotFoundError:
             logger.error(
-                f"Got a webhook call for '{instance}' with no associated webhook implementation"
+                "Webhook call for '%s' with no associated webhook implementation",
+                instance,
             )
             return JsonResponse(data={"status": "404"})
         return JsonResponse(data={"status": "200"})

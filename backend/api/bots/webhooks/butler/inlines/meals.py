@@ -49,7 +49,7 @@ class MealsInline(BaseInlines):
             0, InlineKeyboardButton("👆", callback_data=f"meal start {page}")
         )
         items = Meal.objects.filter(date=day).order_by("type")
-        logger.info(f"Got {len(items)} meals")
+        logger.info("Got %d meals", len(items))
 
         return InlineKeyboardMarkup(
             [
@@ -148,7 +148,7 @@ class MealsInline(BaseInlines):
     @classmethod
     def start(cls, update, page=None, override_message=None):
         count = Meal.objects.distinct("date").count()
-        logger.info(f"Counted {count} dates")
+        logger.info("Counted %s dates", count)
         last_page = math.ceil(count / cls.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a date [{page} / {total}]"
 

@@ -36,24 +36,24 @@ def call(data, instance: Bot):
         if callback == "end":
             return SavedMessagesInlines.end(update)
         if not args:
-            return logger.error(f"No args for callback query data: {data}")
+            return logger.error("No args for callback query data: %s", data)
         if callback in ["bus", "meal"]:
             inline = MealsInline if callback == "meal" else BusInline
             try:
                 return getattr(inline, args.pop(0))(update, *args)
             except (AttributeError, TypeError) as e:
-                logger.error(f"E: {e}, args: {args}")
+                logger.error("E: %s, args: %s", e, args)
                 return ""
 
         saved_inline = SavedMessagesInlines(args.pop(0))
         method = getattr(saved_inline, callback, None)
         if not method:
-            return logger.error(f"Unhandled callback: {data}")
+            return logger.error("Unhandled callback: %s", data)
         return method(update, *args)
 
     message = update.message
     if not message or not getattr(message, "chat", None) or not message.chat.id:
-        return logger.info(f"No message or chat: {update.to_dict()}")
+        return logger.info("No message or chat: %s", update.to_dict())
 
     if message.new_chat_title:
         chat_description = bot.get_chat(update.message.chat_id).description
@@ -70,7 +70,7 @@ def call(data, instance: Bot):
     from_user = update.message.from_user
     user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
     if str(from_user.username or from_user.id) not in instance.whitelist:
-        return logger.error(f"Ignoring message from: {user}")
+        return logger.error("Ignoring message from: %s", user)
 
     if message.document:
         file_name = message.document.file_name
@@ -90,22 +90,21 @@ def call(data, instance: Bot):
             else:
                 return logger.error("Unhandled pdf type")
         else:
-            return logger.error(f"Unhandled extension: {extension}")
+            return logger.error("Unhandled extension: %s", extension)
 
-        logger.info(f"Got {extension} saving...")
+        logger.info("Got %s saving...", extension)
         path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
         bot.get_file(message.document.file_id).download(path)
 
-        msg = f"Saved {doc_type}: {file_name}"
-        logger.info(msg)
+        logger.info("Saved %s: %s", doc_type, file_name)
         cron.delay(f"import_{doc_type}{f' --bank={bank}' if bank else ''}")
-        return reply(update, msg)
+        return reply(update, f"Saved {doc_type}: {file_name}")
 
     if not message.text:
-        return logger.info(f"No message text: {update.to_dict()}. From: {user}")
+        return logger.info("No message text: %s. From: %s", update.to_dict(), user)
 
     if not message.text.startswith("/"):
-        return logger.warning(f"Invalid command: '{message.text}'. From: {user}")
+        return logger.warning("Invalid command: '%s'. From: %s", message.text, user)
 
     cmd, *args = message.text[1:].split(" ")
     if "bot_command" in [e.type for e in update.message.entities]:
@@ -174,7 +173,7 @@ def call(data, instance: Bot):
     if cmd == "translate":
         return reply(update, translate_text(" ".join(args)))
 
-    logger.error(f"Unhandled: {update.to_dict()}")
+    logger.error("Unhandled: %s", update.to_dict())
 
 
 def translate_text(text):

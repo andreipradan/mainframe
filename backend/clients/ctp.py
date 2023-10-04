@@ -78,7 +78,7 @@ async def fetch_many(urls):
 def parse_schedule(args) -> Optional[Schedule]:
     response, line, occ, url = args
     if not response or "<title> 404 Not Found" in response:
-        logger.warning(f"No or 404 in response for {url}")
+        logger.warning("No or 404 in response for %s", url)
         return
 
     rows = [row.strip() for row in response.split("\n") if row.strip()]
@@ -157,7 +157,7 @@ class CTPClient:
                 update_fields=["type", "terminal1", "terminal2"],
                 unique_fields=["name"],
             )
-            logger.info(f"Stored {len(lines)} transit lines in db")
+            logger.info("Stored %d transit lines in db", len(lines))
         return lines
 
     @classmethod
@@ -183,7 +183,7 @@ class CTPClient:
                     ]
                 )
         logger.info(
-            f"Fetching {len(schedules)} schedules for {len(lines)} transit lines"
+            "Fetching %d schedules for %d transit lines", len(schedules), len(lines)
         )
         schedules = [s for s in asyncio.run(fetch_many(schedules)) if s]
         if commit:
@@ -197,5 +197,5 @@ class CTPClient:
                 ],
                 unique_fields=list(*Schedule._meta.unique_together),
             )
-            logger.info(f"Stored {len(schedules)} schedules in db")
+            logger.info("Stored %d schedules in db", len(schedules))
         return schedules

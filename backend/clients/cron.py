@@ -48,9 +48,9 @@ def remove_crons_for_command(cron: Cron) -> None:
     with CronTab(user=config("USERNAME")) as crontab:
         command = cron.management_command if cron.is_management else cron.command
         if not (crons_no := len(list(crontab.find_command(command)))):
-            return logger.warning(f"No '{cron}' crons found")
+            return logger.warning("No '%s' crons found", cron)
 
-        logger.info(f"Cleaning up {crons_no} existing '{cron}' crons")
+        logger.info("Cleaning up %d existing '%s' crons", crons_no, cron)
         crontab.remove_all(command=command)
 
 
@@ -66,4 +66,4 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             cmd.setall(cron.expression)
             cmd.enable(cron.is_active)
             cmd.set_comment(cron.description)
-    logger.info(f"Set {i + 1} cron{'s' if i else ''} ✅")
+    logger.info("Set %d cron%s ✅", i + 1, "s" if i else "")

@@ -11,15 +11,20 @@ logger.addHandler(MainframeHandler())
 
 
 def bulk_update(requests, collection="matches"):
-    logger.warning(f"Saving {len(requests)} objects")
+    logger.warning("Saving %d objects", len(requests))
     results = get_collection(collection).bulk_write(requests)
     logger.info(
-        f"Bulk write results:\n"
-        f"Deleted: {results.deleted_count}\n"
-        f"Inserted: {results.inserted_count}\n"
-        f"Matched: {results.matched_count}\n"
-        f"Modified: {results.modified_count}\n"
-        f"Upserted: {results.upserted_count}\n"
+        "Bulk write results:\n"
+        "Deleted: %d\n"
+        "Inserted: %d\n"
+        "Matched: %d\n"
+        "Modified: %d\n"
+        "Upserted: %d\n",
+        results.deleted_count,
+        results.inserted_count,
+        results.matched_count,
+        results.modified_count,
+        results.upserted_count,
     )
     return results
 
@@ -40,7 +45,7 @@ def get_many(collection, order_by=None, how=-1, silent=True, skip=0, limit=0, **
 
 
 def get_stats(collection, silent=False, **kwargs):
-    logger.info(f'Getting stats ({kwargs}) from collection "{collection}"')
+    logger.info('Getting stats (%s) from collection "%d"', kwargs, collection)
     if not kwargs:
         raise ValueError("filter kwargs required")
     if "_id" in kwargs:

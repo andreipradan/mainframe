@@ -23,7 +23,7 @@ class LightsViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
     def _request(self, what, **kwargs):
-        logger.info(f"Lights: {what}, args: {kwargs}")
+        logger.info("Lights: %s, args: %s", what, kwargs)
         try:
             data = {"data": getattr(LightsClient, what)(**kwargs)}
             status = 200

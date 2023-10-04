@@ -146,7 +146,7 @@ def parse_raiffeisen_transactions(file_name, logger):
         type=account_type,
     )
     if created:
-        logger.warning(f"New account: {account}")
+        logger.warning("New account: %s", account)
         cron.delay("backup_finance --model=Account")
 
     header_index = starting_index + 11
@@ -247,7 +247,7 @@ class Command(BaseCommand):
         else:
             raise NotImplementedError(f"Missing bank parser for: {bank}")
 
-        logger.info(f"Importing{f' {bank}' if bank else ''} statements")
+        logger.info("Importing%s statements", f" {bank}" if bank else "")
         now = datetime.now()
 
         total = 0
@@ -255,7 +255,7 @@ class Command(BaseCommand):
         failed_imports = []
 
         for file_name in Path(data_path).glob(f"**/*.{extension}"):
-            logger.info(f"Parsing {file_name.name}")
+            logger.info("Parsing %s", file_name.name)
             transactions = parser(file_name, logger)
 
             try:
@@ -266,21 +266,21 @@ class Command(BaseCommand):
                 failed_imports.append(str(file_name))
                 continue
             except IntegrityError as e:
-                logger.error(f"{e}\nFile: {file_name}")
+                logger.error(f"%s\nFile: %s", e, file_name)
                 file_name.rename(f"{file_name}.{now}.failed")
                 failed_imports.append(str(file_name))
                 continue
             else:
                 results_count = len(results)
-                logger.info(f"{file_name.stem}: {results_count} rows")
+                logger.info("%s: %d rows", file_name.stem, results_count)
                 total += results_count
-                logger.info(f"Import completed - Deleting {file_name.stem}")
+                logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
         msg = f"Imported {total} {bank} transactions"
         if failed_imports:
             msg += f"\nFailed files: {', '.join(failed_imports)}"
-            logger.error(msg)
+            logger.error("\nFailed files: %s", ", ".join(failed_imports))
 
         remove_crons_for_command(Cron(command="import_statements", is_management=True))
 

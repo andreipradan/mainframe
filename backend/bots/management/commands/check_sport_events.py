@@ -66,10 +66,10 @@ class Command(BaseCommand):
             ]
 
         logger.info(
-            f"Got {results_size} characters results. Split in {batches_no} batches."
+            "Got %d characters results. Split in %d batches.", results_size, batches_no
         )
         if batches_no > 10:
-            logger.warning(f"Too many batches: {batches_no}, sending only the first 10")
+            logger.warning("Too many batches: , sending only the first 10", batches_no)
             chunks = chunks[:10]
 
         entity = ""
@@ -79,13 +79,13 @@ class Command(BaseCommand):
                 send_message(f"{entity}{chunk}\n[{batch_no}]")
                 entity = ""
             except telegram.error.BadRequest as e:
-                logger.warning(f"{batch_no} Bad request: {e}")
+                logger.warning("%d Bad request: %s", batch_no, e)
                 if "can't find end of the entity" in str(e):
                     location = int(e.message.split()[-1])
                     entity = bytes(chunk, encoding="utf-8")[
                         location : location + 1
                     ].decode()
-                    logger.info(f'Fixed entity "{entity}"')
+                    logger.info('Fixed entity "%s"', entity)
                     send_message(f"{chunk}{entity}[{batch_no}]")
 
         self.stdout.write(self.style.SUCCESS("Done."))

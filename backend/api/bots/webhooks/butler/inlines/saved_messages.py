@@ -55,7 +55,7 @@ class SavedMessagesInlines(BaseInlines):
             )
         )
 
-        logger.info(f"Got {len(items)} saved messages")
+        logger.info("Got %d saved messages", len(items))
 
         return Keyboard(
             [
@@ -89,7 +89,7 @@ class SavedMessagesInlines(BaseInlines):
         except ConfigurationError as e:
             return update.message.reply_text(f"Got an error: {str(e)}")
 
-        logger.info(f"Counted {count} documents")
+        logger.info("Counted %d documents", count)
         last_page = math.ceil(count / self.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a message [{page} / {total}]"
 

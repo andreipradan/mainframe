@@ -41,7 +41,7 @@ class TournamentClient:
     def send_message(self, text):
         chat_id = config("CHALLONGE_CHAT_ID")
         try:
-            logger.info(f"Sending {text} to {chat_id}")
+            logger.info("Sending %s to %d", text, chat_id)
             return telegram.Bot(self.token).send_message(
                 chat_id=chat_id,
                 disable_notification=True,
@@ -50,11 +50,11 @@ class TournamentClient:
                 text=text,
             )
         except telegram.error.BadRequest as e:
-            logger.exception(f"Error sending telegram message: {e}")
+            logger.exception("Error sending telegram message: %s", e)
 
     @classmethod
     def _request(cls, url, method="GET", data=None):
-        logger.info(f"[{method.upper()}] - {url}")
+        logger.info("[%s] - %s", method.upper(), url)
 
         basic = requests.auth.HTTPBasicAuth(
             config("CHALLONGE_USERNAME"), config("CHALLONGE_API_KEY")
@@ -67,7 +67,7 @@ class TournamentClient:
             data=data,
         )
         if 200 <= response.status_code < 300:
-            logger.info(f"Got: {response.status_code} {response.reason}")
+            logger.info("Got: %d %s", response.status_code, response.reason)
             return response.json()
 
         try:
@@ -75,7 +75,7 @@ class TournamentClient:
         except requests.exceptions.JSONDecodeError:
             error = response.reason
 
-        logger.exception(f"[{cls._id}] [{response.status_code}] Error: {error}")
+        logger.exception("[%s] [%d] Error: %s", cls._id, response.status_code, error)
         raise requests.exceptions.HTTPError(f"[{response.status_code}] {error}")
 
     @classmethod
@@ -146,7 +146,7 @@ class TournamentClient:
         return self._request(method="DELETE", url=f"{self.url}/participants/clear.json")
 
     def destroy(self):
-        logger.warning(f"Destroying tournament {self._id}")
+        logger.warning("Destroying tournament %s", self._id)
         response = self._request(f"{self.url}.json", method="DELETE")
         database.get_collection().drop()
         logger.warning("Dropped matches collection")

@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         model = options["model"]
         source = "finance" if not model else f"finance.{model.title()}"
-        logger.info(f"Dumping '{source}' data")
+        logger.info("Dumping '%s' data", source)
 
         call_command("dumpdata", source, output=file_name, verbosity=2)
 

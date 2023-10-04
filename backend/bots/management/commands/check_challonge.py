@@ -53,7 +53,7 @@ def check_open_matches(client, logger):
             "\n\nWeekend fain!"
         )
         client.send_message(text)
-        logger.info(f"Found {no_of_matches} open matches")
+        logger.info("Found %d open matches", no_of_matches)
     else:
         logger.info("No matches open")
 

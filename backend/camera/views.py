@@ -121,7 +121,7 @@ class CameraViewSet(viewsets.ViewSet):
         try:
             download_blob(filename, self.base_path)
         except FileNotFoundError:
-            logger.warning(f"Path {file_path} does not exist. Creating...")
+            logger.warning("Path %s does not exist. Creating...", file_path)
             Path(f"{self.base_path}/{file_path}").mkdir(parents=True)
             download_blob(filename, self.base_path)
         return self.list(request, path=file_path)

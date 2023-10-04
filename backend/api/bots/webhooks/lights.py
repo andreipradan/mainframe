@@ -76,7 +76,7 @@ class Inlines(BaseInlines):
             logger.error(str(e))
             return ""
 
-        logger.info(f"Bulb {ip} was toggled. Response: {response}")
+        logger.info("Bulb %s was toggled. Response: %s", ip, response)
         return cls.refresh(update)
 
     @classmethod
@@ -86,7 +86,7 @@ class Inlines(BaseInlines):
         bot.additional_data["state"] = state
         bot.save()
 
-        logger.info(f"Switched state to '{value}'")
+        logger.info("Switched state to '%s'", value)
         return cls.refresh(update, state=state)
 
 
@@ -113,7 +113,7 @@ def call(data, bot):
 
         method = getattr(Inlines, data, None)
         if not method:
-            return logger.error(f"Unhandled callback: {data}")
+            return logger.error("Unhandled callback: %s", data)
         return getattr(Inlines, data)(update)
 
     if not message:
@@ -121,13 +121,13 @@ def call(data, bot):
 
     if message.from_user.username not in bot.whitelist:
         who = message.from_user.username or message.from_user.id
-        return logger.error(f"Ignoring message from: {who}")
+        return logger.error("Ignoring message from: %s", who)
 
     if not hasattr(message, "text") or not message.text:
         return logger.warning("Got no text")
 
     if not message.text.startswith("/"):
-        return logger.warning(f"Not a command: {message.text}")
+        return logger.warning("Not a command: %s", message.text)
 
     command = message.text[1:]
     if command == "start":
@@ -155,4 +155,4 @@ def call(data, bot):
             reply_markup=Inlines.get_markup(status),
         ).to_json()
 
-    return logger.warning(f"Unhandled command: {message.text}")
+    return logger.warning("Unhandled command: %s", message.text)

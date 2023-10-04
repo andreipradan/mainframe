@@ -40,7 +40,7 @@ def set_github_hook(ngrok_url):
     repository = g.get_repo(f"{env('GITHUB_USERNAME')}/mainframe")
     hooks = repository.get_hooks()
 
-    logger.warning(f"[GitHub] Deleting all hooks [{hooks.totalCount}]")
+    logger.warning("[GitHub] Deleting all hooks [%d]", hooks.totalCount)
     for hook in hooks:
         hook.delete()
 

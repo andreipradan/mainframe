@@ -143,7 +143,7 @@ def extract_first_page(first_page, logger):
         number=summary["account__number"],
     )
     if created:
-        logger.warning(f"New account: {account}")
+        logger.warning("New account: %s", account)
         cron.delay("backup_finance --model=Account")
 
     credit, created = Credit.objects.get_or_create(
@@ -155,7 +155,7 @@ def extract_first_page(first_page, logger):
     )
 
     if created:
-        logger.warning(f"New credit: {account}")
+        logger.warning("New credit: %s", account)
         cron.delay("backup_finance --model=Credit")
 
     return Timetable(
@@ -193,20 +193,20 @@ class Command(BaseCommand):
                 failed_imports.append(file_name.stem)
                 continue
             except IntegrityError as e:
-                logger.error(f"{e}\nFile: {file_name.stem}")
+                logger.error("%s\nFile: %s", e, file_name.stem)
                 file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
                 failed_imports.append(file_name.stem)
                 continue
             else:
-                logger.info(f"{file_name.stem} - done")
+                logger.info("%s - done", file_name.stem)
                 total += 1
-                logger.info(f"Import completed - Deleting {file_name.stem}")
+                logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
         msg = f"Imported {total} timetables"
         if failed_imports:
             msg += f"\nFailed files: {', '.join(failed_imports)}"
-            logger.error(msg)
+            logger.error("Failed files: %s", ", ".join(failed_imports))
 
         remove_crons_for_command(Cron(command="import_timetables", is_management=True))
 

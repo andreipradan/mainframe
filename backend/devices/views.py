@@ -47,7 +47,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
             )
         if items:
             Device.objects.update(is_active=False)
-            logger.info(f"Creating {len(items)}")
+            logger.info("Creating %d", len(items))
             Device.objects.bulk_create(
                 items,
                 update_conflicts=True,

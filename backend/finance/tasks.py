@@ -17,7 +17,7 @@ def signal_expired(signal, task, exc=None):
 @db_task()
 def predict(queryset, logger):
     total = queryset.count()
-    logger.info(f"Predicting {total} distinct descriptions")
+    logger.info("Predicting %d distinct descriptions", total)
     df = pd.DataFrame(queryset)
     predictions = SKLearn.predict(df)
     transactions = []
@@ -31,7 +31,7 @@ def predict(queryset, logger):
                 progress=f"{progress / 2:.2f}",
             )
 
-    logger.info(f"Bulk updating {len(transactions)}")
+    logger.info("Bulk updating %d", len(transactions))
     log_status("predict", operation="3/3 saving to db", progress=70)
     Transaction.objects.bulk_update(
         transactions,
@@ -57,6 +57,6 @@ def train(logger):
         log_status("train", status=SIGNAL_ERROR, error="No trained data")
         raise ValueError("No trained data")
     log_status("train", count=count)
-    logger.info(f"Training on {count} confirmed transactions...")
+    logger.info("Training on %d confirmed transactions...", count)
     df = pd.DataFrame(qs)
     return SKLearn.train(df, logger)
