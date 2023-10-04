@@ -2,7 +2,7 @@ import datetime
 import random
 
 import factory
-from environ import environ
+from django.conf import settings
 
 from finance.models import Payment, Credit, Account, Transaction, Category
 
@@ -11,7 +11,7 @@ class AccountFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Account
 
-    client_code = environ.Env()("DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE")
+    client_code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
     first_name = factory.Sequence(lambda n: "first-name-%s" % n)
     last_name = factory.Sequence(lambda n: "last-name-%s" % n)
     number = factory.Sequence(lambda n: n)

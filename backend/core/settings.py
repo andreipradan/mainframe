@@ -164,14 +164,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Load the default ones
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
-if DEBUG:
-    ALLOWED_HOSTS += [".ngrok-free.app"]
-    CORS_ALLOWED_ORIGINS += [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://*.ngrok-free.app",
-    ]
-    CSRF_TRUSTED_ORIGINS += ["https://*.ngrok-free.app"]
 # ##################################################################### #
 #  TESTING
 # ##################################################################### #
@@ -205,21 +197,14 @@ LOGGING = {
     },
 }
 
+DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
+    "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
+)
 
-if (ENV := env("ENV", default=None)) == "prod":
-    sentry_sdk.init(
-        dsn=env("SENTRY_DSN"),
-        integrations=[DjangoIntegration()],
-        traces_sample_rate=1.0,
-        send_default_pii=False,
-        profiles_sample_rate=1.0,
-    )
-
-    # Database
-    # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+if (ENV := env("ENV", default=None)) in ["local", "prod"]:
     DATABASES = {
         "default": {
-            "ENGINE": env("DB_ENGINE"),
+            "ENGINE": "django.db.backends.postgresql",
             "NAME": env("DB_DATABASE"),
             "USER": env("DB_USER"),
             "PASSWORD": env("DB_PASSWORD"),
@@ -227,10 +212,17 @@ if (ENV := env("ENV", default=None)) == "prod":
             "PORT": env("DB_PORT"),
         }
     }
-    LOGGING["loggers"]["django"]["handlers"].append("mainframe")
-elif ENV in ["ci", "local", "test"]:
-    if ENV == "local":
-        ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
+    if ENV == "prod":
+        LOGGING["loggers"]["django"]["handlers"].append("mainframe")
+        sentry_sdk.init(
+            dsn=env("SENTRY_DSN"),
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=1.0,
+            send_default_pii=False,
+            profiles_sample_rate=1.0,
+        )
+elif ENV in ["ci", "test"]:
+    DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -238,7 +230,7 @@ elif ENV in ["ci", "local", "test"]:
             "USER": "test_user",
             "PASSWORD": "test_pass",
             "HOST": "localhost",
-            "PORT": 5433,
+            "PORT": 5433 if ENV == "test" else 5432,
         }
     }
 else:

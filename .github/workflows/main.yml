@@ -16,11 +16,9 @@ jobs:
           postgresql db: test_db
           postgresql user: test_user
           postgresql password: test_pass
-          postgresql port: 5433
       - name: Run a multi-line script
         working-directory: backend
         run: |
-          mv tests/.env .env
           pip install -r requirements.test.txt
           black . --check --exclude migrations
-          pytest tests --cov=. --ds core.settings --nomigrations
+          ENV=ci pytest tests --cov=. --ds core.settings --nomigrations

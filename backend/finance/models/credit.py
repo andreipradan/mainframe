@@ -1,4 +1,4 @@
-import environ
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -10,7 +10,7 @@ NULLABLE_KWARGS = {"blank": True, "null": True}
 
 
 def get_default_credit():
-    code = environ.Env()("DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE")
+    code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
     return Credit.objects.select_related("account").get(account__client_code=code)
 
 
