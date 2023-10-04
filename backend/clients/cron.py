@@ -32,14 +32,16 @@ def delay(command, minutes=1, is_management=True):
 def get_all_crons() -> List[Cron]:
     with CronTab(user=config("USERNAME")) as crontab:
         manage_path = str(settings.BASE_DIR / "manage.py")
-        return [Cron(
+        return [
+            Cron(
                 command=Cron.unparse(cron.command),
                 expression=str(cron.slices),
                 is_active=cron.enabled,
                 is_management=manage_path in cron.command,
                 description=cron.comment,
             )
-            for cron in crontab]
+            for cron in crontab
+        ]
 
 
 def remove_crons_for_command(cron: Cron) -> None:
