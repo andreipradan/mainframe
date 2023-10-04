@@ -27,29 +27,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 DEBUG = int(env("DEBUG", default=0))
-ENV = env("ENV", default=None)
 PYTHON_PATH = env("PYTHON_PATH", default=None)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="test-secret")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
-if ENV not in ["ci", "local", "test"]:
-    sentry_sdk.init(
-        dsn=env("SENTRY_DSN"),
-        integrations=[
-            DjangoIntegration(),
-        ],
-        traces_sample_rate=1.0,
-        send_default_pii=False,
-        profiles_sample_rate=1.0,
-    )
-else:
-    ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -105,20 +90,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "core.wsgi.application"
-
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": env("DB_ENGINE", default="django.db.backends.postgresql"),
-        "NAME": env("DB_DATABASE", default="mainframe_db"),
-        "USER": env("DB_USER", default="mainframe_user"),
-        "PASSWORD": env("DB_PASSWORD", default="mainframe_pass"),
-        "HOST": env("DB_HOST", default="localhost"),
-        "PORT": env("DB_PORT", default=5432),
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -233,8 +204,45 @@ LOGGING = {
         },
     },
 }
-if ENV not in ["ci", "local", "test"]:
+
+
+if (ENV := env("ENV", default=None)) == "prod":
+    sentry_sdk.init(
+        dsn=env("SENTRY_DSN"),
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=1.0,
+        send_default_pii=False,
+        profiles_sample_rate=1.0,
+    )
+
+    # Database
+    # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+    DATABASES = {
+        "default": {
+            "ENGINE": env("DB_ENGINE"),
+            "NAME": env("DB_DATABASE"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
+        }
+    }
     LOGGING["loggers"]["django"]["handlers"].append("mainframe")
+elif ENV in ["ci", "local", "test"]:
+    if ENV == "local":
+        ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "test_db",
+            "USER": "test_user",
+            "PASSWORD": "test_pass",
+            "HOST": "localhost",
+            "PORT": 5433,
+        }
+    }
+else:
+    raise ValueError(f"Invalid ENV variable set: {ENV}")
 
 
 HUEY = {

@@ -1,7 +1,10 @@
+import dotenv
 import pytest
 from api.authentication.models import ActiveSession
 from api.authentication.serializers.login import _generate_jwt_token
 from api.user.models import User
+
+dotenv.load_dotenv()
 
 
 @pytest.fixture
