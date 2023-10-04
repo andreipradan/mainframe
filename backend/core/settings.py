@@ -38,7 +38,7 @@ PYTHON_PATH = env("PYTHON_PATH")
 SECRET_KEY = env("SECRET_KEY")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
-if ENV not in ["ci", "local"]:
+if ENV not in ["ci", "local", "test"]:
     sentry_sdk.init(
         dsn=env("SENTRY_DSN"),
         integrations=[
@@ -233,7 +233,7 @@ LOGGING = {
         },
     },
 }
-if ENV != "local":
+if ENV not in ["ci", "local", "test"]:
     LOGGING["loggers"]["django"]["handlers"].append("mainframe")
 
 

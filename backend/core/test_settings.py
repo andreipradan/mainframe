@@ -1,9 +1,5 @@
 from .settings import *
 
-DEBUG = False
-ENV = "test"
-SECRET_KEY = "test-key"
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -14,4 +10,7 @@ DATABASES = {
         "PORT": 5433,
     }
 }
+DEBUG = False
+ENV = "test"
+SECRET_KEY = "test-key"
 TESTING = True
