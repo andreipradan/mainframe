@@ -89,12 +89,11 @@ def mainframe(request):
         name = wf_run["name"]
         conclusion = wf_run.get("conclusion", "")
         conclusion = f" ({conclusion.title()})" if conclusion else ""
-        head_branch = wf_run["head_branch"]
         message = (
-            f"{PREFIX} <b>{name}</b> - {head_branch} - {action}{conclusion}"
+            f"{PREFIX} <b>{name}</b> - {wf_run['head_branch']} - {action}{conclusion}"
             f"\n<a href='{wf_run['html_url']}'>Details</a>"
         )
-        if head_branch == "main" and name == "CI" and conclusion == "success":
+        if name == "CI" and conclusion == "success":
             message += f"\n\n{schedule_deploy()}"
         send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
