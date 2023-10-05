@@ -66,4 +66,5 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             cmd.setall(cron.expression)
             cmd.enable(cron.is_active)
             cmd.set_comment(cron.description)
-    logger.info("Set %d cron%s ✅", i + 1, "s" if i else "")
+    total_crons = len(crons)
+    logger.info("Set %d cron%s ✅", total_crons, "s" if total_crons > 1 else "")

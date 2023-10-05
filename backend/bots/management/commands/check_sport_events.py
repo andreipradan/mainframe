@@ -66,10 +66,10 @@ class Command(BaseCommand):
             ]
 
         logger.info(
-            "Got %d characters results. Split in %d batches.", results_size, batches_no
+            "Got %d character results. Split in %d batches.", results_size, batches_no
         )
         if batches_no > 10:
-            logger.warning("Too many batches: , sending only the first 10", batches_no)
+            logger.warning("Too many batches: %s, sending only first 10", batches_no)
             chunks = chunks[:10]
 
         entity = ""
