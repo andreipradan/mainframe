@@ -59,7 +59,7 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
         if clear_all:
             logger.warning("Clearing all existing crons")
             crontab.remove_all()
-        for i, cron in enumerate(crons):
+        for cron in crons:
             command = cron.management_command if cron.is_management else cron.command
             not clear_all and replace and crontab.remove_all(command=command)
             cmd = crontab.new(command=command)
