@@ -12,7 +12,7 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import {ColorRing} from "react-loader-spinner";
 import CronsApi from "../../../api/crons";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../../shared/Errors";
 
 const EditModal = () => {
   const dispatch = useDispatch();
@@ -23,7 +23,6 @@ const EditModal = () => {
   const [expression, setExpression] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [isManagement, setIsManagement] = useState(false);
-  const [errorOpen, setErrorOpen] = useState(false)
 
   useEffect(() => {
     if (cron) {
@@ -33,7 +32,6 @@ const EditModal = () => {
       setIsManagement(cron.is_management)
     }
   }, [cron]);
-  useEffect(() => {setErrorOpen(!!errors)}, [errors])
 
   const clearModal = () => {
     setCommand("")
@@ -77,7 +75,7 @@ const EditModal = () => {
           dispatch(select())
         }
       }>
-        {errorOpen && <Alert variant="danger" dismissible onClose={() => setErrorOpen(false)}>{errors}</Alert>}
+        <Errors errors={errors}/>
         <Form.Group className="mb-3">
           <Form.Label>Command</Form.Label>
           <Form.Control

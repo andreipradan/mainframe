@@ -10,7 +10,7 @@ import { SliderPicker } from 'react-color';
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
 import {Collapse, Form} from "react-bootstrap";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../shared/Errors";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -33,12 +33,6 @@ const Dashboard = () => {
   const toggleLightExpanded = ip => setLightsExpanded(
     lightsExpanded?.map(l => l.ip === ip ? {...l, expanded: !l.expanded} : l)
   )
-
-  const [botsAlertOpen, setBotsAlertOpen] = useState(false)
-  const [lightsAlertOpen, setLightsAlertOpen] = useState(false)
-
-  useEffect(() => {setLightsAlertOpen(!!lights.errors)}, [lights.errors])
-  useEffect(() => {setBotsAlertOpen(!!bots.errors)}, [bots.errors])
 
   useEffect(() => {
     !bots.results && dispatch(BotsApi.getList(token));
@@ -125,11 +119,11 @@ const Dashboard = () => {
                   color = '#e15b64'
                 />
                 : <>
-                    {botsAlertOpen && <Alert variant="danger" dismissible onClose={() => setBotsAlertOpen(false)}>{bots.errors}</Alert>}
+                    <Errors errors={bots.errors}/>
                     <div className="aligner-wrapper">
                       <Doughnut data={botsData} options={doughnutPieOptions} />
                     </div>
-                  </>
+                </>
             }
           </div>
         </div>
@@ -189,7 +183,7 @@ const Dashboard = () => {
               </h4>
             <div className="row">
               <div className="col-12">
-                {lightsAlertOpen && <Alert variant="danger" dismissible onClose={() => setLightsAlertOpen(false)}>{lights.errors}</Alert>}
+                <Errors errors={lights.errors}/>
                 <div className="preview-list">
                   {
                     lights.loading

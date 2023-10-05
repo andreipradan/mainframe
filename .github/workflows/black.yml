@@ -1,4 +1,4 @@
-name: black-build-and-upload
+name: black
 on: [pull_request]
 jobs:
   black:

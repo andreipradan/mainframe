@@ -6,7 +6,8 @@ import Navbar from './shared/Navbar';
 import Sidebar from './shared/Sidebar';
 import Footer from './shared/Footer';
 import { useSelector } from "react-redux";
-
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 const App = () => {
   const [isFullPageLayout, setIsFullPageLayout] = useState(false);
   const location = useLocation();
@@ -47,6 +48,7 @@ const App = () => {
       <div className="container-fluid page-body-wrapper">
         { token && navbarComponent }
         <div className="main-panel">
+          <ToastContainer />
           <div className="content-wrapper">
             <AppRoutes/>
           </div>

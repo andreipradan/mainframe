@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import Alert from "react-bootstrap/Alert";
 import "nouislider/distribute/nouislider.css";
 
 import { TimetableApi } from "../../api/finance";
@@ -10,6 +9,7 @@ import { Circles } from "react-loader-spinner";
 import Select from "react-select";
 import { selectStyles } from "./Categorize/EditModal";
 import { selectTimetable } from "../../redux/timetableSlice";
+import Errors from "../shared/Errors";
 
 const Calculator = () => {
   const history = useHistory();
@@ -18,9 +18,6 @@ const Calculator = () => {
   const token = useSelector((state) => state.auth.token)
   const timetable = useSelector(state => state.timetable)
 
-  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
-
-  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
   useEffect(() => {!timetable.selectedTimetable && dispatch(TimetableApi.getTimetables(token))}, [timetable.selectedTimetable])
 
   const latestTimetable = timetable.selectedTimetable?.amortization_table
@@ -122,7 +119,7 @@ const Calculator = () => {
         : null
       }
     </div>
-    {timetableAlertOpen && <Alert variant="danger" dismissible onClose={() => setTimetableAlertOpen(false)}>{timetable.errors}</Alert>}
+    <Errors errors={timetable.errors}/>
 
     <div className="row">
       <div className="col-sm-12 grid-margin">

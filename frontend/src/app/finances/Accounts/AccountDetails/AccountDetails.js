@@ -5,7 +5,6 @@ import { useHistory, useParams } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import { Collapse, Dropdown } from "react-bootstrap";
-import Alert from "react-bootstrap/Alert";
 import DatePicker from "react-datepicker";
 import Marquee from "react-fast-marquee";
 import "nouislider/distribute/nouislider.css";
@@ -17,6 +16,7 @@ import { FinanceApi } from "../../../../api/finance";
 import { getTypeLabel } from "../../Categorize/EditModal";
 import { setSelectedAccount } from "../../../../redux/accountsSlice";
 import { selectTransaction } from "../../../../redux/transactionsSlice";
+import Errors from "../../../shared/Errors";
 
 export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`
 
@@ -55,16 +55,12 @@ const AccountDetails = () => {
   const { id } = useParams();
 
   const accounts = useSelector(state => state.accounts)
-  const [alertOpen, setAlertOpen] = useState(false)
-  useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
   useEffect(() => {
     !accounts.selectedAccount &&
     dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]
   )
 
   const transactions = useSelector(state => state.transactions)
-  const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
-  useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
     if (accounts.selectedAccount && selectedDate) {
       dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
@@ -194,7 +190,8 @@ const AccountDetails = () => {
         </ol>
       </nav>
     </div>
-    {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{accounts.errors}</Alert>}
+
+    <Errors errors={accounts.errors}/>
     <div className="row">
       <div className="col-sm-12 col-lg-6 grid-margin">
         <div className="card">
@@ -371,8 +368,7 @@ const AccountDetails = () => {
                 </button>
               </div>
             </h4>
-            {transactionsAlertOpen && <Alert variant="danger" dismissible onClose={() => setTransactionsAlertOpen(false)}>{transactions.errors}</Alert>}
-
+           <Errors errors={transactions.errors}/>
             <Collapse in={ searchOpen }>
               <ul className="navbar-nav w-100 rounded">
                 <li className="nav-item w-100">

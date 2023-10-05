@@ -11,17 +11,14 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
 import { FinanceApi } from "../../../api/finance";
 import { selectAccount } from "../../../redux/accountsSlice";
-import Alert from "react-bootstrap/Alert";
 import Form from "react-bootstrap/Form";
 import { setModalOpen } from "../../../redux/accountsSlice";
+import Errors from "../../shared/Errors";
 
 const EditModal = () => {
   const dispatch = useDispatch();
   const accounts = useSelector(state => state.accounts)
   const token = useSelector((state) => state.auth.token)
-
-  const [alertOpen, setAlertOpen] = useState(false)
-  useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
 
   const [bank, setBank] = useState("");
   const [clientCode, setClientCode] = useState("");
@@ -94,19 +91,8 @@ const EditModal = () => {
       </Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      {
-        alertOpen && accounts.modalOpen && <div className="col-sm-12 grid-margin"><Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
-          {
-            accounts.errors?.length || accounts.errors?.success === "False"
-              ? accounts.errors?.msg
-                ? <p className="text-danger">{accounts.errors.msg}</p>
-                : accounts.errors?.length
-                  ? <ul className="text-danger">{accounts.errors.map((err, i) => <li key={i}>{err}</li>)}</ul>
-                  : null
-              : "Sign in to continue."
-          }
-        </Alert></div>
-      }
+      <Errors errors={accounts.errors}/>
+
       {
         accounts.loadingAccounts?.includes(accounts.selectedAccount?.id)
         ? <ColorRing

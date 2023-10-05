@@ -3,7 +3,6 @@ import { createSlice } from "@reduxjs/toolkit";
 export const cameraSlice = createSlice({
   name: "livecam",
   initialState: {
-    alertOpen: false,
     errors: null,
     loading: false,
     loadingFiles: null,
@@ -27,9 +26,6 @@ export const cameraSlice = createSlice({
       state.path = action.payload.path;
       state.results = action.payload.results;
     },
-    setAlertOpen: (state, action) => {
-      state.alertOpen = action.payload
-    },
     setMessagesOpen: (state, action) => {
       state.messagesOpen = action.payload
     },
@@ -49,7 +45,7 @@ export const cameraSlice = createSlice({
   },
 });
 
-export const { download, set, setAlertOpen, setErrors, setLoading, setLoadingFiles, setMessagesOpen, upload } =
+export const { download, set, setErrors, setLoading, setLoadingFiles, setMessagesOpen, upload } =
   cameraSlice.actions;
 
 export default cameraSlice.reducer;

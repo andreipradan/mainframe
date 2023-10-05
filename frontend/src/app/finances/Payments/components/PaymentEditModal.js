@@ -12,7 +12,7 @@ import { ColorRing } from "react-loader-spinner";
 import { FinanceApi } from "../../../../api/finance";
 import {selectPayment} from "../../../../redux/paymentSlice";
 import Form from "react-bootstrap/Form";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../../../shared/Errors";
 
 const PaymentEditModal = () => {
   const dispatch = useDispatch();
@@ -21,9 +21,6 @@ const PaymentEditModal = () => {
   const token = useSelector((state) => state.auth.token)
 
   const [saved, setSaved] = useState(null);
-
-  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
-  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
 
   useEffect(() => {
     if (selectedPayment) setSaved(selectedPayment.saved || 0)
@@ -40,9 +37,8 @@ const PaymentEditModal = () => {
       </Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      {
-        paymentAlertOpen && <div className="col-sm-12 grid-margin"><Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert></div>
-      }
+      <Errors errors={payment.errors}/>
+
       {
         payment.loadingPayments?.includes(selectedPayment?.id)
         ? <ColorRing
