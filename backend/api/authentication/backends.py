@@ -21,12 +21,12 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
     def _authenticate_credentials(self, token):
         try:
             jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        except:
+        except jwt.exceptions.DecodeError:
             raise exceptions.AuthenticationFailed(self.auth_error_message)
 
         try:
             active_session = ActiveSession.objects.get(token=token)
-        except:
+        except ActiveSession.DoesNotExist:
             raise exceptions.AuthenticationFailed(self.auth_error_message)
 
         try:
