@@ -10,7 +10,8 @@ class ActiveSessionViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     http_method_names = ["post"]
     permission_classes = (IsAuthenticated,)
 
-    def create(self, request, *args, **kwargs):
+    @staticmethod
+    def create(request, *args, **kwargs):
         return Response({"success": True}, status.HTTP_200_OK)
 
 
@@ -27,7 +28,8 @@ class LoginViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
 class LogoutViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     permission_classes = (AllowAny,)
 
-    def create(self, request, *args, **kwargs):
+    @staticmethod
+    def create(request, *args, **kwargs):
         ActiveSession.objects.filter(user=request.user).delete()
         data = {"success": True, "msg": "Token revoked"}
         return Response(data=data, status=status.HTTP_200_OK)

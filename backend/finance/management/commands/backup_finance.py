@@ -15,7 +15,8 @@ from crons.models import Cron
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
+    @staticmethod
+    def add_arguments(parser):
         parser.add_argument("--model", type=str, default="")
 
     def handle(self, *_, **options):

@@ -25,11 +25,13 @@ class Command(BaseEarthquakeCommand):
     def fetch(self, **__):
         return requests.get(self.url, timeout=30)
 
-    def fetch_events(self, response):
+    @staticmethod
+    def fetch_events(response):
         soup = BeautifulSoup(response.text, features="html.parser")
         return soup.html.body.find_all("div", {"class": "card"})
 
-    def get_datetime(self, string):
+    @staticmethod
+    def get_datetime(string):
         date, time, tz = string.split()
         dt = datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S")
         return pytz.timezone(tz).localize(dt)

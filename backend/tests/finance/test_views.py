@@ -12,7 +12,8 @@ from .factories import (
 
 @pytest.mark.django_db
 class TestAccounts:
-    def test_list(self, client, django_assert_num_queries, session):
+    @staticmethod
+    def test_list(client, django_assert_num_queries, session):
         account1, account2, account3 = AccountFactory.create_batch(3)
         TransactionFactory.create_batch(2, account=account1)
         TransactionFactory(account=account2)
@@ -26,7 +27,8 @@ class TestAccounts:
             (x["id"], x["transaction_count"]) for x in response.json()["results"]
         ] == [(account1.id, 2), (account2.id, 1), (account3.id, 0)]
 
-    def test_analytics(self, client, django_assert_num_queries, session):
+    @staticmethod
+    def test_analytics(client, django_assert_num_queries, session):
         account = AccountFactory()
         c1, c2, c3 = [CategoryFactory(id=i) for i in ["foo", "bar", "baz"]]
         d1, d2, d3 = ["2021-02-03", "2021-02-06", "2021-05-03"]
@@ -53,7 +55,8 @@ class TestAccounts:
 
 @pytest.mark.django_db
 class TestCredit:
-    def test_list(self, client, django_assert_num_queries, session):
+    @staticmethod
+    def test_list(client, django_assert_num_queries, session):
         credit = CreditFactory()
         PaymentFactory.create_batch(3, credit=credit)
         with django_assert_num_queries(5):
@@ -66,7 +69,8 @@ class TestCredit:
 
 @pytest.mark.django_db
 class TestPayments:
-    def test_payment_list(self, client, django_assert_num_queries, session):
+    @staticmethod
+    def test_payment_list(client, django_assert_num_queries, session):
         PaymentFactory.create_batch(3)
         with django_assert_num_queries(4):
             response = client.get(
