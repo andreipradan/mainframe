@@ -49,6 +49,7 @@ class TestLogin:
         assert response.data == {"msg": "Wrong credentials", "success": "False"}
 
 
+@pytest.mark.django_db
 class TestAuthentication:
     def test_register(self, client, session):
         data = {"username": "test", "password": "pass", "email": "test@appseed.us"}
