@@ -6,7 +6,6 @@ import requests
 import telegram
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from requests.exceptions import ConnectionError
 
 from bots.models import Bot
 from clients.chat import send_telegram_message
@@ -51,7 +50,7 @@ class Command(BaseCommand):
     def handle(self, *_, **__):
         try:
             ngrok_url = get_ngrok_url()
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             raise CommandError("Failed to get ngrok tunnels. Is ngrok running?")
         if not ngrok_url:
             raise CommandError("Tunnel 'mainframe' not found")
