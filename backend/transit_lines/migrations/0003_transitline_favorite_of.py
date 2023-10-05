@@ -5,15 +5,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('transit_lines', '0002_rename_type_transitline_car_type_and_more'),
+        ("transit_lines", "0002_rename_type_transitline_car_type_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='transitline',
-            name='favorite_of',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=32), blank=True, default=list, size=None),
+            model_name="transitline",
+            name="favorite_of",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(max_length=32),
+                blank=True,
+                default=list,
+                size=None,
+            ),
         ),
     ]

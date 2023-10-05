@@ -4,11 +4,11 @@ from finance.views import (
     AccountViewSet,
     CategoryViewSet,
     CreditViewSet,
-    PaymentViewSet,
-    TimetableViewSet,
-    PredictionViewSet,
-    TransactionViewSet,
     ExchangeRateViewSet,
+    PaymentViewSet,
+    PredictionViewSet,
+    TimetableViewSet,
+    TransactionViewSet,
 )
 
 router = routers.SimpleRouter()
@@ -21,6 +21,5 @@ router.register("payments", PaymentViewSet, basename="payments")
 router.register("prediction", PredictionViewSet, basename="prediction")
 router.register("timetables", TimetableViewSet, basename="timetables")
 router.register("transactions", TransactionViewSet, basename="transactions")
-
 
 urlpatterns = router.urls

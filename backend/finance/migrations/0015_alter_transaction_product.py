@@ -4,15 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0014_transaction_additional_data'),
+        ("finance", "0014_transaction_additional_data"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='transaction',
-            name='product',
-            field=models.CharField(choices=[('Current', 'Current'), ('Savings', 'Savings'), ('Investments', 'Investments')], default='Current', max_length=11),
+            model_name="transaction",
+            name="product",
+            field=models.CharField(
+                choices=[
+                    ("Current", "Current"),
+                    ("Savings", "Savings"),
+                    ("Investments", "Investments"),
+                ],
+                default="Current",
+                max_length=11,
+            ),
         ),
     ]

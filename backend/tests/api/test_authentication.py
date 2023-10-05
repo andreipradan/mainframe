@@ -46,13 +46,21 @@ class TestLogin:
         data = {"email": "test@example.com", "password": "wrongpassword"}
         response = client.post(self.url, data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert response.data == {"msg": "Wrong credentials", "success": "False"}
+        assert response.data == {
+            "msg": "Wrong credentials",
+            "success": "False"
+        }
 
 
 @pytest.mark.django_db
 class TestAuthentication:
+
     def test_register(self, client, session):
-        data = {"username": "test", "password": "pass", "email": "test@appseed.us"}
+        data = {
+            "username": "test",
+            "password": "pass",
+            "email": "test@appseed.us"
+        }
         url = reverse("api:register-list")
 
         response = client.post(url, data=data)

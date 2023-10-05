@@ -4,10 +4,11 @@ import random
 import factory
 from django.conf import settings
 
-from finance.models import Payment, Credit, Account, Transaction, Category
+from finance.models import Account, Category, Credit, Payment, Transaction
 
 
 class AccountFactory(factory.django.DjangoModelFactory):
+
     class Meta:
         model = Account
 
@@ -18,6 +19,7 @@ class AccountFactory(factory.django.DjangoModelFactory):
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
+
     class Meta:
         model = Category
 
@@ -25,6 +27,7 @@ class CategoryFactory(factory.django.DjangoModelFactory):
 
 
 class CreditFactory(factory.django.DjangoModelFactory):
+
     class Meta:
         model = Credit
 
@@ -37,6 +40,7 @@ class CreditFactory(factory.django.DjangoModelFactory):
 
 
 class PaymentFactory(factory.django.DjangoModelFactory):
+
     class Meta:
         model = Payment
 
@@ -46,6 +50,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
 
 class TransactionFactory(factory.django.DjangoModelFactory):
+
     class Meta:
         model = Transaction
 

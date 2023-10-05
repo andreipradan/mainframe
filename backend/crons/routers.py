@@ -6,5 +6,4 @@ router = routers.SimpleRouter()
 
 router.register("", CronViewSet, basename="crons")
 
-
 urlpatterns = router.urls

@@ -1,9 +1,10 @@
-import jwt
-from django.contrib.auth import authenticate
 from datetime import datetime, timedelta
+
+import jwt
 from django.conf import settings
+from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers, exceptions
+from rest_framework import exceptions, serializers
 
 from api.authentication.models import ActiveSession
 from api.user.models import User
@@ -36,7 +37,8 @@ class LoginSerializer(serializers.Serializer):
         user = authenticate(username=email, password=password)
 
         if user is None:
-            raise exceptions.AuthenticationFailed(get_error("Wrong credentials"))
+            raise exceptions.AuthenticationFailed(
+                get_error("Wrong credentials"))
 
         if not user.is_active:
             raise exceptions.ValidationError(get_error("User is not active"))
@@ -46,16 +48,16 @@ class LoginSerializer(serializers.Serializer):
             if not session.token:
                 raise ValueError
 
-            jwt.decode(session.token, settings.SECRET_KEY, algorithms=["HS256"])
+            jwt.decode(session.token,
+                       settings.SECRET_KEY,
+                       algorithms=["HS256"])
         except ActiveSession.MultipleObjectsReturned:
             ActiveSession.objects.filter(user=user).delete()
             session = ActiveSession.objects.create(
-                user=user, token=_generate_jwt_token(user)
-            )
+                user=user, token=_generate_jwt_token(user))
         except (ObjectDoesNotExist, ValueError, jwt.ExpiredSignatureError):
             session = ActiveSession.objects.create(
-                user=user, token=_generate_jwt_token(user)
-            )
+                user=user, token=_generate_jwt_token(user))
 
         return {
             "success": True,
@@ -71,7 +73,9 @@ class LoginSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(min_length=4, max_length=128, write_only=True)
+    password = serializers.CharField(min_length=4,
+                                     max_length=128,
+                                     write_only=True)
     username = serializers.CharField(max_length=255, required=True)
     email = serializers.EmailField(required=True)
 

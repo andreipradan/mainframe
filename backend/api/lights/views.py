@@ -14,13 +14,12 @@ logger.addHandler(MainframeHandler())
 
 IP_REGEX = (
     r"(?P<ip>(?:(?:0|1[\d]{0,2}|2(?:[0-4]\d?|5[0-5]?|[6-9])?|[3-9]\d?)\.){3}"
-    r"(?:0|1[\d]{0,2}|2(?:[0-4]\d?|5[0-5]?|[6-9])?|[3-9]\d?))"
-)
+    r"(?:0|1[\d]{0,2}|2(?:[0-4]\d?|5[0-5]?|[6-9])?|[3-9]\d?))")
 
 
 class LightsViewSet(viewsets.ViewSet):
     lookup_field = "ip"
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def _request(self, what, **kwargs):
         logger.info("Lights: %s, args: %s", what, kwargs)
@@ -39,15 +38,23 @@ class LightsViewSet(viewsets.ViewSet):
     def list(self, request):
         return JsonResponse(data=LightsClient.get_bulbs(), safe=False)
 
-    @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-brightness")
+    @action(detail=False,
+            methods=["patch"],
+            url_path=f"{IP_REGEX}/set-brightness")
     def set_brightness(self, request, ip):
         body = json.loads(request.body)
-        return self._request("set_brightness", ip=ip, brightness=body["brightness"])
+        return self._request("set_brightness",
+                             ip=ip,
+                             brightness=body["brightness"])
 
-    @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-color-temp")
+    @action(detail=False,
+            methods=["patch"],
+            url_path=f"{IP_REGEX}/set-color-temp")
     def set_color_temp(self, request, ip):
         body = json.loads(request.body)
-        return self._request("set_color_temp", ip=ip, color_temp=body["color_temp"])
+        return self._request("set_color_temp",
+                             ip=ip,
+                             color_temp=body["color_temp"])
 
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-rgb")
     def set_rgb(self, request, ip):

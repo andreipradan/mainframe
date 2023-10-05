@@ -4,15 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0012_alter_transaction_unique_together_and_more'),
+        ("finance", "0012_alter_transaction_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='transaction',
-            name='type',
-            field=models.CharField(choices=[('ATM', 'ATM'), ('CARD_CHARGEBACK', 'Card chargeback'), ('CARD_CREDIT', 'Card credit'), ('CARD_PAYMENT', 'Card payment'), ('CARD_REFUND', 'Card refund'), ('CASHBACK', 'Cashback'), ('EXCHANGE', 'Exchange'), ('FEE', 'Fee'), ('TOPUP', 'Topup'), ('TRANSFER', 'Transfer'), ('UNIDENTIFIED', 'Unidentified')], default='UNIDENTIFIED', max_length=15),
+            model_name="transaction",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("ATM", "ATM"),
+                    ("CARD_CHARGEBACK", "Card chargeback"),
+                    ("CARD_CREDIT", "Card credit"),
+                    ("CARD_PAYMENT", "Card payment"),
+                    ("CARD_REFUND", "Card refund"),
+                    ("CASHBACK", "Cashback"),
+                    ("EXCHANGE", "Exchange"),
+                    ("FEE", "Fee"),
+                    ("TOPUP", "Topup"),
+                    ("TRANSFER", "Transfer"),
+                    ("UNIDENTIFIED", "Unidentified"),
+                ],
+                default="UNIDENTIFIED",
+                max_length=15,
+            ),
         ),
     ]

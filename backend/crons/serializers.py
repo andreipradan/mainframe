@@ -5,6 +5,7 @@ from crons.models import Cron
 
 
 class CronSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Cron
         fields = "__all__"

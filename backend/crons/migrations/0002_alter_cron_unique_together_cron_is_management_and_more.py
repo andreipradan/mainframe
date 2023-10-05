@@ -4,37 +4,36 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('crons', '0001_initial'),
+        ("crons", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='cron',
+            name="cron",
             unique_together=set(),
         ),
         migrations.AddField(
-            model_name='cron',
-            name='is_management',
+            model_name="cron",
+            name="is_management",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='cron',
-            name='command',
+            model_name="cron",
+            name="command",
             field=models.CharField(max_length=512),
         ),
         migrations.AlterField(
-            model_name='cron',
-            name='expression',
+            model_name="cron",
+            name="expression",
             field=models.CharField(max_length=32),
         ),
         migrations.AlterUniqueTogether(
-            name='cron',
-            unique_together={('command', 'expression')},
+            name="cron",
+            unique_together={("command", "expression")},
         ),
         migrations.RemoveField(
-            model_name='cron',
-            name='arguments',
+            model_name="cron",
+            name="arguments",
         ),
     ]

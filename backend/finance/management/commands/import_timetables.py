@@ -18,19 +18,15 @@ from finance.models import Account, Credit, Timetable
 
 
 def extract_rows(rows):
-    return [
-        {
-            "date": date,
-            "total": total,
-            "interest": interest,
-            "principal": principal,
-            "remaining": remaining,
-            "insurance": insurance,
-        }
-        for date, total, interest, principal, remaining, insurance in map(
-            lambda x: x.split(), rows
-        )
-    ]
+    return [{
+        "date": date,
+        "total": total,
+        "interest": interest,
+        "principal": principal,
+        "remaining": remaining,
+        "insurance": insurance,
+    } for date, total, interest, principal, remaining, insurance in map(
+        lambda x: x.split(), rows)]
 
 
 def extract_amortization_table(pages):
@@ -72,17 +68,14 @@ def extract_summary(summary):
     if not credit_number_and_date.startswith("Număr şi data contract credit"):
         raise AssertionError
     credit_number = credit_number_and_date.replace(
-        "Număr şi data contract credit", ""
-    ).replace(" -", "")
+        "Număr şi data contract credit", "").replace(" -", "")
     if not interest.startswith("Rata dobânzii "):
         raise AssertionError
     if not interest.endswith(" compusă din:"):
         raise AssertionError
-    interest = (
-        interest.replace("Rata dobânzii ", "")
-        .replace(" compusă din:", "")
-        .replace(",", ".")
-    )
+    interest = (interest.replace("Rata dobânzii ",
+                                 "").replace(" compusă din:",
+                                             "").replace(",", "."))
     if not margin_and_ircc.startswith("Marjă: "):
         raise AssertionError
     if " şi Indice  IRCC : " not in margin_and_ircc:
@@ -91,8 +84,7 @@ def extract_summary(summary):
     if not credit_total_and_currency.startswith("Valoare credit "):
         raise AssertionError
     credit_total, currency_str, currency = credit_total_and_currency.replace(
-        "Valoare credit ", ""
-    ).split()
+        "Valoare credit ", "").split()
     if currency_str != "Moneda":
         raise AssertionError
     credit_total = credit_total.replace(".", "").replace(",", ".")
@@ -122,17 +114,15 @@ def extract_summary(summary):
 def extract_first_page(first_page, logger):
     summary, contents = first_page.extract_text().split("TABEL DE AMORTIZARE")
     fields, _, *rows, footer, __ = [x for x in contents.split("\n") if x]
-    if fields != (
-        "Data următoarei plăţi "
-        "Suma de plată "
-        "Dobânda "
-        "Rata capital Capital datorat la sfârşitul perioadei"
-        "Primă asigurare"
-    ):
-        raise AssertionError("Format has changed, please update extraction logic")
+    if fields != ("Data următoarei plăţi "
+                  "Suma de plată "
+                  "Dobânda "
+                  "Rata capital Capital datorat la sfârşitul perioadei"
+                  "Primă asigurare"):
+        raise AssertionError(
+            "Format has changed, please update extraction logic")
     if not footer.startswith(
-        "Scadenţar al Rambursării Creditului şi Dobânzilor Data raport:"
-    ):
+            "Scadenţar al Rambursării Creditului şi Dobânzilor Data raport:"):
         raise AssertionError
     date = footer.split("Data raport: ")[-1]
     summary = extract_summary(summary)
@@ -168,6 +158,7 @@ def extract_first_page(first_page, logger):
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
@@ -183,8 +174,7 @@ class Command(BaseCommand):
             first_page = reader.pages[0]
             timetable: Timetable = extract_first_page(first_page, logger)
             timetable.amortization_table.extend(
-                extract_amortization_table(reader.pages[1:])
-            )
+                extract_amortization_table(reader.pages[1:]))
             try:
                 timetable.save()
             except ValidationError as e:
@@ -208,7 +198,8 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error("Failed files: %s", ", ".join(failed_imports))
 
-        remove_crons_for_command(Cron(command="import_timetables", is_management=True))
+        remove_crons_for_command(
+            Cron(command="import_timetables", is_management=True))
 
         send_telegram_message(text=msg)
 

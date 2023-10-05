@@ -6,5 +6,4 @@ router = routers.SimpleRouter()
 
 router.register("", MealViewSet, basename="meals")
 
-
 urlpatterns = router.urls

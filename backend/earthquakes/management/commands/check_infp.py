@@ -37,28 +37,24 @@ class Command(BaseEarthquakeCommand):
     def parse_earthquake(self, card):
         body = card.find("div", {"class": "card-body"})
         text, *rest = body.find_all("p")
-        lat = (
-            body.find("span", {"title": "Latitudine"})
-            .text.strip("\n Latitudine")
-            .strip(" °N")
-        )
-        long = (
-            body.find("span", {"title": "Longitudine"})
-            .text.strip("\n Longitudine")
-            .strip(" °E")
-        )
-        magnitude, *location = (
-            card.find("div", {"class": "card-footer"}).text.strip().split(", ")
-        )
-        timestamp = (
-            card.find("div", {"class": "card-header"})
-            .text.replace("Loading...", "")
-            .strip()
-        )
+        lat = (body.find("span", {
+            "title": "Latitudine"
+        }).text.strip("\n Latitudine").strip(" °N"))
+        long = (body.find("span", {
+            "title": "Longitudine"
+        }).text.strip("\n Longitudine").strip(" °E"))
+        magnitude, *location = (card.find("div", {
+            "class": "card-footer"
+        }).text.strip().split(", "))
+        timestamp = (card.find("div", {
+            "class": "card-header"
+        }).text.replace("Loading...", "").strip())
         return Earthquake(
             timestamp=self.get_datetime(timestamp),
-            depth=text.text.strip().split("la adâncimea de ")[1][:-1].split(" ")[0],
-            intensity=rest[0].text.strip().split()[1] if len(rest) > 1 else None,
+            depth=text.text.strip().split("la adâncimea de ")[1][:-1].split(
+                " ")[0],
+            intensity=rest[0].text.strip().split()[1]
+            if len(rest) > 1 else None,
             latitude=lat,
             longitude=long,
             location=",".join(location),

@@ -6,5 +6,4 @@ router = routers.SimpleRouter()
 
 router.register("", BotViewSet, basename="bots")
 
-
 urlpatterns = router.urls

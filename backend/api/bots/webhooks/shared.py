@@ -1,4 +1,5 @@
 import logging
+
 import six
 import telegram
 
@@ -9,6 +10,7 @@ logger.addHandler(MainframeHandler())
 
 
 class BaseInlines:
+
     @classmethod
     def end(cls, update):
         bot = update.callback_query.bot
@@ -39,7 +41,7 @@ class BaseInlines:
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i : i + n]
+        yield lst[i:i + n]
 
 
 def reply(update, text):
@@ -87,7 +89,8 @@ def validate_message(message, bot, logger):
         text = text.decode("utf-8")
 
     if len(text) < 1 or not text.startswith("/"):
-        logger.info("Not a command: '%s' (%s)", text, user.username or user.full_name)
+        logger.info("Not a command: '%s' (%s)", text, user.username
+                    or user.full_name)
         return ""
 
     return text[1:]

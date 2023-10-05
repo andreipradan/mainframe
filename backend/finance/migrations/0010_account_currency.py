@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0009_alter_transaction_unique_together_and_more'),
+        ("finance", "0009_alter_transaction_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='currency',
-            field=models.CharField(default='RON', max_length=3),
+            model_name="account",
+            name="currency",
+            field=models.CharField(default="RON", max_length=3),
             preserve_default=False,
         ),
     ]

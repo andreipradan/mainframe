@@ -8,8 +8,8 @@ import environ
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from clients.cron import set_crons
 from clients.chat import send_telegram_message
+from clients.cron import set_crons
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 
@@ -22,6 +22,7 @@ def get_tomorrow_run() -> datetime:
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
@@ -44,17 +45,16 @@ class Command(BaseCommand):
 
         tomorrow_run = get_tomorrow_run().replace(second=0, microsecond=0)
         expression = f"{tomorrow_run.minute} {tomorrow_run.hour} {tomorrow_run.day} {tomorrow_run.month} *"
-        Cron.objects.filter(command__contains="be_real").update(expression=expression)
-        set_crons(
-            [
-                Cron(
-                    command="be_real",
-                    expression=expression,
-                    is_active=True,
-                    is_management=True,
-                )
-            ]
-        )
+        Cron.objects.filter(command__contains="be_real").update(
+            expression=expression)
+        set_crons([
+            Cron(
+                command="be_real",
+                expression=expression,
+                is_active=True,
+                is_management=True,
+            )
+        ])
         logger.info(
             f"Set next run and cron to {tomorrow_run.strftime('%H:%M %d.%m.%Y')}"
         )

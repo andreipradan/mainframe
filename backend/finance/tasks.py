@@ -2,7 +2,7 @@ import pandas as pd
 from huey.contrib.djhuey import HUEY, db_task
 from huey.signals import SIGNAL_ERROR
 
-from clients.prediction import log_status, SKLearn
+from clients.prediction import SKLearn, log_status
 from finance.models import Category, Transaction
 
 
@@ -22,7 +22,8 @@ def predict(queryset, logger):
     predictions = SKLearn.predict(df)
     transactions = []
     for i, (item, category) in enumerate(zip(queryset, predictions)):
-        transactions.append(Transaction(id=item["id"], category_suggestion_id=category))
+        transactions.append(
+            Transaction(id=item["id"], category_suggestion_id=category))
         if i and not i % 1000:
             progress = i / total * 100
             log_status(
@@ -35,7 +36,7 @@ def predict(queryset, logger):
     log_status("predict", operation="3/3 saving to db", progress=70)
     Transaction.objects.bulk_update(
         transactions,
-        fields=("category_suggestion_id",),
+        fields=("category_suggestion_id", ),
         batch_size=1000,
     )
     log_status("predict", operation=None, progress=100)
@@ -45,13 +46,9 @@ def predict(queryset, logger):
 
 @db_task(expires=10)
 def train(logger):
-    qs = (
-        Transaction.objects.filter(
-            amount__lt=0, confirmed_by=Transaction.CONFIRMED_BY_ML
-        )
-        .exclude(category=Category.UNIDENTIFIED)
-        .values("description", "category")
-    )
+    qs = (Transaction.objects.filter(
+        amount__lt=0, confirmed_by=Transaction.CONFIRMED_BY_ML).exclude(
+            category=Category.UNIDENTIFIED).values("description", "category"))
     count = qs.count()
     if not count:
         log_status("train", status=SIGNAL_ERROR, error="No trained data")

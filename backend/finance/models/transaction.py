@@ -6,7 +6,9 @@ from finance.models import DECIMAL_DEFAULT_KWARGS, NULLABLE_KWARGS
 
 class Category(TimeStampedModel):
     UNIDENTIFIED = "Unidentified"
-    id = models.CharField(max_length=20, primary_key=True, default=UNIDENTIFIED)
+    id = models.CharField(max_length=20,
+                          primary_key=True,
+                          default=UNIDENTIFIED)
 
     @property
     def verbose(self):
@@ -18,6 +20,7 @@ class Category(TimeStampedModel):
 
 
 class TransactionQuerySet(models.QuerySet):
+
     def expenses(self):
         return self.filter(amount__lt=0)
 

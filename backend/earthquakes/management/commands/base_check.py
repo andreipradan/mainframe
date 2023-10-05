@@ -28,14 +28,12 @@ def get_magnitude_icon(magnitude):
 def parse_event(event: Earthquake):
     icon = get_magnitude_icon(event.magnitude)
     intensity = f"Intensity: {event.intensity}" if event.intensity else ""
-    return (
-        f"{icon} <b>Earthquake alert</b>\n"
-        f"Magnitude: <b>{event.magnitude}</b>\n"
-        f"Location: <a href='{event.url}'>{event.location}</a>\n\n"
-        f"Depth: {event.depth} km\n"
-        f"{intensity}\n"
-        f"Time: {event.timestamp}"
-    )
+    return (f"{icon} <b>Earthquake alert</b>\n"
+            f"Magnitude: <b>{event.magnitude}</b>\n"
+            f"Location: <a href='{event.url}'>{event.location}</a>\n\n"
+            f"Depth: {event.depth} km\n"
+            f"{intensity}\n"
+            f"Time: {event.timestamp}")
 
 
 class BaseEarthquakeCommand(BaseCommand):
@@ -49,27 +47,31 @@ class BaseEarthquakeCommand(BaseCommand):
             response = self.fetch(**options)
             response.raise_for_status()
         except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-            requests.exceptions.ReadTimeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError,
+                requests.exceptions.ReadTimeout,
         ) as e:
             return self.logger.warning(str(e))
 
         try:
-            instance = Bot.objects.get(additional_data__earthquake__isnull=False)
+            instance = Bot.objects.get(
+                additional_data__earthquake__isnull=False)
         except OperationalError as e:
             return self.logger.error(str(e))
         except Bot.DoesNotExist:
-            return self.logger.error(self.style.ERROR("No bots with earthquake config"))
+            return self.logger.error(
+                self.style.ERROR("No bots with earthquake config"))
 
-        events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
+        events = [
+            self.parse_earthquake(event)
+            for event in self.fetch_events(response)
+        ]
         if self.source == Earthquake.SOURCE_INFP:
-            latest = (
-                Earthquake.objects.filter(source=Earthquake.SOURCE_INFP)
-                .order_by("-timestamp")
-                .first()
-            )
-            events = [event for event in events if event.timestamp > latest.timestamp]
+            latest = (Earthquake.objects.filter(
+                source=Earthquake.SOURCE_INFP).order_by("-timestamp").first())
+            events = [
+                event for event in events if event.timestamp > latest.timestamp
+            ]
         if not events:
             self.set_last_check(instance)
             return
@@ -91,13 +93,13 @@ class BaseEarthquakeCommand(BaseCommand):
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
         events = [
-            event for event in events if float(event.magnitude) >= float(min_magnitude)
+            event for event in events
+            if float(event.magnitude) >= float(min_magnitude)
         ]
 
         if len(events):
             self.logger.info(
-                f"Got {len(events)} events with magnitude >= {min_magnitude}"
-            )
+                f"Got {len(events)} events with magnitude >= {min_magnitude}")
             send_telegram_message(
                 text="\n\n".join(parse_event(event) for event in events),
                 parse_mode=telegram.ParseMode.HTML,

@@ -4,23 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0008_alter_account_type'),
+        ("finance", "0008_alter_account_type"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='transaction',
+            name="transaction",
             unique_together=set(),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='started_at',
+            model_name="transaction",
+            name="started_at",
             field=models.DateTimeField(),
         ),
         migrations.AlterUniqueTogether(
-            name='transaction',
-            unique_together={('amount', 'currency', 'description', 'type', 'started_at')},
+            name="transaction",
+            unique_together={("amount", "currency", "description", "type",
+                              "started_at")},
         ),
     ]

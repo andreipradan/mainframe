@@ -2,14 +2,12 @@ import asyncio
 import json
 import logging
 import math
-
 from datetime import datetime
 from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import aiohttp
 import telegram
-
 from bs4 import BeautifulSoup
 from django.core.management import BaseCommand, CommandError
 
@@ -21,6 +19,7 @@ logger.addHandler(ManagementCommandsHandler())
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         logger.info("Checking today's sport events")
         try:
@@ -31,13 +30,12 @@ class Command(BaseCommand):
             )
 
         events = bot.additional_data["sport_events"]
-        if not isinstance(events, dict) or not (chat_id := events.get("chat_id")):
+        if not isinstance(events, dict) or not (chat_id :=
+                                                events.get("chat_id")):
             raise CommandError(
-                "chat_id missing from sport_events in bot additional data"
-            )
+                "chat_id missing from sport_events in bot additional data")
         if not (categories := events.get("categories")) or not isinstance(
-            categories, list
-        ):
+                categories, list):
             raise CommandError(
                 "categories missing from sport_events in bot additional data or not of type list"
             )
@@ -61,15 +59,15 @@ class Command(BaseCommand):
         else:
             batches_no = math.ceil(results_size / max_size)
             chunks = [
-                results[i * max_size : i * max_size + max_size]
+                results[i * max_size:i * max_size + max_size]
                 for i in range(batches_no)
             ]
 
-        logger.info(
-            "Got %d characters results. Split in %d batches.", results_size, batches_no
-        )
+        logger.info("Got %d characters results. Split in %d batches.",
+                    results_size, batches_no)
         if batches_no > 10:
-            logger.warning("Too many batches: , sending only the first 10", batches_no)
+            logger.warning("Too many batches: , sending only the first 10",
+                           batches_no)
             chunks = chunks[:10]
 
         entity = ""
@@ -82,9 +80,8 @@ class Command(BaseCommand):
                 logger.warning("%d Bad request: %s", batch_no, e)
                 if "can't find end of the entity" in str(e):
                     location = int(e.message.split()[-1])
-                    entity = bytes(chunk, encoding="utf-8")[
-                        location : location + 1
-                    ].decode()
+                    entity = bytes(chunk, encoding="utf-8")[location:location +
+                                                            1].decode()
                     logger.info('Fixed entity "%s"', entity)
                     send_message(f"{chunk}{entity}[{batch_no}]")
 
@@ -125,9 +122,7 @@ def fetch_all(categories):
                     "https://ergast.com/api/f1/current.json",
                 ],
                 categories,
-            )
-        )
-    )
+            )))
     hello = "Neața, "
     hello += "evenimentele de azi" if events else "nu sunt evenimente azi"
 
@@ -142,8 +137,7 @@ async def fetch_many(urls, categories):
         return map(
             callback,
             await asyncio.gather(
-                *[fetch(session, sem, url, categories) for url in urls]
-            ),
+                *[fetch(session, sem, url, categories) for url in urls]),
         )
 
 
@@ -154,7 +148,7 @@ def get_match(contents):
         if stripped:
             result.append(stripped)
         if attrs := getattr(match_component, "attrs", {}).get("class"):
-            (attr,) = attrs
+            (attr, ) = attrs
             if attr in ["live", "sched"]:
                 result.pop()
                 continue
@@ -191,25 +185,27 @@ def parse_ergast(response):
             race_datetime = f"{race['date']} {race['time']}"
             results[race["raceName"]] = [f"Race: {to_local(race_datetime)}"]
         for event in [
-            "First Practice",
-            "Second Practice",
-            "Third Practice",
-            "Qualifying",
-            "Sprint",
+                "First Practice",
+                "Second Practice",
+                "Third Practice",
+                "Qualifying",
+                "Sprint",
         ]:
             key = event.replace(" ", "")
             if today == race.get(key, {}).get("date"):
-                event_datetime = to_local(f"{race[key]['date']} {race[key]['time']}")
-                results.setdefault(race["raceName"], []).append(
-                    f"{event_datetime} {event}"
-                )
+                event_datetime = to_local(
+                    f"{race[key]['date']} {race[key]['time']}")
+                results.setdefault(race["raceName"],
+                                   []).append(f"{event_datetime} {event}")
     return f"\n\n*🏎 Formula 1*{parse_list_details(results)}" if results else ""
 
 
 def parse_flash_score(response, categories):
     soup = BeautifulSoup(response, features="html.parser")
     results = parse_categories(
-        soup.html.body.find("div", {"id": "score-data"}).children,
+        soup.html.body.find("div", {
+            "id": "score-data"
+        }).children,
         categories,
     )
     sport = soup.html.body.find("h2").text.split(" ")[0]
@@ -240,7 +236,8 @@ def parse_categories(contents, categories):
                 match = get_match(contents)
 
                 live_prefix = "" if ":" in timestamp else "❗"
-                by_category[category].append(f"{live_prefix}{timestamp} {match}")
+                by_category[category].append(
+                    f"{live_prefix}{timestamp} {match}")
         except StopIteration:
             break
     return by_category
@@ -249,9 +246,10 @@ def parse_categories(contents, categories):
 def parse_list_details(data):
     if not data:
         return ""
-    return "\n".join(
-        [f"\n_{title}_\n " + "\n ".join(stats) for title, stats in sorted(data.items())]
-    )
+    return "\n".join([
+        f"\n_{title}_\n " + "\n ".join(stats)
+        for title, stats in sorted(data.items())
+    ])
 
 
 def strip_accents(string):

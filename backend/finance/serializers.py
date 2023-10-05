@@ -4,10 +4,10 @@ from finance.models import (
     Account,
     Category,
     Credit,
+    ExchangeRate,
     Payment,
     Timetable,
     Transaction,
-    ExchangeRate,
 )
 
 
@@ -32,6 +32,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Category
         fields = "__all__"
@@ -40,18 +41,21 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CreditSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Credit
         fields = "__all__"
 
 
 class ExchangeRateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ExchangeRate
         fields = "__all__"
 
 
 class PaymentSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Payment
         fields = "__all__"

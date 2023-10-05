@@ -53,13 +53,16 @@ async def fetch_many(urls):
 
 
 def parse_meal(row) -> Meal:
+
     def parse(css_class):
         div = row.find("div", {"class": css_class})
         if not div:
             raise FetchMealsException(f"No {css_class} found in {row}")
         return div
 
-    ingredients = [i.text.strip() for i in parse("recipe-lists").find_all("li")]
+    ingredients = [
+        i.text.strip() for i in parse("recipe-lists").find_all("li")
+    ]
     quantities = parse_quantities(parse("quantity-bar"))
     nutritional_values = parse_nutritional_values(parse("menu-pic").table)
     return Meal(
@@ -97,17 +100,16 @@ def parse_week(args) -> List[Meal]:
     response_text, url = args
     soup = BeautifulSoup(response_text, features="html.parser")
 
-    week = (
-        soup.find("div", {"class": "weekly-buttons"})
-        .find("button", {"class": "active"})
-        .text.split("-")[1]
-    )
+    week = (soup.find("div", {
+        "class": "weekly-buttons"
+    }).find("button", {
+        "class": "active"
+    }).text.split("-")[1])
     for k, v in months.items():
         week = week.replace(f" {k}", f" {v}")
 
-    current_date = (
-        datetime.strptime(week, "%d %b").date() - timedelta(days=7)
-    ).replace(year=datetime.today().year)
+    current_date = (datetime.strptime(week, "%d %b").date() -
+                    timedelta(days=7)).replace(year=datetime.today().year)
 
     rows = soup.select(".slider-menu-for-day > div > .row")
     if not rows:
@@ -125,19 +127,21 @@ def parse_week(args) -> List[Meal]:
 
 
 class MealsClient:
+
     @classmethod
     def fetch_meals(cls) -> List[Meal]:
         url = Signer().unsign_object(
             "Imh0dHBzOi8vd3d3LmxpZmVib3gucm8vb3B0aW1ib3gtMSI:"
-            "Hhq6D12GLwL3MuG7vmBv7LoXyDQND-lb6wg9QVqh1Sg"
-        )
+            "Hhq6D12GLwL3MuG7vmBv7LoXyDQND-lb6wg9QVqh1Sg")
         urls = [f"{url}/week-{week_no}" for week_no in range(1, 5)]
-        meals = list(itertools.chain.from_iterable(asyncio.run(fetch_many(urls))))
+        meals = list(
+            itertools.chain.from_iterable(asyncio.run(fetch_many(urls))))
 
         Meal.objects.bulk_create(
             meals,
             update_conflicts=True,
-            update_fields=("name", "ingredients", "nutritional_values", "quantities"),
+            update_fields=("name", "ingredients", "nutritional_values",
+                           "quantities"),
             unique_fields=("date", "type"),
         )
         return meals

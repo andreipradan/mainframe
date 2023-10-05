@@ -27,6 +27,7 @@ def parse_record(record: logging.LogRecord) -> dict:
 
 
 class AxiomHandler(logging.Handler):
+
     def __init__(self, dataset):
         super().__init__()
         self.dataset = dataset
@@ -47,11 +48,13 @@ class AxiomHandler(logging.Handler):
 
 
 class ManagementCommandsHandler(AxiomHandler):
+
     def __init__(self):
         super().__init__("management")
 
 
 class MainframeHandler(AxiomHandler):
+
     def __init__(self):
         super().__init__("mainframe")
 

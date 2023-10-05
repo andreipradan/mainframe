@@ -27,13 +27,9 @@ def normalize(transaction):
     transaction["balance"] = transaction["balance"] or None
 
     for time_field in ["started_at", "completed_at"]:
-        transaction[time_field] = (
-            datetime.strptime(transaction[time_field], "%Y-%m-%d %H:%M:%S").replace(
-                tzinfo=timezone.utc
-            )
-            if transaction[time_field]
-            else None
-        )
+        transaction[time_field] = (datetime.strptime(
+            transaction[time_field], "%Y-%m-%d %H:%M:%S").replace(
+                tzinfo=timezone.utc) if transaction[time_field] else None)
     return transaction
 
 
@@ -44,7 +40,8 @@ def detect_started_at(description, default):
     else:
         started_at = default
 
-    return datetime.strptime(started_at, "%d/%m/%Y").replace(tzinfo=timezone.utc)
+    return datetime.strptime(started_at,
+                             "%d/%m/%Y").replace(tzinfo=timezone.utc)
 
 
 def detect_transaction_type(description, is_credit=False):
@@ -52,14 +49,15 @@ def detect_transaction_type(description, is_credit=False):
     if "atm" in [item.lower() for item in description.split()]:
         return Transaction.TYPE_ATM
     for key in (
-        "PLATA LUNA ",
-        "revolut  " "revolutie Dublin ",
-        "www.revolutieinternal Dublin",
-        "Revolut ",
-        "Revolut*",
-        "REVOLUT**",
-        "|REVOLUT |",
-        "| SENT FROM REVOLUT",
+            "PLATA LUNA ",
+            "revolut  "
+            "revolutie Dublin ",
+            "www.revolutieinternal Dublin",
+            "Revolut ",
+            "Revolut*",
+            "REVOLUT**",
+            "|REVOLUT |",
+            "| SENT FROM REVOLUT",
     ):
         if key in description:
             return Transaction.TYPE_TOPUP if is_credit else Transaction.TYPE_TRANSFER
@@ -127,14 +125,13 @@ def parse_raiffeisen_transactions(file_name, logger):
     number = " ".join(chunks(rows[starting_index + 6][1].value, 4))
     if rows[starting_index + 6][2].value != "Tip cont:":
         raise AssertionError
-    account_type = "Current" if rows[starting_index + 6][3].value == "curent" else None
+    account_type = "Current" if rows[starting_index +
+                                     6][3].value == "curent" else None
     if rows[starting_index + 6][4].value != "Valuta:":
         raise AssertionError
-    currency = (
-        "RON"
-        if rows[starting_index + 6][5].value == "LEI"
-        else rows[starting_index + 6][5].upper()
-    )
+    currency = ("RON" if rows[starting_index +
+                              6][5].value == "LEI" else rows[starting_index +
+                                                             6][5].upper())
 
     account, created = Account.objects.get_or_create(
         bank=bank,
@@ -152,30 +149,29 @@ def parse_raiffeisen_transactions(file_name, logger):
     header_index = starting_index + 11
     header = [x.value for x in rows[header_index]]
     if header != [
-        "Data inregistrare",
-        "Data tranzactiei",
-        "Suma debit",
-        "Suma credit",
-        "Nr. OP",
-        "Cod fiscal beneficiar",
-        "Ordonator final",
-        "Beneficiar final",
-        "Nume/Denumire \n ordonator/beneficiar",
-        "Denumire Banca \nordonator/ beneficiar",
-        "Nr. cont in/din care se \n efectueaza tranzactiile",
-        "Descrierea tranzactiei",
+            "Data inregistrare",
+            "Data tranzactiei",
+            "Suma debit",
+            "Suma credit",
+            "Nr. OP",
+            "Cod fiscal beneficiar",
+            "Ordonator final",
+            "Beneficiar final",
+            "Nume/Denumire \n ordonator/beneficiar",
+            "Denumire Banca \nordonator/ beneficiar",
+            "Nr. cont in/din care se \n efectueaza tranzactiile",
+            "Descrierea tranzactiei",
     ]:
         raise AssertionError
 
     if any(x.value for x in rows[header_index + 1]):
         raise AssertionError
-    rows = rows[header_index + 2 :]
+    rows = rows[header_index + 2:]
     transactions = []
     while any((row := [x.value for x in rows.pop(0)])):
         started_at, completed_at, debit, credit, *additional_data, description = row
         completed_at = completed_at and datetime.strptime(
-            completed_at, "%d/%m/%Y"
-        ).replace(tzinfo=timezone.utc)
+            completed_at, "%d/%m/%Y").replace(tzinfo=timezone.utc)
 
         cleaned_description, from_description = description, []
         if "|" in description:
@@ -196,9 +192,9 @@ def parse_raiffeisen_transactions(file_name, logger):
                 product=account_type,
                 started_at=detect_started_at(description, default=started_at),
                 state=completed_at and "Completed",
-                type=detect_transaction_type(description, is_credit=bool(credit)),
-            )
-        )
+                type=detect_transaction_type(description,
+                                             is_credit=bool(credit)),
+            ))
     return transactions
 
 
@@ -207,9 +203,8 @@ def parse_revolut_transactions(file_name, _):
         bank__icontains="revolut",
         type=Account.TYPE_CURRENT,
     )
-    savings_account = Account.objects.get(
-        bank__icontains="revolut", type=Account.TYPE_SAVINGS
-    )
+    savings_account = Account.objects.get(bank__icontains="revolut",
+                                          type=Account.TYPE_SAVINGS)
 
     with open(file_name) as file:
         reader = csv.DictReader(file)
@@ -217,19 +212,16 @@ def parse_revolut_transactions(file_name, _):
         return list(
             map(
                 lambda transaction_dict: Transaction(
-                    account=(
-                        current_account
-                        if transaction_dict["product"] == Account.TYPE_CURRENT
-                        else savings_account
-                    ),
+                    account=(current_account if transaction_dict["product"] ==
+                             Account.TYPE_CURRENT else savings_account),
                     **normalize(transaction_dict),
                 ),
                 reader,
-            )
-        )
+            ))
 
 
 class Command(BaseCommand):
+
     def add_arguments(self, parser):
         parser.add_argument("--bank", type=str, required=True)
 
@@ -282,7 +274,8 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error("\nFailed files: %s", ", ".join(failed_imports))
 
-        remove_crons_for_command(Cron(command="import_statements", is_management=True))
+        remove_crons_for_command(
+            Cron(command="import_statements", is_management=True))
 
         send_telegram_message(text=msg)
 

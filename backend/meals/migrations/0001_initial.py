@@ -5,28 +5,50 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Meal',
+            name="Meal",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.TextField()),
-                ('ingredients', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=24), default=list, size=None)),
-                ('nutritional_values', models.JSONField(default=dict)),
-                ('quantities', models.JSONField(default=dict)),
-                ('type', models.IntegerField(choices=[(0, 'Breakfast'), (1, 'Snack #1'), (2, 'Lunch'), (3, 'Snack #2'), (4, 'Dinner')])),
-                ('date', models.DateField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.TextField()),
+                (
+                    "ingredients",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(max_length=24),
+                        default=list,
+                        size=None,
+                    ),
+                ),
+                ("nutritional_values", models.JSONField(default=dict)),
+                ("quantities", models.JSONField(default=dict)),
+                (
+                    "type",
+                    models.IntegerField(choices=[
+                        (0, "Breakfast"),
+                        (1, "Snack #1"),
+                        (2, "Lunch"),
+                        (3, "Snack #2"),
+                        (4, "Dinner"),
+                    ]),
+                ),
+                ("date", models.DateField()),
             ],
             options={
-                'unique_together': {('date', 'type')},
+                "unique_together": {("date", "type")},
             },
         ),
     ]

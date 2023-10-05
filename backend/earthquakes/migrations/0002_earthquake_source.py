@@ -4,16 +4,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('earthquakes', '0001_initial'),
+        ("earthquakes", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='earthquake',
-            name='source',
-            field=models.CharField(choices=[('infp', 'Institutul Naţional de Cercetare-Dezvoltare pentru Fizica Pământului'), ('usgs', 'United States Geological Survey')], default='infp', max_length=5),
+            model_name="earthquake",
+            name="source",
+            field=models.CharField(
+                choices=[
+                    (
+                        "infp",
+                        "Institutul Naţional de Cercetare-Dezvoltare pentru Fizica Pământului",
+                    ),
+                    ("usgs", "United States Geological Survey"),
+                ],
+                default="infp",
+                max_length=5,
+            ),
             preserve_default=False,
         ),
     ]

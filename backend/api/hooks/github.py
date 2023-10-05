@@ -5,7 +5,6 @@ from ipaddress import ip_address, ip_network
 
 import requests
 import telegram
-
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes
@@ -25,18 +24,15 @@ def mainframe(request):
 
     # Verify if request came from GitHub
     client_ip_address = ip_address(
-        request.META.get("HTTP_X_FORWARDED_FOR").split(", ")[0]
-    )
+        request.META.get("HTTP_X_FORWARDED_FOR").split(", ")[0])
     whitelist = requests.get("https://api.github.com/meta").json()["hooks"]
 
     for valid_ip in whitelist:
         if client_ip_address in ip_network(valid_ip):
             break
     else:
-        send_telegram_message(
-            f"{PREFIX} Warning, {client_ip_address} tried "
-            f"to call mainframe github webhook URL"
-        )
+        send_telegram_message(f"{PREFIX} Warning, {client_ip_address} tried "
+                              f"to call mainframe github webhook URL")
         return HttpResponseForbidden("Permission denied.")
 
     # Verify the request signature
@@ -55,7 +51,8 @@ def mainframe(request):
         msg=force_bytes(request.body),
         digestmod=hashlib.sha1,
     )
-    if not hmac.compare_digest(force_bytes(mac.hexdigest()), force_bytes(signature)):
+    if not hmac.compare_digest(force_bytes(mac.hexdigest()),
+                               force_bytes(signature)):
         send_telegram_message(text=f"{PREFIX} Permission denied")
         return HttpResponseForbidden("Permission denied.")
 
@@ -71,9 +68,8 @@ def mainframe(request):
         pusher = payload.get("pusher", {}).get("name", "")
         author = f"\nAuthor: {pusher}" if pusher else ""
         compare = payload.get("compare", "")
-        compare_message = (
-            f"\n<a target='_blank' href='{compare}'>Compare</a>" if compare else ""
-        )
+        compare_message = (f"\n<a target='_blank' href='{compare}'>Compare</a>"
+                           if compare else "")
         send_telegram_message(
             text=f"{PREFIX} Got a <b>{event}</b> event"
             f"{branch_message}{author}{compare_message}",
@@ -85,11 +81,9 @@ def mainframe(request):
     name = wf_run["name"]
     conclusion = wf_run.get("conclusion", "")
     branch = wf_run["head_branch"]
-    message = (
-        f"{PREFIX} <b>{name}</b> - {branch} - {action}"
-        f"{f' ({conclusion.title()})' if conclusion else ''} "
-        f"<a href='{wf_run['html_url']}'>Details</a>"
-    )
+    message = (f"{PREFIX} <b>{name}</b> - {branch} - {action}"
+               f"{f' ({conclusion.title()})' if conclusion else ''} "
+               f"<a href='{wf_run['html_url']}'>Details</a>")
     if branch == "main" and name == "CI" and conclusion == "success":
         schedule_deploy()
         message += "\nDeployment scheduled"

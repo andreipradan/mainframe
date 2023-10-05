@@ -4,8 +4,7 @@ import environ
 import requests.exceptions
 import telegram
 
-from api.bots.webhooks.shared import reply
-from api.bots.webhooks.shared import validate_message
+from api.bots.webhooks.shared import reply, validate_message
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
 from clients.logs import MainframeHandler
@@ -38,9 +37,7 @@ def call(data, bot):
                     stats=get_stats_from_user(m),
                     commit=False,
                     id=m.id,
-                )
-                for m in new_chat_members
-                if not m.is_bot
+                ) for m in new_chat_members if not m.is_bot
             ]
             if updates:
                 database.bulk_update(updates, collection="participants")
@@ -96,12 +93,9 @@ def call(data, bot):
             collection="participants",
             id=user.id,
         )
-        logger.info(
-            " | ".join(
-                f"{key}: {getattr(db_results, key, None)}"
-                for key in ["upserted_id", "modified_count", "matched_count"]
-            )
-        )
+        logger.info(" | ".join(
+            f"{key}: {getattr(db_results, key, None)}"
+            for key in ["upserted_id", "modified_count", "matched_count"]))
 
         try:
             if tournament.is_started:
@@ -163,13 +157,12 @@ def call(data, bot):
     if base_command == "new":
         if command:
             try:
-                kwargs = dict(kwargs.split("=") for kwargs in command.split(" "))
+                kwargs = dict(
+                    kwargs.split("=") for kwargs in command.split(" "))
             except ValueError:
-                error = (
-                    "Invalid tournament parameters.\n"
-                    f"Format: /new [key]=[value] [key2]=[value2]\n"
-                    f"e.g. /new type=double_elimination"
-                )
+                error = ("Invalid tournament parameters.\n"
+                         f"Format: /new [key]=[value] [key2]=[value2]\n"
+                         f"e.g. /new type=double_elimination")
                 logger.error(error)
                 return reply(update, error)
         else:
@@ -187,11 +180,9 @@ def call(data, bot):
             logger.exception(error)
             return reply(update, error)
 
-        msg = (
-            f"Created {tournament.data['game_name']} "
-            f"tournament [{tournament.data['tournament_type']}]\n"
-            f"{tournament.get_footer()}"
-        )
+        msg = (f"Created {tournament.data['game_name']} "
+               f"tournament [{tournament.data['tournament_type']}]\n"
+               f"{tournament.get_footer()}")
         logger.info(msg)
         return reply(update, msg)
 

@@ -6,5 +6,4 @@ router = routers.SimpleRouter()
 
 router.register("", EarthquakeViewSet, basename="earthquakes")
 
-
 urlpatterns = router.urls

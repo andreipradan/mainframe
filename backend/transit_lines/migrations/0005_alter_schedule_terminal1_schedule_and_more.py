@@ -5,20 +5,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('transit_lines', '0004_alter_transitline_line_type'),
+        ("transit_lines", "0004_alter_transitline_line_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='schedule',
-            name='terminal1_schedule',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=10), default=list, size=None),
+            model_name="schedule",
+            name="terminal1_schedule",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(max_length=10),
+                default=list,
+                size=None),
         ),
         migrations.AlterField(
-            model_name='schedule',
-            name='terminal2_schedule',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=10), default=list, size=None),
+            model_name="schedule",
+            name="terminal2_schedule",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(max_length=10),
+                default=list,
+                size=None),
         ),
     ]

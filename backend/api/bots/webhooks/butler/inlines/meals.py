@@ -1,12 +1,12 @@
 import logging
 import math
 
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from api.bots.webhooks.shared import BaseInlines, chunks
+from clients.chat import edit_message
 from clients.logs import MainframeHandler
 from clients.meals import MealsClient
-from clients.chat import edit_message
 from meals.models import Meal
 
 logger = logging.getLogger(__name__)
@@ -14,9 +14,10 @@ logger.addHandler(MainframeHandler())
 
 
 def parse_meal(item: Meal):
-    ingredients = "\n".join(
-        [f"{i + 1}. {ingredient}" for i, ingredient in enumerate(item.ingredients)]
-    )
+    ingredients = "\n".join([
+        f"{i + 1}. {ingredient}"
+        for i, ingredient in enumerate(item.ingredients)
+    ])
     quantities = "\n".join([f"{k} - {v}" for k, v in item.quantities.items()])
     return f"""
 <b>{item.name}</b>
@@ -41,37 +42,29 @@ class MealsInline(BaseInlines):
         if bottom_level:
             buttons[0].insert(
                 0,
-                InlineKeyboardButton("👆", callback_data=f"meal fetch_day {day} {page}"),
+                InlineKeyboardButton(
+                    "👆", callback_data=f"meal fetch_day {day} {page}"),
             )
             return InlineKeyboardMarkup(buttons)
 
         buttons[0].insert(
-            0, InlineKeyboardButton("👆", callback_data=f"meal start {page}")
-        )
+            0, InlineKeyboardButton("👆", callback_data=f"meal start {page}"))
         items = Meal.objects.filter(date=day).order_by("type")
         logger.info("Got %d meals", len(items))
 
-        return InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        f"{item.get_type_display()}",
-                        callback_data=f"meal fetch {item.pk} {page}",
-                    )
-                ]
-                for item in items
-            ]
-            + buttons
-        )
+        return InlineKeyboardMarkup([[
+            InlineKeyboardButton(
+                f"{item.get_type_display()}",
+                callback_data=f"meal fetch {item.pk} {page}",
+            )
+        ] for item in items] + buttons)
 
     @classmethod
     def get_markup(cls, page=1, is_top_level=False, last_page=None):
-        buttons = [
-            [
-                InlineKeyboardButton("✅", callback_data="end"),
-                InlineKeyboardButton("♻️", callback_data="meal sync"),
-            ]
-        ]
+        buttons = [[
+            InlineKeyboardButton("✅", callback_data="end"),
+            InlineKeyboardButton("♻️", callback_data="meal sync"),
+        ]]
 
         if not is_top_level:
             buttons[0].insert(
@@ -92,28 +85,18 @@ class MealsInline(BaseInlines):
                 InlineKeyboardButton(
                     "👉",
                     callback_data=f"meal start {page + 1 if page != last_page else 1}",
-                )
-            )
+                ))
 
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
         items = list(
-            Meal.objects.distinct("date").order_by("date", "type")[
-                start : start + cls.PER_PAGE
-            ]
-        )
-        return InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        f"{item.date.strftime('%d %b %y')}",
-                        callback_data=f"meal fetch_day {item.date.strftime('%Y-%m-%d')} {page}",
-                    )
-                    for item in chunk
-                ]
-                for chunk in chunks(items, 3)
-            ]
-            + buttons
-        )
+            Meal.objects.distinct("date").order_by(
+                "date", "type")[start:start + cls.PER_PAGE])
+        return InlineKeyboardMarkup([[
+            InlineKeyboardButton(
+                f"{item.date.strftime('%d %b %y')}",
+                callback_data=f"meal fetch_day {item.date.strftime('%Y-%m-%d')} {page}",
+            ) for item in chunk
+        ] for chunk in chunks(items, 3)] + buttons)
 
     @classmethod
     def fetch_day(cls, update, day, page):
@@ -141,8 +124,9 @@ class MealsInline(BaseInlines):
             message_id=message.message_id,
             text=parse_meal(item) if item else "Not found",
             reply_markup=cls.get_meals_markup(
-                day=item.date.strftime("%Y-%m-%d"), page=page, bottom_level=True
-            ),
+                day=item.date.strftime("%Y-%m-%d"),
+                page=page,
+                bottom_level=True),
         )
 
     @classmethod
@@ -158,11 +142,10 @@ class MealsInline(BaseInlines):
 
             return update.message.reply_text(
                 welcome_message.format(
-                    name=user.full_name, page=1, total=last_page, count=count
-                )
-                if not override_message
-                else override_message,
-                reply_markup=cls.get_markup(is_top_level=True, last_page=last_page),
+                    name=user.full_name, page=1, total=last_page, count=count)
+                if not override_message else override_message,
+                reply_markup=cls.get_markup(is_top_level=True,
+                                            last_page=last_page),
             ).to_json()
 
         message = update.callback_query.message
@@ -171,11 +154,11 @@ class MealsInline(BaseInlines):
             bot=update.callback_query.bot,
             chat_id=message.chat_id,
             message_id=message.message_id,
-            text=welcome_message.format(
-                name=user.full_name, page=page or 1, total=last_page, count=count
-            )
-            if not override_message
-            else override_message,
+            text=welcome_message.format(name=user.full_name,
+                                        page=page or 1,
+                                        total=last_page,
+                                        count=count)
+            if not override_message else override_message,
             reply_markup=cls.get_markup(
                 page=int(page) if page else 1,
                 is_top_level=True,

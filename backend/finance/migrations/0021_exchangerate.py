@@ -26,7 +26,8 @@ class Migration(migrations.Migration):
                 ("date", models.DateField()),
                 ("source", models.CharField(max_length=64)),
                 ("symbol", models.CharField(max_length=6)),
-                ("value", models.DecimalField(decimal_places=4, max_digits=10)),
+                ("value", models.DecimalField(decimal_places=4,
+                                              max_digits=10)),
             ],
             options={
                 "ordering": ("-date", "symbol"),

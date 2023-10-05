@@ -31,4 +31,5 @@ def upload_blob_from_string(string, destination, logger, prefix):
     else:
         logger.info("[Upload] %s - completed", destination)
 
-    bucket.copy_blob(blob, bucket, destination.replace(f"{prefix}_", "latest_"))
+    bucket.copy_blob(blob, bucket, destination.replace(f"{prefix}_",
+                                                       "latest_"))

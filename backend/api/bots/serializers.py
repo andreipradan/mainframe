@@ -2,6 +2,7 @@ import logging
 
 import telegram
 from rest_framework import serializers
+
 from bots.models import Bot
 from clients.logs import MainframeHandler
 
@@ -30,19 +31,18 @@ class BotSerializer(serializers.ModelSerializer):
             try:
                 attrs["webhook"] = bot.get_webhook_info()["url"]
             except telegram.error.TelegramError as e:
-                raise serializers.ValidationError({"Telegram Error": e.message})
+                raise serializers.ValidationError(
+                    {"Telegram Error": e.message})
 
             bot = bot.bot
             additional_data = self.instance.additional_data
             additional_data.update(bot.to_dict())
             attrs["telegram_id"] = additional_data.pop("id")
             attrs["username"] = additional_data.pop("username")
-            attrs.update(
-                {
-                    field: getattr(bot, field, None)
-                    for field in ["first_name", "full_name", "last_name"]
-                }
-            )
+            attrs.update({
+                field: getattr(bot, field, None)
+                for field in ["first_name", "full_name", "last_name"]
+            })
             attrs["additional_data"] = additional_data
             return attrs
 
@@ -55,7 +55,8 @@ class BotSerializer(serializers.ModelSerializer):
                     bot.get_me()
                     return attrs
                 except telegram.error.TelegramError as e:
-                    raise serializers.ValidationError({"Telegram Error": e.message})
+                    raise serializers.ValidationError(
+                        {"Telegram Error": e.message})
 
             webhook = attrs.get("webhook")
             if webhook != self.instance.webhook:
@@ -63,14 +64,17 @@ class BotSerializer(serializers.ModelSerializer):
                     try:
                         result = bot.set_webhook(webhook)
                     except telegram.error.TelegramError as e:
-                        raise serializers.ValidationError({"Telegram Error": e.message})
+                        raise serializers.ValidationError(
+                            {"Telegram Error": e.message})
                     else:
-                        logger.info("Set new webhook '%s': %s", webhook, result)
+                        logger.info("Set new webhook '%s': %s", webhook,
+                                    result)
                 else:
                     try:
                         result = bot.delete_webhook()
                     except telegram.error.TelegramError as e:
-                        raise serializers.ValidationError({"Telegram Error": e.message})
+                        raise serializers.ValidationError(
+                            {"Telegram Error": e.message})
                     else:
                         logger.info("Deleted webhook: %s", result)
         return attrs

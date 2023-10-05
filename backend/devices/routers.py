@@ -6,5 +6,4 @@ router = routers.SimpleRouter()
 
 router.register("", DeviceViewSet, basename="devices")
 
-
 urlpatterns = router.urls

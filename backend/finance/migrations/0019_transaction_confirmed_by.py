@@ -12,8 +12,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="transaction",
             name="confirmed_by",
-            field=models.SmallIntegerField(
-                choices=[(0, "Unconfirmed"), (1, "Human"), (2, "ML")], default=0
-            ),
+            field=models.SmallIntegerField(choices=[(0, "Unconfirmed"),
+                                                    (1, "Human"), (2, "ML")],
+                                           default=0),
         ),
     ]

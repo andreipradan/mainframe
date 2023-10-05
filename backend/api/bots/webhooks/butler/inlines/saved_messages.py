@@ -2,7 +2,8 @@ import logging
 import math
 
 from pymongo.errors import ConfigurationError
-from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines
 from bots.clients import mongo as database
@@ -41,8 +42,7 @@ class SavedMessagesInlines(BaseInlines):
                 Button(
                     "👉",
                     callback_data=f"start {self.chat_id} {page + 1 if page != last_page else 1}",
-                )
-            )
+                ))
 
         items = list(
             database.get_many(
@@ -52,23 +52,16 @@ class SavedMessagesInlines(BaseInlines):
                 chat_id=self.chat_id,
                 skip=(page - 1) * self.PER_PAGE if page - 1 >= 0 else 0,
                 limit=self.PER_PAGE,
-            )
-        )
+            ))
 
         logger.info("Got %d saved messages", len(items))
 
-        return Keyboard(
-            [
-                [
-                    Button(
-                        f"{item['chat_name']} by {item['author']['full_name']}",
-                        callback_data=f"fetch {self.chat_id} {item['_id']} {page}",
-                    )
-                ]
-                for item in items
-            ]
-            + buttons
-        )
+        return Keyboard([[
+            Button(
+                f"{item['chat_name']} by {item['author']['full_name']}",
+                callback_data=f"fetch {self.chat_id} {item['_id']} {page}",
+            )
+        ] for item in items] + buttons)
 
     def fetch(self, update, _id, page):
         message = update.callback_query.message
@@ -84,8 +77,7 @@ class SavedMessagesInlines(BaseInlines):
     def start(self, update, page=None):
         try:
             count = database.get_collection("saved-messages").count_documents(
-                {"chat_id": self.chat_id}
-            )
+                {"chat_id": self.chat_id})
         except ConfigurationError as e:
             return update.message.reply_text(f"Got an error: {str(e)}")
 
@@ -98,10 +90,12 @@ class SavedMessagesInlines(BaseInlines):
             logger.info("User %s started the conversation.", user.full_name)
 
             return update.message.reply_text(
-                welcome_message.format(
-                    name=user.full_name, page=1, total=last_page, count=count
-                ),
-                reply_markup=self.get_markup(is_top_level=True, last_page=last_page),
+                welcome_message.format(name=user.full_name,
+                                       page=1,
+                                       total=last_page,
+                                       count=count),
+                reply_markup=self.get_markup(is_top_level=True,
+                                             last_page=last_page),
             ).to_json()
 
         message = update.callback_query.message
@@ -110,9 +104,10 @@ class SavedMessagesInlines(BaseInlines):
             bot=update.callback_query.bot,
             chat_id=message.chat_id,
             message_id=message.message_id,
-            text=welcome_message.format(
-                name=user.full_name, page=page, total=last_page, count=count
-            ),
+            text=welcome_message.format(name=user.full_name,
+                                        page=page,
+                                        total=last_page,
+                                        count=count),
             reply_markup=self.get_markup(
                 page=int(page),
                 is_top_level=True,

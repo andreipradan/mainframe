@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0013_alter_transaction_type'),
+        ("finance", "0013_alter_transaction_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='transaction',
-            name='additional_data',
+            model_name="transaction",
+            name="additional_data",
             field=models.JSONField(blank=True, default=dict, null=True),
         ),
     ]

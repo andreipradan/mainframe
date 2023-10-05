@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from api.earthquakes.serializers import EarthquakeSerializer
 from earthquakes.models import Earthquake
@@ -13,7 +13,7 @@ from earthquakes.models import Earthquake
 class EarthquakeViewSet(viewsets.ModelViewSet):
     queryset = Earthquake.objects.order_by("-timestamp")
     serializer_class = EarthquakeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def get_permissions(self):
         if self.action == "map":
