@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0003_account_type'),
+        ("finance", "0003_account_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='bank',
+            model_name="account",
+            name="bank",
             field=models.CharField(max_length=32),
             preserve_default=False,
         ),

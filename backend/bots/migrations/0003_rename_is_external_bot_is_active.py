@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bots', '0002_bot_webhook_name'),
+        ("bots", "0002_bot_webhook_name"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='bot',
-            old_name='is_external',
-            new_name='is_active',
+            model_name="bot",
+            old_name="is_external",
+            new_name="is_active",
         ),
     ]

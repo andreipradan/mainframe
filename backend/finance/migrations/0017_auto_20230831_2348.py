@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def create_default_category(apps, _):
-    apps.get_model('finance', 'Category').objects.create()
+    apps.get_model("finance", "Category").objects.create()
 
 
 class Migration(migrations.Migration):

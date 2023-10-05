@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0006_alter_account_options'),
+        ("finance", "0006_alter_account_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='transaction',
-            options={'ordering': ['-completed_at']},
+            name="transaction",
+            options={"ordering": ["-completed_at"]},
         ),
     ]

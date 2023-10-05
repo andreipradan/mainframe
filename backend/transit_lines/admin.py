@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 
 class ScheduleAdmin(admin.ModelAdmin):

@@ -4,26 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('transit_lines', '0001_initial'),
+        ("transit_lines", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='transitline',
-            old_name='type',
-            new_name='car_type',
+            model_name="transitline",
+            old_name="type",
+            new_name="car_type",
         ),
         migrations.AddField(
-            model_name='transitline',
-            name='has_bike_rack',
+            model_name="transitline",
+            name="has_bike_rack",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='transitline',
-            name='line_type',
-            field=models.IntegerField(choices=[(1, 'Metropolitan'), (2, 'Urban')], default=2),
+            model_name="transitline",
+            name="line_type",
+            field=models.IntegerField(
+                choices=[(1, "Metropolitan"), (2, "Urban")], default=2
+            ),
             preserve_default=False,
         ),
     ]

@@ -4,22 +4,36 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('finance', '0011_raiffeisentransaction'),
+        ("finance", "0011_raiffeisentransaction"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='transaction',
+            name="transaction",
             unique_together=set(),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='type',
-            field=models.CharField(choices=[('ATM', 'ATM'), ('CARD_CHARGEBACK', 'Card chargeback'), ('CARD_CREDIT', 'Card credit'), ('CARD_PAYMENT', 'Card payment'), ('CARD_REFUND', 'Card refund'), ('CASHBACK', 'Cashback'), ('EXCHANGE', 'Exchange'), ('FEE', 'Fee'), ('TOPUP', 'Topup'), ('TRANSFER', 'Transfer')], default='CARD_PAYMENT', max_length=15),
+            model_name="transaction",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("ATM", "ATM"),
+                    ("CARD_CHARGEBACK", "Card chargeback"),
+                    ("CARD_CREDIT", "Card credit"),
+                    ("CARD_PAYMENT", "Card payment"),
+                    ("CARD_REFUND", "Card refund"),
+                    ("CASHBACK", "Cashback"),
+                    ("EXCHANGE", "Exchange"),
+                    ("FEE", "Fee"),
+                    ("TOPUP", "Topup"),
+                    ("TRANSFER", "Transfer"),
+                ],
+                default="CARD_PAYMENT",
+                max_length=15,
+            ),
         ),
         migrations.DeleteModel(
-            name='RaiffeisenTransaction',
+            name="RaiffeisenTransaction",
         ),
     ]

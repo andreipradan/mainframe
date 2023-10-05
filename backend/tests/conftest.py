@@ -1,5 +1,6 @@
 import dotenv
 import pytest
+
 from api.authentication.models import ActiveSession
 from api.authentication.serializers import _generate_jwt_token
 from api.user.models import User

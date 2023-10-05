@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from finance.models import Account, Category, Credit, Payment, Timetable, ExchangeRate
+from finance.models import Account, Category, Credit, ExchangeRate, Payment, Timetable
 
 
 @admin.register(Account)

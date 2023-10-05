@@ -4,15 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('transit_lines', '0003_transitline_favorite_of'),
+        ("transit_lines", "0003_transitline_favorite_of"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='transitline',
-            name='line_type',
-            field=models.CharField(choices=[('metropolitan', 'Metropolitan'), ('urban', 'Urban'), ('express', 'Express')], max_length=16),
+            model_name="transitline",
+            name="line_type",
+            field=models.CharField(
+                choices=[
+                    ("metropolitan", "Metropolitan"),
+                    ("urban", "Urban"),
+                    ("express", "Express"),
+                ],
+                max_length=16,
+            ),
         ),
     ]
