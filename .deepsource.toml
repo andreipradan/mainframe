@@ -28,9 +28,3 @@ name = "black"
 
 [[transformers]]
 name = "isort"
-
-[[transformers]]
-name = "autopep8"
-
-[[transformers]]
-name = "yapf"
