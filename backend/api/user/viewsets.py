@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -39,5 +40,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         data = {"msg": "You were successfully registered 🎉"}
-        send_telegram_message(f"New mainframe user: {user.email}")
+        if settings.ENV == "prod":
+            send_telegram_message(f"New mainframe user: {user.email}")
         return Response(data=data, status=status.HTTP_201_CREATED)
