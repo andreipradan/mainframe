@@ -26,7 +26,7 @@ def call(data, bot):
     update = telegram.Update.de_json(data, bot.telegram_bot)
     message = update.message
 
-    if not (command := validate_message(message, bot, logger=logger)):
+    if not (command := validate_message(message, bot, custom_logger=logger)):
         new_chat_members = getattr(message, "new_chat_members", None)
         if new_chat_members:
             logger.info(

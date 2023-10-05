@@ -56,19 +56,19 @@ def reply(update, text):
     return ""
 
 
-def validate_message(message, bot, logger):
+def validate_message(message, bot, custom_logger):
     if not message:
-        logger.warning("No message")
+        custom_logger.warning("No message")
         return ""
 
     text = message.text
     if not text:
-        logger.warning("No message text")
+        custom_logger.warning("No message text")
         return ""
 
     user = message.from_user
     if user.is_bot:
-        logger.warning(
+        custom_logger.warning(
             "Ignoring message from bot(%s): %s",
             user.username,
             getattr(message, "text", "Got no text"),
@@ -76,11 +76,11 @@ def validate_message(message, bot, logger):
         return ""
 
     if not message.chat_id:
-        logger.warning("No chat_id in message keys: %s", list(message))
+        custom_logger.warning("No chat_id in message keys: %s", list(message))
         return ""
 
     if str(message.chat_id) not in bot.whitelist:
-        logger.warning("Chat '%s' not in whitelist", message.chat_id)
+        custom_logger.warning("Chat '%s' not in whitelist", message.chat_id)
         return ""
 
     text = text.strip()
@@ -88,7 +88,7 @@ def validate_message(message, bot, logger):
         text = text.decode("utf-8")
 
     if len(text) < 1 or not text.startswith("/"):
-        logger.info("Not a command: '%s' (%s)", text, user.username or user.full_name)
+        custom_logger.info("Not a command: '%s' (%s)", text, user.username or user.full_name)
         return ""
 
     return text[1:]
