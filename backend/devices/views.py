@@ -35,7 +35,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
         for item in output.split("\n"):
             if not item.strip():
                 continue
-            _, ip, __, mac, *junk = item.split()
+            _, ip, __, mac, *___ = item.split()
             items.append(
                 Device(
                     ip=ip[1:-1],

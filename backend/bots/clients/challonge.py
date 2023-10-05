@@ -117,7 +117,7 @@ class TournamentClient:
         return self._get_related("participant", by="name")
 
     def _adjust_dates(self, obj):
-        for k, v in obj.items():
+        for k, _ in obj.items():
             if k.endswith("_at") or k.endswith("_time"):
                 obj[k] = convert_to_timezone(obj[k])
         return obj

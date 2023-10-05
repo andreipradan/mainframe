@@ -121,7 +121,7 @@ def extract_summary(summary):
 
 def extract_first_page(first_page, logger):
     summary, contents = first_page.extract_text().split("TABEL DE AMORTIZARE")
-    fields, _, *rows, footer, page = [x for x in contents.split("\n") if x]
+    fields, _, *rows, footer, __ = [x for x in contents.split("\n") if x]
     if fields != (
         "Data următoarei plăţi "
         "Suma de plată "
