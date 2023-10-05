@@ -69,7 +69,7 @@ export const lightsSlice = createSlice({
       state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload)
     },
     unsetLoadingLight: (state, action) => {
-      state.loadingLights = state.loadingLights && state.loadingLights.filter(ip => ip !== action.payload);
+      state.loadingLights = state.loadingLights?.filter(ip => ip !== action.payload);
     },
   },
 });
