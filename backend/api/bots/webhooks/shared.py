@@ -88,7 +88,9 @@ def validate_message(message, bot, custom_logger):
         text = text.decode("utf-8")
 
     if len(text) < 1 or not text.startswith("/"):
-        custom_logger.info("Not a command: '%s' (%s)", text, user.username or user.full_name)
+        custom_logger.info(
+            "Not a command: '%s' (%s)", text, user.username or user.full_name
+        )
         return ""
 
     return text[1:]
