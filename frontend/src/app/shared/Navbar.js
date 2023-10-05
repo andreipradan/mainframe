@@ -216,7 +216,7 @@ const Navbar = () => {
                     href="!#"
                     onClick={evt => {
                       evt.preventDefault()
-                      dispatch(AuthApi.Logout({user, token}, history))
+                      dispatch(AuthApi.Logout(token, history))
                     }}
                     className="preview-item">
                   <div className="preview-thumbnail">

@@ -11,6 +11,7 @@ import EarthquakesApi from "../../api/earthquakes";
 import { Bar } from "react-chartjs-2";
 import {API_SERVER} from "../../constants";
 import BotsApi from "../../api/bots";
+import Alert from "react-bootstrap/Alert";
 
 const defaultButtonProps = {
   paddingTop: 10,
@@ -34,9 +35,11 @@ const options = {
 const Earthquakes = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {count, loading, next, previous, results: earthquakes} = useSelector(state => state.earthquakes)
+  const {count, loading, next, previous, results: earthquakes, errors} = useSelector(state => state.earthquakes)
   const {results: bots, loading: botsLoading} = useSelector(state => state.bots)
   const earthquakesList = earthquakes ? [...earthquakes].reverse() : null
+  const [alertOpen, setAlertOpen] = useState(false)
+  useEffect(() => {setAlertOpen(!!errors)}, [errors])
 
   const data = {
     labels: earthquakesList?.map(e => new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()),
@@ -207,6 +210,10 @@ const Earthquakes = () => {
         </ol>
       </nav>
     </div>
+
+    {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
+      {errors}
+    </Alert>}
     <div className="row">
         <div className="col-12">
           <div className="card">

@@ -3,7 +3,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 
 from clients.logs import MainframeHandler
 from clients.system import run_cmd
@@ -26,7 +26,7 @@ def add_zeros_to_mac(mac):
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.order_by("-is_active", "name", "ip")
     serializer_class = DeviceSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):

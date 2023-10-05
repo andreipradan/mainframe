@@ -16,10 +16,6 @@ def _generate_jwt_token(user):
     return token
 
 
-def get_error(msg):
-    return {"success": False, "msg": msg}
-
-
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
@@ -29,18 +25,20 @@ class LoginSerializer(serializers.Serializer):
         password = data.get("password", None)
 
         if email is None:
-            error = get_error(get_error("Email is required to login"))
-            raise exceptions.ValidationError(error)
+            raise exceptions.ValidationError("Email is required to login")
         if password is None:
-            error = get_error("Password is required to log in.")
-            raise exceptions.ValidationError(error)
+            raise exceptions.ValidationError("Password is required to log in.")
         user = authenticate(username=email, password=password)
 
         if user is None:
-            raise exceptions.AuthenticationFailed(get_error("Wrong credentials"))
+            raise exceptions.AuthenticationFailed("Wrong credentials")
 
         if not user.is_active:
-            raise exceptions.ValidationError(get_error("User is not active"))
+            error = (
+                "Your account is not active, "
+                "please refer to a member of the staff to update your account"
+            )
+            raise exceptions.AuthenticationFailed(error)
 
         try:
             session = ActiveSession.objects.get(user=user)
@@ -67,32 +65,27 @@ class LoginSerializer(serializers.Serializer):
                 "joined_date": user.date,
                 "last_login": session.date,
                 "name": user.name,
+                "is_staff": user.is_staff,
             },
         }
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(min_length=4, max_length=128, write_only=True)
-    username = serializers.CharField(max_length=255, required=True)
     email = serializers.EmailField(required=True)
+    password = serializers.CharField(min_length=4, max_length=128, write_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "username", "password", "email", "is_active", "date"]
-
-    def validate_username(self, value):
-        try:
-            User.objects.get(username=value)
-        except ObjectDoesNotExist:
-            return value
-        raise exceptions.ValidationError(get_error("Username already taken."))
+        fields = ["id", "password", "email", "is_active", "date"]
 
     def validate_email(self, value):
         try:
             User.objects.get(email=value)
         except ObjectDoesNotExist:
             return value
-        raise exceptions.ValidationError(get_error("Email already taken."))
+        raise exceptions.ValidationError("Email already taken.")
 
     def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
+        return User.objects.create_user(
+            username=validated_data["email"], **validated_data
+        )

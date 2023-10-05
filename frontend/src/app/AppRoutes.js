@@ -2,6 +2,7 @@ import React, { Component,Suspense, lazy } from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import Spinner from '../app/shared/Spinner';
+import { useSelector } from "react-redux";
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
@@ -11,6 +12,7 @@ const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
+const Expenses = lazy(() => import('./expenses/Expenses'));
 const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
 const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
@@ -20,6 +22,7 @@ const FinancesExchangeRate = lazy(() => import ("./finances/ExchangeRate"));
 const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
 const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
 const Meals = lazy(() => import('./meals/Meals'));
+const Users = lazy(() => import('./users/Users'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
 const Dropdowns = lazy(() => import('./basic-ui/Dropdowns'));
@@ -38,55 +41,59 @@ const Error500 = lazy(() => import('./error-pages/Error500'));
 
 const Login = lazy(() => import('./user-pages/Login'));
 const Register1 = lazy(() => import('./user-pages/Register'));
+const TermsAndConditions = lazy(() => import('./user-pages/TermsAndConditions'));
 
 
-class AppRoutes extends Component {
-  render () {
-    return (
-      <Suspense fallback={<Spinner/>}>
-        <Switch>
-          <Route exact path="/" component={ Dashboard } />
-          <Route exact path="/apps/camera" component={ Camera } />
-          <Route exact path="/apps/logs" component={ Logs } />
-          <Route exact path="/apps/todo" component={ Todo } />
-          <Route exact path="/bots" component={ Bots } />
-          <Route exact path="/finances/accounts" component={ FinancesAccounts } />
-          <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />
-          <Route exact path="/finances/calculator" component={ FinancesCalculator } />
-          <Route exact path="/finances/categorize" component={ FinancesCategorize } />
-          <Route exact path="/finances/credit/details" component={ FinancesCredit } />
-          <Route exact path="/finances/credit/payments" component={ FinancesPayments } />
-          <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />
-          <Route exact path="/finances/exchange-rate" component={ FinancesExchangeRate } />
-          <Route exact path="/crons" component={ Crons } />
-          <Route exact path="/devices" component={ Devices } />
-          <Route exact path="/earthquakes" component={ Earthquakes } />
-          <Route exact path="/meals" component={ Meals } />
+const AppRoutes = () => {
+  const user = useSelector((state) => state.auth.user)
 
-          <Route path="/basic-ui/buttons" component={ Buttons } />
-          <Route path="/basic-ui/dropdowns" component={ Dropdowns } />
-          <Route path="/basic-ui/typography" component={ Typography } />
+  return (
+    <Suspense fallback={<Spinner/>}>
+      <Switch>
+        <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
+        <Route exact path="/expenses" component={ Expenses } />
+        <Route exact path="/earthquakes" component={ Earthquakes } />
+        <Route exact path="/meals" component={ Meals } />
 
-          <Route path="/form-Elements/basic-elements" component={ BasicElements } />
+        {user?.is_staff && <Route exact path="/" component={Dashboard}/>}
+        {user?.is_staff && <Route exact path="/apps/camera" component={ Camera } />}
+        {user?.is_staff && <Route exact path="/apps/logs" component={ Logs } />}
+        {user?.is_staff && <Route exact path="/apps/todo" component={ Todo } />}
+        {user?.is_staff && <Route exact path="/bots" component={ Bots } />}
+        {user?.is_staff && <Route exact path="/finances/accounts" component={ FinancesAccounts } />}
+        {user?.is_staff && <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />}
+        {user?.is_staff && <Route exact path="/finances/calculator" component={ FinancesCalculator } />}
+        {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
+        {user?.is_staff && <Route exact path="/finances/credit/details" component={ FinancesCredit } />}
+        {user?.is_staff && <Route exact path="/finances/credit/payments" component={ FinancesPayments } />}
+        {user?.is_staff && <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />}
+        {user?.is_staff && <Route exact path="/finances/exchange-rate" component={ FinancesExchangeRate } />}
+        {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
+        {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
+        {user?.is_staff && <Route exact path="/users" component={ Users } />}
 
-          <Route path="/tables/basic-table" component={ BasicTable } />
+        <Route path="/basic-ui/buttons" component={ Buttons } />
+        <Route path="/basic-ui/dropdowns" component={ Dropdowns } />
+        <Route path="/basic-ui/typography" component={ Typography } />
 
-          <Route path="/icons/mdi" component={ Mdi } />
+        <Route path="/form-Elements/basic-elements" component={ BasicElements } />
 
-          <Route path="/charts/chart-js" component={ ChartJs } />
+        <Route path="/tables/basic-table" component={ BasicTable } />
 
-          <Route path="/login" component={ Login } />
-          <Route path="/register" component={ Register1 } />
+        <Route path="/icons/mdi" component={ Mdi } />
 
-          <Route path="/error-pages/error-404" component={ Error404 } />
-          <Route path="/error-pages/error-500" component={ Error500 } />
+        <Route path="/charts/chart-js" component={ ChartJs } />
 
+        <Route path="/login" component={ Login } />
+        <Route path="/register" component={ Register1 } />
 
-          <Redirect to="/error-pages/error-404" />
-        </Switch>
-      </Suspense>
-    );
-  }
+        <Route path="/error-pages/error-404" component={ Error404 } />
+        <Route path="/error-pages/error-500" component={ Error500 } />
+
+        <Redirect to="/error-pages/error-404" />
+      </Switch>
+    </Suspense>
+  );
 }
 
 export default AppRoutes;

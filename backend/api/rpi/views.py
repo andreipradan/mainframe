@@ -2,13 +2,13 @@ from django.conf import settings
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 
 from clients.system import run_cmd
 
 
 class RpiViewSet(viewsets.ViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
     @staticmethod
     def run_command(cmd):

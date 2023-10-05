@@ -20,7 +20,7 @@ from huey.signals import (
 )
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
@@ -60,7 +60,7 @@ FINAL_STATUSES = [
 
 
 class AccountViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     queryset = (
         Account.objects.prefetch_related()
         .annotate(transaction_count=Count("transaction"))
@@ -113,13 +113,13 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     queryset = Category.objects.order_by("id")
     serializer_class = CategorySerializer
 
 
 class CreditViewSet(viewsets.ViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
     def list(self, request, **kwargs):
         credit = get_default_credit()
@@ -147,7 +147,7 @@ class ExchangePagination(api_settings.DEFAULT_PAGINATION_CLASS):
 
 class ExchangeRateViewSet(viewsets.ModelViewSet):
     pagination_class = ExchangePagination
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     queryset = ExchangeRate.objects.all()
     serializer_class = ExchangeRateSerializer
 
@@ -171,19 +171,19 @@ class ExchangeRateViewSet(viewsets.ModelViewSet):
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     queryset = Payment.objects.select_related("credit")
     serializer_class = PaymentSerializer
 
 
 class TimetableViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     queryset = Timetable.objects.select_related("credit")
     serializer_class = TimetableSerializer
 
 
 class TransactionViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     queryset = Transaction.objects.order_by("-started_at")
     serializer_class = TransactionSerializer
 
@@ -300,7 +300,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
 
 class PredictionViewSet(viewsets.ViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
     error = "Tasks backend unreachable"
 
     def list(self, request, *args, **kwargs):

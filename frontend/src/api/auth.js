@@ -1,6 +1,6 @@
 import axios from "./index";
 import Cookie from 'js-cookie'
-import { login, logout, setErrors, setLoading } from "../redux/authSlice";
+import { login, logout, register, setErrors, setLoading } from "../redux/authSlice";
 
 const handleErrors = async (err, dispatch) => {
   if (err.response) {
@@ -28,17 +28,23 @@ class AuthApi {
       Cookie.set('token', response.data.token);
       Cookie.set('user', JSON.stringify(response.data.user));
       dispatch(login(response.data))
-      history.push("/")
+      history.push(response.data.user?.is_staff ? "/" : "/expenses")
     })
     .catch((err) => handleErrors(err, dispatch));
   };
 
-  static Register = (data) => {
-    return axios.post(`${base}/register`, data);
+  static Register = (data, history) => dispatch => {
+    dispatch(setLoading(true))
+    axios.post(`${base}/register`, data)
+    .then(response => {
+      dispatch(register(response.data))
+      history.push("/login")
+    })
+    .catch((err) => handleErrors(err, dispatch));
   };
 
-  static Logout = (data, history) => dispatch => {
-    axios.post(`${base}/logout`, data, { headers: { Authorization: `${data.token}` } })
+  static Logout = (token, history) => dispatch => {
+    axios.put(`${base}/logout`, {}, { headers: { Authorization: token } })
     .then(() => {
       Cookie.remove('token');
       Cookie.remove('user');

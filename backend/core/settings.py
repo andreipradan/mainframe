@@ -145,7 +145,7 @@ AUTH_USER_MODEL = "api_user.User"
 # ##################################################################### #
 # ################### REST FRAMEWORK             ###################### #
 # ##################################################################### #
-
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.AllowAllUsersModelBackend"]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "api.authentication.backends.ActiveSessionAuthentication",

@@ -4,7 +4,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 
 from clients.lights import LightsClient, LightsException
 from clients.logs import MainframeHandler
@@ -20,7 +20,7 @@ IP_REGEX = (
 
 class LightsViewSet(viewsets.ViewSet):
     lookup_field = "ip"
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
     def _request(self, what, **kwargs):
         logger.info("Lights: %s, args: %s", what, kwargs)

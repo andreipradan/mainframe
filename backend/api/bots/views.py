@@ -3,7 +3,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser
 
 from api.bots.serializers import BotSerializer
 from bots.models import Bot
@@ -16,7 +16,7 @@ logger.addHandler(MainframeHandler())
 class BotViewSet(viewsets.ModelViewSet):
     queryset = Bot.objects.order_by("full_name")
     serializer_class = BotSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
     def get_permissions(self):
         if self.action == "webhook":

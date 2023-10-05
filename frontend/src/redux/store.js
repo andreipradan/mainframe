@@ -17,6 +17,7 @@ import predictionReducer from "./predictionSlice";
 import rpiReducer from "../redux/rpiSlice";
 import timetableReducer from "./timetableSlice";
 import transactionsReducer from "../redux/transactionsSlice";
+import usersSlice from "../redux/usersSlice";
 
 export default configureStore({
   reducer: {
@@ -38,5 +39,6 @@ export default configureStore({
     rpi: rpiReducer,
     timetable: timetableReducer,
     transactions: transactionsReducer,
+    users: usersSlice,
   },
 });
