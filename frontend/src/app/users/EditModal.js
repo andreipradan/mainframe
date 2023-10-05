@@ -33,7 +33,7 @@ const EditModal = () => {
   const submitForm = event => {
     event.preventDefault()
     const data = {
-      email: email,
+      email,
       is_active: isActive,
       is_staff: isStaff,
     }

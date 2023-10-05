@@ -2,20 +2,19 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import {BallTriangle, Circles } from "react-loader-spinner";
 import CameraApi from "../../api/camera";
-import { setAlertOpen, setMessagesOpen } from "../../redux/cameraSlice";
+import { setMessagesOpen } from "../../redux/cameraSlice";
 import Errors from "../shared/Errors";
 import Alert from "react-bootstrap/Alert";
 
 export const Camera = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const { alertOpen, errors, loading, loadingFiles, messages, messagesOpen, path, results } = useSelector(state => state.camera)
+  const { errors, loading, loadingFiles, messages, messagesOpen, path, results } = useSelector(state => state.camera)
 
   useEffect(() => {
     !results && dispatch(CameraApi.getList(token));
   }, []);
 
-  useEffect(() => {dispatch(setAlertOpen(!!errors))}, [errors])
   useEffect(() => {dispatch(setMessagesOpen(!!messages))}, [messages])
 
   const [currentImage, setCurrentImage] = useState(null)

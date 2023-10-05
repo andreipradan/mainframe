@@ -25,7 +25,7 @@ class AuthApi {
     axios.post(`${base}/register`, data)
     .then(response => {
       dispatch(setLoading(false))
-      toast.success(response.data["msg"], toastParams)
+      toast.success(response.data.msg, toastParams)
       history.push("/login")
     })
     .catch((err) => handleErrors(err, dispatch, setErrors));

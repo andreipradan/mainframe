@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 
@@ -37,10 +37,12 @@ const Users = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="" onClick={event => {
-            event.preventDefault()
-            history.push("/")
-          }}>Home</a></li>
+          <li className="breadcrumb-item">
+            <a href="!#" onClick={event => {
+              event.preventDefault()
+              history.push("/")
+            }}>Home</a>
+          </li>
           <li className="breadcrumb-item active" aria-current="page">Users</li>
         </ol>
       </nav>
