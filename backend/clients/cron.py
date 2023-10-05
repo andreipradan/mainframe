@@ -61,7 +61,8 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             crontab.remove_all()
         for cron in crons:
             command = cron.management_command if cron.is_management else cron.command
-            not clear_all and replace and crontab.remove_all(command=command)
+            if not clear_all and replace:
+                crontab.remove_all(command=command)
             cmd = crontab.new(command=command)
             cmd.setall(cron.expression)
             cmd.enable(cron.is_active)

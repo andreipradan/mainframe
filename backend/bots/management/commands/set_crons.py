@@ -21,6 +21,7 @@ class Command(BaseCommand):
         set_crons(crons, clear_all=True)
         logger.info("[Crons] Done")
 
-        healthchecks.ping() and logger.info("[Healthcheck] Done")
+        if healthchecks.ping():
+            logger.info("[Healthcheck] Done")
         send_telegram_message(text="[[backend]] up")
         self.stdout.write(self.style.SUCCESS("[Crons] Done."))
