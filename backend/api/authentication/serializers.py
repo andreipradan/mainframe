@@ -1,9 +1,10 @@
-import jwt
-from django.contrib.auth import authenticate
 from datetime import datetime, timedelta
+
+import jwt
 from django.conf import settings
+from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers, exceptions
+from rest_framework import exceptions, serializers
 
 from api.authentication.models import ActiveSession
 from api.user.models import User

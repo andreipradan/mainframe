@@ -28,22 +28,22 @@ from clients.logs import MainframeHandler
 from finance.models import (
     Account,
     Category,
+    ExchangeRate,
     Payment,
     Timetable,
     Transaction,
     get_default_credit,
-    ExchangeRate,
 )
 from finance.serializers import (
     AccountSerializer,
     CategorySerializer,
     CreditSerializer,
+    ExchangeRateSerializer,
     PaymentSerializer,
     TimetableSerializer,
     TransactionSerializer,
-    ExchangeRateSerializer,
 )
-from finance.tasks import predict, train, log_status
+from finance.tasks import log_status, predict, train
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())

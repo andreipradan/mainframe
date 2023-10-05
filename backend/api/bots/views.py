@@ -3,7 +3,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from api.bots.serializers import BotSerializer
 from bots.models import Bot

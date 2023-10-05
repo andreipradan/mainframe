@@ -4,7 +4,7 @@ import random
 import factory
 from django.conf import settings
 
-from finance.models import Payment, Credit, Account, Transaction, Category
+from finance.models import Account, Category, Credit, Payment, Transaction
 
 
 class AccountFactory(factory.django.DjangoModelFactory):

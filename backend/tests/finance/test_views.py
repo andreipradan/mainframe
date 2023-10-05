@@ -1,10 +1,13 @@
 import pytest
 from django.urls import reverse
 
-from .factories import AccountFactory, CategoryFactory
-from .factories import CreditFactory
-from .factories import PaymentFactory
-from .factories import TransactionFactory
+from .factories import (
+    AccountFactory,
+    CategoryFactory,
+    CreditFactory,
+    PaymentFactory,
+    TransactionFactory,
+)
 
 
 @pytest.mark.django_db

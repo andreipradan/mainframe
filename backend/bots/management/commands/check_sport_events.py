@@ -2,14 +2,12 @@ import asyncio
 import json
 import logging
 import math
-
 from datetime import datetime
 from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import aiohttp
 import telegram
-
 from bs4 import BeautifulSoup
 from django.core.management import BaseCommand, CommandError
 

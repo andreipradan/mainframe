@@ -5,7 +5,6 @@ from ipaddress import ip_address, ip_network
 
 import requests
 import telegram
-
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes

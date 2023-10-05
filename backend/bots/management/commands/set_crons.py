@@ -3,8 +3,8 @@ import logging
 from django.core.management.base import BaseCommand
 
 from clients import healthchecks
-from clients.cron import set_crons
 from clients.chat import send_telegram_message
+from clients.cron import set_crons
 from clients.logs import ManagementCommandsHandler
 from crons.models import Cron
 

@@ -2,7 +2,8 @@ import logging
 import math
 
 from pymongo.errors import ConfigurationError
-from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines
 from bots.clients import mongo as database

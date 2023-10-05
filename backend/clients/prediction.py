@@ -6,7 +6,6 @@ from django.conf import settings
 from django.utils import timezone
 from huey.contrib.djhuey import HUEY
 from huey.signals import SIGNAL_ERROR
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split

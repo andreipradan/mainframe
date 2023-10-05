@@ -1,10 +1,10 @@
-from api.user.serializers import UserSerializer
-from api.user.models import User
-from rest_framework import viewsets, status
+from rest_framework import mixins, status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from rest_framework import mixins
+
+from api.user.models import User
+from api.user.serializers import UserSerializer
 
 
 class UserViewSet(

@@ -4,8 +4,7 @@ import environ
 import requests.exceptions
 import telegram
 
-from api.bots.webhooks.shared import reply
-from api.bots.webhooks.shared import validate_message
+from api.bots.webhooks.shared import reply, validate_message
 from bots.clients import mongo as database
 from bots.clients.challonge import TournamentClient
 from clients.logs import MainframeHandler
@@ -27,7 +26,7 @@ def call(data, bot):
     update = telegram.Update.de_json(data, bot.telegram_bot)
     message = update.message
 
-    if not (command := validate_message(message, bot, logger=logger)):
+    if not (command := validate_message(message, bot, custom_logger=logger)):
         new_chat_members = getattr(message, "new_chat_members", None)
         if new_chat_members:
             logger.info(

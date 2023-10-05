@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytz
 import telegram
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from api.bots.webhooks.shared import BaseInlines
 from clients.lights import LightsClient, LightsException
