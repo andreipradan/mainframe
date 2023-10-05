@@ -9,7 +9,7 @@ from clients.system import get_folder_contents
 
 class LogsViewSet(viewsets.ViewSet):
     base_path = Path("/var/log/")
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def list(self, request):
         filename = request.GET.get("filename", "")
@@ -19,10 +19,10 @@ class LogsViewSet(viewsets.ViewSet):
             try:
                 with open(self.base_path / filename, "r") as file:
                     return FileResponse(file.read())
-            except (PermissionError, UnicodeDecodeError, FileNotFoundError) as e:
-                return JsonResponse(
-                    status=400, data={"error": f"{e.reason}: {filename}"}
-                )
+            except (PermissionError, UnicodeDecodeError,
+                    FileNotFoundError) as e:
+                return JsonResponse(status=400,
+                                    data={"error": f"{e.reason}: {filename}"})
 
         path = request.GET.get("path", "")
         if path.startswith("/"):
@@ -31,7 +31,8 @@ class LogsViewSet(viewsets.ViewSet):
         try:
             results = get_folder_contents(self.base_path / path)
         except FileNotFoundError:
-            return JsonResponse(status=400, data={"error": f"Folder not found: {path}"})
+            return JsonResponse(status=400,
+                                data={"error": f"Folder not found: {path}"})
         return JsonResponse(
             {
                 "path": path,

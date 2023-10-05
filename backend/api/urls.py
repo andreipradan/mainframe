@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
     path("bots/", include(("api.bots.routers", "api"), namespace="bots")),
@@ -11,7 +11,8 @@ urlpatterns = [
     ),
     path("finance/", include(("finance.routers", "api"), namespace="finance")),
     path("hooks/", include("api.hooks.urls")),
-    path("lights/", include(("api.lights.routers", "api"), namespace="lights")),
+    path("lights/", include(("api.lights.routers", "api"),
+                            namespace="lights")),
     path("logs/", include(("api.logs.routers", "api"), namespace="logs")),
     path("meals/", include(("meals.routers", "api"), namespace="meals")),
     path("rpi/", include(("api.rpi.routers", "api"), namespace="rpi")),

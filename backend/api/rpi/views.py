@@ -8,7 +8,7 @@ from clients.system import run_cmd
 
 
 class RpiViewSet(viewsets.ViewSet):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     @staticmethod
     def run_command(cmd):

@@ -8,9 +8,9 @@ def fetch(url, logger):
         response = requests.get(url, timeout=45)
         response.raise_for_status()
     except (
-        requests.exceptions.ConnectionError,
-        requests.exceptions.HTTPError,
-        requests.exceptions.ReadTimeout,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.HTTPError,
+            requests.exceptions.ReadTimeout,
     ) as e:
         logger.error(str(e))
         return e

@@ -1,4 +1,5 @@
 import operator
+
 import yeelight
 
 
@@ -7,6 +8,7 @@ class LightsException(Exception):
 
 
 class LightsClient:
+
     @classmethod
     def get_bulbs(cls):
         bulbs = yeelight.discover_bulbs()

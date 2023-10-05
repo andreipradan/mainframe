@@ -17,16 +17,14 @@ logger.addHandler(MainframeHandler())
 def delay(command, minutes=1, is_management=True):
     n = datetime.now() + timedelta(minutes=minutes)
     expression = f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}"
-    set_crons(
-        [
-            Cron(
-                command=command,
-                expression=expression,
-                is_active=True,
-                is_management=is_management,
-            )
-        ]
-    )
+    set_crons([
+        Cron(
+            command=command,
+            expression=expression,
+            is_active=True,
+            is_management=is_management,
+        )
+    ])
 
 
 def get_all_crons() -> List[Cron]:
@@ -39,8 +37,7 @@ def get_all_crons() -> List[Cron]:
                 is_active=cron.enabled,
                 is_management=manage_path in cron.command,
                 description=cron.comment,
-            )
-            for cron in crontab
+            ) for cron in crontab
         ]
 
 
@@ -66,5 +63,4 @@ def set_crons(crons: List[Cron], clear_all=False, replace=True):
             cmd.setall(cron.expression)
             cmd.enable(cron.is_active)
             cmd.set_comment(cron.description)
-    total_crons = len(crons)
-    logger.info("Set %d cron%s ✅", total_crons, "s" if total_crons > 1 else "")
+    logger.info("Set %d cron%s ✅", i + 1, "s" if i else "")

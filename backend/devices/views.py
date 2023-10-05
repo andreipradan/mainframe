@@ -26,7 +26,7 @@ def add_zeros_to_mac(mac):
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.order_by("-is_active", "name", "ip")
     serializer_class = DeviceSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
@@ -40,11 +40,9 @@ class DeviceViewSet(viewsets.ModelViewSet):
                 Device(
                     ip=ip[1:-1],
                     mac=add_zeros_to_mac(mac)
-                    if "incomplete" not in mac
-                    else f"E: {ip[1:-1]}",
+                    if "incomplete" not in mac else f"E: {ip[1:-1]}",
                     is_active=True,
-                )
-            )
+                ))
         if items:
             Device.objects.update(is_active=False)
             logger.info("Creating %d", len(items))

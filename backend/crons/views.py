@@ -1,6 +1,6 @@
 import psutil
 from django.http import JsonResponse
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
@@ -12,7 +12,7 @@ from crons.serializers import CronSerializer
 class CronViewSet(viewsets.ModelViewSet):
     queryset = Cron.objects.order_by("-is_active", "command")
     serializer_class = CronSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def list(self, request, *args, **kwargs):
         crons = get_all_crons()

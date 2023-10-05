@@ -15,8 +15,8 @@ def check_open_matches(client, logger):
     timezone = pytz.timezone("Europe/Bucharest")
     now = datetime.now().astimezone(timezone)
     if (now.weekday(), now.astimezone(timezone).strftime("%H:%M")) != (
-        4,
-        "15:30",
+            4,
+            "15:30",
     ):
         return
 
@@ -38,20 +38,20 @@ def check_open_matches(client, logger):
     }
 
     open_matches = [
-        m for m in client.open_matches if deadline_reminder[m["round"]] == now.date()
+        m for m in client.open_matches
+        if deadline_reminder[m["round"]] == now.date()
     ]
     if open_matches:
-        matches = "\n".join(
-            [f"{client.get_match_title(match['id'])}" for match in open_matches]
-        )
+        matches = "\n".join([
+            f"{client.get_match_title(match['id'])}" for match in open_matches
+        ])
         no_of_matches = len(open_matches)
         text = (
             f"<b>Salutare, {no_of_matches} meci{'uri' if no_of_matches > 1 else ''} "
             f"rămase pentru săptămâna aceasta:</b>"
             f"\n\n{matches}"
             f"\n\n{client.get_footer()}"
-            "\n\nWeekend fain!"
-        )
+            "\n\nWeekend fain!")
         client.send_message(text)
         logger.info("Found %d open matches", no_of_matches)
     else:
@@ -59,6 +59,7 @@ def check_open_matches(client, logger):
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
@@ -72,7 +73,8 @@ class Command(BaseCommand):
         check_open_matches(tournament, logger)
 
         db_matches = {
-            m["id"]: m for m in database.filter_by_ids(list(tournament.matches))
+            m["id"]: m
+            for m in database.filter_by_ids(list(tournament.matches))
         }
 
         updates = []
@@ -82,10 +84,9 @@ class Command(BaseCommand):
                 continue
             db_match = db_match or {}
             updates.append(
-                database.set_stats(
-                    dict(match.items() - db_match.items()), False, id=match["id"]
-                )
-            )
+                database.set_stats(dict(match.items() - db_match.items()),
+                                   False,
+                                   id=match["id"]))
 
         if updates:
             if db_matches:

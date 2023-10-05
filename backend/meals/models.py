@@ -15,15 +15,13 @@ class Meal(TimeStampedModel):
     ingredients = ArrayField(models.CharField(max_length=24), default=list)
     nutritional_values = models.JSONField(default=dict)
     quantities = models.JSONField(default=dict)
-    type = models.IntegerField(
-        choices=(
-            (TYPE_BREAKFAST, "Breakfast"),
-            (TYPE_SNACK_1, "Snack #1"),
-            (TYPE_LUNCH, "Lunch"),
-            (TYPE_SNACK_2, "Snack #2"),
-            (TYPE_DINNER, "Dinner"),
-        ),
-    )
+    type = models.IntegerField(choices=(
+        (TYPE_BREAKFAST, "Breakfast"),
+        (TYPE_SNACK_1, "Snack #1"),
+        (TYPE_LUNCH, "Lunch"),
+        (TYPE_SNACK_2, "Snack #2"),
+        (TYPE_DINNER, "Dinner"),
+    ), )
 
     date = models.DateField()
 

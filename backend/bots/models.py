@@ -36,10 +36,13 @@ class Bot(TimeStampedModel):
         return telegram.Bot(self.token)
 
     def call(self, data):
-        webhook_module = import_module(f"api.bots.webhooks.{self.webhook_name}")
+        webhook_module = import_module(
+            f"api.bots.webhooks.{self.webhook_name}")
         webhook_module.call(data, self)
         self.last_called_on = timezone.now()
         self.save()
 
     def send_message(self, chat_id, text, **kwargs):
-        return self.telegram_bot.send_message(chat_id=chat_id, text=text, **kwargs)
+        return self.telegram_bot.send_message(chat_id=chat_id,
+                                              text=text,
+                                              **kwargs)

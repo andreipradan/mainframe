@@ -85,20 +85,17 @@ def extract_payments(pages):
         header = "Balanta Debit Credit Detalii tranzactie Data"
         contents = [
             item
-            for item in (
-                page.extract_text()
-                .split(header)[1]
-                .strip()
-                .split("\n \n")[0]
-                .replace("Roxana Petria", "")
-            ).split("\n")
+            for item in (page.extract_text().split(header)[1].strip().split(
+                "\n \n")[0].replace("Roxana Petria", "")).split("\n")
             if "Alocare fonduri" not in item and item
         ]
-        payments.extend([extract_payment(payment) for payment in chunks(contents, 4)])
+        payments.extend(
+            [extract_payment(payment) for payment in chunks(contents, 4)])
     return payments
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
@@ -113,7 +110,8 @@ class Command(BaseCommand):
             reader = PdfReader(file_name)
             payments = extract_payments(reader.pages)
             try:
-                results = Payment.objects.bulk_create(payments, ignore_conflicts=True)
+                results = Payment.objects.bulk_create(payments,
+                                                      ignore_conflicts=True)
             except ValidationError as e:
                 logger.error(str(e))
                 file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
@@ -135,7 +133,8 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error(msg)
 
-        remove_crons_for_command(Cron(command="import_payments", is_management=True))
+        remove_crons_for_command(
+            Cron(command="import_payments", is_management=True))
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS(msg))
         total and cron.delay("backup_finance --model=Payment")

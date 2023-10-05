@@ -6,7 +6,6 @@ from django.conf import settings
 from django.utils import timezone
 from huey.contrib.djhuey import HUEY
 from huey.signals import SIGNAL_ERROR
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -33,7 +32,8 @@ def log_status(task_type, **kwargs):
 def load(file_name):
     file_name = f"{file_name}.pkl"
     if settings.ENV != "local":
-        file = download_blob_into_memory(file_name, "GOOGLE_STORAGE_MODEL_BUCKET")
+        file = download_blob_into_memory(file_name,
+                                         "GOOGLE_STORAGE_MODEL_BUCKET")
         return pickle.loads(file)
     model_path = f"{settings.BASE_DIR}/finance/data/model"
     with open(f"{model_path}/{file_name}", "rb") as file:
@@ -54,6 +54,7 @@ def save(item, item_type, prefix, logger):
 
 
 class SKLearn:
+
     @classmethod
     def predict(cls, df) -> django.db.models.QuerySet:
         model, vectorizer = load("latest_model"), load("latest_vectorizer")

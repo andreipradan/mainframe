@@ -11,19 +11,21 @@ NULLABLE_KWARGS = {"blank": True, "null": True}
 
 def get_default_credit():
     code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
-    return Credit.objects.select_related("account").get(account__client_code=code)
+    return Credit.objects.select_related("account").get(
+        account__client_code=code)
 
 
 def validate_amortization_table(value):
     if isinstance(value, list):
         raise ValidationError("amortization_table must be a list")
 
-    month_fields = {"date", "insurance", "interest", "principal", "remaining", "total"}
+    month_fields = {
+        "date", "insurance", "interest", "principal", "remaining", "total"
+    }
     if not all(set(month) == month_fields for month in value):
         raise ValidationError(
             "amortization_table contains items that do not have "
-            f"these exact keys: {month_fields}"
-        )
+            f"these exact keys: {month_fields}")
 
 
 class Account(TimeStampedModel):
@@ -46,7 +48,7 @@ class Account(TimeStampedModel):
     )
 
     class Meta:
-        ordering = ("-updated_at",)
+        ordering = ("-updated_at", )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.number})"
@@ -95,11 +97,12 @@ class Payment(TimeStampedModel):
     total = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
-        ordering = ("-date",)
+        ordering = ("-date", )
         constraints = (
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_credit_date_is_prepayment_reference_total_uniq",
-                fields=("credit", "date", "is_prepayment", "reference", "total"),
+                fields=("credit", "date", "is_prepayment", "reference",
+                        "total"),
             ),
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_credit_date_is_prepayment_total_uniq",
@@ -113,14 +116,15 @@ class Payment(TimeStampedModel):
 
 
 class Timetable(TimeStampedModel):
-    amortization_table = models.JSONField(validators=[validate_amortization_table])
+    amortization_table = models.JSONField(
+        validators=[validate_amortization_table])
     credit = models.ForeignKey(on_delete=models.CASCADE, to="finance.Credit")
     date = models.DateField()
     ircc = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
     margin = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
-        ordering = ("-date",)
+        ordering = ("-date", )
 
     @property
     def interest(self):

@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytz
 import telegram
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from api.bots.webhooks.shared import BaseInlines
 from clients.lights import LightsClient, LightsException
@@ -14,8 +14,10 @@ logger.addHandler(MainframeHandler())
 
 
 class Inlines(BaseInlines):
+
     @classmethod
     def get_markup(cls, status=None):
+
         def verbose_light(light):
             props = light["capabilities"]
             name = props["name"] or light["ip"]
@@ -23,30 +25,18 @@ class Inlines(BaseInlines):
             return f"{status_icon} {name}"
 
         items = LightsClient.get_bulbs()
-        return InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        "✈️ Set as Away" if status == "home" else "🏠Set as Home",
-                        callback_data=f"toggle-home {'away' if status == 'home' else 'home'}",
-                    ),
-                ]
-            ]
-            + [
-                [
-                    InlineKeyboardButton(
-                        verbose_light(item), callback_data=f"toggle {item['ip']}"
-                    )
-                ]
-                for item in items
-            ]
-            + [
-                [
-                    InlineKeyboardButton("✅", callback_data="end"),
-                    InlineKeyboardButton("♻", callback_data="refresh"),
-                ]
-            ]
-        )
+        return InlineKeyboardMarkup([[
+            InlineKeyboardButton(
+                "✈️ Set as Away" if status == "home" else "🏠Set as Home",
+                callback_data=f"toggle-home {'away' if status == 'home' else 'home'}",
+            ),
+        ]] + [[
+            InlineKeyboardButton(verbose_light(item),
+                                 callback_data=f"toggle {item['ip']}")
+        ] for item in items] + [[
+            InlineKeyboardButton("✅", callback_data="end"),
+            InlineKeyboardButton("♻", callback_data="refresh"),
+        ]])
 
     @classmethod
     def refresh(cls, update, state=None):
@@ -81,7 +71,8 @@ class Inlines(BaseInlines):
 
     @classmethod
     def toggle_home(cls, update, bot, value):
-        last_updated = datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+        last_updated = datetime.now().astimezone(
+            pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
         state = {"status": value, "last_updated": last_updated}
         bot.additional_data["state"] = state
         bot.save()
@@ -100,8 +91,7 @@ def call(data, bot):
             toggle_components = data.split(" ")
             if not len(toggle_components) == 2:
                 return logger.error(
-                    f"Invalid parameters for toggle: {toggle_components}"
-                )
+                    f"Invalid parameters for toggle: {toggle_components}")
             cmd, state = data.split(" ")
             if cmd == "toggle-home":
                 return Inlines.toggle_home(update, bot, state)
@@ -143,8 +133,7 @@ def call(data, bot):
             ).to_json()
 
         if not (status := state.get("status")) or not (
-            last_updated := state.get("last_updated")
-        ):
+                last_updated := state.get("last_updated")):
             return update.message.reply_text(
                 f"{greeting_message}\nState: invalid",
                 reply_markup=Inlines.get_markup(),

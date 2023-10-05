@@ -4,7 +4,6 @@ import random
 import six
 import telegram
 from django.conf import settings
-
 from google.api_core.exceptions import GoogleAPICallError
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
@@ -52,7 +51,8 @@ def call(data, instance: Bot):
         return method(update, *args)
 
     message = update.message
-    if not message or not getattr(message, "chat", None) or not message.chat.id:
+    if not message or not getattr(message, "chat",
+                                  None) or not message.chat.id:
         return logger.info("No message or chat: %s", update.to_dict())
 
     if message.new_chat_title:
@@ -101,10 +101,12 @@ def call(data, instance: Bot):
         return reply(update, f"Saved {doc_type}: {file_name}")
 
     if not message.text:
-        return logger.info("No message text: %s. From: %s", update.to_dict(), user)
+        return logger.info("No message text: %s. From: %s", update.to_dict(),
+                           user)
 
     if not message.text.startswith("/"):
-        return logger.warning("Invalid command: '%s'. From: %s", message.text, user)
+        return logger.warning("Invalid command: '%s'. From: %s", message.text,
+                              user)
 
     cmd, *args = message.text[1:].split(" ")
     if "bot_command" in [e.type for e in update.message.entities]:
@@ -116,8 +118,7 @@ def call(data, instance: Bot):
     if cmd == "earthquake":
         earthquake = instance.additional_data.get("earthquake")
         if not earthquake or not (
-            latest := Earthquake.objects.order_by("-timestamp").first()
-        ):
+                latest := Earthquake.objects.order_by("-timestamp").first()):
             return reply(update, text="No earthquakes stored")
         if len(args) == 2 and args[0] == "set_min_magnitude":
             instance.additional_data["earthquake"]["min_magnitude"] = args[1]
@@ -140,9 +141,11 @@ def call(data, instance: Bot):
 
     if cmd == "randomize":
         if len(args) not in range(2, 51):
-            return reply(update, "Must contain a list of 2-50 items separated by space")
+            return reply(
+                update, "Must contain a list of 2-50 items separated by space")
         random.shuffle(args)
-        return reply(update, "\n".join(f"{i+1}. {item}" for i, item in enumerate(args)))
+        return reply(
+            update, "\n".join(f"{i+1}. {item}" for i, item in enumerate(args)))
 
     if cmd == "save":
         if not update.message.reply_to_message:
@@ -150,17 +153,14 @@ def call(data, instance: Bot):
                 update,
                 text="This command must be sent as a reply to the message you want to save",
             )
-        if not (
-            update.message.reply_to_message.text
-            or update.message.reply_to_message.new_chat_title
-        ):
+        if not (update.message.reply_to_message.text
+                or update.message.reply_to_message.new_chat_title):
             return reply(update, text="No text found to save.")
 
         save_to_db(
             update.message.reply_to_message,
             text_override=bot.get_chat(update.message.chat_id).description
-            if update.message.reply_to_message.new_chat_title
-            else None,
+            if update.message.reply_to_message.new_chat_title else None,
         )
         return reply(update, text="Saved ✔")
 
@@ -214,33 +214,35 @@ def translate_text(text):
     # Text can also be a sequence of strings, in which case this method
     # will return a sequence of results for each text.
     try:
-        result = translate_client.translate(
-            text, target_language=target, format_="text"
-        )
+        result = translate_client.translate(text,
+                                            target_language=target,
+                                            format_="text")
     except (GoogleAPICallError, BadRequest) as e:
         logger.error(e)
         return "Something went wrong. For usage and examples type '/translate help'."
 
-    return (
-        "💬 Translate\n"
-        f"[{result['detectedSourceLanguage']}] {result['translatedText']}"
-    )
+    return ("💬 Translate\n"
+            f"[{result['detectedSourceLanguage']}] {result['translatedText']}")
 
 
 def save_to_db(message, text_override=None):
     author = message.from_user.to_dict()
     author["full_name"] = message.from_user.full_name
-    database.get_collection("saved-messages").insert_one(
-        {
-            "author": author,
-            "chat_id": message.chat_id,
-            "chat_name": message.chat.title,
-            "date": message.date,
-            "message": {
-                "id": message.message_id,
-                "text": text_override or message.text,
-            },
-            "saved_at": message.date.utcnow(),
-            "saved_by": message.from_user.to_dict(),
-        }
-    )
+    database.get_collection("saved-messages").insert_one({
+        "author":
+        author,
+        "chat_id":
+        message.chat_id,
+        "chat_name":
+        message.chat.title,
+        "date":
+        message.date,
+        "message": {
+            "id": message.message_id,
+            "text": text_override or message.text,
+        },
+        "saved_at":
+        message.date.utcnow(),
+        "saved_by":
+        message.from_user.to_dict(),
+    })

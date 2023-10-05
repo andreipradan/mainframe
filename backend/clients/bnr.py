@@ -36,8 +36,7 @@ def fetch_exchange_rates(logger):
             except decimal.InvalidOperation:
                 logger.error(
                     f"Invalid rate found for {currency}-{orig_currency} "
-                    f"on {date} from {source}: {tag.text}"
-                )
+                    f"on {date} from {source}: {tag.text}")
                 continue
             if multiplier := tag.attrs.get("multiplier"):
                 value /= Decimal(multiplier)
@@ -47,8 +46,7 @@ def fetch_exchange_rates(logger):
                     source=source,
                     symbol=f"{currency}{orig_currency}",
                     value=value,
-                )
-            )
+                ))
 
     rates = ExchangeRate.objects.bulk_create(
         rates,

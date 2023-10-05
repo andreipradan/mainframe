@@ -35,7 +35,13 @@ def get_collection(name="matches"):
     return MongoClient(host=url)[env("CHALLONGE_DATABASE_NAME")][name]
 
 
-def get_many(collection, order_by=None, how=-1, silent=True, skip=0, limit=0, **kwargs):
+def get_many(collection,
+             order_by=None,
+             how=-1,
+             silent=True,
+             skip=0,
+             limit=0,
+             **kwargs):
     result = get_collection(collection).find(kwargs, skip=skip, limit=limit)
     if order_by:
         return result.sort(order_by, how)
@@ -68,7 +74,9 @@ def set_stats(stats, commit=True, collection="matches", **filter_kwargs):
 
     update_params = {
         "filter": filter_kwargs,
-        "update": {"$set": stats},
+        "update": {
+            "$set": stats
+        },
         "upsert": True,
     }
     if not commit:

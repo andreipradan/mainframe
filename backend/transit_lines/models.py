@@ -20,19 +20,19 @@ class TransitLine(TimeStampedModel):
     )
     name = models.CharField(max_length=16, unique=True)
     line_type = models.CharField(choices=LINE_TYPE_CHOICES, max_length=16)
-    car_type = models.IntegerField(
-        choices=(
-            (CAR_TYPE_BUS, "Bus"),
-            (CAR_TYPE_MINIBUS, "Minibus"),
-            (CAR_TYPE_TRAM, "Tram"),
-            (CAR_TYPE_TROLLEYBUS, "Trolleybus"),
-        )
-    )
+    car_type = models.IntegerField(choices=(
+        (CAR_TYPE_BUS, "Bus"),
+        (CAR_TYPE_MINIBUS, "Minibus"),
+        (CAR_TYPE_TRAM, "Tram"),
+        (CAR_TYPE_TROLLEYBUS, "Trolleybus"),
+    ))
     has_bike_rack = models.BooleanField(default=False)
 
     terminal1 = models.CharField(max_length=32)
     terminal2 = models.CharField(max_length=32)
-    favorite_of = ArrayField(models.CharField(max_length=32), default=list, blank=True)
+    favorite_of = ArrayField(models.CharField(max_length=32),
+                             default=list,
+                             blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.terminal1} - {self.terminal2})"
@@ -56,9 +56,9 @@ class Schedule(TimeStampedModel):
     OCCURRENCE_S = "s"
     OCCURRENCE_D = "d"
 
-    line = models.ForeignKey(
-        to="TransitLine", on_delete=models.CASCADE, related_name="schedules"
-    )
+    line = models.ForeignKey(to="TransitLine",
+                             on_delete=models.CASCADE,
+                             related_name="schedules")
     occurrence = models.CharField(
         max_length=2,
         choices=(
@@ -67,8 +67,10 @@ class Schedule(TimeStampedModel):
             (OCCURRENCE_D, "Sunday"),
         ),
     )
-    terminal1_schedule = ArrayField(models.CharField(max_length=10), default=list)
-    terminal2_schedule = ArrayField(models.CharField(max_length=10), default=list)
+    terminal1_schedule = ArrayField(models.CharField(max_length=10),
+                                    default=list)
+    terminal2_schedule = ArrayField(models.CharField(max_length=10),
+                                    default=list)
 
     schedule_start_date = models.DateField(blank=True, null=True)
 

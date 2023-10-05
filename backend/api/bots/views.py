@@ -3,7 +3,7 @@ import logging
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from api.bots.serializers import BotSerializer
 from bots.models import Bot
@@ -16,7 +16,7 @@ logger.addHandler(MainframeHandler())
 class BotViewSet(viewsets.ModelViewSet):
     queryset = Bot.objects.order_by("full_name")
     serializer_class = BotSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
 
     def get_permissions(self):
         if self.action == "webhook":
@@ -34,19 +34,15 @@ class BotViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def webhook(self, request, **kwargs):
         instance = self.get_object()
-        if not (
-            user := request.data.get(
-                "message", request.data.get("callback_query", {})
-            ).get("from", {})
-        ):
+        if not (user := request.data.get(
+                "message", request.data.get("callback_query", {})).get(
+                    "from", {})):
             logger.error("No user found in webhook data")
             return JsonResponse(data={"status": "404"})
-        if not any(
-            (
+        if not any((
                 user.get("username") in instance.whitelist,
                 str(user.get("id")) in instance.whitelist,
-            )
-        ):
+        )):
             logger.error("User not whitelisted")
             return JsonResponse(data={"status": "404"})
 

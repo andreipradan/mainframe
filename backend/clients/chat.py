@@ -5,7 +5,12 @@ import dotenv
 import telegram
 
 
-def edit_message(bot, chat_id, message_id, text, reply_markup=None, parse_mode="HTML"):
+def edit_message(bot,
+                 chat_id,
+                 message_id,
+                 text,
+                 reply_markup=None,
+                 parse_mode="HTML"):
     try:
         return bot.edit_message_text(
             chat_id=chat_id,

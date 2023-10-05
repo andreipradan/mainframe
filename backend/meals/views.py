@@ -15,7 +15,7 @@ class MealsPagination(PageNumberPagination):
 class MealViewSet(viewsets.ModelViewSet):
     queryset = Meal.objects.order_by("-date", "type")
     serializer_class = MealSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
     pagination_class = MealsPagination
 
     def get_queryset(self):

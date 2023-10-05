@@ -29,7 +29,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 DEBUG = int(env("DEBUG", default=0))
 PYTHON_PATH = env("PYTHON_PATH", default=None)
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -96,16 +95,20 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME":
+        "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -147,12 +150,13 @@ AUTH_USER_MODEL = "api_user.User"
 # ##################################################################### #
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "api.authentication.backends.ActiveSessionAuthentication",
-    ),
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
-    "PAGE_SIZE": 25,
+    "DEFAULT_AUTHENTICATION_CLASSES":
+    ("api.authentication.backends.ActiveSessionAuthentication", ),
+    "DEFAULT_PAGINATION_CLASS":
+    "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer", ),
+    "PAGE_SIZE":
+    25,
 }
 
 # ##################################################################### #
@@ -180,8 +184,14 @@ LOGGING = {
         },
     },
     "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
-        "mainframe": {"class": "clients.logs.MainframeHandler", "formatter": "verbose"},
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose"
+        },
+        "mainframe": {
+            "class": "clients.logs.MainframeHandler",
+            "formatter": "verbose"
+        },
     },
     "loggers": {
         "django": {
@@ -197,9 +207,8 @@ LOGGING = {
     },
 }
 
-DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
-    "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
-)
+DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env("DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE",
+                                         default=None)
 
 if (ENV := env("ENV", default=None)) in ["local", "prod"]:
     DATABASES = {
@@ -235,7 +244,6 @@ elif ENV in ["ci", "test"]:
     }
 else:
     raise ValueError(f"Invalid ENV variable set: {ENV}")
-
 
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey's implementation to use.

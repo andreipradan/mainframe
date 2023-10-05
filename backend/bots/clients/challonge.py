@@ -21,7 +21,8 @@ config = environ.Env()
 def convert_to_timezone(datetime_string, tz="UTC"):
     if datetime_string:
         datetime_string = datetime_string.replace("Z", "+00:00")
-        dt = datetime.fromisoformat(datetime_string).astimezone(pytz.timezone(tz))
+        dt = datetime.fromisoformat(datetime_string).astimezone(
+            pytz.timezone(tz))
         if tz == "UTC":
             return dt.isoformat()
         return dt.strftime("%Y-%m-%d %H:%M")
@@ -31,7 +32,7 @@ class TournamentClient:
     BASE_URL = "https://api.challonge.com/v1/tournaments"
     TOURNAMENT_NAME = config("CHALLONGE_DATABASE_NAME").replace("-", "")
     _id = re.sub(r"\W+", "", TOURNAMENT_NAME).lower()
-    excluded_fields = ("loser_id",)
+    excluded_fields = ("loser_id", )
 
     def __init__(self, token, data=None):
         self._data = data
@@ -56,9 +57,8 @@ class TournamentClient:
     def _request(cls, url, method="GET", data=None):
         logger.info("[%s] - %s", method.upper(), url)
 
-        basic = requests.auth.HTTPBasicAuth(
-            config("CHALLONGE_USERNAME"), config("CHALLONGE_API_KEY")
-        )
+        basic = requests.auth.HTTPBasicAuth(config("CHALLONGE_USERNAME"),
+                                            config("CHALLONGE_API_KEY"))
         response = requests.request(
             method=method,
             url=url,
@@ -75,8 +75,10 @@ class TournamentClient:
         except requests.exceptions.JSONDecodeError:
             error = response.reason
 
-        logger.exception("[%s] [%d] Error: %s", cls._id, response.status_code, error)
-        raise requests.exceptions.HTTPError(f"[{response.status_code}] {error}")
+        logger.exception("[%s] [%d] Error: %s", cls._id, response.status_code,
+                         error)
+        raise requests.exceptions.HTTPError(
+            f"[{response.status_code}] {error}")
 
     @classmethod
     def create(cls, token, **params):
@@ -88,7 +90,10 @@ class TournamentClient:
         data = cls._request(
             url=f"{cls.BASE_URL}.json",
             method="POST",
-            data={f"tournament[{key}]": value for key, value in params.items()},
+            data={
+                f"tournament[{key}]": value
+                for key, value in params.items()
+            },
         )["tournament"]
         return cls(token=token, data=data)
 
@@ -130,12 +135,9 @@ class TournamentClient:
         }
 
     def add_participants(self, **kwargs):
-        data = [
-            (f"participants[][{key if key != 'id' else 'misc'}]", value)
-            for sublist in database.get_many("participants", **kwargs)
-            for key, value in sorted(sublist.items())
-            if key != "_id"
-        ]
+        data = [(f"participants[][{key if key != 'id' else 'misc'}]", value)
+                for sublist in database.get_many("participants", **kwargs)
+                for key, value in sorted(sublist.items()) if key != "_id"]
         return self._request(
             method="POST",
             url=f"{self.url}/participants/bulk_add.json",
@@ -143,7 +145,8 @@ class TournamentClient:
         )
 
     def clear_participants(self):
-        return self._request(method="DELETE", url=f"{self.url}/participants/clear.json")
+        return self._request(method="DELETE",
+                             url=f"{self.url}/participants/clear.json")
 
     def destroy(self):
         logger.warning("Destroying tournament %s", self._id)
@@ -168,8 +171,7 @@ class TournamentClient:
 
     def get_player_open_match(self, player_id):
         open_matches = [
-            m
-            for m in self.open_matches
+            m for m in self.open_matches
             if player_id in [m["player1_id"], m["player2_id"]]
         ]
         return open_matches[0] if open_matches else None
@@ -190,15 +192,17 @@ class TournamentClient:
         if update_field == "scores_csv":
             return f"Score: {update_value.replace('-', ':')}"
         if update_field in [
-            "underway_at",
-            "started_at",
-            "completed_at",
-            "started_at",
-            "scheduled_time",
+                "underway_at",
+                "started_at",
+                "completed_at",
+                "started_at",
+                "scheduled_time",
         ]:
             verbose = convert_to_timezone(update_value, TIME_ZONE)
             return f"{field_verbose}: {verbose}"
-        if update_field in ["loser_id", "winner_id", "player1_id", "player2_id"]:
+        if update_field in [
+                "loser_id", "winner_id", "player1_id", "player2_id"
+        ]:
             field = update_field.split("_")[0].title()
             emoji = "💪" if update_field == "winner_id" else ""
             return f"{field}: {self.get_player_name(update_value)}{emoji}"
@@ -207,7 +211,8 @@ class TournamentClient:
     def parse_update(self, update):
         match_id = update._filter["id"]
         match_updates = {
-            k: v for k, v in update._doc["$set"].items() if k != "updated_at"
+            k: v
+            for k, v in update._doc["$set"].items() if k != "updated_at"
         }
         match_updates = [
             f" {self.get_update_verbose(*item)}"
@@ -224,8 +229,8 @@ class TournamentClient:
     def remove_participant(self, telegram_id):
         participant_id = self.get_player_by_telegram_id(telegram_id)["id"]
         return self._request(
-            url=f"{self.url}/participants/{participant_id}.json", method="DELETE"
-        )
+            url=f"{self.url}/participants/{participant_id}.json",
+            method="DELETE")
 
     def start(self):
         return self._request(url=f"{self.url}/start.json", method="POST")
@@ -234,11 +239,9 @@ class TournamentClient:
         data = {"match[scores_csv]": score}
         scores = score.split("-")
         if len(scores) != 2 or not all((s.isdigit() for s in scores)):
-            return (
-                f'Invalid score: "{score}"\n'
-                f"Format: /score [score1]-[score2]\n"
-                f"e.g. /score 1-2"
-            )
+            return (f'Invalid score: "{score}"\n'
+                    f"Format: /score [score1]-[score2]\n"
+                    f"e.g. /score 1-2")
 
         footer = self.get_footer()
         player = self.get_player_by_telegram_id(player_id)
@@ -254,11 +257,9 @@ class TournamentClient:
             return f"No changes. Pre-existing score ({score})"
 
         if "3" in scores:
-            data["match[winner_id]"] = (
-                self.matches[match_id]["player1_id"]
-                if scores[0] == "3"
-                else self.matches[match_id]["player2_id"]
-            )
+            data["match[winner_id]"] = (self.matches[match_id]["player1_id"]
+                                        if scores[0] == "3" else
+                                        self.matches[match_id]["player2_id"])
 
         self._request(
             url=f"{self.url}/matches/{match_id}.json",

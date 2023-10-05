@@ -15,6 +15,7 @@ from crons.models import Cron
 
 
 class Command(BaseCommand):
+
     def add_arguments(self, parser):
         parser.add_argument("--model", type=str, default="")
 
@@ -41,5 +42,4 @@ class Command(BaseCommand):
 
         cmd_suffix = f" --model={model}" if model else ""
         remove_crons_for_command(
-            Cron(command=f"backup_finance{cmd_suffix}", is_management=True)
-        )
+            Cron(command=f"backup_finance{cmd_suffix}", is_management=True))

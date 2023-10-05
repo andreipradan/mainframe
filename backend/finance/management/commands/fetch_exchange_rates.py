@@ -1,13 +1,15 @@
 import logging
+
 from django.core.management.base import BaseCommand, CommandError
 
 from clients import healthchecks
-from clients.logs import ManagementCommandsHandler
-from clients.bnr import fetch_exchange_rates, FetchExchangeRatesException
+from clients.bnr import FetchExchangeRatesException, fetch_exchange_rates
 from clients.chat import send_telegram_message
+from clients.logs import ManagementCommandsHandler
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())

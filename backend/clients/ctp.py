@@ -1,15 +1,15 @@
 import asyncio
 import csv
+import logging
 import re
 from datetime import datetime
+from typing import List, Optional
 
 import aiohttp
-import logging
-from typing import List, Optional
 
 from clients import scraper
 from clients.logs import MainframeHandler
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -35,8 +35,7 @@ def extract_terminals(route, separators):
         if cj in route:
             return cj, route.replace(cj, "").split("-")[1]
         raise FetchTransitLinesException(
-            f"Couldn't extract terminals from route: {route}"
-        )
+            f"Couldn't extract terminals from route: {route}")
 
     try:
         terminal1, terminal2 = route.split(separators.pop())
@@ -49,9 +48,9 @@ def extract_terminals(route, separators):
 async def fetch(session, sem, line, occ, url):
     async with sem:
         try:
-            async with session.get(
-                url, headers={"Referer": "https://ctpcj.ro/"}
-            ) as response:
+            async with session.get(url,
+                                   headers={"Referer":
+                                            "https://ctpcj.ro/"}) as response:
                 if response.status != 200:
                     msg = f"Unexpected status for {url}. Status: {response.status}"
                     if response.status == 404:
@@ -69,9 +68,10 @@ async def fetch_many(urls):
     async with aiohttp.ClientSession() as session:
         return map(
             parse_schedule,
-            await asyncio.gather(
-                *[fetch(session, sem, line, occ, url) for (line, occ, url) in urls]
-            ),
+            await asyncio.gather(*[
+                fetch(session, sem, line, occ, url)
+                for (line, occ, url) in urls
+            ]),
         )
 
 
@@ -84,9 +84,8 @@ def parse_schedule(args) -> Optional[Schedule]:
     rows = [row.strip() for row in response.split("\n") if row.strip()]
     date_row = rows[2].split(",")[1]
     try:
-        schedule_start_date = (
-            datetime.strptime(date_row, "%d.%m.%Y") if date_row else None
-        )
+        schedule_start_date = (datetime.strptime(date_row, "%d.%m.%Y")
+                               if date_row else None)
     except ValueError:
         if date_row == "20.02.20232":
             schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y2")
@@ -119,8 +118,7 @@ class CTPClient:
         choices = [c[0] for c in TransitLine.LINE_TYPE_CHOICES]
         if line_type not in choices:
             raise FetchTransitLinesException(
-                f"Invalid line_type: {line_type}. Must be one of {choices}"
-            )
+                f"Invalid line_type: {line_type}. Must be one of {choices}")
         url = cls.LIST_URL.format(
             f"{line_type}-line{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
         )
@@ -129,16 +127,15 @@ class CTPClient:
             raise FetchTransitLinesException(soup)
 
         lines = []
-        for item in soup.find_all(
-            "div", {"class": "element", "data-title": re.compile("Line")}
-        ):
-            name = (
-                item.find("h6", {"itemprop": "name"})
-                .text.strip()
-                .replace("Line ", "")
-                .replace(" Line", "")
-                .replace("Cora ", "")
-            )
+        for item in soup.find_all("div", {
+                "class": "element",
+                "data-title": re.compile("Line")
+        }):
+            name = (item.find("h6", {
+                "itemprop": "name"
+            }).text.strip().replace("Line ",
+                                    "").replace(" Line",
+                                                "").replace("Cora ", ""))
             route = item.find("div", {"class": "ruta"}).text.strip()
             terminal1, terminal2 = extract_terminals(route, [" - ", "-", "–"])
             transit_line = TransitLine(
@@ -161,30 +158,27 @@ class CTPClient:
         return lines
 
     @classmethod
-    def fetch_schedules(
-        cls, lines: List[TransitLine] = None, occurrence=None, commit=True
-    ) -> List[Schedule]:
+    def fetch_schedules(cls,
+                        lines: List[TransitLine] = None,
+                        occurrence=None,
+                        commit=True) -> List[Schedule]:
         lines = lines or TransitLine.objects.all()
         schedules = []
         for line in lines:
             if occurrence:
-                schedules.append(
-                    (
-                        line,
-                        occurrence,
-                        cls.DETAIL_URL.format(line.name.upper(), occurrence.lower()),
-                    )
-                )
+                schedules.append((
+                    line,
+                    occurrence,
+                    cls.DETAIL_URL.format(line.name.upper(),
+                                          occurrence.lower()),
+                ))
             else:
-                schedules.extend(
-                    [
-                        (line, occ, cls.DETAIL_URL.format(line.name.upper(), occ))
-                        for occ in ["lv", "s", "d"]
-                    ]
-                )
-        logger.info(
-            "Fetching %d schedules for %d transit lines", len(schedules), len(lines)
-        )
+                schedules.extend([
+                    (line, occ, cls.DETAIL_URL.format(line.name.upper(), occ))
+                    for occ in ["lv", "s", "d"]
+                ])
+        logger.info("Fetching %d schedules for %d transit lines",
+                    len(schedules), len(lines))
         schedules = [s for s in asyncio.run(fetch_many(schedules)) if s]
         if commit:
             Schedule.objects.bulk_create(

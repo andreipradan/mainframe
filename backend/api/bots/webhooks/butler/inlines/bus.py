@@ -1,17 +1,17 @@
 import logging
 import math
+from datetime import datetime
 from typing import List
 
 import pytz
-from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines, chunks
 from clients.chat import edit_message
-from datetime import datetime
-
 from clients.ctp import CTPClient
 from clients.logs import MainframeHandler
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -38,11 +38,11 @@ def parse_schedule(schedule: Schedule, now: str, full_details=False):
         if terminal1_times:
             if (next1_index := terminal1_times.index(terminal1_next_time)) < 2:
                 next1_index = 2
-            terminal1_times = terminal1_times[next1_index - 2 : next1_index + 2]
+            terminal1_times = terminal1_times[next1_index - 2:next1_index + 2]
         if terminal2_times:
             if (next2_index := terminal2_times.index(terminal2_next_time)) < 2:
                 next2_index = 2
-            terminal2_times = terminal2_times[next2_index - 2 : next2_index + 2]
+            terminal2_times = terminal2_times[next2_index - 2:next2_index + 2]
 
     return (
         f"<b>[{schedule.line.name}]{'[🚲]' if schedule.line.has_bike_rack else ''} {start1} - {start2}</b>\n"
@@ -74,25 +74,27 @@ class BusInline(BaseInlines):
         navigation_buttons = [[Button("✅", callback_data="end")]]
 
         navigation_buttons[0].insert(
-            0, Button("♻️", callback_data=f"bus sync {line_type}")
-        )
+            0, Button("♻️", callback_data=f"bus sync {line_type}"))
         if line_type != "favorites":
-            line_type_buttons[0].append(Button("⭐️", callback_data="bus start"))
+            line_type_buttons[0].append(Button("⭐️",
+                                               callback_data="bus start"))
         if line_type != TransitLine.LINE_TYPE_URBAN:
             line_type_buttons[0].append(
-                Button("🚍", callback_data=f"bus start {TransitLine.LINE_TYPE_URBAN}")
-            )
+                Button(
+                    "🚍",
+                    callback_data=f"bus start {TransitLine.LINE_TYPE_URBAN}"))
         if line_type != TransitLine.LINE_TYPE_EXPRESS:
             line_type_buttons[0].append(
-                Button("🚇", callback_data=f"bus start {TransitLine.LINE_TYPE_EXPRESS}")
+                Button(
+                    "🚇",
+                    callback_data=f"bus start {TransitLine.LINE_TYPE_EXPRESS}")
             )
         if line_type != TransitLine.LINE_TYPE_METROPOLITAN:
             line_type_buttons[0].append(
                 Button(
                     "Ⓜ️",
                     callback_data=f"bus start {TransitLine.LINE_TYPE_METROPOLITAN}",
-                )
-            )
+                ))
 
         if count > cls.PER_PAGE:
             navigation_buttons[0].insert(
@@ -106,23 +108,15 @@ class BusInline(BaseInlines):
                 Button(
                     "👉",
                     callback_data=f"bus start {line_type} {page + 1 if page != last_page else 1}",
-                )
-            )
+                ))
 
-        return Keyboard(
-            [
-                [
-                    Button(
-                        f"{line.name}{' 🚲' if line.has_bike_rack else ''}",
-                        callback_data=f"bus fetch {line.name} {line_type} {page}",
-                    )
-                    for line in chunk
-                ]
-                for chunk in chunks(lines, 4)
-            ]
-            + line_type_buttons
-            + navigation_buttons
-        )
+        return Keyboard([[
+            Button(
+                f"{line.name}{' 🚲' if line.has_bike_rack else ''}",
+                callback_data=f"bus fetch {line.name} {line_type} {page}",
+            ) for line in chunk
+        ] for chunk in chunks(lines, 4)] + line_type_buttons +
+            navigation_buttons)
 
     @classmethod
     def get_bottom_markup(cls, line_type, page, line_name, full_details):
@@ -172,9 +166,9 @@ class BusInline(BaseInlines):
         message = update.callback_query.message
         try:
             schedule = Schedule.objects.select_related("line").get(
-                line__name=line_name.upper(), occurrence=day
-            )
-            text = parse_schedule(schedule, now.strftime("%H:%M"), full_details)
+                line__name=line_name.upper(), occurrence=day)
+            text = parse_schedule(schedule, now.strftime("%H:%M"),
+                                  full_details)
         except Schedule.DoesNotExist:
             text = f"Scheduled for {line_name} not found"
         return edit_message(
@@ -182,18 +176,18 @@ class BusInline(BaseInlines):
             message.chat_id,
             message.message_id,
             text=text,
-            reply_markup=cls.get_bottom_markup(
-                line_type, int(page), line_name, full_details
-            ),
+            reply_markup=cls.get_bottom_markup(line_type, int(page), line_name,
+                                               full_details),
         )
 
     @classmethod
-    def start(cls, update, line_type="favorites", page=1, override_message=None):
-        user = (
-            update.callback_query.from_user
-            if update.callback_query
-            else update.message.from_user
-        )
+    def start(cls,
+              update,
+              line_type="favorites",
+              page=1,
+              override_message=None):
+        user = (update.callback_query.from_user
+                if update.callback_query else update.message.from_user)
 
         page = int(page)
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
@@ -203,7 +197,7 @@ class BusInline(BaseInlines):
         else:
             qs = qs.filter(line_type=line_type)
 
-        lines = list(qs.order_by("name")[start : start + cls.PER_PAGE])
+        lines = list(qs.order_by("name")[start:start + cls.PER_PAGE])
         count = qs.count()
 
         last_page = math.ceil(count / cls.PER_PAGE)
@@ -233,18 +227,15 @@ class BusInline(BaseInlines):
     @classmethod
     def sync(cls, update, line_type):
         if line_type == "favorites":
-            user = (
-                update.callback_query.from_user
-                if update.callback_query
-                else update.message.from_user
-            )
+            user = (update.callback_query.from_user
+                    if update.callback_query else update.message.from_user)
             lines = list(
                 TransitLine.objects.filter(
-                    favorite_of__contains=[user.username or user.id]
-                )
-            )
+                    favorite_of__contains=[user.username or user.id]))
         else:
             lines = list(TransitLine.objects.filter(line_type=line_type))
         CTPClient.fetch_schedules(lines)
         override_message = f"Synced schedules for {len(lines)} {line_type} lines 👌"
-        return cls.start(update, line_type=line_type, override_message=override_message)
+        return cls.start(update,
+                         line_type=line_type,
+                         override_message=override_message)

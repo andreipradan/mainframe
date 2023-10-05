@@ -48,11 +48,13 @@ def set_github_hook(ngrok_url):
 
 
 class Command(BaseCommand):
+
     def handle(self, *_, **__):
         try:
             ngrok_url = get_ngrok_url()
         except ConnectionError:
-            raise CommandError("Failed to get ngrok tunnels. Is ngrok running?")
+            raise CommandError(
+                "Failed to get ngrok tunnels. Is ngrok running?")
         if not ngrok_url:
             raise CommandError("Tunnel 'mainframe' not found")
 

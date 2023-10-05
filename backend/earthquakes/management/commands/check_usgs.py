@@ -16,21 +16,19 @@ class Command(BaseEarthquakeCommand):
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 
     def add_arguments(self, parser):
-        parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
+        parser.add_argument("--minutes",
+                            type=int,
+                            help="Since how many minutes ago")
 
     def fetch(self, **options):
         since = datetime.now().astimezone(
-            pytz.timezone("Europe/Bucharest")
-        ) - timedelta(minutes=5)
+            pytz.timezone("Europe/Bucharest")) - timedelta(minutes=5)
         if options["minutes"]:
             since = datetime.now().astimezone(
-                pytz.timezone("Europe/Bucharest")
-            ) - timedelta(minutes=options["minutes"])
-        elif (
-            latest := Earthquake.objects.filter(source=Earthquake.SOURCE_USGS)
-            .order_by("-timestamp")
-            .first()
-        ):
+                pytz.timezone("Europe/Bucharest")) - timedelta(
+                    minutes=options["minutes"])
+        elif (latest := Earthquake.objects.filter(
+                source=Earthquake.SOURCE_USGS).order_by("-timestamp").first()):
             since = latest.timestamp
 
         params = {
@@ -50,7 +48,8 @@ class Command(BaseEarthquakeCommand):
         props = event["properties"]
         long, lat, depth = event["geometry"]["coordinates"]
         return Earthquake(
-            timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(pytz.utc),
+            timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(
+                pytz.utc),
             depth=depth,
             intensity=None,
             latitude=lat,
