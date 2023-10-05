@@ -4,9 +4,12 @@ import {
   setErrors,
   setLoading,
   setLoadingUsers,
+  setUser,
   updateUser,
 } from "../redux/usersSlice";
 import { handleErrors } from "./errors";
+import {toast} from "react-toastify";
+import {toastParams} from "./auth";
 
 
 class UsersApi {
@@ -20,15 +23,18 @@ class UsersApi {
   static getUser = (token, id) => dispatch => {
     dispatch(setLoadingUsers(id));
     axios
-      .get(`${base}/${id}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
+      .get(`${base}/${id}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setUser(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updateUser = (token, id, data) => dispatch => {
     dispatch(setLoadingUsers(id))
     axios
-      .patch(`${base}/${id}/`, data, )//{ headers: { Authorization: token } })
-      .then((response) => dispatch(updateUser(response.data)))
+      .patch(`${base}/${id}`, data, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(updateUser(response.data))
+        toast.success("User updated successfully!", toastParams)
+      })
       .catch((err) => handleErrors(err, dispatch, setErrors))
   }
 }

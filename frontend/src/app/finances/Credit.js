@@ -4,7 +4,6 @@ import { Bar, Doughnut } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import { ProgressBar } from "react-bootstrap";
 import { Tooltip } from "react-tooltip";
-import Alert from "react-bootstrap/Alert";
 import Marquee from "react-fast-marquee";
 import Select from "react-select";
 import "nouislider/distribute/nouislider.css";
@@ -13,14 +12,13 @@ import { FinanceApi } from "../../api/finance";
 import { calculateSum, getPercentage } from "./utils";
 import { selectStyles } from "./Categorize/EditModal";
 import ListItem from "./shared/ListItem";
+import Errors from "../shared/Errors";
 
 const Credit = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
   const overview = useSelector(state => state.credit)
-  const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
-  useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
   useEffect(() => {
     if (!overview.details) dispatch(FinanceApi.getCredit(token))
     else onChangeCurrency()
@@ -31,8 +29,6 @@ const Credit = () => {
   const latestTimetable = overview.details?.latest_timetable.amortization_table
 
   const payment = useSelector(state => state.payment)
-  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
-  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
   const saved = calculateSum(payment.results, "saved")
@@ -285,8 +281,8 @@ const Credit = () => {
         : null
       }
     </div>
-    {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
-    {paymentAlertOpen && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
+    <Errors errors={overview.errors}/>
+    <Errors errors={payment.errors}/>
 
     <div className="row">
       <div className="col-sm-12 col-lg-4 grid-margin">

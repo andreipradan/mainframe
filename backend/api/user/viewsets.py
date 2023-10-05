@@ -1,22 +1,25 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.authentication.models import ActiveSession
 from api.authentication.serializers import LoginSerializer, RegisterSerializer
 from api.user.models import User
 from api.user.serializers import UserSerializer
+from clients.chat import send_telegram_message
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.order_by("-is_staff", "-is_active", "email")
     serializer_class = UserSerializer
     permission_classes = (IsAdminUser,)
 
     def get_permissions(self):
         if self.action in ["login", "register"]:
             return [AllowAny()]
+        if self.action == "logout":
+            return [IsAuthenticated()]
         return super().get_permissions()
 
     @action(detail=False, methods=["post"])
@@ -36,11 +39,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(
-            {
-                "success": True,
-                "userID": user.id,
-                "msg": "You were successfully registered 🎉",
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        data = {"msg": "You were successfully registered 🎉"}
+        send_telegram_message(f"New mainframe user: {user.email}")
+        return Response(data=data, status=status.HTTP_201_CREATED)

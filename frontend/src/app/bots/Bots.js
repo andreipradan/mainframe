@@ -1,23 +1,21 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import BotsApi from "../../api/bots";
 import {Audio, ColorRing} from "react-loader-spinner";
 import {select} from "../../redux/botsSlice";
 import EditModal from "./components/EditModal";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../shared/Errors";
 
 
 const Bots = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {results: bots, errors, loading, loadingBots} = useSelector(state => state.bots)
-  const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {
     !bots && dispatch(BotsApi.getList(token));
   }, []);
 
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
 
   const parseURL = str => {
     if (!str) return
@@ -48,7 +46,7 @@ const Bots = () =>  {
                   <i className="mdi mdi-refresh"></i>
                 </button>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{bots.errors}</Alert>}
+              <Errors errors={errors}/>
               <div className="table-responsive">
                 <table className="table">
                   <thead>

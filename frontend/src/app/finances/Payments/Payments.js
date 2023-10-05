@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
-import Alert from "react-bootstrap/Alert";
 import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi } from "../../../api/finance";
@@ -9,6 +8,7 @@ import { selectPayment } from "../../../redux/paymentSlice";
 import PaymentEditModal from "./components/PaymentEditModal";
 import { useHistory } from "react-router-dom";
 import BottomPagination from "../../shared/BottomPagination";
+import Errors from "../../shared/Errors";
 
 const Payments = () => {
   const history = useHistory()
@@ -16,8 +16,6 @@ const Payments = () => {
   const token = useSelector((state) => state.auth.token)
 
   const payment = useSelector(state => state.payment)
-  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
-  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
   return <div>
@@ -47,7 +45,7 @@ const Payments = () => {
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
-              {paymentAlertOpen && !payment.selectedPayment && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
+              <Errors errors={payment.errors}/>
               <div className="mb-0 text-muted">Total: {payment.count}</div>
               <table className="table table-hover">
                 <thead>

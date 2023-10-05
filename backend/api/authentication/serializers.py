@@ -8,6 +8,7 @@ from rest_framework import exceptions, serializers
 
 from api.authentication.models import ActiveSession
 from api.user.models import User
+from api.user.serializers import UserSerializer
 
 
 def _generate_jwt_token(user):
@@ -56,18 +57,7 @@ class LoginSerializer(serializers.Serializer):
                 user=user, token=_generate_jwt_token(user)
             )
 
-        return {
-            "success": True,
-            "token": session.token,
-            "user": {
-                "id": user.pk,
-                "email": user.email,
-                "joined_date": user.date,
-                "last_login": session.date,
-                "name": user.name,
-                "is_staff": user.is_staff,
-            },
-        }
+        return {"token": session.token, "user": UserSerializer(user).data}
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -86,6 +76,4 @@ class RegisterSerializer(serializers.ModelSerializer):
         raise exceptions.ValidationError("Email already taken.")
 
     def create(self, validated_data):
-        return User.objects.create_user(
-            username=validated_data["email"], **validated_data
-        )
+        return User.objects.create_user(validated_data["email"], **validated_data)

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import {BallTriangle, Circles } from "react-loader-spinner";
-import Alert from "react-bootstrap/Alert";
 import CameraApi from "../../api/camera";
-import {setAlertOpen, setMessagesOpen} from "../../redux/cameraSlice";
+import { setAlertOpen, setMessagesOpen } from "../../redux/cameraSlice";
+import Errors from "../shared/Errors";
+import Alert from "react-bootstrap/Alert";
 
 export const Camera = () => {
   const dispatch = useDispatch();
@@ -66,7 +67,7 @@ export const Camera = () => {
                   </ol>
                 </nav>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => dispatch(setAlertOpen(false))}>{errors}</Alert>}
+              <Errors errors={errors} />
               {messagesOpen && <Alert variant="success" dismissible onClose={() => dispatch(setMessagesOpen(false))}>
                 {messages[0]}
                 <small className="text-muted">{messages?.[1]}</small>

@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 
-import Alert from "react-bootstrap/Alert";
 import Form from "react-bootstrap/Form";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
@@ -14,6 +13,7 @@ import { selectStyles } from "./Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
 import {Bar} from "react-chartjs-2";
 import BottomPagination from "../shared/BottomPagination";
+import Errors from "../shared/Errors";
 
 
 const ExchangeRate = () => {
@@ -23,9 +23,6 @@ const ExchangeRate = () => {
   const token = useSelector((state) => state.auth.token)
   const exchange = useSelector(state => state.exchange)
 
-  const [alertOpen, setAlertOpen] = useState(false)
-
-  useEffect(() => {setAlertOpen(!!exchange.errors)}, [exchange.errors])
   useEffect(() => {
     !exchange.results && dispatch(FinanceApi.getExchangeRates(token))
   }, [exchange.results])
@@ -122,7 +119,7 @@ const ExchangeRate = () => {
         </ol>
       </nav>
     </div>
-    {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{exchange.errors}</Alert>}
+    <Errors errors={exchange.errors}/>
 
     {
       uniqueFrom.length === 1 && uniqueTo.length === 1 &&
@@ -144,7 +141,6 @@ const ExchangeRate = () => {
       <div className="col-md-9 grid-margin">
         <div className="card">
           <div className="card-body">
-            {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{exchange.errors}</Alert>}
             <div className="table-responsive">
               <div className="mb-0 text-muted">Total: {exchange.count}</div>
               <table className="table">

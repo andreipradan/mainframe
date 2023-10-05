@@ -2,18 +2,15 @@ import React, {useEffect, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import LogsApi from "../../api/logs";
 import { BallTriangle } from "react-loader-spinner";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../shared/Errors";
 
 
 const Logs = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {currentLog, results: logs, errors, loading, path, } = useSelector(state => state.logs)
-  const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {!logs && dispatch(LogsApi.getList(token));}, [dispatch, logs, token]);
-
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
 
   return (
     <div>
@@ -50,7 +47,7 @@ const Logs = () =>  {
                   </ol>
                 </nav>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+              <Errors errors={errors} />
               <ul className="list-arrow" style={{maxHeight: "60vh", overflowY: "scroll"}}>
                 {
                   loading

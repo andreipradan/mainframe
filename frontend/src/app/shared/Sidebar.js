@@ -100,8 +100,8 @@ const Sidebar = () => {
   return (
     <nav className="sidebar sidebar-offcanvas" id="sidebar">
       <div className="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
-        <a className="sidebar-brand brand-logo" href="/dashboard"><img src={logo} alt="logo" /></a>
-        <a className="sidebar-brand brand-logo-mini" href="/dashboard"><img src={logoMini} alt="logo" /></a>
+        <a className="sidebar-brand brand-logo" href={user?.is_staff ? "/" : "/expenses"}><img src={logo} alt="logo" /></a>
+        <a className="sidebar-brand brand-logo-mini" href={user?.is_staff ? "/" : "/expenses"}><img src={logoMini} alt="logo" /></a>
       </div>
       <ul className="nav">
         <li className="nav-item profile">
