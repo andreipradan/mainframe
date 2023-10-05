@@ -82,7 +82,7 @@ const EditModal = () => {
           <Form.Label>Command</Form.Label>
           <Form.Control
             type="text"
-            autoFocus
+            
             value={command}
             onChange={e => setCommand(e.target.value)}
           />
@@ -91,7 +91,7 @@ const EditModal = () => {
           <Form.Label>Expression</Form.Label>
           <Form.Control
             type="text"
-            autoFocus
+            
             value={expression}
             onChange={e => setExpression(e.target.value)}
           />

@@ -121,7 +121,7 @@ const EditModal = () => {
               <Form.Label>Bank</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={bank}
                 onChange={e => setBank(e.target.value)}
               />
@@ -130,7 +130,7 @@ const EditModal = () => {
               <Form.Label>Client code</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={clientCode}
                 onChange={e => setClientCode(e.target.value)}
               />
@@ -139,7 +139,7 @@ const EditModal = () => {
               <Form.Label>First name</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={firstName}
                 onChange={e => setFirstName(e.target.value)}
               />
@@ -148,7 +148,7 @@ const EditModal = () => {
               <Form.Label>Last name</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={lastName}
                 onChange={e => setLastName(e.target.value)}
               />
@@ -157,7 +157,7 @@ const EditModal = () => {
               <Form.Label>Number</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={number}
                 onChange={e => setNumber(e.target.value)}
               />
@@ -166,7 +166,7 @@ const EditModal = () => {
               <Form.Label>Type</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={type}
                 onChange={e => setType(e.target.value)}
               />
