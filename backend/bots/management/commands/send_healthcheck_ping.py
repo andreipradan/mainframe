@@ -5,7 +5,7 @@ from clients import healthchecks
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         try:
             response = healthchecks.ping()
         except HTTPError as e:

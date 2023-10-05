@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--model", type=str, default="")
 
-    def handle(self, *args, **options):
+    def handle(self, *_, **options):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
         healthchecks.ping("FINANCE_BACKUP", logger=logger)

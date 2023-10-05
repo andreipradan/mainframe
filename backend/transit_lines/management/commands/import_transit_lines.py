@@ -12,7 +12,7 @@ DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 

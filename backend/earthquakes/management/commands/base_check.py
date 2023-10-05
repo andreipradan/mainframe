@@ -43,7 +43,7 @@ class BaseEarthquakeCommand(BaseCommand):
     source = NotImplemented
     url = NotImplemented
 
-    def handle(self, *args, **options):
+    def handle(self, *_, **options):
         healthchecks.ping(self.source)
         try:
             response = self.fetch(**options)

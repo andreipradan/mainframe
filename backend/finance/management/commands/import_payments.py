@@ -99,7 +99,7 @@ def extract_payments(pages):
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 

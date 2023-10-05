@@ -233,7 +233,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--bank", type=str, required=True)
 
-    def handle(self, *args, **options):
+    def handle(self, *_, **options):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 

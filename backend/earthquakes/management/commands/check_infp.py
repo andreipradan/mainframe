@@ -22,7 +22,7 @@ class Command(BaseEarthquakeCommand):
     def handle(self, *args, **options):
         super().handle(*args, **options)
 
-    def fetch(self, **options):
+    def fetch(self, **__):
         return requests.get(self.url, timeout=30)
 
     def fetch_events(self, response):

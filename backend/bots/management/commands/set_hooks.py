@@ -48,7 +48,7 @@ def set_github_hook(ngrok_url):
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         try:
             ngrok_url = get_ngrok_url()
         except ConnectionError:
