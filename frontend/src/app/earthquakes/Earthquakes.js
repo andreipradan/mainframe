@@ -109,7 +109,7 @@ const Earthquakes = () => {
     createZoomControl(root, chart)
     const homeButton = chart.children.push(am5.Button.new(root, {
       ...defaultButtonProps,
-      scale: .75,
+      scale: 0.75,
       icon: am5.Graphics.new(root, {
         svgPath: "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8",
         fill: am5.color(0xffffff)
@@ -126,8 +126,8 @@ const Earthquakes = () => {
   const createZoomControl = (root, chart) => {
     const zoomControl = am5map.ZoomControl.new(root, {});
     chart.set("zoomControl", zoomControl)
-    zoomControl.minusButton.set("scale", .75)
-    zoomControl.plusButton.set("scale", .75)
+    zoomControl.minusButton.set("scale", 0.75)
+    zoomControl.plusButton.set("scale", 0.75)
   }
 
   const generateSeries = (root, chart) => {
