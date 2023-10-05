@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
-import Alert from "react-bootstrap/Alert";
 import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi, TimetableApi } from "../../../api/finance";
@@ -10,6 +9,7 @@ import TimetableEditModal from "./components/TimetableEditModal";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import {useHistory} from "react-router-dom";
+import Errors from "../../shared/Errors";
 
 const Timetables = () => {
   const history = useHistory()
@@ -18,10 +18,8 @@ const Timetables = () => {
   const token = useSelector((state) => state.auth.token)
   const timetable = useSelector(state => state.timetable)
 
-  const [timetableAlertOpen, setTimetableAlertOpen] = useState(false)
   const [timetableToDelete, setTimetableToDelete] = useState(false)
 
-  useEffect(() => {setTimetableAlertOpen(!!timetable.errors)}, [timetable.errors])
   useEffect(() => {!timetable.results && dispatch(TimetableApi.getTimetables(token))}, []);
 
   return <div>
@@ -49,7 +47,7 @@ const Timetables = () => {
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
-              {timetableAlertOpen && <Alert variant="danger" dismissible onClose={() => setTimetableAlertOpen(false)}>{timetable.errors}</Alert>}
+              <Errors errors={timetable.errors}/>
               <div className="mb-0 text-muted">Total: {timetable.count}</div>
               <table className="table">
                 <thead>

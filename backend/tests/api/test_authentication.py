@@ -9,24 +9,26 @@ from tests.api.factories import UserFactory
 
 @pytest.mark.django_db
 class TestLogin:
-    url = reverse("api:login-list")
+    url = reverse("api:users-login")
 
     def test_success(self, client):
         credentials = {"email": "test@example.com", "password": "password"}
-        UserFactory(**credentials)
+        user = UserFactory(**credentials, is_active=True)
 
         response = client.post(self.url, data=credentials)
 
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK, response.data
         assert response.data == {
-            "success": True,
             "token": mock.ANY,
             "user": {
+                "date": mock.ANY,
                 "email": "test@example.com",
-                "id": 1,
-                "joined_date": mock.ANY,
-                "last_login": mock.ANY,
-                "name": "test",
+                "groups": [],
+                "id": user.id,
+                "is_active": True,
+                "is_staff": False,
+                "last_login": None,
+                "username": "",
             },
         }
 
@@ -46,14 +48,14 @@ class TestLogin:
         data = {"email": "test@example.com", "password": "wrongpassword"}
         response = client.post(self.url, data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert response.data == {"msg": "Wrong credentials", "success": "False"}
+        assert response.data == {"detail": "Wrong credentials"}
 
 
 @pytest.mark.django_db
 class TestAuthentication:
     def test_register(self, client, session):
         data = {"username": "test", "password": "pass", "email": "test@appseed.us"}
-        url = reverse("api:register-list")
+        url = reverse("api:users-register")
 
         response = client.post(url, data=data)
 
@@ -61,17 +63,9 @@ class TestAuthentication:
         assert response.json()["success"] is True
 
     def test_logout(self, client, session):
-        url = reverse("api:logout-list")
+        url = reverse("api:users-logout")
 
-        response = client.post(url, HTTP_AUTHORIZATION=session.token)
+        response = client.put(url, HTTP_AUTHORIZATION=session.token)
 
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["success"] is True
-
-    def test_check_session(self, client, session):
-        url = reverse("api:check-session-list")
-
-        response = client.post(url, HTTP_AUTHORIZATION=session.token)
-
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK, response.data
         assert response.json()["success"] is True

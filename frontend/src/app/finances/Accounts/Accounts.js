@@ -1,8 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 
-import Alert from "react-bootstrap/Alert";
 import { Tooltip } from "react-tooltip";
 import { useHistory } from "react-router-dom";
 import Marquee from "react-fast-marquee";
@@ -17,6 +16,7 @@ import {
 } from "../../../redux/accountsSlice";
 
 import { capitalize } from "./AccountDetails/AccountDetails";
+import Errors from "../../shared/Errors";
 
 const Accounts = () => {
   const dispatch = useDispatch();
@@ -26,12 +26,6 @@ const Accounts = () => {
 
   const accounts = useSelector(state => state.accounts)
   const transactions = useSelector(state => state.transactions)
-
-  const [alertOpen, setAlertOpen] = useState(false)
-  const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
-
-  useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
-  useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
 
   useEffect(() => {
     accounts.selectedAccount && dispatch(setSelectedAccount())
@@ -58,12 +52,8 @@ const Accounts = () => {
         </ol>
       </nav>
     </div>
-    {alertOpen && !accounts.modalOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
-      {accounts.errors}
-    </Alert>}
-    {transactionsAlertOpen && <Alert variant="danger" dismissible onClose={() => setTransactionsAlertOpen(false)}>
-      {transactions.errors}
-    </Alert>}
+    <Errors errors={accounts.errors}/>
+    <Errors errors={transactions.errors}/>
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">

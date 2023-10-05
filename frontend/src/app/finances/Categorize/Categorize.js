@@ -17,6 +17,7 @@ import { FinanceApi, PredictionApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
 import { setLoadingTask } from "../../../redux/predictionSlice";
+import Errors from "../../shared/Errors";
 
 const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.replace("-", " ")) : ""
 
@@ -29,18 +30,15 @@ const Categorize = () => {
   const transactions = useSelector(state => state.transactions)
 
   const [messageAlertOpen, setMessageAlertOpen] = useState(false)
-  const [alertOpen, setAlertOpen] = useState(false)
   const [allChecked, setAllChecked] = useState(false)
   const [checkedCategories, setCheckedCategories] = useState(null)
   const [predictHistoryOpen, setPredictHistoryOpen] = useState(false)
   const [predictModalOpen, setPredictModalOpen] = useState(false)
-  const [predictionAlertOpen, setPredictionAlertOpen] = useState(false)
   const [predictionTasksOpen, setPredictionTasksOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [specificCategoriesModalOpen, setSpecificCategoriesModalOpen] = useState(false)
   const [trainHistoryOpen, setTrainHistoryOpen] = useState(false)
   const [trainingModalOpen, setTrainingModalOpen] = useState(false)
-  const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
 
   const unpredictedCategories = transactions.results?.filter(t => !t.category_suggestion)?.map(t => t.description)
 
@@ -87,8 +85,6 @@ const Categorize = () => {
   }
 
   useEffect(() => {setMessageAlertOpen(!!transactions.msg)}, [transactions.msg])
-  useEffect(() => {setPredictionAlertOpen(!!prediction.errors)}, [prediction.errors])
-  useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {!transactions.results && dispatch(setKwargs({...kwargs, type: null}))}, [])
   useEffect(() => {
     !allChecked
@@ -176,7 +172,7 @@ const Categorize = () => {
         </ol>
       </nav>
     </div>
-    {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{transactions.errors}</Alert>}
+    <Errors errors={transactions.errors}/>
 
     <div className="row">
       <div className="col-md-12 grid-margin">
@@ -217,16 +213,7 @@ const Categorize = () => {
                   Train model
                 </Button>
               </div>
-              {
-                predictionAlertOpen &&
-                <Alert
-                  variant={"danger"}
-                  dismissible
-                  onClose={() => setPredictionAlertOpen(false)}
-                >
-                  {prediction.errors}
-                </Alert>
-              }
+              <Errors errors={prediction.errors}/>
               {
                 predictionTasksOpen ? null : <small className="small text-muted">Click to expand</small>
               }
@@ -498,7 +485,7 @@ const Categorize = () => {
                 </Alert>
               }
             </h4>
-            {transactionsAlertOpen && <Alert variant="danger" dismissible onClose={() => setTransactionsAlertOpen(false)}>{transactions.errors}</Alert>}
+            <Errors errors={transactions.errors}/>
 
             <Collapse in={ searchOpen }>
               <ul className="navbar-nav w-100 rounded">

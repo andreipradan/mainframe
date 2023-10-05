@@ -1,23 +1,20 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import DevicesApi from "../../api/devices";
 import {Audio, ColorRing} from "react-loader-spinner";
 import {select} from "../../redux/devicesSlice";
-import Alert from "react-bootstrap/Alert";
 import EditModal from "../devices/components/EditModal";
+import Errors from "../shared/Errors";
 
 
 const Devices = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {results: devices, errors, loading, loadingDevices } = useSelector(state => state.devices)
-  const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {
     !devices && dispatch(DevicesApi.getList(token));
   }, []);
-
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
 
   return (
     <div>
@@ -43,7 +40,7 @@ const Devices = () =>  {
                   <i className="mdi mdi-sync-alert"></i>
                 </button>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+              <Errors errors={errors}/>
               <div className="table-responsive">
                 <table className="table">
                   <thead>

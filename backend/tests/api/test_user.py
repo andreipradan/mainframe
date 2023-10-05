@@ -13,14 +13,14 @@ class TestUserViewSet:
     def test_detail(self, client, session):
         url = reverse("api:users-detail", kwargs={"pk": session.user_id})
         response = client.get(url, HTTP_AUTHORIZATION=session.token)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK, response.data
         assert response.json() == {
             "date": mock.ANY,
             "email": "foo@bar.com",
             "groups": [],
             "id": session.user_id,
             "is_active": True,
-            "is_staff": False,
+            "is_staff": True,
             "last_login": None,
             "username": "foo@bar.com",
         }
@@ -55,7 +55,7 @@ class TestUserViewSet:
                     "groups": [],
                     "id": session.user_id,
                     "is_active": True,
-                    "is_staff": False,
+                    "is_staff": True,
                     "last_login": None,
                     "username": "foo@bar.com",
                 },

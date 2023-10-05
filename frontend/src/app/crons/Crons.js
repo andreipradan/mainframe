@@ -3,17 +3,16 @@ import { useDispatch, useSelector } from "react-redux";
 import CronsApi from "../../api/crons";
 import {Audio, ColorRing} from "react-loader-spinner";
 import {select, setModalOpen} from "../../redux/cronsSlice";
-import Alert from "react-bootstrap/Alert";
 import EditModal from "../crons/components/EditModal";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import Errors from "../shared/Errors";
 
 
 const Crons = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {results: crons, errors, loading, loadingCrons } = useSelector(state => state.crons)
-  const [alertOpen, setAlertOpen] = useState(false)
 
   const [killModalOpen, setKillModalOpen] = useState(false)
   const [selectedKillCron, setSelectedKillCron] = useState(null)
@@ -21,8 +20,6 @@ const Crons = () =>  {
   useEffect(() => {
     !crons && dispatch(CronsApi.getList(token));
   }, []);
-
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
 
   return (
     <div>
@@ -56,7 +53,7 @@ const Crons = () =>  {
                   <i className="mdi mdi-plus"></i>
                 </button>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+              <Errors errors={errors}/>
               <div className="table-responsive">
                 <table className="table">
                   <thead>

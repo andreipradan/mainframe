@@ -16,7 +16,7 @@ export const usersSlice = createSlice({
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
-      state.loadingBots = null;
+      state.loadingUsers = null;
     },
     selectUser: (state, action) => {
       state.selectedUser = action.payload ? state.results.find(t => t.id === action.payload) : null
@@ -39,9 +39,10 @@ export const usersSlice = createSlice({
     setModalOpen: (state, action) => {
       state.modalOpen = action.payload
     },
-    setSelectedUser: (state, action) => {
+    setUser: (state, action) => {
       state.errors = null
       state.loading = false
+      state.loadingUsers = state.loadingUsers ? state.loadingUsers.filter(id => id !== action.payload.id) : null
       state.selectedUser = action.payload
     },
     updateUser: (state, action) => {
@@ -54,7 +55,7 @@ export const usersSlice = createSlice({
   },
 });
 
-export const { selectUser, setSelectedUser, set, setErrors, setLoading, setLoadingUsers, setModalOpen, updateUser } =
+export const { selectUser, setUser, set, setErrors, setLoading, setLoadingUsers, setModalOpen, updateUser } =
   usersSlice.actions;
 
 export default usersSlice.reducer;
