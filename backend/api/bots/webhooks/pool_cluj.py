@@ -166,8 +166,8 @@ def call(data, bot):
             except ValueError:
                 error = (
                     "Invalid tournament parameters.\n"
-                    f"Format: /new [key]=[value] [key2]=[value2]\n"
-                    f"e.g. /new type=double_elimination"
+                    "Format: /new [key]=[value] [key2]=[value2]\n"
+                    "e.g. /new type=double_elimination"
                 )
                 logger.error(error)
                 return reply(update, error)
