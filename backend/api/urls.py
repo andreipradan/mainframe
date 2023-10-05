@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
     path("bots/", include(("api.bots.routers", "api"), namespace="bots")),

@@ -4,11 +4,11 @@ from finance.views import (
     AccountViewSet,
     CategoryViewSet,
     CreditViewSet,
-    PaymentViewSet,
-    TimetableViewSet,
-    PredictionViewSet,
-    TransactionViewSet,
     ExchangeRateViewSet,
+    PaymentViewSet,
+    PredictionViewSet,
+    TimetableViewSet,
+    TransactionViewSet,
 )
 
 router = routers.SimpleRouter()

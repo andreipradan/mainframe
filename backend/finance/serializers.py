@@ -4,10 +4,10 @@ from finance.models import (
     Account,
     Category,
     Credit,
+    ExchangeRate,
     Payment,
     Timetable,
     Transaction,
-    ExchangeRate,
 )
 
 

@@ -1,17 +1,17 @@
 import logging
 import math
+from datetime import datetime
 from typing import List
 
 import pytz
-from telegram import InlineKeyboardButton as Button, InlineKeyboardMarkup as Keyboard
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines, chunks
 from clients.chat import edit_message
-from datetime import datetime
-
 from clients.ctp import CTPClient
 from clients.logs import MainframeHandler
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())

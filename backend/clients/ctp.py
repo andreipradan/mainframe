@@ -1,15 +1,15 @@
 import asyncio
 import csv
+import logging
 import re
 from datetime import datetime
+from typing import List, Optional
 
 import aiohttp
-import logging
-from typing import List, Optional
 
 from clients import scraper
 from clients.logs import MainframeHandler
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())

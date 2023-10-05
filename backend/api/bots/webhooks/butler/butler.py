@@ -4,7 +4,6 @@ import random
 import six
 import telegram
 from django.conf import settings
-
 from google.api_core.exceptions import GoogleAPICallError
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate

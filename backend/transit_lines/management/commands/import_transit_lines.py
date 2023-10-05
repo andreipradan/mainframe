@@ -3,10 +3,10 @@ import logging
 from django.core.management.base import BaseCommand, CommandError
 
 from clients import healthchecks
-from clients.ctp import CTPClient, FetchTransitLinesException
 from clients.chat import send_telegram_message
+from clients.ctp import CTPClient, FetchTransitLinesException
 from clients.logs import ManagementCommandsHandler
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 

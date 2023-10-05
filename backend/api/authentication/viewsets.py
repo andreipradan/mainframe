@@ -1,10 +1,9 @@
-from rest_framework import viewsets, mixins, status
+from rest_framework import mixins, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.authentication.models import ActiveSession
-from api.authentication.serializers import LoginSerializer
-from api.authentication.serializers import RegisterSerializer
+from api.authentication.serializers import LoginSerializer, RegisterSerializer
 
 
 class ActiveSessionViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):

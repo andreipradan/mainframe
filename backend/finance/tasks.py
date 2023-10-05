@@ -2,7 +2,7 @@ import pandas as pd
 from huey.contrib.djhuey import HUEY, db_task
 from huey.signals import SIGNAL_ERROR
 
-from clients.prediction import log_status, SKLearn
+from clients.prediction import SKLearn, log_status
 from finance.models import Category, Transaction
 
 
