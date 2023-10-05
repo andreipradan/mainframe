@@ -266,7 +266,7 @@ class Command(BaseCommand):
                 failed_imports.append(str(file_name))
                 continue
             except IntegrityError as e:
-                logger.error(f"%s\nFile: %s", e, file_name)
+                logger.error("%s\nFile: %s", e, file_name)
                 file_name.rename(f"{file_name}.{now}.failed")
                 failed_imports.append(str(file_name))
                 continue
