@@ -29,6 +29,7 @@ class TestLogin:
                 "is_staff": False,
                 "last_login": None,
                 "username": "",
+                "name": "test",
             },
         }
 
@@ -54,13 +55,18 @@ class TestLogin:
 @pytest.mark.django_db
 class TestAuthentication:
     def test_register(self, client, session):
-        data = {"username": "test", "password": "pass", "email": "test@appseed.us"}
+        data = {
+            "username": "test",
+            "password": "pass",
+            "email": "test@appseed.us",
+            "name": "test",
+        }
         url = reverse("api:users-register")
 
         response = client.post(url, data=data)
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.json()["success"] is True
+        assert response.json() == {"msg": "You were successfully registered 🎉"}
 
     def test_logout(self, client, session):
         url = reverse("api:users-logout")
@@ -68,4 +74,4 @@ class TestAuthentication:
         response = client.put(url, HTTP_AUTHORIZATION=session.token)
 
         assert response.status_code == status.HTTP_200_OK, response.data
-        assert response.json()["success"] is True
+        assert response.json() == {"msg": "Token revoked"}

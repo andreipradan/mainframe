@@ -31,8 +31,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["put"])
     def logout(self, request, *_, **__):
         ActiveSession.objects.filter(user=request.user).delete()
-        data = {"success": True, "msg": "Token revoked"}
-        return Response(data=data, status=status.HTTP_200_OK)
+        return Response(data={"msg": "Token revoked"}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"])
     def register(self, request, *_, **__):

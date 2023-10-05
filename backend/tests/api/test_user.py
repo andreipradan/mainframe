@@ -23,6 +23,7 @@ class TestUserViewSet:
             "is_staff": True,
             "last_login": None,
             "username": "foo@bar.com",
+            "name": "foo",
         }
 
     def test_edit(self, client, session):
@@ -58,6 +59,7 @@ class TestUserViewSet:
                     "is_staff": True,
                     "last_login": None,
                     "username": "foo@bar.com",
+                    "name": "foo",
                 },
                 {
                     "date": mock.ANY,
@@ -68,6 +70,7 @@ class TestUserViewSet:
                     "is_staff": False,
                     "last_login": None,
                     "username": "",
+                    "name": "",
                 },
             ],
         }
