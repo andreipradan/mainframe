@@ -2,9 +2,6 @@ import json
 import pickle
 
 import django.db.models
-import pandas as pd
-import numpy as np
-import re
 from django.conf import settings
 from django.utils import timezone
 from huey.contrib.djhuey import HUEY
@@ -12,24 +9,12 @@ from huey.signals import SIGNAL_ERROR
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import train_test_split
 
 from camera.views import download_blob_into_memory
 from clients.storage import upload_blob_from_string
-from finance.models import Transaction, Category
 
 redis_client = HUEY.storage.redis_client()
-
-
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(
-        pattern=r"[^\w\s]|https?://\S+|www\.\S+|https?:/\S+|[^\x00-\x7F]+|\d+",
-        repl="",
-        string=str(text).strip(),
-    )
-    return " ".join(word_tokenize(text))
 
 
 def log_status(task_type, **kwargs):
@@ -66,60 +51,6 @@ def save(item, item_type, prefix, logger):
     model_path = f"{settings.BASE_DIR}/finance/data/model"
     with open(f"{model_path}/latest_{item_type}.pkl", "wb") as file:
         pickle.dump(item, file)
-
-
-class BERT:
-    @classmethod
-    def get_confirmed_df(cls):
-        return pd.DataFrame(
-            Transaction.objects.expenses()
-            .filter(confirmed_by=Transaction.CONFIRMED_BY_ML)
-            .exclude(category=Category.UNIDENTIFIED)
-            .values("description", "category")
-        )
-
-    @classmethod
-    def predict(cls, df):
-        trained_embeddings = load("latest_bert_model")
-
-        raw = df["description"]
-        bert = raw.apply(clean_text)
-        model = SentenceTransformer("paraphrase-mpnet-base-v2")
-        texts = bert.tolist()
-        embeddings = []
-        total = len(texts)
-        batch_size = int(total / 100)
-        for i in range(0, total, batch_size):
-            batch = texts[i : i + batch_size]
-            text_embeddings = model.encode(
-                batch, convert_to_numpy=True, show_progress_bar=False
-            )[0]
-            embeddings.append(text_embeddings)
-            log_status(
-                "predict",
-                operation="1/3 predicting",
-                progress=f"{i} / {total}",
-            )
-        similarity_new_data = cosine_similarity(embeddings, trained_embeddings)
-        index_similarity = pd.DataFrame(similarity_new_data).idxmax(axis=1)
-
-        trained_df = cls.get_confirmed_df()
-        data_inspect = trained_df.iloc[index_similarity, :].reset_index(drop=True)
-        return (
-            data_inspect["category"],
-            data_inspect["description"],
-            similarity_new_data.max(axis=1),
-        )
-
-    @classmethod
-    def train(cls, logger):
-        df = cls.get_confirmed_df()
-        bert = df["description"].apply(clean_text)
-        model = SentenceTransformer("paraphrase-mpnet-base-v2")
-        embeddings = np.array(model.encode(bert.tolist(), show_progress_bar=True))
-
-        prefix = f"{timezone.now():%Y_%m_%d_%H_%M_%S}"
-        save(embeddings, "bert_model", prefix, logger)
 
 
 class SKLearn:
