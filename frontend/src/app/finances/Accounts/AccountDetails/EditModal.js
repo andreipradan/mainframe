@@ -126,7 +126,7 @@ const EditModal = () => {
                       readOnly={true}
                       className="bg-transparent text-muted"
                       type="text"
-                      autoFocus
+                      
                       value={transactions.selectedTransaction[item]}
                     />
                   </Form.Group>
@@ -138,7 +138,7 @@ const EditModal = () => {
                 readOnly={true}
                 className="bg-transparent text-muted"
                 type="text"
-                autoFocus
+                
                 value={new Date(transactions.selectedTransaction.started_at).toLocaleDateString()}
               />
             </Form.Group>
@@ -148,7 +148,7 @@ const EditModal = () => {
                 readOnly={true}
                 className="bg-transparent text-muted"
                 type="text"
-                autoFocus
+                
                 value={new Date(transactions.selectedTransaction.completed_at).toLocaleDateString()}
               />
             </Form.Group>
@@ -159,7 +159,7 @@ const EditModal = () => {
                 readOnly={true}
                 className="bg-transparent text-muted"
                 type="text"
-                autoFocus
+                
                 value={transactions.selectedTransaction.description}
               />
             </Form.Group>

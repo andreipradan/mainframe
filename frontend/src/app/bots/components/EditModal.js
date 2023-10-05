@@ -75,7 +75,7 @@ const EditModal = () => {
           <Form.Label>Webhook</Form.Label>
           <Form.Control
             type="text"
-            autoFocus
+            
             value={webhook}
             onChange={e => setWebhook(e.target.value)}
           />
@@ -84,7 +84,7 @@ const EditModal = () => {
           <Form.Label>Webhook Name</Form.Label>
           <Form.Control
             type="text"
-            autoFocus
+            
             value={webhookName}
             onChange={e => setWebhookName(e.target.value)}
           />

@@ -60,7 +60,7 @@ const PaymentEditModal = () => {
               <Form.Label>Saved</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={saved}
                 onChange={e => setSaved(e.target.value)}
               />
