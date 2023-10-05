@@ -3,7 +3,7 @@ import Alert from "react-bootstrap/Alert";
 
 const Errors = props => {
   const [alertOpen, setAlertOpen] = useState(false)
-  useEffect(() => {setAlertOpen(!!props.errors)}, [props.errors])
+  useEffect(() => {setAlertOpen(Boolean(props.errors))}, [props.errors])
 
   return alertOpen
     ? <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>

@@ -50,7 +50,7 @@ const EditModal = () => {
     clearModal()
   }
 
-  return <Modal centered show={!!selectedUser} onHide={closeModal}>
+  return <Modal centered show={Boolean(selectedUser)} onHide={closeModal}>
     <Modal.Header closeButton>
 
       <Modal.Title>
@@ -58,7 +58,7 @@ const EditModal = () => {
           <div className="col-lg-12 grid-margin stretch-card mb-1">
             {selectedUser?.name}
             <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(UsersApi.getUser(token, selectedUser?.id))}>
-              <i className="mdi mdi-refresh"></i>
+              <i className="mdi mdi-refresh" />
             </button>
           </div>
         </div>
