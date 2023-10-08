@@ -28,7 +28,8 @@ class Inlines(BaseInlines):
                 [
                     InlineKeyboardButton(
                         "✈️ Set as Away" if status == "home" else "🏠Set as Home",
-                        callback_data=f"toggle-home {'away' if status == 'home' else 'home'}",
+                        callback_data="toggle-home "
+                        f"{'away' if status == 'home' else 'home'}",
                     ),
                 ]
             ]
@@ -57,7 +58,10 @@ class Inlines(BaseInlines):
 
         text = f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         if state:
-            text = f"State: {'🏠' if status == 'home' else '✈️'}{status.title()}\nSince: {state['last_updated']}\n{text}"
+            text = (
+                f"State: {'🏠' if status == 'home' else '✈️'}"
+                f"{status.title()}\nSince: {state['last_updated']}\n{text}"
+            )
         try:
             return bot.edit_message_text(
                 chat_id=message.chat_id,
@@ -151,7 +155,9 @@ def call(data, bot):
             ).to_json()
 
         return update.message.reply_text(
-            f"{greeting_message}\nState: {'🏠' if status == 'home' else '✈️'}{status.title()}\nSince: {last_updated}",
+            f"{greeting_message}\nState: "
+            f"{'🏠' if status == 'home' else '✈️'}{status.title()}\n"
+            f"Since: {last_updated}",
             reply_markup=Inlines.get_markup(status),
         ).to_json()
 

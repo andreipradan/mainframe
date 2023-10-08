@@ -22,7 +22,8 @@ class Command(BaseCommand):
             whos_next.get("post_order"), list
         ):
             raise CommandError(
-                "post_order missing from whos_next in bot additional data or not of type list"
+                "post_order missing from whos_next in bot additional data "
+                "or not of type list"
             )
         if not (start_date := whos_next.get("start_date")):
             raise CommandError(

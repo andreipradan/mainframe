@@ -98,7 +98,8 @@ class Payment(TimeStampedModel):
         ordering = ("-date",)
         constraints = (
             models.UniqueConstraint(
-                name="%(app_label)s_%(class)s_credit_date_is_prepayment_reference_total_uniq",
+                name="%(app_label)s_%(class)s_credit_date_"
+                "is_prepayment_reference_total_uniq",
                 fields=("credit", "date", "is_prepayment", "reference", "total"),
             ),
             models.UniqueConstraint(

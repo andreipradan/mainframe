@@ -26,7 +26,10 @@ class Earthquake(TimeStampedModel):
     timestamp = models.DateTimeField(unique=True)
 
     def __str__(self):
-        return f"{self.timestamp} - {self.magnitude} - {self.location}{f' - {self.intensity}' if self.intensity else ''}"
+        return (
+            f"{self.timestamp} - {self.magnitude} - {self.location}"
+            f"{f' - {self.intensity}' if self.intensity else ''}"
+        )
 
     @property
     def url(self):

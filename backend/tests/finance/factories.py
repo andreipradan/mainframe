@@ -12,8 +12,8 @@ class AccountFactory(factory.django.DjangoModelFactory):
         model = Account
 
     client_code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
-    first_name = factory.Sequence(lambda n: "first-name-%s" % n)
-    last_name = factory.Sequence(lambda n: "last-name-%s" % n)
+    first_name = factory.Sequence(lambda n: f"first-name-{n}")
+    last_name = factory.Sequence(lambda n: f"last-name-{n}")
     number = factory.Sequence(lambda n: n)
 
 

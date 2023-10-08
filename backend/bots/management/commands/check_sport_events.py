@@ -37,7 +37,8 @@ class Command(BaseCommand):
             categories, list
         ):
             raise CommandError(
-                "categories missing from sport_events in bot additional data or not of type list"
+                "categories missing from sport_events in bot additional data or "
+                "not of type list"
             )
 
         results = fetch_all(categories)

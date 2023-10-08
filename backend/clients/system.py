@@ -26,9 +26,7 @@ def run_cmd(cmd, prefix=None, logger=None, **kwargs):
         output = subprocess.check_output(cmd.split(" "), **kwargs).decode("utf-8")
     except subprocess.CalledProcessError as e:
         raise RuntimeError(
-            "command '{}' return with error (code {}): {}".format(
-                e.cmd, e.returncode, e.output
-            )
+            f"command '{e.cmd}' return with error (code {e.returncode}): {e.output}"
         )
     if output:
         logger.info("[%s] Output: %s", prefix, output)

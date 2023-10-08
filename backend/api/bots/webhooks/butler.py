@@ -67,7 +67,10 @@ def call(data, instance: Bot):
         return reply(update, f"Bye {message.left_chat_member.full_name}! 😢")
 
     from_user = update.message.from_user
-    user = f"Name: {from_user.full_name}. Username: {from_user.username}. ID: {from_user.id}"
+    user = (
+        f"Name: {from_user.full_name}. "
+        f"Username: {from_user.username}. ID: {from_user.id}"
+    )
     if str(from_user.username or from_user.id) not in instance.whitelist:
         return logger.error("Ignoring message from: %s", user)
 
@@ -147,7 +150,8 @@ def call(data, instance: Bot):
         if not update.message.reply_to_message:
             return reply(
                 update,
-                text="This command must be sent as a reply to the message you want to save",
+                text="This command must be sent as a reply to the "
+                "message you want to save",
             )
         if not (
             update.message.reply_to_message.text

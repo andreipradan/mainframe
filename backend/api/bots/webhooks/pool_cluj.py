@@ -58,7 +58,8 @@ def call(data, bot):
     if base_command not in available_commands:
         return reply(
             update,
-            f"Command not recognized: {command}\nAvailable: {sorted(available_commands)}",
+            "Command not recognized: "
+            f"{command}\nAvailable: {sorted(available_commands)}",
         )
 
     command = command.replace(base_command, "").strip()
@@ -135,7 +136,10 @@ def call(data, bot):
             logger.exception(e)
             return reply(update, e.args[0])
 
-        msg = f"{results['participant']['name']} {'resigned' if tournament.is_started else 'left'}"
+        msg = (
+            f"{results['participant']['name']} "
+            f"{'resigned' if tournament.is_started else 'left'}"
+        )
         logger.info(msg)
         return reply(update, msg)
 

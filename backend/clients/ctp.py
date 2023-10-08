@@ -122,7 +122,8 @@ class CTPClient:
                 f"Invalid line_type: {line_type}. Must be one of {choices}"
             )
         url = cls.LIST_URL.format(
-            f"{line_type}-line{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
+            f"{line_type}-line"
+            f"{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
         )
         soup = scraper.fetch(url, logger)
         if isinstance(soup, Exception) or "EROARE" in soup.text:
