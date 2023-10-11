@@ -5,6 +5,7 @@ export const earthquakesSlice = createSlice({
   initialState: {
     count: 0,
     errors: null,
+    last_check: null,
     loading: false,
     next: null,
     previous: null,
@@ -19,6 +20,7 @@ export const earthquakesSlice = createSlice({
     set: (state, action) => {
       state.count = action.payload.count
       state.errors = null
+      state.last_check = action.payload.last_check
       state.loading = false
       state.next = action.payload.next
       state.previous = action.payload.previous

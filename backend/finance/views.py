@@ -20,7 +20,7 @@ from huey.signals import (
 )
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
@@ -147,7 +147,7 @@ class ExchangePagination(api_settings.DEFAULT_PAGINATION_CLASS):
 
 class ExchangeRateViewSet(viewsets.ModelViewSet):
     pagination_class = ExchangePagination
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAuthenticated,)
     queryset = ExchangeRate.objects.all()
     serializer_class = ExchangeRateSerializer
 

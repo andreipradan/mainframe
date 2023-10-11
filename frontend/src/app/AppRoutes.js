@@ -1,8 +1,9 @@
-import React, { Component,Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
 import Spinner from '../app/shared/Spinner';
 import { useSelector } from "react-redux";
+import Profile from "./profile/Profile";
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
@@ -12,13 +13,13 @@ const Todo = lazy(() => import('./apps/TodoList'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
+const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const Expenses = lazy(() => import('./expenses/Expenses'));
 const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
 const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
 const FinancesCredit = lazy(() => import ("./finances/Credit"));
 const FinancesCalculator = lazy(() => import ("./finances/Calculator"));
-const FinancesExchangeRate = lazy(() => import ("./finances/ExchangeRate"));
 const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
 const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
 const Meals = lazy(() => import('./meals/Meals'));
@@ -51,9 +52,11 @@ const AppRoutes = () => {
     <Suspense fallback={<Spinner/>}>
       <Switch>
         <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
+        <Route exact path="/exchange-rates" component={ ExchangeRates } />
         <Route exact path="/expenses" component={ Expenses } />
         <Route exact path="/earthquakes" component={ Earthquakes } />
         <Route exact path="/meals" component={ Meals } />
+        <Route exact path="/profile" component={ Profile } />
 
         {user?.is_staff && <Route exact path="/" component={Dashboard}/>}
         {user?.is_staff && <Route exact path="/apps/camera" component={ Camera } />}
@@ -67,7 +70,6 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/finances/credit/details" component={ FinancesCredit } />}
         {user?.is_staff && <Route exact path="/finances/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />}
-        {user?.is_staff && <Route exact path="/finances/exchange-rate" component={ FinancesExchangeRate } />}
         {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/users" component={ Users } />}

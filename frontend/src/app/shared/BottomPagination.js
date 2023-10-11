@@ -44,6 +44,7 @@ const BottomPagination = props => {
       Array.from(new Array(5), (x, i) => i + currentPage - 6).filter(i => i + 1 > 2).map(i =>
         <Pagination.Item
           active={i + 1 === currentPage}
+          key={i}
           onClick={() => dispatch(props.fetchMethod(token, {...kwargs, page: i+1}))}
         >
           {i+1}
@@ -56,6 +57,7 @@ const BottomPagination = props => {
       Array.from(new Array(5), (x, i) => i + currentPage).filter(i => i < lastPage).map(i =>
         <Pagination.Item
           active={i + 1 === currentPage}
+          key={i}
           onClick={() => dispatch(props.fetchMethod(token, {...kwargs, page: i+1}))}
         >
           {i+1}

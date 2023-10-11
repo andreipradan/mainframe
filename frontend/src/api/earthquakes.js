@@ -4,14 +4,16 @@ import {
   setErrors,
   setLoading,
 } from "../redux/earthquakesSlice";
-import {handleErrors} from "./errors";
+import { handleErrors } from "./errors";
+import { createSearchParams } from "./finance";
 
 
 class EarthquakesApi {
-  static getList = (token, page = null) => (dispatch) => {
+  static getList = (token, kwargs) => (dispatch) => {
     dispatch(setLoading(true));
+    kwargs = kwargs || {};
     axios
-      .get(base + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(base + `?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };

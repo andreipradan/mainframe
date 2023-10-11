@@ -48,7 +48,9 @@ export const usersSlice = createSlice({
     updateUser: (state, action) => {
       state.errors = null;
       state.loadingUsers = state.loadingUsers?.filter((id) => id !== action.payload.id);
-      state.results = state.results.map((a) => (a.id === action.payload.id ? action.payload : a));
+      state.results = state.results
+        ? state.results.map((a) => (a.id === action.payload.id ? action.payload : a))
+        : [action.payload]
       state.selectedUser = null
       state.modalOpen = false;
     }

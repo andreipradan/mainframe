@@ -21,12 +21,14 @@ const EditModal = () => {
   const [email, setEmail] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     if (selectedUser) {
       setEmail(selectedUser.email || "")
       setIsActive(selectedUser.is_active || false)
       setIsStaff(selectedUser.is_staff || false)
+      setUsername(selectedUser.username || "")
     }
   }, [selectedUser])
 
@@ -36,6 +38,7 @@ const EditModal = () => {
       email,
       is_active: isActive,
       is_staff: isStaff,
+      username: username,
     }
     dispatch(UsersApi.updateUser(token, selectedUser.id, data))
   }
@@ -44,6 +47,7 @@ const EditModal = () => {
     setEmail("")
     setIsActive(false)
     setIsStaff(false)
+    setUsername("")
   }
   const closeModal = () => {
     dispatch(selectUser())
@@ -105,6 +109,18 @@ const EditModal = () => {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   isInvalid={errors?.email}
+                />
+              </Form.Group>
+              <Form.Group className="d-flex search-field">
+                <Form.Control
+                  required
+                  type="username"
+                  placeholder="Username"
+                  size="lg"
+                  className="h-auto"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  isInvalid={errors?.username}
                 />
               </Form.Group>
               <ul className="text-danger">{errors?.email?.map((err, i) => <li key={i}>{err}</li>)}</ul>

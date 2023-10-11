@@ -52,7 +52,7 @@ import {
 } from "../redux/predictionSlice"
 import {handleErrors} from "./errors";
 
-const createSearchParams = params => {
+export const createSearchParams = params => {
   return new URLSearchParams(
     Object.entries(params).flatMap(([key, values]) =>
       Array.isArray(values)

@@ -63,7 +63,7 @@ const Meals = () =>  {
                 weekends={true}
                 events={meals?.map(meal => ({
                   id: meal.id,
-                  title: meal.name.substring(0, 15) + "...",
+                  title: meal.name.substring(0, 10) + "...",
                   start: new Date(meal.date + "T" + meal.time + ":00")
                 }))}
                 eventContent={renderEventContent}

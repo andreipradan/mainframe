@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from api.authentication.models import ActiveSession
 from api.authentication.serializers import LoginSerializer, RegisterSerializer
 from api.user.models import User
-from api.user.serializers import UserSerializer
+from api.user.serializers import UserSerializer, ChangePasswordSerializer
 from clients.chat import send_telegram_message
 
 
@@ -21,7 +21,23 @@ class UserViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         if self.action == "logout":
             return [IsAuthenticated()]
+        if (
+            self.action in ["partial_update", "change_password"]
+            and str(self.request.user.pk) == self.kwargs["pk"]
+        ):
+            return [IsAuthenticated()]
         return super().get_permissions()
+
+    @action(detail=True, methods=["put"], url_path="change-password")
+    def change_password(self, *_, **__):
+        serializer = ChangePasswordSerializer(
+            data=self.request.data,
+            instance=self.request.user,
+            context={"request": self.request},
+        )
+        serializer.is_valid(raise_exception=True)
+        data = self.serializer_class(instance=serializer.instance).data
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"])
     def login(self, request, *_, **__):

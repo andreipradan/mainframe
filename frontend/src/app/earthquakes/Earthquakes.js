@@ -12,6 +12,7 @@ import { Bar } from "react-chartjs-2";
 import {API_SERVER} from "../../constants";
 import BotsApi from "../../api/bots";
 import Alert from "react-bootstrap/Alert";
+import BottomPagination from "../shared/BottomPagination";
 
 const defaultButtonProps = {
   paddingTop: 10,
@@ -35,11 +36,10 @@ const options = {
 const Earthquakes = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {count, loading, next, previous, results: earthquakes, errors} = useSelector(state => state.earthquakes)
-  const {results: bots, loading: botsLoading} = useSelector(state => state.bots)
-  const earthquakesList = earthquakes ? [...earthquakes].reverse() : null
+  const earthquakes = useSelector(state => state.earthquakes)
+  const earthquakesList = earthquakes.results ? [...earthquakes.results].reverse() : null
   const [alertOpen, setAlertOpen] = useState(false)
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
+  useEffect(() => {setAlertOpen(!!earthquakes.errors)}, [earthquakes.errors])
 
   const data = {
     labels: earthquakesList?.map(e => new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()),
@@ -70,13 +70,10 @@ const Earthquakes = () => {
   const [root, setRoot] = useState(null)
   const [chart, setChart] = useState(null)
 
-  const currentPage = !previous ? 1 : (parseInt(new URL(previous).searchParams.get("page")) || 1) + 1
-  const lastPage = Math.ceil(count / earthquakes?.length)
 
   useEffect(() => {
-    !earthquakes && dispatch(EarthquakesApi.getList(token))
-    !bots && dispatch(BotsApi.getList(token))
-  }, [bots, dispatch, earthquakes, token]);
+    !earthquakes.results && dispatch(EarthquakesApi.getList(token))
+  }, [dispatch, earthquakes.results, token]);
 
   useLayoutEffect(() => {
     const root = am5.Root.new("map")
@@ -198,8 +195,6 @@ const Earthquakes = () => {
 
   }
 
-  const lastCheck = bots?.find(b => !!b.additional_data?.earthquake)?.additional_data.earthquake.last_check
-
   return <div>
     <div className="page-header">
      <h3 className="page-title">Earthquakes</h3>
@@ -212,7 +207,7 @@ const Earthquakes = () => {
     </div>
 
     {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
-      {errors}
+      {earthquakes.errors}
     </Alert>}
     <div className="row">
         <div className="col-12">
@@ -233,7 +228,7 @@ const Earthquakes = () => {
               </h4>
               <p className="card-description d-flex">
                 Last check:&nbsp;
-                {botsLoading
+                {earthquakes.loading
                   ? <Circles
                       visible={true}
                       height="15"
@@ -243,13 +238,13 @@ const Earthquakes = () => {
                       wrapperClass={{}}
                       color='orange'
                     />
-                  : <span> {lastCheck || "-"}</span>
+                  : <span> {earthquakes.last_check || "-"}</span>
                 }
               </p>
               <div className="row">
                 <div className="col-md-12">
                   {
-                    loading ?
+                    earthquakes.loading ?
                       <BallTriangle
                         visible={true}
                         width="100%"
@@ -283,7 +278,7 @@ const Earthquakes = () => {
                       </thead>
                       <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
                       {
-                        earthquakes?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
+                        earthquakes.results?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
                           <td>
                             {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
                           </td>
@@ -299,72 +294,8 @@ const Earthquakes = () => {
                       </tbody>
                     </table>
                   </div>
-                  <div className="center-content btn-group mt-4 mr-4" role="group" aria-label="Basic example">
-                    <button
-                      type="button"
-                      className="btn btn-default"
-                      disabled={!previous}
-                      onClick={() => dispatch(EarthquakesApi.getList(token, 1))}
-                    >
-                      <i className="mdi mdi-skip-backward"/>
-                    </button>
+                  <BottomPagination items={earthquakes} fetchMethod={EarthquakesApi.getList} />
 
-                    {
-                      !next && currentPage - 2 > 0 &&
-                      <button
-                        type="button"
-                        className="btn btn-default"
-                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 2))}
-                      >
-                        {currentPage - 2}
-                      </button>
-                    }
-                    {
-                      previous &&
-                      <button
-                        type="button"
-                        className="btn btn-default"
-                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage - 1))}
-                      >
-                        {currentPage - 1}
-                      </button>
-                    }
-                    <button
-                      type="button"
-                      className="btn btn-default"
-                      disabled
-                    >
-                      {currentPage}
-                    </button>
-                    {
-                      next &&
-                      <button
-                        type="button"
-                        className="btn btn-default"
-                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 1))}
-                      >
-                        {currentPage + 1}
-                      </button>
-                    }
-                    {
-                      !previous && currentPage + 2 < lastPage &&
-                      <button
-                        type="button"
-                        className="btn btn-default"
-                        onClick={() => dispatch(EarthquakesApi.getList(token, currentPage + 2))}
-                      >
-                        {currentPage + 2}
-                      </button>
-                    }
-                    <button
-                      type="button"
-                      className="btn btn-default"
-                      disabled={!next}
-                      onClick={() => dispatch(EarthquakesApi.getList(token, lastPage))}
-                    >
-                      <i className="mdi mdi-skip-forward"/>
-                    </button>
-                  </div>
                 </div>
                 <div className="col-md-5">
                   <div id="map" style={{ width: "100%", height: "350px" }} />

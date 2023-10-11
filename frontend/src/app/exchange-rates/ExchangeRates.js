@@ -9,14 +9,14 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { FinanceApi } from "../../api/finance";
 import { useHistory } from "react-router-dom";
-import { selectStyles } from "./Categorize/EditModal";
+import { selectStyles } from "../finances/Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
 import {Bar} from "react-chartjs-2";
 import BottomPagination from "../shared/BottomPagination";
 import Errors from "../shared/Errors";
 
 
-const ExchangeRate = () => {
+const ExchangeRates = () => {
   const dispatch = useDispatch();
   const history = useHistory()
 
@@ -24,7 +24,10 @@ const ExchangeRate = () => {
   const exchange = useSelector(state => state.exchange)
 
   useEffect(() => {
-    !exchange.results && dispatch(FinanceApi.getExchangeRates(token))
+    if (!exchange.results) {
+      dispatch(setKwargs({from_currency: "USD"}))
+      dispatch(FinanceApi.getExchangeRates(token, {from_currency: "USD"}))
+    }
   }, [exchange.results])
 
   const onFromCurrencyChange = newValue => {
@@ -247,4 +250,4 @@ const ExchangeRate = () => {
   </div>
 }
 
-export default ExchangeRate;
+export default ExchangeRates;
