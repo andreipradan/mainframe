@@ -18,10 +18,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
 from clients.logs import MainframeHandler
-from finance.models import (
-    Category,
-    Transaction,
-)
+from finance.models import Category, Transaction
 from finance.tasks import log_status, predict, train
 
 logger = logging.getLogger(__name__)

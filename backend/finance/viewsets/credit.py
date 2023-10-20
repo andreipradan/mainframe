@@ -1,13 +1,13 @@
-from django.db.models import Q, Sum, Count
+from django.db.models import Count, Q, Sum
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
-from finance.models import get_default_credit, ExchangeRate, Payment
+from finance.models import ExchangeRate, Payment, get_default_credit
 from finance.serializers import (
     CreditSerializer,
-    TimetableSerializer,
     ExchangeRateSerializer,
+    TimetableSerializer,
 )
 
 
