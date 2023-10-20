@@ -4,7 +4,7 @@ import { ColorRing } from "react-loader-spinner";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 
-import {select} from "../../redux/mealsSlice";
+import { selectItem as select } from "../../redux/mealsSlice";
 import Alert from "react-bootstrap/Alert";
 import EditModal from "../meals/components/EditModal";
 import MealsApi from "../../api/meals";

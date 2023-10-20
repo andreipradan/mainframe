@@ -202,6 +202,13 @@ DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
 )
 
 if (ENV := env("ENV", default=None)) in ["local", "prod"]:
+    if ENV == "local":
+        INSTALLED_APPS += ["debug_toolbar"]
+        MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+        INTERNAL_IPS = ["127.0.0.1"]
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+        }
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

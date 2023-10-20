@@ -2,11 +2,11 @@ import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
-import {select} from "../../../redux/mealsSlice";
+import { selectItem as select } from "../../../redux/mealsSlice";
 
 const EditModal = () => {
   const dispatch = useDispatch();
-  const meal = useSelector(state => state.meals.selectedMeal)
+  const meal = useSelector(state => state.meals.selectedItem)
 
   return <Modal centered show={!!meal} onHide={() => dispatch(select())}>
     <Modal.Header closeButton>

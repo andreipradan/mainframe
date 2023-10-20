@@ -17,7 +17,7 @@ import ListItem from "../shared/ListItem";
 import { FinanceApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { create as createCategory } from "../../../redux/categoriesSlice"
-import { selectTransaction } from "../../../redux/transactionsSlice";
+import { selectItem as selectTransaction } from "../../../redux/transactionsSlice";
 import Errors from "../../shared/Errors";
 
 export const createOption = label => ({label: getTypeLabel(label), value: label})

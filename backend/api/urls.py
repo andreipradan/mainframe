@@ -10,6 +10,7 @@ urlpatterns = [
         include(("api.earthquakes.routers", "api"), namespace="earthquakes"),
     ),
     path("finance/", include(("finance.routers", "api"), namespace="finance")),
+    path("groups/", include(("api.groups.routers", "api"), namespace="groups")),
     path("hooks/", include("api.hooks.urls")),
     path("lights/", include(("api.lights.routers", "api"), namespace="lights")),
     path("logs/", include(("api.logs.routers", "api"), namespace="logs")),

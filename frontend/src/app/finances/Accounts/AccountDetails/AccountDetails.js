@@ -15,7 +15,7 @@ import ListItem from "../../shared/ListItem";
 import { FinanceApi } from "../../../../api/finance";
 import { getTypeLabel } from "../../Categorize/EditModal";
 import { setSelectedAccount } from "../../../../redux/accountsSlice";
-import { selectTransaction } from "../../../../redux/transactionsSlice";
+import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
 import Errors from "../../../shared/Errors";
 
 export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`

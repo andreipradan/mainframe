@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi } from "../../../api/finance";
-import { selectPayment } from "../../../redux/paymentSlice";
+import {selectItem as selectPayment, setKwargs} from "../../../redux/paymentSlice";
 import PaymentEditModal from "./components/PaymentEditModal";
 import { useHistory } from "react-router-dom";
 import BottomPagination from "../../shared/BottomPagination";
@@ -16,7 +16,6 @@ const Payments = () => {
   const token = useSelector((state) => state.auth.token)
 
   const payment = useSelector(state => state.payment)
-  useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
   return <div>
     <div className="page-header mb-0">
@@ -45,7 +44,7 @@ const Payments = () => {
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
-              <Errors errors={payment.errors}/>
+              {!payment.selectedItem && <Errors errors={payment.errors}/>}
               <div className="mb-0 text-muted">Total: {payment.count}</div>
               <table className="table table-hover">
                 <thead>
@@ -92,7 +91,7 @@ const Payments = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={payment} fetchMethod={FinanceApi.getCreditPayments} />
+            <BottomPagination items={payment} fetchMethod={FinanceApi.getCreditPayments} setKwargs={setKwargs}/>
 
           </div>
         </div>

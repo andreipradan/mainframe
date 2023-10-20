@@ -6,9 +6,11 @@ import cameraReducer from "./cameraSlice";
 import categoriesReducer from "./categoriesSlice";
 import creditReducer from "../redux/creditSlice"
 import cronsReducer from "../redux/cronsSlice"
-import exchangeReducer from "../redux/exchangeSlice"
 import devicesReducer from "../redux/devicesSlice"
+import expensesReducer from "../redux/expensesSlice"
+import exchangeReducer from "../redux/exchangeSlice"
 import earthquakesReducer from "../redux/earthquakesSlice"
+import groupsReducer from "../redux/groupsSlice"
 import lightsReducer from "../redux/lightsSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
@@ -28,9 +30,11 @@ export default configureStore({
     categories: categoriesReducer,
     credit: creditReducer,
     crons: cronsReducer,
-    exchange: exchangeReducer,
     devices: devicesReducer,
+    exchange: exchangeReducer,
+    expenses: expensesReducer,
     earthquakes: earthquakesReducer,
+    groups: groupsReducer,
     lights: lightsReducer,
     logs: logsReducer,
     meals: mealsReducer,

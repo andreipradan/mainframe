@@ -8,7 +8,7 @@ import { useHistory } from "react-router-dom";
 import { Circles } from "react-loader-spinner";
 import Select from "react-select";
 import { selectStyles } from "./Categorize/EditModal";
-import { selectTimetable } from "../../redux/timetableSlice";
+import { selectItem as selectTimetable } from "../../redux/timetableSlice";
 import Errors from "../shared/Errors";
 
 const Calculator = () => {

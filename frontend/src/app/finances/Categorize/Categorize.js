@@ -15,7 +15,7 @@ import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
 import BottomPagination from "../../shared/BottomPagination";
 import { FinanceApi, PredictionApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
-import { selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
+import { selectItem as selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
 import { setLoadingTask } from "../../../redux/predictionSlice";
 import Errors from "../../shared/Errors";
 
@@ -47,12 +47,10 @@ const Categorize = () => {
   const onAccountChange = newValue => {
     const newAccount = newValue ? newValue.value : ""
     dispatch(setKwargs({...(kwargs || {}), account_id: newAccount, page: 1}))
-    dispatch(FinanceApi.getTransactions(token, {...kwargs, account_id: newAccount, page: 1}))
   }
   const onCategoryChange = newValue => {
     const newCategory = newValue ? newValue.value : ""
     dispatch(setKwargs({...(kwargs || {}), category: newCategory, page: 1}))
-    dispatch(FinanceApi.getTransactions(token, {...kwargs, category: newCategory, page: 1}))
   }
 
   const onCheckedCategoryChange = (newValue, description) => {
@@ -76,16 +74,13 @@ const Categorize = () => {
   const onTypeChange = newValue => {
     const newTypes = newValue.map(v => v.value)
     dispatch(setKwargs({...(kwargs || {}), type: newTypes, page: 1}))
-    !newValue.length && dispatch(FinanceApi.getTransactions(token, {...kwargs, type: newTypes, page: 1}))
   }
   const onConfirmedByChange = newValue => {
     const newConfirmedBy = !newValue ? 0 : newValue.value
     dispatch(setKwargs({...(kwargs || {}), confirmed_by: newConfirmedBy, page: 1}))
-    dispatch(FinanceApi.getTransactions(token, {...kwargs, confirmed_by: newConfirmedBy, page: 1}))
   }
 
   useEffect(() => {setMessageAlertOpen(!!transactions.msg)}, [transactions.msg])
-  useEffect(() => {!transactions.results && dispatch(setKwargs({...kwargs, type: null}))}, [])
   useEffect(() => {
     !allChecked
       ? setCheckedCategories(null)
@@ -102,13 +97,9 @@ const Categorize = () => {
     }},
     [transactions.loading])
   useEffect(() => {
-    !transactions.results && dispatch(FinanceApi.getTransactions(token, kwargs))
     !prediction.predict && !prediction.train && dispatch(PredictionApi.getTasks(token))
     setCheckedCategories(null)
-    dispatch(setKwargs({...kwargs, page: !transactions.previous
-        ? 1
-        : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1}))
-  }, [transactions.results])
+  }, [])
 
   const predictTimerIdRef = useRef(null);
   const trainTimerIdRef = useRef(null);
@@ -495,7 +486,6 @@ const Categorize = () => {
                     onSubmit={e => {
                       e.preventDefault()
                       dispatch(setKwargs({...kwargs, page: 1}))
-                      dispatch(FinanceApi.getTransactions(token, {...kwargs, page: 1}))
                     }}
                   >
                     <input
@@ -615,7 +605,7 @@ const Categorize = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={transactions} fetchMethod={FinanceApi.getTransactions}/>
+            <BottomPagination items={transactions} fetchMethod={FinanceApi.getTransactions} setKwargs={setKwargs}/>
           </div>
         </div>
       </div>
@@ -634,10 +624,10 @@ const Categorize = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   onChange={onConfirmedByChange}
-                  options={transactions.confirmedByChoices?.map(c => ({label: c[1], value: c[0]}))}
+                  options={transactions.confirmed_by_choices?.map(c => ({label: c[1], value: c[0]}))}
                   styles={selectStyles}
                   value={{
-                    label: transactions.confirmedByChoices?.find(c => c[0] === kwargs.confirmed_by)?.[1],
+                    label: transactions.confirmed_by_choices?.find(c => c[0] === kwargs.confirmed_by)?.[1],
                     value: kwargs.confirmed_by}}
                 />
               </Form.Group>

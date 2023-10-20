@@ -4,7 +4,7 @@ import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi, TimetableApi } from "../../../api/finance";
-import { selectTimetable } from "../../../redux/timetableSlice";
+import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
 import TimetableEditModal from "./components/TimetableEditModal";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";

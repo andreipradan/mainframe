@@ -3,7 +3,6 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 
 import Spinner from '../app/shared/Spinner';
 import { useSelector } from "react-redux";
-import Profile from "./profile/Profile";
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
@@ -15,6 +14,7 @@ const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const Expenses = lazy(() => import('./expenses/Expenses'));
+const Groups = lazy(() => import("./expenses/Groups"));
 const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
 const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
@@ -22,6 +22,7 @@ const FinancesCredit = lazy(() => import ("./finances/Credit"));
 const FinancesCalculator = lazy(() => import ("./finances/Calculator"));
 const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
 const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
+const Profile = lazy(() => import ("./profile/Profile"));
 const Meals = lazy(() => import('./meals/Meals'));
 const Users = lazy(() => import('./users/Users'));
 
@@ -54,6 +55,7 @@ const AppRoutes = () => {
         <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
         <Route exact path="/exchange-rates" component={ ExchangeRates } />
         <Route exact path="/expenses" component={ Expenses } />
+        <Route exact path="/expenses/groups" component={ Groups } />
         <Route exact path="/earthquakes" component={ Earthquakes } />
         <Route exact path="/meals" component={ Meals } />
         <Route exact path="/profile" component={ Profile } />

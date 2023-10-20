@@ -13,6 +13,13 @@ export const usersSlice = createSlice({
     selectedUser: null,
   },
   reducers: {
+    deleteUser: (state, action) => {
+      state.errors = null;
+      state.loadingUsers = state.loadingUsers?.filter((id) => id !== action.payload.id);
+      state.results = state.results?.filter((a) => (a.id !== action.payload))
+      state.selectedUser = null
+      state.modalOpen = false;
+    },
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
@@ -57,7 +64,7 @@ export const usersSlice = createSlice({
   },
 });
 
-export const { selectUser, setUser, set, setErrors, setLoading, setLoadingUsers, setModalOpen, updateUser } =
+export const { deleteUser, selectUser, setUser, set, setErrors, setLoading, setLoadingUsers, setModalOpen, updateUser } =
   usersSlice.actions;
 
 export default usersSlice.reducer;

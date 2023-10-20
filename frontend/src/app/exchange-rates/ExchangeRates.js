@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from "react-redux";
 
 import Form from "react-bootstrap/Form";
 import Select from "react-select";
+import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -11,7 +12,6 @@ import { FinanceApi } from "../../api/finance";
 import { useHistory } from "react-router-dom";
 import { selectStyles } from "../finances/Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
-import {Bar} from "react-chartjs-2";
 import BottomPagination from "../shared/BottomPagination";
 import Errors from "../shared/Errors";
 
@@ -23,19 +23,11 @@ const ExchangeRates = () => {
   const token = useSelector((state) => state.auth.token)
   const exchange = useSelector(state => state.exchange)
 
-  useEffect(() => {
-    if (!exchange.results) {
-      dispatch(setKwargs({from_currency: "USD"}))
-      dispatch(FinanceApi.getExchangeRates(token, {from_currency: "USD"}))
-    }
-  }, [exchange.results])
-
   const onFromCurrencyChange = newValue => {
     const kwargs = {...exchange.kwargs  || {}}
     if (newValue) kwargs.from_currency = newValue.value
     else delete kwargs.from_currency
     dispatch(setKwargs(kwargs))
-    dispatch(FinanceApi.getExchangeRates(token, kwargs))
   }
 
   const onToCurrencyChange = newValue => {
@@ -43,7 +35,6 @@ const ExchangeRates = () => {
     if (newValue) kwargs.to_currency = newValue.value
     else delete kwargs.to_currency
     dispatch(setKwargs(kwargs))
-    dispatch(FinanceApi.getExchangeRates(token, kwargs))
   }
 
   const onSourceChange = newValue => {
@@ -51,7 +42,6 @@ const ExchangeRates = () => {
     if (newValue) kwargs.source = newValue.value
     else delete kwargs.source
     dispatch(setKwargs(kwargs))
-    dispatch(FinanceApi.getExchangeRates(token, kwargs))
   }
 
   const uniqueFrom = [...new Set(exchange.results?.map(e => e.symbol.slice(0, 3)))]
@@ -103,7 +93,7 @@ const ExchangeRates = () => {
               type="button"
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
               onClick={() => {
-                dispatch(FinanceApi.getExchangeRates(token, {date: "2023-01-23"}))
+                dispatch(FinanceApi.getExchangeRates(token, exchange.kwargs))
               }}
             >
                 <i className="mdi mdi-refresh"></i>
@@ -157,20 +147,30 @@ const ExchangeRates = () => {
                 </thead>
                 <tbody>
                 {
-                  exchange.results?.length
-                    ? exchange.results.map((t, i) =>
-                      <tr key={i}>
-                        <td> {new Date(t.date).toLocaleDateString()}</td>
-                        <td>{t.symbol}</td>
-                        <td> {t.source}</td>
-                        <td> {t.value} </td>
-                      </tr>)
-                    : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
+                  exchange.loading
+                    ? <Circles
+                        visible={true}
+                        height={20}
+                        width={20}
+                        wrapperClass="btn"
+                        wrapperStyle={{display: "default"}}
+                        ariaLabel="ball-triangle-loading"
+                        color='green'
+                      />
+                    : exchange.results?.length
+                      ? exchange.results.map((t, i) =>
+                        <tr key={i}>
+                          <td> {new Date(t.date).toLocaleDateString()}</td>
+                          <td>{t.symbol}</td>
+                          <td> {t.source}</td>
+                          <td> {t.value} </td>
+                        </tr>)
+                      : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
                 }
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={exchange} fetchMethod={FinanceApi.getExchangeRates} perPage={31}/>
+            <BottomPagination items={exchange} fetchMethod={FinanceApi.getExchangeRates} setKwargs={setKwargs} perPage={31}/>
 
           </div>
         </div>
@@ -181,7 +181,7 @@ const ExchangeRates = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault()
-              dispatch(FinanceApi.getExchangeRates(token))
+              dispatch(FinanceApi.getExchangeRates(token, exchange.kwargs))
             }}>
               <Form.Group>
                 <Form.Label>From Currency</Form.Label>&nbsp;

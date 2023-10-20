@@ -27,11 +27,11 @@ import {
   set as setPayments,
   setErrors as setPaymentErrors,
   setLoading as setPaymentLoading,
-  setLoadingPayments,
+  setLoadingItems as setLoadingPayments,
   update,
 } from "../redux/paymentSlice";
 import {
-  deleteTimetable,
+  deleteItem as deleteTimetable,
   set as setTimetables,
   setErrors as setTimetableErrors,
   setLoading as setTimetableLoading,
@@ -40,8 +40,8 @@ import {
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
-  setLoadingTransactions,
-  updateTransaction,
+  setLoadingItems as setLoadingTransactions,
+  update as updateTransaction,
 } from "../redux/transactionsSlice";
 import {
   set as setPredictionResults,
@@ -83,7 +83,7 @@ export class FinanceApi {
     axios
       .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
       .then(() => {dispatch(deleteTimetable(timetableId))})
-      .catch((err) => handleErrors(err, dispatch));
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
   static getAccount = (token, accountId) => (dispatch) => {
     dispatch(setAccountsLoading(true));

@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "./index";
 import {
+  deleteUser,
   set,
   setErrors,
   setLoading,
@@ -12,7 +13,7 @@ import { handleErrors } from "./errors";
 import {toast} from "react-toastify";
 import {toastParams} from "./auth";
 import Cookie from "js-cookie";
-import {login} from "../redux/authSlice";
+import {login, logout} from "../redux/authSlice";
 
 
 class UsersApi {
@@ -25,6 +26,17 @@ class UsersApi {
         toast.success(<span>Password updated successfully!</span>, toastParams)
       })
       .catch(error => handleErrors(error, dispatch, setErrors))
+  }
+  static deleteUser = (token, user, me = false) => dispatch => {
+    dispatch(setLoadingUsers(user.id))
+    axios
+      .delete(`${base}/${user.id}`, { headers: { Authorization: token } })
+      .then(() => {
+        if (me) dispatch(logout())
+        dispatch(deleteUser(user.id))
+        toast.warning(<span><b>{user.username} ({user.email})</b> deleted successfully!</span>, toastParams)
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors))
   }
   static getList = (token, page = null) => (dispatch) => {
     dispatch(setLoading(true));

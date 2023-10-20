@@ -10,14 +10,14 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
 import { FinanceApi } from "../../../../api/finance";
-import {selectPayment} from "../../../../redux/paymentSlice";
+import { selectItem as selectPayment } from "../../../../redux/paymentSlice";
 import Form from "react-bootstrap/Form";
 import Errors from "../../../shared/Errors";
 
 const PaymentEditModal = () => {
   const dispatch = useDispatch();
   const payment = useSelector(state => state.payment)
-  const selectedPayment = useSelector(state => state.payment.selectedPayment)
+  const selectedPayment = useSelector(state => state.payment.selectedItem)
   const token = useSelector((state) => state.auth.token)
 
   const [saved, setSaved] = useState(null);
@@ -40,7 +40,7 @@ const PaymentEditModal = () => {
       <Errors errors={payment.errors}/>
 
       {
-        payment.loadingPayments?.includes(selectedPayment?.id)
+        payment.loadingItems?.includes(selectedPayment?.id)
         ? <ColorRing
             width = "100%"
             height = "50"

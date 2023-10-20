@@ -6,13 +6,14 @@ import * as am5 from "@amcharts/amcharts5";
 import * as am5map from "@amcharts/amcharts5/map";
 import mapGeodata from "@amcharts/amcharts5-geodata/romaniaHigh";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
+import Alert from "react-bootstrap/Alert";
 
+import BotsApi from "../../api/bots";
+import BottomPagination from "../shared/BottomPagination";
 import EarthquakesApi from "../../api/earthquakes";
 import { Bar } from "react-chartjs-2";
-import {API_SERVER} from "../../constants";
-import BotsApi from "../../api/bots";
-import Alert from "react-bootstrap/Alert";
-import BottomPagination from "../shared/BottomPagination";
+import { API_SERVER } from "../../constants";
+import { setKwargs } from "../../redux/earthquakesSlice";
 
 const defaultButtonProps = {
   paddingTop: 10,
@@ -294,7 +295,7 @@ const Earthquakes = () => {
                       </tbody>
                     </table>
                   </div>
-                  <BottomPagination items={earthquakes} fetchMethod={EarthquakesApi.getList} />
+                  <BottomPagination items={earthquakes} fetchMethod={EarthquakesApi.getList} setKwargs={setKwargs} />
 
                 </div>
                 <div className="col-md-5">

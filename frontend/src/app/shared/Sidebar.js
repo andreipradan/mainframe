@@ -30,6 +30,7 @@ const Sidebar = () => {
   const [basicUiMenuOpen, setBasicUiMenuOpen] = useState(false)
   const [creditMenuOpen, setCreditMenuOpen] = useState(false)
   const [documentationMenuOpen, setDocumentationMenuOpen] = useState(false)
+  const [expensesMenuOpen, setExpensesMenuOpen] = useState(false)
   const [financesMenuOpen, setFinancesMenuOpen] = useState(false)
   const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false)
   const [tablesMenuOpen, setTablesMenuOpen] = useState(false)
@@ -65,6 +66,7 @@ const Sidebar = () => {
     setAppsMenuOpen(false)
     setBasicUiMenuOpen(false)
     setCreditMenuOpen(false)
+    setExpensesMenuOpen(false)
     setFinancesMenuOpen(false)
     setFormElementsMenuOpen(false)
     setTablesMenuOpen(false)
@@ -81,6 +83,7 @@ const Sidebar = () => {
     const dropdownPaths = [
       {path:'/apps', setState: setAppsMenuOpen},
       {path:'/basic-ui', setState: setBasicUiMenuOpen},
+      {path:'/expenses', setState: setExpensesMenuOpen},
       {path:'/finances', setState: setFinancesMenuOpen},
       {path:'/finances/credit', setState: setCreditMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
@@ -97,6 +100,7 @@ const Sidebar = () => {
   }
 
   const isPathActive = path => location.pathname.startsWith(path)
+  const isPathExact = path => location.pathname === path
 
   return (
     <nav className="sidebar sidebar-offcanvas" id="sidebar">
@@ -349,11 +353,28 @@ const Sidebar = () => {
             : null
         }
         <li className="nav-item nav-category"><span className="nav-link">Finance</span></li>
-        <li className={ location.pathname === "/expenses" ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <Link className="nav-link" to="/expenses">
+        <li className={ isPathActive('/expenses') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+          <div className={ expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setExpensesMenuOpen(!expensesMenuOpen) } data-toggle="collapse">
             <span className="menu-icon"><i className="mdi mdi-cash"></i></span>
             <span className="menu-title">Expenses</span>
-          </Link>
+            <i className="menu-arrow"></i>
+          </div>
+          <Collapse in={ expensesMenuOpen }>
+            <div>
+              <ul className="nav flex-column sub-menu">
+                <li className="nav-item">
+                  <Link className={ isPathExact('/expenses') ? 'nav-link active' : 'nav-link' } to="/expenses">
+                    My expenses
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className={ isPathActive('/expenses/groups') ? 'nav-link active' : 'nav-link' } to="/expenses/groups">
+                    <span>Manage groups</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </Collapse>
         </li>
         <li className={ location.pathname === "/exchange-rates" ? 'nav-item menu-items active' : 'nav-item menu-items' }>
           <Link className="nav-link" to="/exchange-rates">
