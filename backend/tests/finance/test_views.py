@@ -12,13 +12,13 @@ from .factories import (
 
 @pytest.mark.django_db
 class TestAccounts:
-    def test_list(self, client, django_assert_num_queries, session):
+    def test_list(self, client, django_assert_num_queries, staff_session):
         account1, account2, account3 = AccountFactory.create_batch(3)
         TransactionFactory.create_batch(2, account=account1)
         TransactionFactory(account=account2)
         with django_assert_num_queries(4):
             response = client.get(
-                reverse("finance:accounts-list"), HTTP_AUTHORIZATION=session.token
+                reverse("finance:accounts-list"), HTTP_AUTHORIZATION=staff_session.token
             )
         assert response.status_code == 200
         assert set(response.json().keys()) == {"count", "next", "previous", "results"}
@@ -26,7 +26,7 @@ class TestAccounts:
             (x["id"], x["transaction_count"]) for x in response.json()["results"]
         ] == [(account1.id, 2), (account2.id, 1), (account3.id, 0)]
 
-    def test_analytics(self, client, django_assert_num_queries, session):
+    def test_analytics(self, client, django_assert_num_queries, staff_session):
         account = AccountFactory()
         c1, c2, c3 = [CategoryFactory(id=i) for i in ["foo", "bar", "baz"]]
         d1, d2, d3 = ["2021-02-03", "2021-02-06", "2021-05-03"]
@@ -38,7 +38,7 @@ class TestAccounts:
             response = client.get(
                 reverse("finance:accounts-analytics", args=(account.id,))
                 + "?year=2021",
-                HTTP_AUTHORIZATION=session.token,
+                HTTP_AUTHORIZATION=staff_session.token,
             )
         assert response.status_code == 200
         assert response.json() == {
@@ -53,12 +53,12 @@ class TestAccounts:
 
 @pytest.mark.django_db
 class TestCredit:
-    def test_list(self, client, django_assert_num_queries, session):
+    def test_list(self, client, django_assert_num_queries, staff_session):
         credit = CreditFactory()
         PaymentFactory.create_batch(3, credit=credit)
         with django_assert_num_queries(5):
             response = client.get(
-                reverse("finance:credit-list"), HTTP_AUTHORIZATION=session.token
+                reverse("finance:credit-list"), HTTP_AUTHORIZATION=staff_session.token
             )
         assert response.status_code == 200
         assert set(response.json().keys()) == {"credit", "latest_timetable", "rates"}
@@ -66,10 +66,10 @@ class TestCredit:
 
 @pytest.mark.django_db
 class TestPayments:
-    def test_payment_list(self, client, django_assert_num_queries, session):
-        PaymentFactory.create_batch(3)
+    def test_list(self, client, django_assert_num_queries, staff_session):
+        PaymentFactory.create_batch(2)
         with django_assert_num_queries(4):
             response = client.get(
-                reverse("finance:payments-list"), HTTP_AUTHORIZATION=session.token
+                reverse("finance:payments-list"), HTTP_AUTHORIZATION=staff_session.token
             )
         assert response.status_code == 200

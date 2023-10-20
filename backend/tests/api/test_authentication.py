@@ -23,13 +23,11 @@ class TestLogin:
             "user": {
                 "date": mock.ANY,
                 "email": "test@example.com",
-                "groups": [],
                 "id": user.id,
                 "is_active": True,
                 "is_staff": False,
                 "last_login": None,
                 "username": "",
-                "name": "test",
             },
         }
 
