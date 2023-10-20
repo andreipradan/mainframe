@@ -66,16 +66,16 @@ def mainframe(request):
 
     if event != "workflow_run":
         branch = payload.get("ref", "").replace("refs/heads/", "")
-        branch_message = f"\nBranch: {branch}" if branch else ""
         pusher = payload.get("pusher", {}).get("name", "")
-        author = f"\nAuthor: {pusher}" if pusher else ""
         compare = payload.get("compare", "")
-        compare_message = (
-            f"\n<a target='_blank' href='{compare}'>Compare</a>" if compare else ""
+        new_changes_link = (
+            f"<a target='_blank' href='{compare}'>new changes</a>" if compare else ""
         )
         send_telegram_message(
-            text=f"{PREFIX} Got a <b>{event}</b> event"
-            f"{branch_message}{author}{compare_message}",
+            text=(
+                f"{PREFIX} <b>{pusher}</b> {event}ed {new_changes_link} "
+                f"on the <b>{branch}</b> branch"
+            ),
             parse_mode=telegram.ParseMode.HTML,
         )
         return HttpResponse("pong")
