@@ -32,6 +32,7 @@ import {
 } from "../redux/paymentSlice";
 import {
   deleteItem as deleteTimetable,
+  selectItem as selectTimetable,
   set as setTimetables,
   setErrors as setTimetableErrors,
   setLoading as setTimetableLoading,
@@ -223,7 +224,10 @@ export class TimetableApi {
     dispatch(setTimetableLoading(true));
     axios
       .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTimetables(response.data)))
+      .then((response) => {
+        dispatch(setTimetables(response.data))
+        dispatch(selectTimetable(response.data.results[0].id))
+      })
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
 }

@@ -11,7 +11,7 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
 import Form from "react-bootstrap/Form";
 import { selectUser } from "../../redux/usersSlice";
-import UsersApi from "../../api/users";
+import { UsersApi } from "../../api/users";
 
 const EditModal = () => {
   const dispatch = useDispatch();

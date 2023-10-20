@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "crons",
     "devices",
     "earthquakes",
+    "expenses",
     "finance",
     "meals",
     "transit_lines",

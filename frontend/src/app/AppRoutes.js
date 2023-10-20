@@ -14,7 +14,7 @@ const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const Expenses = lazy(() => import('./expenses/Expenses'));
-const Groups = lazy(() => import("./expenses/Groups"));
+const ExpenseGroups = lazy(() => import("./expenses/ExpenseGroups"));
 const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
 const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
@@ -24,6 +24,7 @@ const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
 const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
 const Profile = lazy(() => import ("./profile/Profile"));
 const Meals = lazy(() => import('./meals/Meals'));
+const UserGroups = lazy(() => import("./users/Groups"));
 const Users = lazy(() => import('./users/Users'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
@@ -55,7 +56,7 @@ const AppRoutes = () => {
         <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
         <Route exact path="/exchange-rates" component={ ExchangeRates } />
         <Route exact path="/expenses" component={ Expenses } />
-        <Route exact path="/expenses/groups" component={ Groups } />
+        <Route exact path="/expenses/groups" component={ ExpenseGroups } />
         <Route exact path="/earthquakes" component={ Earthquakes } />
         <Route exact path="/meals" component={ Meals } />
         <Route exact path="/profile" component={ Profile } />
@@ -75,6 +76,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/users" component={ Users } />}
+        {user?.is_staff && <Route exact path="/groups" component={ UserGroups } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
         <Route path="/basic-ui/dropdowns" component={ Dropdowns } />

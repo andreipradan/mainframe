@@ -1,16 +1,32 @@
-from django.contrib.auth.models import Group
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.groups.serializers import GroupSerializer
 from api.user.models import User
+from expenses.models import ExpenseGroup
+from expenses.serializers import ExpenseGroupSerializer
 
 
-class GroupViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAdminUser,)
-    serializer_class = GroupSerializer
+class ExpenseGroupViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ExpenseGroupSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = {**request.data, "created_by": request.user.id}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        group: ExpenseGroup = serializer.save()
+        group.users.add(request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return ExpenseGroup.objects.order_by("name")
+        return self.request.user.expense_groups.order_by("name")
 
     @action(detail=True, methods=["put"])
     def invite(self, request, *args, **kwargs):
@@ -21,14 +37,14 @@ class GroupViewSet(viewsets.ModelViewSet):
         if not (user := User.objects.filter(email=email).first()):
             user = User.objects.create_user(email=email, username=email.split("@")[0])
 
-        group: Group = self.get_object()
-        if group.user_set.filter(email=user.email):
+        group: ExpenseGroup = self.get_object()
+        if group.users.filter(email=user.email):
             return Response(
                 {group.id: "User already in this group"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        group.user_set.add(user)
+        group.users.add(user)
         return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=["put"], url_path="remove-user")
@@ -38,12 +54,12 @@ class GroupViewSet(viewsets.ModelViewSet):
                 {"detail": "User id required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        group: Group = self.get_object()
-        if not group.user_set.filter(id=user_id).exists():
+        group: ExpenseGroup = self.get_object()
+        if not group.users.filter(id=user_id).exists():
             return Response(
                 {group.id: "User not in this group"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        group.user_set.remove(user_id)
+        group.users.remove(user_id)
         return super().list(request, *args, **kwargs)

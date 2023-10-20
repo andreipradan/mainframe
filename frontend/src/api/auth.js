@@ -14,7 +14,7 @@ class AuthApi {
       Cookie.set('token', response.data.token);
       Cookie.set('user', JSON.stringify(response.data.user));
       dispatch(login(response.data))
-      toast.info(`Welcome ${response.data.user.name} !`, toastParams)
+      toast.info(`Welcome ${response.data.user.username} !`, toastParams)
       history.push(response.data.user?.is_staff ? "/" : "/expenses")
     })
     .catch((err) => handleErrors(err, dispatch, setErrors));

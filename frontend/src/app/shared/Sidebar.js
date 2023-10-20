@@ -119,7 +119,7 @@ const Sidebar = () => {
               <div className="profile-name">
                 <h5 className="mb-0 font-weight-normal">
                   <Row>
-                    {user?.name}&nbsp;
+                    {user?.username}&nbsp;
                     {loading && <Circles
                       visible={true}
                       height="15"
@@ -349,6 +349,12 @@ const Sidebar = () => {
                   <span className="menu-title">Users</span>
                 </Link>
               </li>
+              <li className={ isPathActive('/groups') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+                <Link className="nav-link" to="/groups">
+                  <span className="menu-icon"><i className="mdi mdi-account-multiple" /></span>
+                  <span className="menu-title">Groups</span>
+                </Link>
+              </li>
             </>
             : null
         }
@@ -369,7 +375,7 @@ const Sidebar = () => {
                 </li>
                 <li className="nav-item">
                   <Link className={ isPathActive('/expenses/groups') ? 'nav-link active' : 'nav-link' } to="/expenses/groups">
-                    <span>Manage groups</span>
+                    <span>My groups</span>
                   </Link>
                 </li>
               </ul>

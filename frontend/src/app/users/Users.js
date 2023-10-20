@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { Circles } from "react-loader-spinner";
 
 import { Tooltip } from "react-tooltip";
 
-import EditModal from "./EditModal";
-import UsersApi from "../../api/users";
 import { selectUser } from "../../redux/usersSlice";
-import {useHistory} from "react-router-dom";
+import { UsersApi } from "../../api/users";
+import EditModal from "./EditModal";
 import Errors from "../shared/Errors";
 
 const Users = () => {

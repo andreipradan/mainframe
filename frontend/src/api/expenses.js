@@ -16,14 +16,14 @@ export class GroupsApi {
   static create = (token, groupName) => dispatch => {
     dispatch(setGroupsLoading(true));
     axios
-      .post(`groups/`, {name: groupName}, { headers: { Authorization: token } })
+      .post(`${base}/`, {name: groupName}, { headers: { Authorization: token } })
       .then(response => dispatch(createGroup(response.data)))
       .catch((err) => handleErrors(err, dispatch, setGroupsErrors));
   }
   static deleteGroup = (token, groupId) => dispatch => {
     dispatch(setGroupsLoading(true));
     axios
-      .delete(`groups/${groupId}/`, { headers: { Authorization: token } })
+      .delete(`${base}/${groupId}/`, { headers: { Authorization: token } })
       .then(() => dispatch(deleteGroup(groupId)))
       .catch((err) => handleErrors(err, dispatch, setGroupsErrors));
   }
@@ -31,14 +31,15 @@ export class GroupsApi {
     dispatch(setGroupsLoading(true));
     const searchParams = kwargs ? `?${createSearchParams(kwargs)}` : ""
     axios
-      .get(`groups/${searchParams}`, { headers: { Authorization: token } })
+      .get(`${base}/${searchParams}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => handleErrors(err, dispatch, setGroupsErrors));
   };
-  static inviteUser = (token, groupId, email) => dispatch => {
+  static inviteUser = (token, groupId, emailOrUsername, isEmail = true) => dispatch => {
+    const data = {[isEmail ? "email" : "username"]: emailOrUsername}
     dispatch(setGroupsLoading(true))
     axios
-      .put(`groups/${groupId}/invite/`, {email: email}, { headers: { Authorization: token } })
+      .put(`${base}/${groupId}/invite/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
         handleErrors(err, dispatch, setGroupsErrors)
@@ -49,7 +50,7 @@ export class GroupsApi {
   static removeUserFromGroup = (token, groupId, userId) => dispatch => {
     dispatch(setGroupsLoading(true))
     axios
-      .put(`groups/${groupId}/remove-user/`, {id: userId}, { headers: { Authorization: token } })
+      .put(`${base}/${groupId}/remove-user/`, {id: userId}, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
         handleErrors(err, dispatch, setGroupsErrors)
@@ -58,3 +59,5 @@ export class GroupsApi {
       });
   }
 }
+
+const base = "expenses/groups"

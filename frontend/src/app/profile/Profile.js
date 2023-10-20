@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from "react-redux";
 import { Form } from 'react-bootstrap';
-import {useDispatch, useSelector} from "react-redux";
-import UsersApi from "../../api/users";
-import {ColorRing} from "react-loader-spinner";
+import { ColorRing } from "react-loader-spinner";
+
+import { UsersApi } from "../../api/users";
 import Errors from "../shared/Errors";
 
 const Profile = () => {

@@ -16,7 +16,7 @@ import Cookie from "js-cookie";
 import {login, logout} from "../redux/authSlice";
 
 
-class UsersApi {
+export class UsersApi {
   static changePassword = (token, id, data) => dispatch => {
     dispatch(setLoadingUsers(id))
     axios
@@ -69,5 +69,3 @@ class UsersApi {
 }
 
 let base = "users";
-
-export default UsersApi;

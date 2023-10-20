@@ -1,15 +1,13 @@
 from rest_framework import routers
 
-from finance.views import (
-    AccountViewSet,
-    CategoryViewSet,
-    CreditViewSet,
-    ExchangeRateViewSet,
-    PaymentViewSet,
-    PredictionViewSet,
-    TimetableViewSet,
-    TransactionViewSet,
-)
+from finance.viewsets.account import AccountViewSet
+from finance.viewsets.category import CategoryViewSet
+from finance.viewsets.credit import CreditViewSet
+from finance.viewsets.exchange_rate import ExchangeRateViewSet
+from finance.viewsets.payment import PaymentViewSet
+from finance.viewsets.prediction import PredictionViewSet
+from finance.viewsets.timetable import TimetableViewSet
+from finance.viewsets.transaction import TransactionViewSet
 
 router = routers.SimpleRouter()
 

@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 
 import { Circles } from "react-loader-spinner";
+import { Collapse, Form } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { GroupsApi } from "../../api/expenses";
-import { useHistory } from "react-router-dom";
-import {selectItem, setKwargs} from "../../redux/groupsSlice";
+import { selectItem, setKwargs } from "../../redux/groupsSlice";
 import BottomPagination from "../shared/BottomPagination";
 import Errors from "../shared/Errors";
-import {Collapse, Form} from "react-bootstrap";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-
+import EmailCollapse from "../expenses/EmailCollapse";
 
 const Groups = () => {
   const dispatch = useDispatch();
   const history = useHistory()
+  const groupNameRef = useRef()
 
   const token = useSelector((state) => state.auth.token)
   const groups = useSelector(state => state.groups)
@@ -37,6 +38,10 @@ const Groups = () => {
       ? setEmailOpen(null)
       : setEmailOpen(groupId)
   }
+
+  useEffect(() => {
+    addGroupOpen && groupNameRef.current && groupNameRef.current.focus()
+  }, [addGroupOpen]);
 
   return <div>
     <div className="page-header">
@@ -76,7 +81,7 @@ const Groups = () => {
       </nav>
     </div>
     {
-      (groups.errors?.detail || groups.errors?.length) && (!groupToRemove || userToRemove)
+      (groups.errors?.detail || groups.errors?.length || groups.errors?.name) && (!groupToRemove || !userToRemove || !addGroupOpen)
         ? <Errors errors={groups.errors}/>
         : null
     }
@@ -90,7 +95,7 @@ const Groups = () => {
               <button
                 type="button"
                 className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
-                onClick={() => dispatch(setAddGroupOpen(true))}
+                onClick={() => setAddGroupOpen(true)}
               >
                 <i className="mdi mdi-plus"></i>
               </button>
@@ -111,97 +116,36 @@ const Groups = () => {
                     ? groups.results.map((t, i) =>
                       <tr key={i}>
                         <td> {t.name} </td>
-                          {
-                            t.users.length
-                              ? <td>
-                                  <table className="table table-condensed">
-                                  <thead>
-                                  <tr>
-                                    <th>User</th>
-                                    <th>Active?</th>
-                                  </tr>
-                                  </thead>
-                                  <tbody>
-                                  {
-                                    t.users.map((user, i) =>
-                                      <tr key={i}>
-                                        <td>
-                                          {user.username} ({user.email})
-                                          <i
-                                            className="pl-1 mdi mdi-window-close text-danger"
-                                            onClick={() => {
-                                              dispatch(selectItem(t.id))
-                                              setUserToRemove(user)
-                                            }}
-                                            style={{cursor: "pointer"}}
-                                          />
-                                        </td>
-                                        <td>
-                                          <i className={`mdi mdi-${user.is_active ? "check-outline text-success" : "close-circle text-danger"}`} />
-                                        </td>
-                                      </tr>)
-                                  }
-                                  <tr>
-                                    <td colSpan={4} style={{textAlign: "center"}}>
-                                      <Collapse in={ emailOpen === t.id } style={{width: "100%"}}>
-                                        <form
-                                          className="nav-link mt-2"
-                                          onSubmit={e => {
-                                            e.preventDefault()
-                                            dispatch(GroupsApi.inviteUser(token, t.id, email))
-                                          }}
-                                        >
-                                          {
-                                            groups.errors?.[t.id]
-                                              ? <span className="nav-link mt-2 mb-0 text-danger">{groups.errors?.[t.id]}</span>
-                                              : null
-                                          }
-                                          <Form.Group>
-                                            <Form.Control
-                                              type="email"
-                                              className="form-control rounded"
-                                              placeholder="Email"
-                                              value={email}
-                                              onChange={e => setEmail(e.target.value)}
-                                            />
-                                          </Form.Group>
-                                        </form>
-                                      </Collapse>
-                                    </td>
-                                  </tr>
-                                  </tbody>
-                                  </table></td>
-                              : <td style={{textAlign: "center"}}>
-                                No users in this group
-                                <div className="pt-2">
-                                  <br/>
-                                  <Collapse in={ emailOpen === t.id } style={{width: "100%"}}>
-                                    <form
-                                      className="nav-link mt-2"
-                                      onSubmit={e => {
-                                        e.preventDefault()
-                                        dispatch(GroupsApi.inviteUser(token, t.id, email))
+                        {
+                          t.users.length
+                            ? <td>
+                              <ul className="list-arrow">
+                                {t.users.map((user, i) =>
+                                  <li key={i}>
+                                    {
+                                      t.created_by === user.id
+                                        ? <small><i className="text-warning mdi mdi-star" />&nbsp;</small>
+                                        : null
+                                    }
+                                    {user.username} / {user.email}{!user.is_active ? <small className="text-warning"> (Inactive)</small> : null}
+                                    <i
+                                      className="pl-1 mdi mdi-window-close text-danger"
+                                      onClick={() => {
+                                        dispatch(selectItem(t.id))
+                                        setUserToRemove(user)
                                       }}
-                                    >
-                                      {
-                                        groups.errors?.[t.id]
-                                          ? <span className="nav-link mt-2 mb-0 text-danger">{groups.errors?.[t.id]}</span>
-                                          : null
-                                      }
-                                      <Form.Group>
-                                        <Form.Control
-                                          type="email"
-                                          className="form-control rounded"
-                                          placeholder="Email"
-                                          value={email}
-                                          onChange={e => setEmail(e.target.value)}
-                                        />
-                                      </Form.Group>
-                                    </form>
-                                  </Collapse>
-                                </div>
+                                      style={{cursor: "pointer"}}
+                                    />
+                                  </li>
+                                )}
+                              </ul>
+                              <EmailCollapse emailOpen={emailOpen} groupId={t.id}/>
                               </td>
-                          }
+                            : <td>
+                              No users in this group
+                              <EmailCollapse emailOpen={emailOpen} groupId={t.id}/>
+                            </td>
+                        }
                         <td style={{textAlign: "center"}}>
                           <i
                             className="text-primary mdi mdi-account-plus pr-1"
@@ -245,6 +189,8 @@ const Groups = () => {
           onSubmit={e => {
             e.preventDefault()
             dispatch(GroupsApi.create(token, groupName))
+            setGroupName("")
+            setAddGroupOpen(false)
           }}
         >
           {
@@ -254,12 +200,14 @@ const Groups = () => {
           }
           <Form.Group>
             <Form.Control
+              ref={groupNameRef}
               type="text"
               className="form-control rounded"
               placeholder="Name"
               value={groupName}
               onChange={e => setGroupName(e.target.value)}
             />
+            <ul className="text-danger">{groups.errors?.name?.map((err, i) => <li key={i}>{err}</li>)}</ul>
           </Form.Group>
         </form>
       </Modal.Body>
@@ -270,16 +218,18 @@ const Groups = () => {
         }}>No, go back</Button>
         <Button
           variant="primary"
-          onClick={() => {
+          onClick={e => {
+            e.preventDefault()
             dispatch(GroupsApi.create(token, groupName))
-            setGroupName("null")
+            setGroupName("")
+            setAddGroupOpen(false)
           }}
         >
           Yes, create!
         </Button>
       </Modal.Footer>
     </Modal>
-    <Modal centered show={groupToRemove} onHide={() => setGroupToRemove(null)}>
+    <Modal centered show={!!groupToRemove} onHide={() => setGroupToRemove(null)}>
       <Modal.Header closeButton>
         <Modal.Title>
           <div className="row">
@@ -318,7 +268,7 @@ const Groups = () => {
           variant="danger"
           onClick={() => {
             dispatch(GroupsApi.deleteGroup(token, groupToRemove?.id))
-            setUserToRemove(null)
+            setGroupToRemove(null)
           }}
         >
           Yes, delete!

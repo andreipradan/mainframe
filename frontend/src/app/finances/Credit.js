@@ -20,18 +20,18 @@ const Credit = () => {
 
   const overview = useSelector(state => state.credit)
   useEffect(() => {
-    if (!overview.details) dispatch(FinanceApi.getCredit(token))
+    if (!overview.credit) dispatch(FinanceApi.getCredit(token))
     else onChangeCurrency()
-    }, [overview.details]
+    }, [overview.credit]
   );
-  const credit = overview.details?.credit
-  const rates = overview.details?.rates
-  const latestTimetable = overview.details?.latest_timetable.amortization_table
+  const credit = overview.credit
+  const rates = overview.rates
+  const latestTimetable = overview.latest_timetable?.amortization_table
 
   const payment = useSelector(state => state.payment)
   useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
-  const saved = calculateSum(payment.results, "saved")
+  const saved = overview.payment_stats?.saved
 
   const [excludePrepayments, setExcludePrepayments] = useState(false)
   const [barChartPrincipal, setBarChartPrincipal] = useState(null)
@@ -171,8 +171,8 @@ const Credit = () => {
         }
       : newValue
 
-    const totalPaid = calculateSum(payment.results, "total")
-    const interestPaid = calculateSum(payment.results, "interest")
+    const totalPaid = parseFloat(overview.payment_stats?.total)
+    const interestPaid = parseFloat(overview.payment_stats?.interest)
 
     const principalRemaining = calculateSum(latestTimetable, "principal")
     const interestRemaining = calculateSum(latestTimetable, "interest")
@@ -192,8 +192,8 @@ const Credit = () => {
 
     setPaidTotal(getAmountInCurrency(totalPaid, currency))
     setPaidInterest(getAmountInCurrency(interestPaid, currency))
-    setPaidPrepaid(getAmountInCurrency(calculateSum(payment.results, "total", "is_prepayment"), currency))
-    setPaidPrincipal(getAmountInCurrency(calculateSum(payment.results, "principal"), currency))
+    setPaidPrepaid(getAmountInCurrency(overview.payment_stats?.prepaid, currency))
+    setPaidPrincipal(getAmountInCurrency(overview.payment_stats?.principal, currency))
 
     setBarChartPrincipal(barChartPrincipal?.map(p => getAmountInCurrency(p, currency)))
     setBarChartInterest(barChartInterest?.map(p => getAmountInCurrency(p, currency)))
@@ -313,10 +313,10 @@ const Credit = () => {
             {
               overview.loading
                 ? <Circles />
-                : overview.details
+                : overview.credit
                   ? <>
                     <ListItem label={"Total"} value={remainingTotal} textType={"primary"}/>
-                    <ListItem label={"Date"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
+                    <ListItem label={"Last day"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
                     <ListItem label={"Months"} value={`${latestTimetable.length} (${(latestTimetable.length / 12).toFixed(1)} yrs)`} />
                     <ListItem label={"Insurance"} value={remainingInsurance} />
                     <ListItem label={"Principal"} value={remainingPrincipal} textType={"success"} />
@@ -401,7 +401,7 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              Payments {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
+              Latest payments {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -453,7 +453,7 @@ const Credit = () => {
           <div className="card-body">
             <h4 className="card-title">Remaining: {remainingTotal} {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h4>
             {
-              overview.loading ? <Circles /> : overview.details ? <Doughnut data={remainingData} options={doughnutPieOptions} /> : "-"
+              overview.loading ? <Circles /> : overview.credit ? <Doughnut data={remainingData} options={doughnutPieOptions} /> : "-"
             }
           </div>
         </div>
