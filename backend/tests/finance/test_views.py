@@ -56,12 +56,17 @@ class TestCredit:
     def test_list(self, client, django_assert_num_queries, staff_session):
         credit = CreditFactory()
         PaymentFactory.create_batch(3, credit=credit)
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(6):
             response = client.get(
                 reverse("finance:credit-list"), HTTP_AUTHORIZATION=staff_session.token
             )
         assert response.status_code == 200
-        assert set(response.json().keys()) == {"credit", "latest_timetable", "rates"}
+        assert set(response.json().keys()) == {
+            "credit",
+            "latest_timetable",
+            "payment_stats",
+            "rates",
+        }
 
 
 @pytest.mark.django_db
