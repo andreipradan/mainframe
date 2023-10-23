@@ -65,20 +65,23 @@ def mainframe(request):
     payload = json.loads(request.body)
 
     if event != "workflow_run":
-        branch = payload.get("ref", "").replace("refs/heads/", "")
-        pusher = payload.get("pusher", {}).get("name", "")
         compare = payload.get("compare", "")
         new_changes_link = (
             f"<a target='_blank' href='{compare}'>new changes</a>" if compare else ""
         )
+        branch = payload.get("ref", "").replace("refs/heads/", "")
+        branch_message = f"on the <b>{branch}</b> branch" if branch else ""
+
+        pusher = payload.get("pusher", {}).get("name", "")
         send_telegram_message(
             text=(
                 f"{PREFIX} <b>{pusher}</b> {event}ed {new_changes_link} "
-                f"on the <b>{branch}</b> branch"
+                f"{branch_message}"
             ),
             parse_mode=telegram.ParseMode.HTML,
         )
         return HttpResponse("pong")
+
     action = " ".join(payload["action"].split("_")).title()
     wf_run = payload["workflow_run"]
     name = wf_run["name"]
