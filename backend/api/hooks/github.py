@@ -74,27 +74,27 @@ def mainframe(request):
 
         pusher = payload.get("pusher", {}).get("name", "")
         send_telegram_message(
-            text=(
-                f"{PREFIX} <b>{pusher}</b> {event}ed {new_changes_link} "
-                f"{branch_message}"
-            ),
+            text=(f"<b>{pusher}</b> {event}ed {new_changes_link} " f"{branch_message}"),
             parse_mode=telegram.ParseMode.HTML,
         )
         return HttpResponse("pong")
 
-    action = " ".join(payload["action"].split("_")).title()
+    action = " ".join(payload["action"].split("_"))
     wf_run = payload["workflow_run"]
     name = wf_run["name"]
     conclusion = wf_run.get("conclusion", "")
     branch = wf_run["head_branch"]
     message = (
-        f"[{name}] - {action}{f' ({conclusion.title()})' if conclusion else ''}\n"
-        f"{wf_run.get('display_title', branch)}\n"
-        f"<a href='{wf_run['html_url']}'>Details</a>"
+        f"<a href='{wf_run['html_url']}'><b>{name}</b></a> {action}"
+        f"{f'({conclusion.title()})' if conclusion else ''} "
     )
-    if branch == "main" and name == "Unit tests" and conclusion == "success":
-        schedule_deploy()
-        message += "\nDeployment scheduled"
+    if branch == "main" and name == "unit tests":
+        if action == "requested":
+            message += f"\nCommit: \"{wf_run.get('display_title', branch)}\"\n"
+        if conclusion == "success":
+            schedule_deploy()
+            message += "🎉\nDeployment scheduled 🚀"
+
     send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
 
