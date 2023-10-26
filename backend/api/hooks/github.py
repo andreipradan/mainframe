@@ -86,7 +86,7 @@ def mainframe(request):
     branch = wf_run["head_branch"]
     message = (
         f"<a href='{wf_run['html_url']}'><b>{name}</b></a> {action}"
-        f"{f'({conclusion.title()})' if conclusion else ''} "
+        f" {f'({conclusion.title()})' if conclusion else ''} "
     )
     if branch == "main" and name == "unit tests":
         if action == "requested":
