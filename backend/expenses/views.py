@@ -4,8 +4,24 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.user.models import User
-from expenses.models import ExpenseGroup
-from expenses.serializers import ExpenseGroupSerializer
+from api.user.serializers import UserSerializer
+from expenses.models import ExpenseGroup, Expense
+from expenses.serializers import ExpenseGroupSerializer, ExpenseSerializer
+
+
+class ExpenseViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ExpenseSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Expense.objects.order_by("-created_at")
+        return self.request.user.expense_set.order_by("-created_at")
+
+    def list(self, request, **kwargs):
+        response = super().list(request, **kwargs)
+        response.data["users"] = UserSerializer(User.objects.all(), many=True).data
+        return response
 
 
 class ExpenseGroupViewSet(viewsets.ModelViewSet):

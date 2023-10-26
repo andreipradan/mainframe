@@ -2,5 +2,16 @@ import { createSlice } from "@reduxjs/toolkit";
 import {getBaseSliceOptions} from "./shared";
 
 export const expensesSlice = createSlice(getBaseSliceOptions("expenses"));
-export const { set, setErrors, selectItem, setKwargs, setLoading } = expensesSlice.actions;
+export const {
+  create,
+  selectItem,
+  set,
+  setErrors,
+  setItem,
+  setKwargs,
+  setLoading,
+  setLoadingItems,
+  setModalOpen,
+  update,
+} = expensesSlice.actions;
 export default expensesSlice.reducer;

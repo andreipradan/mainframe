@@ -11,7 +11,7 @@ import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal from "./EditModal";
-import ListItem from "../../shared/ListItem";
+import ListItem from "../../../shared/ListItem";
 import { FinanceApi } from "../../../../api/finance";
 import { getTypeLabel } from "../../Categorize/EditModal";
 import { setSelectedAccount } from "../../../../redux/accountsSlice";

@@ -6,6 +6,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
     kwargs: {},
     loading: false,
     loadingItems: null,
+    modalOpen: false,
     next: null,
     previous: null,
     results: null,
@@ -18,10 +19,11 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.errors = null
       state.loading = false
       state.results = state.results
-          ? [...state.results, action.payload].sort((a, b) =>
-              a.name > b.name ? 1 : -1
-          )
-          : [action.payload]
+        ? [...state.results, action.payload].sort((a, b) =>
+            a.name > b.name ? 1 : -1
+        )
+        : [action.payload]
+      state.selectedItem = null
     },
     deleteItem: (state, action) => {
       state.count -= 1
@@ -51,12 +53,22 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
         state[key] = action.payload[key]
     },
     setKwargs: (state, action) => {state.kwargs = action.payload},
+    setItem: (state, action) => {
+      state.errors = null
+      state.loading = false
+      state.loadingItems = state.loadingItems
+        ? state.loadingItems.filter(i => i !== action.payload.id)
+        : null
+      state.selectedItem = action.payload
+      state.results = state.results.map(r => r.id !== action.payload.id ? r : action.payload)
+    },
     setLoading: (state, action) => {state.loading = action.payload},
     setLoadingItems: (state, action) => {
       state.loadingItems = !state.loadingItems
         ? [action.payload]
-        : [...state.loadingItems, action.payload];
+        : [...new Set([...state.loadingItems, action.payload])];
     },
+    setModalOpen: (state, action) => {state.modalOpen = action.payload},
     update: (state, action) => {
       state.errors = null;
       state.loading = false

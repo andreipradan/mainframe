@@ -9,7 +9,6 @@ urlpatterns = [
         "earthquakes/",
         include(("api.earthquakes.routers", "api"), namespace="earthquakes"),
     ),
-    path("expenses/", include(("expenses.routers", "api"), namespace="expenses")),
     path("finance/", include(("finance.routers", "api"), namespace="finance")),
     path("groups/", include(("api.groups.routers", "api"), namespace="groups")),
     path("hooks/", include("api.hooks.urls")),
@@ -17,5 +16,6 @@ urlpatterns = [
     path("logs/", include(("api.logs.routers", "api"), namespace="logs")),
     path("meals/", include(("meals.routers", "api"), namespace="meals")),
     path("rpi/", include(("api.rpi.routers", "api"), namespace="rpi")),
+    path("split/", include(("expenses.routers", "api"), namespace="expenses")),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
 ]

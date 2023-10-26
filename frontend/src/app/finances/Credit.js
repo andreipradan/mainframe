@@ -11,7 +11,7 @@ import "nouislider/distribute/nouislider.css";
 import { FinanceApi } from "../../api/finance";
 import { calculateSum, getPercentage } from "./utils";
 import { selectStyles } from "./Categorize/EditModal";
-import ListItem from "./shared/ListItem";
+import ListItem from "../shared/ListItem";
 import Errors from "../shared/Errors";
 
 const Credit = () => {

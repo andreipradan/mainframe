@@ -3,11 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 
 import { Circles } from "react-loader-spinner";
-import { Collapse, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "nouislider/distribute/nouislider.css";
-import "react-datepicker/dist/react-datepicker.css";
 
 import { GroupsApi } from "../../api/expenses";
 import { selectItem, setKwargs } from "../../redux/groupsSlice";

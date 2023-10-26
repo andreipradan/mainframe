@@ -7,7 +7,7 @@ import { useHistory } from "react-router-dom";
 import Marquee from "react-fast-marquee";
 
 import EditModal from "./EditModal";
-import ListItem from "../shared/ListItem";
+import ListItem from "../../shared/ListItem";
 import { FinanceApi } from "../../../api/finance";
 import {
   selectAccount,

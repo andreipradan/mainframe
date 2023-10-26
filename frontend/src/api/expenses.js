@@ -1,5 +1,14 @@
 import axios from "./index";
 import {
+  create as createExpense,
+  set as setExpenses,
+  setErrors as setExpensesErrors,
+  setItem as setExpense,
+  setLoading as setExpensesLoading,
+  setLoadingItems as setLoadingExpenses,
+  update as updateExpense,
+} from "../redux/expensesSlice";
+import {
   create as createGroup,
   deleteItem as deleteGroup,
   set as setGroups,
@@ -12,18 +21,56 @@ import { toast } from "react-toastify";
 import { toastParams } from "./auth";
 
 
+export class ExpensesApi {
+  static create = (token, data) => dispatch => {
+    dispatch(setExpensesLoading(true));
+    axios
+      .post(`${base}/expenses/`, data, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(createExpense(response.data))
+        toast.success("Expense created successfully!", toastParams)
+      })
+      .catch((err) => handleErrors(err, dispatch, setExpensesErrors));
+  };
+  static get = (token, expenseId) => dispatch => {
+    dispatch(setLoadingExpenses(expenseId));
+    axios
+      .get(`${base}/expenses/${expenseId}/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setExpense(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setExpensesErrors));
+  };
+  static getList = (token, kwargs) => dispatch => {
+    dispatch(setExpensesLoading(true));
+    const searchParams = kwargs ? `?${createSearchParams(kwargs)}` : ""
+    axios
+      .get(`${base}/expenses/${searchParams}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setExpenses(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setExpensesErrors));
+  };
+  static update = (token, expenseId, data) => dispatch => {
+    dispatch(setLoadingExpenses(expenseId));
+    axios
+      .patch(`${base}/expenses/${expenseId}/`, data, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(updateExpense(response.data))
+        toast.success("Expense updated successfully!", toastParams)
+      })
+      .catch((err) => handleErrors(err, dispatch, setExpensesErrors));
+  };
+}
+
 export class GroupsApi {
   static create = (token, groupName) => dispatch => {
     dispatch(setGroupsLoading(true));
     axios
-      .post(`${base}/`, {name: groupName}, { headers: { Authorization: token } })
+      .post(`${base}/groups/`, {name: groupName}, { headers: { Authorization: token } })
       .then(response => dispatch(createGroup(response.data)))
       .catch((err) => handleErrors(err, dispatch, setGroupsErrors));
   }
   static deleteGroup = (token, groupId) => dispatch => {
     dispatch(setGroupsLoading(true));
     axios
-      .delete(`${base}/${groupId}/`, { headers: { Authorization: token } })
+      .delete(`${base}/groups/${groupId}/`, { headers: { Authorization: token } })
       .then(() => dispatch(deleteGroup(groupId)))
       .catch((err) => handleErrors(err, dispatch, setGroupsErrors));
   }
@@ -31,7 +78,7 @@ export class GroupsApi {
     dispatch(setGroupsLoading(true));
     const searchParams = kwargs ? `?${createSearchParams(kwargs)}` : ""
     axios
-      .get(`${base}/${searchParams}`, { headers: { Authorization: token } })
+      .get(`${base}/groups/${searchParams}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => handleErrors(err, dispatch, setGroupsErrors));
   };
@@ -39,7 +86,7 @@ export class GroupsApi {
     const data = {[isEmail ? "email" : "username"]: emailOrUsername}
     dispatch(setGroupsLoading(true))
     axios
-      .put(`${base}/${groupId}/invite/`, data, { headers: { Authorization: token } })
+      .put(`${base}/groups/${groupId}/invite/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
         handleErrors(err, dispatch, setGroupsErrors)
@@ -50,7 +97,7 @@ export class GroupsApi {
   static removeUserFromGroup = (token, groupId, userId) => dispatch => {
     dispatch(setGroupsLoading(true))
     axios
-      .put(`${base}/${groupId}/remove-user/`, {id: userId}, { headers: { Authorization: token } })
+      .put(`${base}/groups/${groupId}/remove-user/`, {id: userId}, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
         handleErrors(err, dispatch, setGroupsErrors)
@@ -60,4 +107,4 @@ export class GroupsApi {
   }
 }
 
-const base = "expenses/groups"
+const base = "split"

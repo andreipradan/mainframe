@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.db import IntegrityError
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
@@ -27,6 +29,12 @@ class UserViewSet(viewsets.ModelViewSet):
         ):
             return [IsAuthenticated()]
         return super().get_permissions()
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            super().destroy(request, *args, **kwargs)
+        except IntegrityError as e:
+            raise ValidationError(str(e).split("DETAIL: ")[1].strip())
 
     @action(detail=True, methods=["put"], url_path="change-password")
     def change_password(self, *_, **__):

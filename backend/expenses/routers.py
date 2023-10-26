@@ -1,7 +1,8 @@
 from rest_framework import routers
 
-from expenses.views import ExpenseGroupViewSet
+from expenses.views import ExpenseGroupViewSet, ExpenseViewSet
 
 router = routers.SimpleRouter()
-router.register("groups", ExpenseGroupViewSet, basename="expense_groups")
+router.register("expenses", ExpenseViewSet, basename="expenses")
+router.register("groups", ExpenseGroupViewSet, basename="groups")
 urlpatterns = router.urls
