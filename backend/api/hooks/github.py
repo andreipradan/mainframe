@@ -88,7 +88,7 @@ def mainframe(request):
     conclusion = wf_run.get("conclusion", "")
     branch = wf_run["head_branch"]
     message = (
-        f"{PREFIX} <b>{name}</b> - {branch} - {action}"
+        f"{PREFIX} <b>{name}</b> - {wf_run.get('display_title', branch)} - {action}"
         f"{f' ({conclusion.title()})' if conclusion else ''} "
         f"<a href='{wf_run['html_url']}'>Details</a>"
     )
