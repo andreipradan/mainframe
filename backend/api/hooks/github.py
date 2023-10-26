@@ -92,7 +92,7 @@ def mainframe(request):
         f"{wf_run.get('display_title', branch)}\n"
         f"<a href='{wf_run['html_url']}'>Details</a>"
     )
-    if branch == "main" and name == "CI" and conclusion == "success":
+    if branch == "main" and name == "Unit tests" and conclusion == "success":
         schedule_deploy()
         message += "\nDeployment scheduled"
     send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
