@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from api.authentication.models import ActiveSession
 from api.authentication.serializers import LoginSerializer, RegisterSerializer
 from api.user.models import User
-from api.user.serializers import UserSerializer, ChangePasswordSerializer
+from api.user.serializers import ChangePasswordSerializer, UserSerializer
 from clients.chat import send_telegram_message
 
 
