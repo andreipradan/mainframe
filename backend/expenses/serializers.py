@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.user.serializers import UserSerializer
-from expenses.models import ExpenseGroup, Expense, Debt
+from expenses.models import Debt, Expense, ExpenseGroup
 
 
 class DebtSerializer(serializers.ModelSerializer):

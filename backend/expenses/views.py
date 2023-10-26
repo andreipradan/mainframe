@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from api.user.models import User
 from api.user.serializers import UserSerializer
-from expenses.models import ExpenseGroup, Expense
+from expenses.models import Expense, ExpenseGroup
 from expenses.serializers import ExpenseGroupSerializer, ExpenseSerializer
 
 
