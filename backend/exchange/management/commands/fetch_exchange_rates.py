@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from clients import healthchecks
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
-from exchange.management.clients import FetchExchangeRatesException, BNR, ECB
+from exchange.management.clients import BNR, ECB, FetchExchangeRatesException
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}
 

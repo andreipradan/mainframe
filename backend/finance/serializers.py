@@ -1,13 +1,6 @@
 from rest_framework import serializers
 
-from finance.models import (
-    Account,
-    Category,
-    Credit,
-    Payment,
-    Timetable,
-    Transaction,
-)
+from finance.models import Account, Category, Credit, Payment, Timetable, Transaction
 
 
 class AccountSerializer(serializers.ModelSerializer):
