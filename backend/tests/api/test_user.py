@@ -98,12 +98,12 @@ class TestUserViewSet:
                 },
                 {
                     "date": mock.ANY,
-                    "email": "",
+                    "email": user.email,
                     "id": user.id,
                     "is_active": False,
                     "is_staff": False,
                     "last_login": None,
-                    "username": "",
+                    "username": user.username,
                 },
             ],
         }

@@ -28,7 +28,7 @@ class CreditFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Credit
 
-    account = factory.SubFactory("tests.finance.factories.AccountFactory")
+    account = factory.SubFactory("tests.factories.finance.AccountFactory")
     currency = random.choice(["usd", "eur"])
     date = "2000-01-01"
     number = factory.Sequence(lambda n: n)
@@ -40,7 +40,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Payment
 
-    credit = factory.SubFactory("tests.finance.factories.CreditFactory")
+    credit = factory.SubFactory("tests.factories.finance.CreditFactory")
     date = factory.Sequence(lambda x: f"2000-01-0{x+1:>1}")
     remaining = 0
 
@@ -49,9 +49,9 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Transaction
 
-    account = factory.SubFactory("tests.finance.factories.AccountFactory")
+    account = factory.SubFactory("tests.factories.finance.AccountFactory")
     amount = random.choice(range(100))
-    category = factory.SubFactory("tests.finance.factories.CategoryFactory")
+    category = factory.SubFactory("tests.factories.finance.CategoryFactory")
     currency = random.choice(["usd", "eur"])
     product = Transaction.PRODUCT_CURRENT
     started_at = datetime.datetime.now()

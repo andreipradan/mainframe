@@ -27,7 +27,7 @@ class TestLogin:
                 "is_active": True,
                 "is_staff": False,
                 "last_login": None,
-                "username": "",
+                "username": user.username,
             },
         }
 

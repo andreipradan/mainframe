@@ -32,7 +32,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         try:
-            super().destroy(request, *args, **kwargs)
+            return super().destroy(request, *args, **kwargs)
         except IntegrityError as e:
             raise ValidationError(str(e).split("DETAIL: ")[1].strip())
 
