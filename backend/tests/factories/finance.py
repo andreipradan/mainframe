@@ -29,7 +29,7 @@ class CreditFactory(factory.django.DjangoModelFactory):
         model = Credit
 
     account = factory.SubFactory("tests.factories.finance.AccountFactory")
-    currency = random.choice(["usd", "eur"])
+    currency = factory.SubFactory("tests.factories.exchange.CurrencyFactory")
     date = "2000-01-01"
     number = factory.Sequence(lambda n: n)
     number_of_months = factory.Sequence(lambda n: n)

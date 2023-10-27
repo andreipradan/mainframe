@@ -11,7 +11,9 @@ NULLABLE_KWARGS = {"blank": True, "null": True}
 
 def get_default_credit():
     code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
-    return Credit.objects.select_related("account").get(account__client_code=code)
+    return Credit.objects.select_related("account", "currency").get(
+        account__client_code=code
+    )
 
 
 def validate_amortization_table(value):
