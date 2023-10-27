@@ -131,10 +131,14 @@ const EditModal = () => {
               <div>
                 <DatePicker
                   className="btn btn-outline-secondary rounded btn-sm"
-                  readOnly={expenses.loading}
+                  dateFormat={"dd-MM-yyyy"}
+                  isClearable={false}
                   onChange={date => setDate(date)}
+                  readOnly={expenses.loading}
+                  scrollableYearDropdown={true}
                   selected={date}
                   showIcon
+                  showYearDropdown={true}
                 />
               </div>
             </Form.Group>

@@ -22,6 +22,8 @@ class ExchangeRateViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(date=date)
         if from_currency := self.request.query_params.get("from_currency"):
             queryset = queryset.filter(symbol__startswith=from_currency)
+        if source := self.request.query_params.get("source"):
+            queryset = queryset.filter(source=source)
         if to_currency := self.request.query_params.get("to_currency"):
             queryset = queryset.filter(symbol__endswith=to_currency)
         return queryset

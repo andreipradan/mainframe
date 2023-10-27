@@ -66,13 +66,21 @@ const Accounts = () => {
                 <tbody>
                 {
                   expenses.loading
-                    ? <Circles
-                        visible={true}
-                        width="100%"
-                        ariaLabel="ball-triangle-loading"
-                        wrapperStyle={{float: "right"}}
-                        color='orange'
-                      />
+                    ? <tr>
+                        <td colSpan={5}>
+                          <Circles
+                            visible={true}
+                            ariaLabel="ball-triangle-loading"
+                            wrapperStyle={{
+                              display: "block",
+                              marginLeft: "auto",
+                              marginRight: "auto",
+                              width: "25%"
+                            }}
+                            color='orange'
+                          />
+                        </td>
+                      </tr>
                     : expenses.results?.length
                         ? expenses.results.map((p, i) =>
                           <tr key={i} style={{cursor: "pointer"}} onClick={() => dispatch(selectItem(p.id))}>
