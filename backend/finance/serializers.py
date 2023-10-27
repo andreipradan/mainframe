@@ -4,7 +4,6 @@ from finance.models import (
     Account,
     Category,
     Credit,
-    ExchangeRate,
     Payment,
     Timetable,
     Transaction,
@@ -42,12 +41,6 @@ class CategorySerializer(serializers.ModelSerializer):
 class CreditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Credit
-        fields = "__all__"
-
-
-class ExchangeRateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ExchangeRate
         fields = "__all__"
 
 

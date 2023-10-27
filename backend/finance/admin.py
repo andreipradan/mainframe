@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from finance.models import Account, Category, Credit, ExchangeRate, Payment, Timetable
+from finance.models import Account, Category, Credit, Payment, Timetable
 
 
 @admin.register(Account)
@@ -16,11 +16,6 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Credit)
 class CreditAdmin(admin.ModelAdmin):
     list_display = "account", "currency", "total", "created_at", "updated_at"
-
-
-@admin.register(ExchangeRate)
-class ExchangeRateAdmin(admin.ModelAdmin):
-    list_display = "date", "source", "symbol", "value"
 
 
 @admin.register(Payment)

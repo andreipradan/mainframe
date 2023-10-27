@@ -3,12 +3,10 @@ from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
-from finance.models import ExchangeRate, Payment, get_default_credit
-from finance.serializers import (
-    CreditSerializer,
-    ExchangeRateSerializer,
-    TimetableSerializer,
-)
+from exchange.models import ExchangeRate
+from exchange.serializers import ExchangeRateSerializer
+from finance.models import Payment, get_default_credit
+from finance.serializers import CreditSerializer, TimetableSerializer
 
 
 class CreditViewSet(viewsets.ViewSet):

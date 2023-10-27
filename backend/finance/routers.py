@@ -3,7 +3,6 @@ from rest_framework import routers
 from finance.viewsets.account import AccountViewSet
 from finance.viewsets.category import CategoryViewSet
 from finance.viewsets.credit import CreditViewSet
-from finance.viewsets.exchange_rate import ExchangeRateViewSet
 from finance.viewsets.payment import PaymentViewSet
 from finance.viewsets.prediction import PredictionViewSet
 from finance.viewsets.timetable import TimetableViewSet
@@ -14,7 +13,6 @@ router = routers.SimpleRouter()
 router.register("accounts", AccountViewSet, basename="accounts")
 router.register("categories", CategoryViewSet, basename="categories")
 router.register("credit", CreditViewSet, basename="credit")
-router.register("exchange-rate", ExchangeRateViewSet, basename="exchange_rate")
 router.register("payments", PaymentViewSet, basename="payments")
 router.register("prediction", PredictionViewSet, basename="prediction")
 router.register("timetables", TimetableViewSet, basename="timetables")

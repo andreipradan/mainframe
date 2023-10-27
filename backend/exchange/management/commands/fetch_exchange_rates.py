@@ -5,16 +5,9 @@ from django.core.management.base import BaseCommand, CommandError
 from clients import healthchecks
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
-from finance.management.clients import (
-    FetchExchangeRatesException,
-    fetch_from_bnr,
-    fetch_from_ecb,
-)
+from exchange.management.clients import FetchExchangeRatesException, BNR, ECB
 
-clients = {
-    "bnr": fetch_from_bnr,
-    "ecb": fetch_from_ecb,
-}
+CLIENTS = {"bnr": BNR, "ecb": ECB}
 
 
 class Command(BaseCommand):
@@ -24,6 +17,11 @@ class Command(BaseCommand):
             choices=["bnr", "ecb"],
             required=True,
             type=str,
+        )
+        parser.add_argument(
+            "--full",
+            action="store_true",
+            default=False,
         )
 
     def handle(self, *_, **options):
@@ -35,11 +33,11 @@ class Command(BaseCommand):
         healthchecks.ping(f"{source}-fx")
 
         try:
-            date, count = clients[source](logger)
+            count = CLIENTS[source](logger).fetch(full=options["full"])
         except FetchExchangeRatesException as e:
             raise CommandError(e)
 
-        msg = f"Fetched {count} {source.upper()} exchange rates for {date}"
+        msg = f"Fetched {count} {source.upper()} exchange rates"
         logger.info(msg)
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS("Done."))

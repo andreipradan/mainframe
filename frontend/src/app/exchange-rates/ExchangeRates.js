@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 
 import Form from "react-bootstrap/Form";
 import Select from "react-select";
@@ -8,8 +9,7 @@ import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { FinanceApi } from "../../api/finance";
-import { useHistory } from "react-router-dom";
+import { ExchangeApi } from "../../api/exchange";
 import { selectStyles } from "../finances/Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
 import BottomPagination from "../shared/BottomPagination";
@@ -92,9 +92,7 @@ const ExchangeRates = () => {
             : <button
               type="button"
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
-              onClick={() => {
-                dispatch(FinanceApi.getExchangeRates(token, exchange.kwargs))
-              }}
+              onClick={() => dispatch(ExchangeApi.getRates(token, exchange.kwargs))}
             >
                 <i className="mdi mdi-refresh"></i>
               </button>
@@ -148,15 +146,22 @@ const ExchangeRates = () => {
                 <tbody>
                 {
                   exchange.loading
-                    ? <Circles
-                        visible={true}
-                        height={20}
-                        width={20}
-                        wrapperClass="btn"
-                        wrapperStyle={{display: "default"}}
-                        ariaLabel="ball-triangle-loading"
-                        color='green'
-                      />
+                    ? <tr>
+                        <td colSpan={4}>
+                          <Circles
+                            visible={true}
+                            wrapperStyle={{
+                              display: "block",
+                              marginLeft: "auto",
+                              marginRight: "auto",
+                              width: "25%"
+                            }}
+                            wrapperClass="btn"
+                            ariaLabel="ball-triangle-loading"
+                            color='green'
+                          />
+                        </td>
+                      </tr>
                     : exchange.results?.length
                       ? exchange.results.map((t, i) =>
                         <tr key={i}>
@@ -165,13 +170,12 @@ const ExchangeRates = () => {
                           <td> {t.source}</td>
                           <td> {t.value} </td>
                         </tr>)
-                      : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
+                      : <tr><td colSpan={6} className="text-center"><span>No rates found</span></td></tr>
                 }
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={exchange} fetchMethod={FinanceApi.getExchangeRates} setKwargs={setKwargs} perPage={31}/>
-
+            <BottomPagination items={exchange} fetchMethod={ExchangeApi.getRates} setKwargs={setKwargs} perPage={31}/>
           </div>
         </div>
       </div>
@@ -181,7 +185,7 @@ const ExchangeRates = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault()
-              dispatch(FinanceApi.getExchangeRates(token, exchange.kwargs))
+              dispatch(ExchangeApi.getRates(token, exchange.kwargs))
             }}>
               <Form.Group>
                 <Form.Label>From Currency</Form.Label>&nbsp;

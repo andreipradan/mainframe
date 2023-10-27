@@ -54,7 +54,7 @@ class Account(TimeStampedModel):
 
 class Credit(TimeStampedModel):
     account = models.ForeignKey(on_delete=models.CASCADE, to="finance.Account")
-    currency = models.CharField(max_length=3)
+    currency = models.ForeignKey("exchange.Currency", on_delete=models.DO_NOTHING)
     date = models.DateField()
     number = models.IntegerField(unique=True)
     number_of_months = models.IntegerField()
@@ -66,17 +66,6 @@ class Credit(TimeStampedModel):
     @property
     def latest_timetable(self):
         return self.timetable_set.order_by("-date").first()
-
-
-class ExchangeRate(TimeStampedModel):
-    date = models.DateField()
-    source = models.CharField(max_length=64)
-    symbol = models.CharField(max_length=6)
-    value = models.DecimalField(decimal_places=4, max_digits=10)
-
-    class Meta:
-        ordering = ("-date", "symbol")
-        unique_together = "date", "source", "symbol"
 
 
 class Payment(TimeStampedModel):

@@ -1,9 +1,12 @@
+from django.shortcuts import render
+
+# Create your views here.
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.settings import api_settings
 
-from finance.models import ExchangeRate
-from finance.serializers import ExchangeRateSerializer
+from exchange.models import ExchangeRate
+from exchange.serializers import ExchangeRateSerializer
 
 
 class ExchangePagination(api_settings.DEFAULT_PAGINATION_CLASS):
