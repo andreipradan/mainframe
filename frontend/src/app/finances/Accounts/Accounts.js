@@ -1,16 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 
+import { Collapse } from "react-bootstrap";
 import { Tooltip } from "react-tooltip";
 import { useHistory } from "react-router-dom";
 import Marquee from "react-fast-marquee";
 
-import EditModal from "./EditModal";
 import ListItem from "../../shared/ListItem";
 import { FinanceApi } from "../../../api/finance";
 import {
-  selectAccount,
   setModalOpen,
   setSelectedAccount
 } from "../../../redux/accountsSlice";
@@ -22,10 +21,26 @@ const Accounts = () => {
   const dispatch = useDispatch();
   const history = useHistory();
 
+  const [accountOpen, setAccountOpen] = useState(null);
+
   const token = useSelector((state) => state.auth.token)
 
   const accounts = useSelector(state => state.accounts)
   const transactions = useSelector(state => state.transactions)
+
+  const [byBank, setByBank] = useState(null)
+
+  useEffect(() => {
+    if (accounts.results?.length) {
+      let mapping = {}
+      for (let account of accounts.results) {
+        mapping[account.bank] = mapping[account.bank]
+          ? [...mapping[account.bank], account]
+          : [account]
+      }
+      setByBank(mapping)
+    }
+  }, [accounts.results]);
 
   useEffect(() => {
     accounts.selectedAccount && dispatch(setSelectedAccount())
@@ -106,17 +121,7 @@ const Accounts = () => {
               </button>
             </h4>
             <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th> Type </th>
-                    <th> Bank </th>
-                    <th> Transactions </th>
-                    <th> Number </th>
-                    <th> Client code </th>
-                    <th> Actions </th>
-                  </tr>
-                </thead>
+              <table className="table ">
                 <tbody>
                 {
                   accounts.loading
@@ -127,20 +132,47 @@ const Accounts = () => {
                       wrapperStyle={{float: "right"}}
                       color='orange'
                     />
-                    : accounts.results?.length
-                        ? accounts.results.map((p, i) =>
-                        <tr key={i}>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {capitalize(p.type)} </td>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.bank} </td>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.transaction_count} </td>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.number !== "0" ? p.number : "-"} </td>
-                          <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${p.id}`)}> {p.client_code || "-"} </td>
-                          <td>
-                            <i
-                              style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-pencil text-secondary"
-                              onClick={() => dispatch(selectAccount(p.id))}
-                            />
+                    : byBank
+                        ? Object.entries(byBank).map(([bank, accounts], i) =>
+                        <tr key={i} style={{cursor: "pointer"}} onClick={() => accountOpen === bank ? setAccountOpen(null) : setAccountOpen(bank)}>
+                          <td><i className={`mdi mdi-chevron-${accountOpen === bank ? 'down text-success' : 'right text-secondary'}`} /></td>
+                          <td>{bank}
+                            {/*{capitalize(p.type)}*/}
+                            <Collapse in={ accountOpen === bank } style={{width: "100%"}}>
+                              <div className="table-responsive mt-3">
+                                <table className="table table-hover">
+                                  {/*<thead>*/}
+                                  {/*<tr>*/}
+                                  {/*  <th> Type </th>*/}
+                                  {/*  <th> Transactions </th>*/}
+                                  {/*  <th> Number </th>*/}
+                                  {/*  <th> Client code </th>*/}
+                                  {/*  <th> Actions </th>*/}
+                                  {/*</tr>*/}
+                                  {/*</thead>*/}
+                                  <tbody>
+                                  {
+                                    accounts.length
+                                      ? accounts.map((account, i) => <tr key={i}>
+                                        <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.type} </td>
+                                        <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.transaction_count || "no"} transactions </td>
+                                        <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.number !== "0" ? account.number : "-"} </td>
+                                        <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.client_code || "-"} </td>
+                                        {/*<td>*/}
+                                        {/*  <i*/}
+                                        {/*    style={{cursor: "pointer"}}*/}
+                                        {/*    className="mr-2 mdi mdi-pencil text-secondary"*/}
+                                        {/*    onClick={() => dispatch(selectAccount(account.id))}*/}
+                                        {/*  />*/}
+                                        {/*</td>*/}
+                                      </tr>)
+                                      : null
+                                  }
+                                  <tr></tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </Collapse>
                           </td>
                         </tr>)
                       : <tr><td colSpan={6}><span>No accounts found</span></td></tr>
@@ -152,7 +184,6 @@ const Accounts = () => {
         </div>
       </div>
     </div>
-    <EditModal />
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
       Percentage of the remaining principal<br/>
     </Tooltip>

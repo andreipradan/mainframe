@@ -15,11 +15,11 @@ import Modal from "react-bootstrap/Modal";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 
-import { FinanceApi } from "../../../../api/finance";
-import { capitalize } from "./AccountDetails";
-import { createOption, selectStyles } from "../../Categorize/EditModal";
-import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
-import Errors from "../../../shared/Errors";
+import { FinanceApi } from "../../../../../api/finance";
+import { capitalize } from "../AccountDetails";
+import { createOption, selectStyles } from "../../../Categorize/EditModal";
+import { selectItem as selectTransaction } from "../../../../../redux/transactionsSlice";
+import Errors from "../../../../shared/Errors";
 
 const TYPES = [
   "ATM",
@@ -35,7 +35,7 @@ const TYPES = [
   "UNIDENTIFIED",
 ]
 
-const EditModal = () => {
+const TransactionEditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
   const categories = useSelector(state => state.categories)
@@ -46,13 +46,13 @@ const EditModal = () => {
   const [type, setType] = useState("")
   useEffect(() => {!categories.results && dispatch(FinanceApi.getCategories(token))}, [])
   useEffect(() => {
-    setCategory(transactions.selectedTransaction?.category)
-    setType(transactions.selectedTransaction?.type)
+    setCategory(transactions.selectedItem?.category)
+    setType(transactions.selectedItem?.type)
     },
-    [transactions.selectedTransaction]
+    [transactions.selectedItem]
   )
 
-  return <Modal centered show={!!transactions.selectedTransaction} onHide={closeModal}>
+  return <Modal centered show={!!transactions.selectedItem} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
@@ -63,26 +63,26 @@ const EditModal = () => {
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
               onClick={() => {
                 dispatch(FinanceApi.getCategories(token))
-                dispatch(FinanceApi.getTransaction(token, transactions.selectedTransaction.id))
+                dispatch(FinanceApi.getTransaction(token, transactions.selectedItem.id))
               }}
             >
               <i className="mdi mdi-refresh" />
             </button>
           </div>
         </div>
-        <p className="text-muted mb-0">{transactions.selectedTransaction?.started_at}</p>
+        <p className="text-muted mb-0">{transactions.selectedItem?.started_at}</p>
       </Modal.Title>
     </Modal.Header>
     <Modal.Body>
       <Errors errors={transactions.errors}/>
       {
-        !transactions.selectedTransaction ||
-        transactions.loadingTransactions?.find(tId => tId === transactions.selectedTransaction.id)
+        !transactions.selectedItem ||
+        transactions.loadingTransactions?.find(tId => tId === transactions.selectedItem.id)
           ? <Circles />
           : <Form onSubmit={e => {
             e.preventDefault()
             dispatch(FinanceApi.updateTransaction(
-              token, transactions.selectedTransaction.id, {type, category}
+              token, transactions.selectedItem.id, {type, category}
             ))
           }}>
             <Form.Group>
@@ -94,7 +94,7 @@ const EditModal = () => {
                 options={categories.results?.map(c => createOption(c.id))}
                 onChange={newValue => newValue.value ? setCategory(newValue.value) : ""}
                 onCreateOption={id => {
-                  dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {category: id}))
+                  dispatch(FinanceApi.updateTransaction(token, transactions.selectedItem.id, {category: id}))
                 }}
                 styles={selectStyles}
                 value={createOption(category)}
@@ -121,7 +121,7 @@ const EditModal = () => {
                       className="bg-transparent text-muted"
                       type="text"
                       
-                      value={transactions.selectedTransaction[item]}
+                      value={transactions.selectedItem[item]}
                     />
                   </Form.Group>
               )
@@ -133,7 +133,7 @@ const EditModal = () => {
                 className="bg-transparent text-muted"
                 type="text"
                 
-                value={new Date(transactions.selectedTransaction.started_at).toLocaleDateString()}
+                value={new Date(transactions.selectedItem.started_at).toLocaleDateString()}
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -143,7 +143,7 @@ const EditModal = () => {
                 className="bg-transparent text-muted"
                 type="text"
                 
-                value={new Date(transactions.selectedTransaction.completed_at).toLocaleDateString()}
+                value={new Date(transactions.selectedItem.completed_at).toLocaleDateString()}
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -154,14 +154,14 @@ const EditModal = () => {
                 className="bg-transparent text-muted"
                 type="text"
                 
-                value={transactions.selectedTransaction.description}
+                value={transactions.selectedItem.description}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Additional data</Form.Label>
               {
-                transactions.selectedTransaction.additional_data
+                transactions.selectedItem.additional_data
                   ? <AceEditor
                       placeholder="Additional Data"
                       mode="python"
@@ -169,7 +169,7 @@ const EditModal = () => {
                       readOnly={true}
                       fontSize={12}
                       showGutter={false}
-                      value={JSON.stringify(transactions.selectedTransaction?.additional_data, null, "\t")}
+                      value={JSON.stringify(transactions.selectedItem?.additional_data, null, "\t")}
                       width="100%"
                       height="150px"
                     />
@@ -183,12 +183,12 @@ const EditModal = () => {
       <Button variant="secondary" onClick={closeModal}>Close</Button>
       <Button
         disabled={
-          type === transactions.selectedTransaction?.type &&
-          category === transactions.selectedTransaction?.category
+          type === transactions.selectedItem?.type &&
+          category === transactions.selectedItem?.category
       }
         variant="primary"
         onClick={() => {
-          dispatch(FinanceApi.updateTransaction(token, transactions.selectedTransaction.id, {category, type}))
+          dispatch(FinanceApi.updateTransaction(token, transactions.selectedItem.id, {category, type}))
           dispatch(selectTransaction())
         }}
       >
@@ -197,4 +197,4 @@ const EditModal = () => {
     </Modal.Footer>
   </Modal>
 }
-export default EditModal;
+export default TransactionEditModal;

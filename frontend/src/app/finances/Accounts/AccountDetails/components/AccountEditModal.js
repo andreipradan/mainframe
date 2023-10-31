@@ -9,13 +9,12 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
-import { FinanceApi } from "../../../api/finance";
-import { selectAccount } from "../../../redux/accountsSlice";
+import { FinanceApi } from "../../../../../api/finance";
 import Form from "react-bootstrap/Form";
-import { setModalOpen } from "../../../redux/accountsSlice";
-import Errors from "../../shared/Errors";
+import { setModalOpen } from "../../../../../redux/accountsSlice";
+import Errors from "../../../../shared/Errors";
 
-const EditModal = () => {
+const AccountEditModal = () => {
   const dispatch = useDispatch();
   const accounts = useSelector(state => state.accounts)
   const token = useSelector((state) => state.auth.token)
@@ -64,12 +63,10 @@ const EditModal = () => {
   }
 
   const closeModal = () => {
-    dispatch(selectAccount())
     dispatch(setModalOpen(false))
-    clearModal()
   }
 
-  return <Modal centered show={!!accounts.selectedAccount || accounts.modalOpen} onHide={closeModal}>
+  return <Modal centered show={accounts.modalOpen} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
@@ -168,4 +165,4 @@ const EditModal = () => {
     </Modal.Footer>
   </Modal>
 }
-export default EditModal;
+export default AccountEditModal;
