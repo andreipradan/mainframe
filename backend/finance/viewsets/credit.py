@@ -17,8 +17,8 @@ class CreditViewSet(viewsets.ViewSet):
         latest_timetable = credit.latest_timetable
         rates = (
             ExchangeRate.objects.filter(
-                Q(symbol__startswith=credit.currency)
-                | Q(symbol__endswith=credit.currency)
+                Q(symbol__startswith=credit.currency_id)
+                | Q(symbol__endswith=credit.currency_id)
             )
             .distinct("symbol")
             .order_by("symbol", "-date")

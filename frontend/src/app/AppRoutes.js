@@ -7,8 +7,7 @@ import { useSelector } from "react-redux";
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Camera = lazy(() => import ("./apps/Camera"));
-const Logs = lazy(() => import('./apps/Logs'));
-const Todo = lazy(() => import('./apps/TodoList'));
+const Commands = lazy(() => import('./commands/Commands'));
 const Crons = lazy(() => import('./crons/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
@@ -22,8 +21,10 @@ const FinancesCredit = lazy(() => import ("./finances/Credit"));
 const FinancesCalculator = lazy(() => import ("./finances/Calculator"));
 const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
 const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
-const Profile = lazy(() => import ("./profile/Profile"));
+const Logs = lazy(() => import('./apps/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
+const Profile = lazy(() => import ("./profile/Profile"));
+const Todo = lazy(() => import('./apps/TodoList'));
 const UserGroups = lazy(() => import("./users/Groups"));
 const Users = lazy(() => import('./users/Users'));
 
@@ -73,6 +74,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/finances/credit/details" component={ FinancesCredit } />}
         {user?.is_staff && <Route exact path="/finances/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />}
+        {user?.is_staff && <Route exact path="/commands" component={ Commands } />}
         {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/users" component={ Users } />}

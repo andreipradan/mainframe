@@ -5,6 +5,7 @@ import botReducer from "../redux/botsSlice";
 import cameraReducer from "./cameraSlice";
 import categoriesReducer from "./categoriesSlice";
 import creditReducer from "../redux/creditSlice"
+import commandsReducer from "../redux/commandsSlice"
 import cronsReducer from "../redux/cronsSlice"
 import devicesReducer from "../redux/devicesSlice"
 import expensesReducer from "../redux/expensesSlice"
@@ -28,6 +29,7 @@ export default configureStore({
     bots: botReducer,
     camera: cameraReducer,
     categories: categoriesReducer,
+    commands: commandsReducer,
     credit: creditReducer,
     crons: cronsReducer,
     devices: devicesReducer,

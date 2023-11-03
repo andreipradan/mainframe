@@ -1,3 +1,5 @@
+import logging
+
 import psutil
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management import call_command, CommandError
@@ -7,8 +9,13 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
 from clients.cron import get_all_crons, remove_crons_for_command, set_crons
+from clients.logs import MainframeHandler
 from crons.models import Cron
 from crons.serializers import CronSerializer
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class CronViewSet(viewsets.ModelViewSet):
@@ -62,7 +69,8 @@ class CronViewSet(viewsets.ModelViewSet):
             }
             try:
                 call_command(command, **args)
-            except (CommandError, ImproperlyConfigured, KeyError, TypeError):
+            except (CommandError, ImproperlyConfigured, KeyError, TypeError) as e:
+                logger.exception(e)
                 return JsonResponse(
                     data={"detail": "Command failed. Check logs"},
                     status=status.HTTP_400_BAD_REQUEST,

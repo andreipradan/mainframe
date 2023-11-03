@@ -75,12 +75,6 @@ export class FinanceApi {
       .then((response) => dispatch(createAccount(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   }
-  static deleteTimetable = (token, timetableId) => (dispatch) => {
-    axios
-      .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
-      .then(() => {dispatch(deleteTimetable(timetableId))})
-      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  };
   static getAccount = (token, accountId) => (dispatch) => {
     dispatch(setAccountsLoading(true));
     axios
@@ -207,6 +201,12 @@ export class PredictionApi {
 }
 
 export class TimetableApi {
+  static deleteTimetable = (token, timetableId) => (dispatch) => {
+    axios
+      .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
+      .then(() => {dispatch(deleteTimetable(timetableId))})
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
   static getTimetables = (token, page = null) => (dispatch) => {
     dispatch(setTimetableLoading(true));
     axios

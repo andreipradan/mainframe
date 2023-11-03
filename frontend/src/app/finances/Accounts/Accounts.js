@@ -137,19 +137,9 @@ const Accounts = () => {
                         <tr key={i} style={{cursor: "pointer"}} onClick={() => accountOpen === bank ? setAccountOpen(null) : setAccountOpen(bank)}>
                           <td><i className={`mdi mdi-chevron-${accountOpen === bank ? 'down text-success' : 'right text-secondary'}`} /></td>
                           <td>{bank}
-                            {/*{capitalize(p.type)}*/}
                             <Collapse in={ accountOpen === bank } style={{width: "100%"}}>
                               <div className="table-responsive mt-3">
                                 <table className="table table-hover">
-                                  {/*<thead>*/}
-                                  {/*<tr>*/}
-                                  {/*  <th> Type </th>*/}
-                                  {/*  <th> Transactions </th>*/}
-                                  {/*  <th> Number </th>*/}
-                                  {/*  <th> Client code </th>*/}
-                                  {/*  <th> Actions </th>*/}
-                                  {/*</tr>*/}
-                                  {/*</thead>*/}
                                   <tbody>
                                   {
                                     accounts.length
@@ -158,13 +148,6 @@ const Accounts = () => {
                                         <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.transaction_count || "no"} transactions </td>
                                         <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.number !== "0" ? account.number : "-"} </td>
                                         <td style={{cursor: "pointer"}} onClick={() => history.push(`/finances/accounts/${account.id}`)}> {account.client_code || "-"} </td>
-                                        {/*<td>*/}
-                                        {/*  <i*/}
-                                        {/*    style={{cursor: "pointer"}}*/}
-                                        {/*    className="mr-2 mdi mdi-pencil text-secondary"*/}
-                                        {/*    onClick={() => dispatch(selectAccount(account.id))}*/}
-                                        {/*  />*/}
-                                        {/*</td>*/}
                                       </tr>)
                                       : null
                                   }

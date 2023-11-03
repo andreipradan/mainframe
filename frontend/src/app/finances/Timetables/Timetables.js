@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 
-import { FinanceApi, TimetableApi } from "../../../api/finance";
+import { TimetableApi } from "../../../api/finance";
 import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
 import TimetableEditModal from "./components/TimetableEditModal";
 import Modal from "react-bootstrap/Modal";
@@ -26,7 +26,7 @@ const Timetables = () => {
     <div className="page-header mb-0">
       <h3 className="page-title">
         Timetables
-        <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getTimetables(token))}>
+        <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(TimetableApi.getTimetables(token))}>
           <i className="mdi mdi-refresh" />
         </button>
       </h3>
@@ -119,7 +119,7 @@ const Timetables = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(FinanceApi.deleteTimetable(token, timetable.id))
+            dispatch(TimetableApi.deleteTimetable(token, timetable.id))
             setTimetableToDelete(false)
           }}
         >
