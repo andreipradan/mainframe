@@ -1,4 +1,6 @@
 import psutil
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management import call_command, CommandError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -49,3 +51,24 @@ class CronViewSet(viewsets.ModelViewSet):
                 process.kill()
                 return JsonResponse(data={}, status=status.HTTP_204_NO_CONTENT)
         return JsonResponse(data={}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=["put"])
+    def run(self, request, **kwargs):
+        instance: Cron = self.get_object()
+        if instance.is_management:
+            command, *args = instance.command.split()
+            args = {
+                arg.split("=")[0].replace("--", ""): arg.split("=")[1] for arg in args
+            }
+            try:
+                call_command(command, **args)
+            except (CommandError, ImproperlyConfigured, KeyError, TypeError):
+                return JsonResponse(
+                    data={"detail": "Command failed. Check logs"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            return JsonResponse(data={}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(
+            data={"detail": "Not a management command"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
