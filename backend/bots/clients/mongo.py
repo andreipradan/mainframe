@@ -45,7 +45,7 @@ def get_many(collection, order_by=None, how=-1, silent=True, skip=0, limit=0, **
 
 
 def get_stats(collection, silent=False, **kwargs):
-    logger.info('Getting stats (%s) from collection "%d"', kwargs, collection)
+    logger.info('Getting stats (%s) from collection "%s"', kwargs, collection)
     if not kwargs:
         raise ValueError("filter kwargs required")
     if "_id" in kwargs:
