@@ -1,11 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import Slider from "react-slick";
-import { Doughnut } from 'react-chartjs-2';
-import { useDispatch, useSelector } from "react-redux";
-import {BallTriangle, InfinitySpin, LineWave} from "react-loader-spinner";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import Nouislider from 'nouislider-react';
-import "nouislider/distribute/nouislider.css";
+import Slider from "react-slick";
+import { BallTriangle, ColorRing, InfinitySpin, LineWave } from "react-loader-spinner";
+import { Doughnut } from 'react-chartjs-2';
 import { SliderPicker } from 'react-color';
+import { useDispatch, useSelector } from "react-redux";
+import "nouislider/distribute/nouislider.css";
 
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
@@ -33,6 +35,9 @@ const Dashboard = () => {
   const toggleLightExpanded = ip => setLightsExpanded(
     lightsExpanded?.map(l => l.ip === ip ? {...l, expanded: !l.expanded} : l)
   )
+
+  const [lightName, setLightName] = useState("")
+  const [lightNameOpened, setLightNameOpened] = useState(false)
 
   useEffect(() => {
     !bots.results && dispatch(BotsApi.getList(token));
@@ -226,7 +231,12 @@ const Dashboard = () => {
                               </div>
                             </div>
                             <Collapse in={ getExpanded(light.ip) }>
-                              <div className="slider" id={`slider-${i}`}>
+                              <>
+                                <button onClick={() => {
+                                  setLightNameOpened(light)
+                                  setLightName(light.capabilities.name)
+                                }} className="btn btn-outline-secondary btn-sm" >Change name? </button><br/><br/>
+                                <div className="slider" id={`slider-${i}`}>
                                 {lights.loadingLights?.includes(light.ip)
                                   ? <LineWave
                                     visible={true}
@@ -278,6 +288,7 @@ const Dashboard = () => {
                                   </>
                                   }
                                 </div>
+                              </>
                             </Collapse>
                           </div>)
                         : <div className="preview-item">
@@ -619,6 +630,54 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+   <Modal centered show={lightNameOpened} onHide={() => {
+     setLightNameOpened(false)
+     setLightName("")
+   }}>
+    <Modal.Header closeButton>
+      <Modal.Title>
+        <div className="row">
+          <div className="col-lg-12 grid-margin stretch-card mb-1">
+            {
+              lightNameOpened
+                ? `Edit ${lightNameOpened?.capabilities?.name}?`
+                : null
+            }
+          </div>
+        </div>
+        <p className="text-muted mb-0">Brightness: {lightNameOpened?.capabilities?.bright}%</p>
+      </Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <Errors errors={lights.errors}/>
+
+      {
+        lights.loadingLights?.includes(lightNameOpened.ip)
+        ? <ColorRing
+            width = "100%"
+            height = "50"
+            wrapperStyle={{width: "100%"}}
+          />
+        : <Form onSubmit={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))}>
+            <Form.Group className="mb-3">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+
+                value={lightName}
+                onChange={e => setLightName(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+      }
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="secondary" onClick={() => {setLightName(""); setLightNameOpened(false)}}>Close</Button>
+      <Button variant="primary" onClick={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))} >
+        Update name
+      </Button>
+    </Modal.Footer>
+  </Modal>
   </div>
 }
 

@@ -30,6 +30,14 @@ class LightsClient:
             raise LightsException(e)
 
     @classmethod
+    def set_name(cls, ip, name):
+        bulb = yeelight.Bulb(ip)
+        try:
+            return bulb.set_name(name)
+        except yeelight.main.BulbException as e:
+            raise LightsException(e)
+
+    @classmethod
     def set_rgb(cls, ip, rgb):
         bulb = yeelight.Bulb(ip, auto_on=True)
         try:

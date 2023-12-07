@@ -6,6 +6,7 @@ import {
   setErrors,
   setLoading,
   setLoadingLight,
+  setName,
   turn_all_off,
   turn_all_on,
   turn_off,
@@ -40,6 +41,15 @@ class LightsApi {
         {color_temp: colorTemp},
         {headers: {Authorization: token}})
       .then(() => dispatch(setColorTemp({ip: lightIp, colorTemp: colorTemp})))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static setName = (token, lightIp, name) => dispatch => {
+    dispatch(setLoadingLight(lightIp));
+    axios
+      .patch(`${base}/${lightIp}/set-name/`,
+        {name: name},
+        {headers: {Authorization: token}})
+      .then(() => dispatch(setName({ip: lightIp, name: name})))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setRgb = (token, lightIp, rgb) => (dispatch) => {

@@ -49,6 +49,11 @@ class LightsViewSet(viewsets.ViewSet):
         body = json.loads(request.body)
         return self._request("set_color_temp", ip=ip, color_temp=body["color_temp"])
 
+    @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-name")
+    def set_name(self, request, ip):
+        body = json.loads(request.body)
+        return self._request("set_name", ip=ip, name=body["name"])
+
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-rgb")
     def set_rgb(self, request, ip):
         body = json.loads(request.body)

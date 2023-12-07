@@ -42,6 +42,14 @@ export const lightsSlice = createSlice({
         ? [action.payload]
         : [...state.loadingLights, action.payload];
     },
+    setName: (state, action) => {
+      state.list = state.list.map((l) => (l.ip !== action.payload.ip
+        ? l
+        : {...l, capabilities: {...l.capabilities, name: action.payload.name}}
+      ));
+      state.errors = null;
+      state.loadingLights = state.loadingLights.filter(ip => ip !== action.payload.ip)
+    },
     turn_all_off: (state, action) => {
       state.list = state.list?.map(l => ({...l, capabilities: {...l.capabilities, power: "off"}}));
       state.errors = null;
@@ -81,6 +89,7 @@ export const {
   setErrors,
   setLoading,
   setLoadingLight,
+  setName,
   turn_all_off,
   turn_all_on,
   turn_off,
