@@ -231,12 +231,11 @@ const Dashboard = () => {
                               </div>
                             </div>
                             <Collapse in={ getExpanded(light.ip) }>
-                              <>
+                              <div className="slider" id={`slider-${i}`}>
                                 <button onClick={() => {
                                   setLightNameOpened(light)
                                   setLightName(light.capabilities.name)
                                 }} className="btn btn-outline-secondary btn-sm" >Change name? </button><br/><br/>
-                                <div className="slider" id={`slider-${i}`}>
                                 {lights.loadingLights?.includes(light.ip)
                                   ? <LineWave
                                     visible={true}
@@ -287,8 +286,7 @@ const Dashboard = () => {
                                     />
                                   </>
                                   }
-                                </div>
-                              </>
+                              </div>
                             </Collapse>
                           </div>)
                         : <div className="preview-item">
