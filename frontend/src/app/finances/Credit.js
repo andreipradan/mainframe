@@ -467,11 +467,11 @@ const Credit = () => {
       ~ {getPercentage(paidTotal, remainingTotal)}% of the remaining total
     </Tooltip>
     <Tooltip anchorSelect="#prepaid-percentage" place="bottom-start">
-      {getPercentage(paidPrepaid, credit?.total)}% of the total credit<br />
+      {getPercentage(paidPrepaid, summaryCredit)}% of the total credit<br />
       {getPercentage(paidPrepaid, paidTotal)}% of the paid amount
     </Tooltip>
     <Tooltip anchorSelect="#principal-percentage" place="bottom-start">
-      {getPercentage(paidPrincipal, credit?.total)}% of the total credit<br />
+      {getPercentage(paidPrincipal, summaryCredit)}% of the total credit<br />
       {getPercentage(paidPrincipal, remainingPrincipal)}% of the remaining principal<br />
       {getPercentage(paidPrincipal, paidTotal)}% of the paid amount
     </Tooltip>
