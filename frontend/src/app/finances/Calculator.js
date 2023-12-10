@@ -36,7 +36,10 @@ const Calculator = () => {
       suggestedAmounts[i] = calculateSum(latestTimetable.slice(0, i), "principal")
     })
     setOtherAmounts(suggestedAmounts)
-    const saved = calculateSum(latestTimetable.slice(0, index), "interest")
+    const saved = (
+      calculateSum(latestTimetable.slice(0, index), "interest")
+      + calculateSum(latestTimetable.slice(0, index), "insurance")
+    ).toFixed(2)
     setCalculatorSaved(saved)
   }
 

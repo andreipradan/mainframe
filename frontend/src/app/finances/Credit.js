@@ -464,6 +464,7 @@ const Credit = () => {
       Paid principal related to the total of the borrowed amount
     </Tooltip>
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
+        {getPercentage(paidTotal, summaryCredit)}% of the total credit<br />
       ~ {getPercentage(paidTotal, remainingTotal)}% of the remaining total
     </Tooltip>
     <Tooltip anchorSelect="#prepaid-percentage" place="bottom-start">
@@ -476,7 +477,7 @@ const Credit = () => {
       {getPercentage(paidPrincipal, paidTotal)}% of the paid amount
     </Tooltip>
     <Tooltip anchorSelect="#interest-percentage" place="bottom-start">
-      { getPercentage(paidInterest, credit?.total) }% of the total credit<br />
+      { getPercentage(paidInterest, summaryCredit) }% of the total credit<br />
       ~ { getPercentage(paidInterest, remainingInterest) }% of the remaining interest<br />
       { getPercentage(paidInterest, paidTotal) }% of the paid amount
     </Tooltip>
