@@ -1,4 +1,4 @@
-aiohttp[speedups]==3.8.5
+aiohttp[speedups]==3.9.1
 axiom-py==0.1.0
 beautifulsoup4==4.11.1
 django==4.1.6
