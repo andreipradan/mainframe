@@ -76,6 +76,7 @@ class Payment(TimeStampedModel):
         on_delete=models.CASCADE,
         to="finance.Credit",
     )
+    additional_data = models.JSONField(blank=True, default=dict, null=True)
     date = models.DateField()
     interest = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     is_prepayment = models.BooleanField(default=False)

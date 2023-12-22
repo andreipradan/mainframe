@@ -26,8 +26,8 @@ const Dashboard = () => {
   const botsActiveCount = bots.results?.filter(b => b.is_active === true).length
   const botsInactiveCount = bots.results?.filter(b => b.is_active === false).length
 
-  const lightsOnCount = lights.list?.filter(b => b.capabilities.power === "on").length
-  const lightsOffCount = lights.list?.filter(b => b.capabilities.power === "off").length
+  const lightsOnCount = lights.results?.filter(b => b.capabilities.power === "on").length
+  const lightsOffCount = lights.results?.filter(b => b.capabilities.power === "off").length
 
   const [lightsExpanded, setLightsExpanded] = useState(null)
   const [lightColors, setLightColors] = useState(null)
@@ -41,16 +41,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     !bots.results && dispatch(BotsApi.getList(token));
-    !lights.list && dispatch(LightsApi.getList(token));
+    !lights.results && dispatch(LightsApi.getList(token));
   }, []);
 
   useEffect( () => {
-    if (lights.list) {
+    if (lights.results) {
       if (!lightsExpanded)
-        setLightsExpanded(lights.list?.map(l => ({ip: l.ip, expanded: false})))
-      setLightColors(lights.list?.map(l => ({ip: l.ip, color: "#0059ff"})))
+        setLightsExpanded(lights.results?.map(l => ({ip: l.ip, expanded: false})))
+      setLightColors(lights.results?.map(l => ({ip: l.ip, color: "#0059ff"})))
     }
-  }, [lights.list])
+  }, [lights.results])
 
   const onSlide = (i, isDisplayed) => () => {
     const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
@@ -174,12 +174,13 @@ const Dashboard = () => {
                 </button>
                 <div className="mr-auto text-sm-right pt-2 pt-sm-0">
                   <Form.Check
-                    checked={!!lights?.list?.some(l => l.capabilities.power === "on")}
+                    checked={!!lights?.results?.some(l => l.capabilities.power === "on")}
+                    disabled={lights.loading}
                     type="switch"
                     id="checkbox-toggle"
                     label=""
                     onChange={() => {
-                      const action = lights?.list?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on
+                      const action = lights?.results?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on
                       dispatch(action(token))
                     }}
                   />
@@ -201,8 +202,8 @@ const Dashboard = () => {
                         glassColor = '#c0efff'
                         color = '#e15b64'
                       />
-                      : lights.list
-                        ? lights.list.map((light, i) =>
+                      : lights.results?.length
+                        ? lights.results.map((light, i) =>
                           <div key={i}>
                             <div className="preview-item border-bottom">
                               <div className="preview-thumbnail">
@@ -218,6 +219,7 @@ const Dashboard = () => {
                                 <div className="mr-auto text-sm-right pt-2 pt-sm-0">
                                   <Form.Check
                                     checked={light.capabilities.power === "on"}
+                                    disabled={lights.loadingItems?.includes(light.ip)}
                                     type="switch"
                                     id={`checkbox-${i}`}
                                     label=""
@@ -236,7 +238,7 @@ const Dashboard = () => {
                                   setLightNameOpened(light)
                                   setLightName(light.capabilities.name)
                                 }} className="btn btn-outline-secondary btn-sm" >Change name? </button><br/><br/>
-                                {lights.loadingLights?.includes(light.ip)
+                                {lights.loadingItems?.includes(light.ip)
                                   ? <LineWave
                                     visible={true}
                                     width="100%"
@@ -650,7 +652,7 @@ const Dashboard = () => {
       <Errors errors={lights.errors}/>
 
       {
-        lights.loadingLights?.includes(lightNameOpened.ip)
+        lights.loadingItems?.includes(lightNameOpened.ip)
         ? <ColorRing
             width = "100%"
             height = "50"

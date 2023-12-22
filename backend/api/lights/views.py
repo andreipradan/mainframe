@@ -37,7 +37,7 @@ class LightsViewSet(viewsets.ViewSet):
         return JsonResponse(data=data, status=status)
 
     def list(self, request):
-        return JsonResponse(data=LightsClient.get_bulbs(), safe=False)
+        return JsonResponse(data={"results": LightsClient.get_bulbs()})
 
     @action(detail=False, methods=["patch"], url_path=f"{IP_REGEX}/set-brightness")
     def set_brightness(self, request, ip):
