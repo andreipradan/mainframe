@@ -203,12 +203,9 @@ def parse_raiffeisen_transactions(file_name, logger):
 
 
 def parse_revolut_transactions(file_name, _):
-    current_account = Account.objects.get(
+    current_account, savings_account = Account.objects.filter(
         bank__icontains="revolut",
-        type=Account.TYPE_CURRENT,
-    )
-    savings_account = Account.objects.get(
-        bank__icontains="revolut", type=Account.TYPE_SAVINGS
+        type__in=[Account.TYPE_CURRENT, Account.TYPE_SAVINGS],
     )
 
     with open(file_name) as file:

@@ -1,6 +1,7 @@
 import logging
 
 import telegram
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -40,6 +41,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(msg))
 
         cmd_suffix = f" --model={model}" if model else ""
-        remove_crons_for_command(
-            Cron(command=f"backup_finance{cmd_suffix}", is_management=True)
-        )
+        if settings.ENV == "prod":
+            remove_crons_for_command(
+                Cron(command=f"backup_finance{cmd_suffix}", is_management=True)
+            )
