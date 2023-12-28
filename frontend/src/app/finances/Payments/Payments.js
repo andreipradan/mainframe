@@ -1,14 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi } from "../../../api/finance";
-import {selectItem as selectPayment, setKwargs} from "../../../redux/paymentSlice";
-import PaymentEditModal from "./components/PaymentEditModal";
+import { selectItem as selectPayment, setKwargs } from "../../../redux/paymentSlice";
 import { useHistory } from "react-router-dom";
 import BottomPagination from "../../shared/BottomPagination";
 import Errors from "../../shared/Errors";
+import PaymentEditModal from "./components/PaymentEditModal";
 
 const Payments = () => {
   const history = useHistory()
@@ -16,6 +16,7 @@ const Payments = () => {
   const token = useSelector((state) => state.auth.token)
 
   const payment = useSelector(state => state.payment)
+  useEffect(() => {!payment.results?.length && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
   return <div>
     <div className="page-header mb-0">

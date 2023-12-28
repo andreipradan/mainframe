@@ -213,7 +213,6 @@ export class TimetableApi {
       .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => {
         dispatch(setTimetables(response.data))
-        dispatch(selectTimetable(response.data.results[0].id))
       })
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };

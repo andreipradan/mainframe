@@ -18,7 +18,7 @@ const TimetableEditModal = () => {
   const timetable = useSelector(state => state.timetable.selectedItem)
   const token = useSelector((state) => state.auth.token)
 
-  return <Modal centered show={!!timetable} onHide={() => dispatch(selectTimetable())}>
+  return <Modal className="w-auto" centered show={!!timetable} onHide={() => dispatch(selectTimetable())}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
