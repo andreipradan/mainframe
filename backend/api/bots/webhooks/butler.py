@@ -4,6 +4,7 @@ import random
 import six
 import telegram
 from django.conf import settings
+from django.core.management import CommandError
 from google.api_core.exceptions import GoogleAPICallError
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
@@ -14,6 +15,7 @@ from api.bots.webhooks.inlines.meals import MealsInline
 from api.bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from api.bots.webhooks.shared import reply
 from bots.clients import mongo as database
+from bots.management.commands.check_whos_next import whos_next
 from bots.management.commands.set_hooks import get_ngrok_url
 from bots.models import Bot
 from clients import cron
@@ -139,6 +141,12 @@ def call(data, instance: Bot):
 
     if cmd == "meals":
         return MealsInline.start(update, page=1)
+
+    if cmd == "next":
+        try:
+            return reply(update, whos_next(bot)[0])
+        except CommandError as e:
+            return reply(update, str(e))
 
     if cmd == "randomize":
         if len(args) not in range(2, 51):
