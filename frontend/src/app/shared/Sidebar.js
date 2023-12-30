@@ -345,6 +345,11 @@ const Sidebar = () => {
                           </div>
                         </Collapse>
                       </li>
+                      <li className="nav-item">
+                        <Link className={ isPathActive('/finances/stocks') ? 'nav-link active' : 'nav-link' } to="/finances/stocks">
+                          Stocks
+                        </Link>
+                      </li>
                     </ul>
                   </div>
                 </Collapse>

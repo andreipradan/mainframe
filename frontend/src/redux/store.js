@@ -18,6 +18,7 @@ import mealsReducer from "../redux/mealsSlice";
 import paymentReducer from "../redux/paymentSlice";
 import predictionReducer from "./predictionSlice";
 import rpiReducer from "../redux/rpiSlice";
+import stocksReducer from "./stocksSlice";
 import timetableReducer from "./timetableSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 import usersSlice from "../redux/usersSlice";
@@ -43,6 +44,7 @@ export default configureStore({
     payment: paymentReducer,
     prediction: predictionReducer,
     rpi: rpiReducer,
+    stocks: stocksReducer,
     timetable: timetableReducer,
     transactions: transactionsReducer,
     users: usersSlice,

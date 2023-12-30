@@ -20,6 +20,7 @@ const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"
 const FinancesCredit = lazy(() => import ("./finances/Credit"));
 const FinancesCalculator = lazy(() => import ("./finances/Calculator"));
 const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
+const FinancesStocks = lazy(() => import ("./finances/Stocks"));
 const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
@@ -74,6 +75,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/finances/credit/details" component={ FinancesCredit } />}
         {user?.is_staff && <Route exact path="/finances/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />}
+        {user?.is_staff && <Route exact path="/finances/stocks" component={ FinancesStocks } />}
         {user?.is_staff && <Route exact path="/commands" component={ Commands } />}
         {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}

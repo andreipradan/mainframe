@@ -26,8 +26,12 @@ import {
   update,
 } from "../redux/paymentSlice";
 import {
+  set as setStocks,
+  setErrors as setStocksErrors,
+  setLoading as setStocksLoading,
+} from "../redux/stocksSlice";
+import {
   deleteItem as deleteTimetable,
-  selectItem as selectTimetable,
   set as setTimetables,
   setErrors as setTimetableErrors,
   setLoading as setTimetableLoading,
@@ -49,6 +53,7 @@ import {
 import {handleErrors} from "./errors";
 
 export const createSearchParams = params => {
+  if (params === null) return ""
   return new URLSearchParams(
     Object.entries(params).flatMap(([key, values]) =>
       Array.isArray(values)
@@ -198,6 +203,16 @@ export class PredictionApi {
       .then(response => dispatch(setTask({type: "train", data: response.data})))
       .catch(err => handleErrors(err, dispatch, setPredictionErrors))
   }
+}
+
+export class StocksApi {
+  static getList = (token, kwargs = null) => dispatch => {
+    dispatch(setStocksLoading(true));
+    axios
+      .get(`${base}/stocks/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setStocks(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setStocksErrors));
+  };
 }
 
 export class TimetableApi {

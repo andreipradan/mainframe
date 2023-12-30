@@ -1,5 +1,5 @@
-import React from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Pagination } from "react-bootstrap";
 
 const BottomPagination = props => {
@@ -8,9 +8,12 @@ const BottomPagination = props => {
   const currentPage = !props.items.previous
     ? 1
     : (parseInt(new URL(props.items.previous).searchParams.get("page")) || 1) + 1
+  const perPage = props.perPage || 25
   const lastPage = Math.ceil(props.items.count / perPage)
+  const token = useSelector((state) => state.auth.token)
+  useEffect(() => dispatch(props.fetchMethod(token, kwargs)), [kwargs]);
 
-  return props.items.count > (props.perPage || 25)
+  return props.items.count > perPage
     ? <Pagination>
       <Pagination.First
         disabled={!props.items.previous}

@@ -16,7 +16,6 @@ const Payments = () => {
   const token = useSelector((state) => state.auth.token)
 
   const payment = useSelector(state => state.payment)
-  useEffect(() => {!payment.results?.length && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
   return <div>
     <div className="page-header mb-0">

@@ -7,6 +7,7 @@ from finance.models import (
     Payment,
     Timetable,
     Transaction,
+    StockTransaction,
 )
 
 
@@ -48,6 +49,18 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
+
+
+class StockTransactionSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = "__all__"
+        model = StockTransaction
+
+    @staticmethod
+    def get_type(instance: StockTransaction):
+        return instance.get_type_display()
 
 
 class TimetableSerializer(serializers.ModelSerializer):

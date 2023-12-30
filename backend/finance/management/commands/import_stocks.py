@@ -22,7 +22,7 @@ def normalize_row(row: dict):
         return key.lower().replace(" ", "_")
 
     def normalize_value(value):
-        return value.replace("$", "").replace("€", "")
+        return str(value).replace("$", "").replace("€", "")
 
     row["Type"] = normalize_type(row["Type"])
     return {normalize_key(k): normalize_value(v) for (k, v) in row.items() if v}
@@ -31,8 +31,8 @@ def normalize_row(row: dict):
 def normalize_type(stock_type):
     types = dict(StockTransaction.TYPE_CHOICES).values()
     if stock_type not in types:
-        return str(StockTransaction.TYPE_OTHER + 1)
-    return str(list(types).index(stock_type) + 1)
+        return StockTransaction.TYPE_OTHER
+    return list(types).index(stock_type) + 1
 
 
 def parse_transactions(file_name, _):
