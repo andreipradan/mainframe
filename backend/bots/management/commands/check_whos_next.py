@@ -29,7 +29,7 @@ def whos_next():
 
     days = (tomorrow - start_date).days
     today, tomorrow = post_order[(days - 1) % 3], post_order[days % 3]
-    msg = f"Today: {today}\nSe pregătește pentru mâine: {tomorrow}"
+    msg = f"Az: <b>{today}</b>\nMâine: <b>{tomorrow}</b>"
     return msg, bot, chat_id
 
 
