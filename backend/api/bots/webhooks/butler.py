@@ -144,7 +144,7 @@ def call(data, instance: Bot):
 
     if cmd == "next":
         try:
-            return reply(update, whos_next(bot)[0])
+            return reply(update, whos_next()[0])
         except CommandError as e:
             return reply(update, str(e))
 

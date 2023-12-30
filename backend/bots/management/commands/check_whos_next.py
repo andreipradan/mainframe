@@ -7,7 +7,9 @@ from bots.models import Bot
 from clients.logs import ManagementCommandsHandler
 
 
-def whos_next(bot):
+def whos_next():
+    bot = Bot.objects.get(additional_data__whos_next__isnull=False)
+
     whos_next = bot.additional_data["whos_next"]
     if not isinstance(whos_next, dict) or not (chat_id := whos_next.get("chat_id")):
         raise CommandError("chat_id missing from whos_next in bot additional data")
@@ -28,7 +30,7 @@ def whos_next(bot):
     days = (tomorrow - start_date).days
     today, tomorrow = post_order[(days - 1) % 3], post_order[days % 3]
     msg = f"Today: {today}\nSe pregătește pentru mâine: {tomorrow}"
-    return msg, chat_id
+    return msg, bot, chat_id
 
 
 class Command(BaseCommand):
@@ -37,9 +39,8 @@ class Command(BaseCommand):
         logger.addHandler(ManagementCommandsHandler())
 
         logger.info("Checking who's next")
-        bot = Bot.objects.get(additional_data__whos_next__isnull=False)
 
-        msg, chat_id = whos_next(bot)
+        msg, bot, chat_id = whos_next()
 
         bot.send_message(
             chat_id=chat_id,
