@@ -7,6 +7,7 @@ class Earthquake(TimeStampedModel):
     SOURCE_INFP = "infp"
     SOURCE_USGS = "usgs"
 
+    additional_data = models.JSONField(blank=True, default=dict, null=True)
     depth = models.FloatField()
     intensity = models.CharField(blank=True, max_length=16, null=True)
     location = models.CharField(max_length=128)
@@ -24,6 +25,9 @@ class Earthquake(TimeStampedModel):
         ),
     )
     timestamp = models.DateTimeField(unique=True)
+
+    class Meta:
+        ordering = ("-timestamp",)
 
     def __str__(self):
         return (
