@@ -97,27 +97,3 @@ def mainframe(request):
 
     send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
-
-
-"""
-BOLOGA  Cristian - Lect.univ.dr. - 0 locuri disponibile) (Indisponibil)
-Covaci Florina - Lect.univ.dr. - 0 locuri disponibile) (Indisponibil)
-MICAN Daniel - Conf.univ.dr. - 0 locuri disponibile) (Indisponibil)
-MOISUC  Diana - Asist.univ.dr. - 0 locuri disponibile) (Indisponibil)
-Osman Cristina - Lect.univ.dr. - 0 locuri disponibile) (Indisponibil)
-Sitar - Tăut Dan - Andrei - Conf.univ.dr. - 0 locuri disponibile) (Indisponibil)
-
-Jecan  Sergiu - Conf.univ.dr. - 3 locuri disponibile)
-
-BRESFELEAN  Paul - Lect.univ.dr. - 26 locuri disponibile)
-BUCHMANN  Robert - Prof.univ.dr. - 1 locuri disponibile)
-CHIS  George Sebastian - Lect.univ.dr. - 30 locuri disponibile)
-Ghiran  Ana Maria - Lect.univ.dr. - 3 locuri disponibile)
-LACUREZEANU  Ramona - Conf.univ.dr. - 7 locuri disponibile)
-MOCEAN  Loredana - Conf.univ.dr. - 19 locuri disponibile)
-Moldovan  Darie - Lect.univ.dr. - 17 locuri disponibile)
-POPA  Silviu Claudiu - Lect.univ.dr. - 10 locuri disponibile)
-SILAGHI Gheorghe Cosmin  - Prof.univ.dr. - 1 locuri disponibile)
-Stan  Alexandru - Lect.univ.dr. - 28 locuri disponibile)
-STANCA  Liana - Conf.univ.dr. - 1 locuri disponibile)
-"""
