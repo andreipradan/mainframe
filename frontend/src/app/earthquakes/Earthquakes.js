@@ -283,7 +283,7 @@ const Earthquakes = () => {
                           <td>
                             {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
                           </td>
-                          <td> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
+                          <td className={e.magnitude > 5 ? "text-danger" : ""}> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
                           <td>
                             <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
                           </td>

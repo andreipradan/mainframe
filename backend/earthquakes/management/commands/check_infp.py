@@ -29,7 +29,7 @@ class Command(BaseEarthquakeCommand):
         return [
             r
             for r in response.json()["result"]
-            if r["sols"]["primary"]["magnitudes"]["primary"]["value"] > 2
+            if r["sols"]["primary"]["magnitudes"]["primary"]["value"] >= 2
         ]
 
     def get_datetime(self, string):

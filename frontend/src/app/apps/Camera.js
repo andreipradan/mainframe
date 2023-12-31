@@ -51,7 +51,15 @@ export const Camera = () => {
                     <i className="mdi mdi-refresh"></i>
                   </button>
                 </div>
-                <nav aria-label="breadcrumb">
+                <div className="text-small">
+                  <a
+                    href="https://console.cloud.google.com/storage/browser/mainframe-media/2023/12?project=mainframe-pradan-dev"
+                    target="_blank"
+                  >
+                    Storage
+                  </a>
+                </div>
+                <nav aria-label="breadcrumb" className="mt-1">
                   <ol className="breadcrumb">
                     <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token))}>
                       Home
