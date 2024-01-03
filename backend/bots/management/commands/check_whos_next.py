@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+import telegram
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
@@ -47,5 +48,6 @@ class Command(BaseCommand):
             text=msg,
             disable_notification=True,
             disable_web_page_preview=True,
+            parse_mode=telegram.ParseMode.HTML,
         )
         self.stdout.write(self.style.SUCCESS("Done."))
