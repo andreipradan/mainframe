@@ -30,7 +30,7 @@ const EditModal = () => {
       </Modal.Title>
     </Modal.Header>
     {
-      loadingItems?.includes(msg?.id)
+      loadingItems?.includes(msg?.id) || !msg
       ? <ColorRing
           width = "100%"
           height = "50"
