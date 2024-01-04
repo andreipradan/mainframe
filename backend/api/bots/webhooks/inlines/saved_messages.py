@@ -6,7 +6,7 @@ from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 
 from api.bots.webhooks.shared import BaseInlines
-from bots.clients import mongo as database
+from bots.models import Message
 from clients.chat import edit_message
 from clients.logs import MainframeHandler
 
@@ -45,25 +45,17 @@ class SavedMessagesInlines(BaseInlines):
                 )
             )
 
+        start = (page - 1) * self.PER_PAGE if page - 1 >= 0 else 0
         items = list(
-            database.get_many(
-                collection="saved-messages",
-                order_by="date",
-                how=-1,
-                chat_id=self.chat_id,
-                skip=(page - 1) * self.PER_PAGE if page - 1 >= 0 else 0,
-                limit=self.PER_PAGE,
-            )
+            Message.objects.filter(chat_id=self.chat_id)[start : start + self.PER_PAGE]
         )
-
-        logger.info("Got %d saved messages", len(items))
 
         return Keyboard(
             [
                 [
                     Button(
-                        f"{item['chat_name']} by {item['author']['full_name']}",
-                        callback_data=f"fetch {self.chat_id} {item['_id']} {page}",
+                        f"{item.chat_title} by {item.author['full_name']}",
+                        callback_data=f"fetch {self.chat_id} {item.id} {page}",
                     )
                 ]
                 for item in items
@@ -73,7 +65,7 @@ class SavedMessagesInlines(BaseInlines):
 
     def fetch(self, update, _id, page):
         message = update.callback_query.message
-        item = database.get_stats("saved-messages", silent=True, _id=_id)
+        item = Message.objects.get(id=_id)
         return edit_message(
             bot=update.callback_query.bot,
             chat_id=message.chat_id,
@@ -84,36 +76,37 @@ class SavedMessagesInlines(BaseInlines):
 
     def start(self, update, page=None):
         try:
-            count = database.get_collection("saved-messages").count_documents(
-                {"chat_id": self.chat_id}
-            )
+            count = Message.objects.filter(chat_id=self.chat_id).count()
         except ConfigurationError as e:
             return update.message.reply_text(f"Got an error: {str(e)}")
 
-        logger.info("Counted %d documents", count)
         last_page = math.ceil(count / self.PER_PAGE)
-        welcome_message = "Welcome {name}\nChoose a message [{page} / {total}]"
+        welcome_message = "Welcome {name}"
+        if count:
+            welcome_message += f"\nChoose a message\nTotal: {count}"
+        else:
+            welcome_message += "\nThere are no messages in this chat"
 
         if not update.callback_query:
             user = update.message.from_user
             logger.info("User %s started the conversation.", user.full_name)
-
+            if last_page > 1:
+                welcome_message += f"\nPage: 1/{last_page}"
             return update.message.reply_text(
-                welcome_message.format(
-                    name=user.full_name, page=1, total=last_page, count=count
-                ),
+                welcome_message.format(name=user.full_name),
                 reply_markup=self.get_markup(is_top_level=True, last_page=last_page),
             ).to_json()
 
+        if int(page) < last_page:
+            welcome_message += f"\nPage: {page}/{last_page}"
+
         message = update.callback_query.message
-        user = update.callback_query.from_user
+        full_name = update.callback_query.from_user.full_name
         return edit_message(
             bot=update.callback_query.bot,
             chat_id=message.chat_id,
             message_id=message.message_id,
-            text=welcome_message.format(
-                name=user.full_name, page=page, total=last_page, count=count
-            ),
+            text=welcome_message.format(name=full_name),
             reply_markup=self.get_markup(
                 page=int(page),
                 is_top_level=True,
@@ -123,15 +116,10 @@ class SavedMessagesInlines(BaseInlines):
 
 
 def link(item):
-    author = item["author"]["full_name"]
-    chat_id = str(item["chat_id"])[3:]
-    date = item["date"].strftime("%d %b %Y %H:%M")
-    message_id = item["message"]["id"]
-    text = item["message"]["text"]
     return f"""
-<b>{item['chat_name']}</b>
-- by {author}, {date}
+<b>{item.chat_title}</b>
+- by {item.author["full_name"]}, {item.date.strftime("%d %b %Y %H:%M")}
 
-{text or "-"}
+{item.text or "-"}
 
-Link: https://t.me/c/{chat_id}/{message_id}"""
+Link: https://t.me/c/{str(item.chat_id)[3:]}/{item.message_id}"""

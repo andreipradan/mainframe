@@ -14,10 +14,9 @@ from api.bots.webhooks.inlines.bus import BusInline
 from api.bots.webhooks.inlines.meals import MealsInline
 from api.bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from api.bots.webhooks.shared import reply
-from bots.clients import mongo as database
 from bots.management.commands.check_whos_next import whos_next
 from bots.management.commands.set_hooks import get_ngrok_url
-from bots.models import Bot
+from bots.models import Bot, Message
 from clients import cron
 from clients.logs import MainframeHandler
 from earthquakes.management.commands.base_check import parse_event
@@ -57,8 +56,7 @@ def call(data, instance: Bot):
         return logger.info("No message or chat: %s", update.to_dict())
 
     if message.new_chat_title:
-        chat_description = bot.get_chat(update.message.chat_id).description
-        save_to_db(update.message, text_override=chat_description)
+        save_to_db(update.message, chat=bot.get_chat(update.message.chat_id))
         return reply(update, text="Saved ✔")
 
     if message.new_chat_members:
@@ -155,25 +153,23 @@ def call(data, instance: Bot):
         return reply(update, "\n".join(f"{i+1}. {item}" for i, item in enumerate(args)))
 
     if cmd == "save":
-        if not update.message.reply_to_message:
+        message = update.message.reply_to_message
+        if not message:
             return reply(
                 update,
                 text="This command must be sent as a reply to the "
                 "message you want to save",
             )
-        if not (
-            update.message.reply_to_message.text
-            or update.message.reply_to_message.new_chat_title
-        ):
-            return reply(update, text="No text found to save.")
+        if message.text:
+            save_to_db(message, bot.get_chat(message.chat_id), text=message.text)
+            return reply(update, text="Saved message ✔")
 
-        save_to_db(
-            update.message.reply_to_message,
-            text_override=bot.get_chat(update.message.chat_id).description
-            if update.message.reply_to_message.new_chat_title
-            else None,
-        )
-        return reply(update, text="Saved ✔")
+        if message.new_chat_title:
+            chat = bot.get_chat(message.chat_id)
+            save_to_db(message, chat=chat)
+            return reply(update, text="Saved title ✔")
+
+        return reply(update, text="No text/title found to save.")
 
     if cmd == "saved":
         chat_id = update.message.chat_id
@@ -238,20 +234,20 @@ def translate_text(text):
     )
 
 
-def save_to_db(message, text_override=None):
+def save_to_db(message, chat, text=None):
     author = message.from_user.to_dict()
     author["full_name"] = message.from_user.full_name
-    database.get_collection("saved-messages").insert_one(
-        {
-            "author": author,
-            "chat_id": message.chat_id,
-            "chat_name": message.chat.title,
-            "date": message.date,
-            "message": {
-                "id": message.message_id,
-                "text": text_override or message.text,
-            },
-            "saved_at": message.date.utcnow(),
-            "saved_by": message.from_user.to_dict(),
-        }
+    text = text or chat.description
+    title = (
+        message.chat.title
+        or f"{chat.bot.first_name if chat.type == 'private' else chat.id} ({chat.type})"
+    )
+    Message.objects.create(
+        author=author,
+        chat_id=message.chat_id,
+        chat_title=title,
+        date=message.date,
+        message_id=message.message_id,
+        saved_by=message.from_user.to_dict(),
+        text=text,
     )
