@@ -15,6 +15,7 @@ import groupsReducer from "../redux/groupsSlice"
 import lightsReducer from "../redux/lightsSlice";
 import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
+import messagesReducer from "../redux/messagesSlice";
 import paymentReducer from "../redux/paymentSlice";
 import predictionReducer from "./predictionSlice";
 import rpiReducer from "../redux/rpiSlice";
@@ -41,6 +42,7 @@ export default configureStore({
     lights: lightsReducer,
     logs: logsReducer,
     meals: mealsReducer,
+    messages: messagesReducer,
     payment: paymentReducer,
     prediction: predictionReducer,
     rpi: rpiReducer,

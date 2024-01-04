@@ -3,7 +3,7 @@ import math
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from api.bots.webhooks.shared import BaseInlines, chunks
+from bots.webhooks.shared import BaseInlines, chunks
 from clients.chat import edit_message
 from clients.logs import MainframeHandler
 from clients.meals import MealsClient

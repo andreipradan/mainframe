@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
-from api.bots.webhooks.shared import chunks
+from bots.webhooks.shared import chunks
 from clients import cron
 from clients.chat import send_telegram_message
 from clients.cron import remove_crons_for_command

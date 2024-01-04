@@ -1,7 +1,6 @@
 from django.urls import include, path
 
 urlpatterns = [
-    path("bots/", include(("api.bots.routers", "api"), namespace="bots")),
     path("camera/", include(("camera.routers", "api"), namespace="camera")),
     path("commands/", include(("api.commands.routers", "api"), namespace="commands")),
     path("crons/", include(("crons.routers", "api"), namespace="crons")),
@@ -19,5 +18,6 @@ urlpatterns = [
     path("meals/", include(("meals.routers", "api"), namespace="meals")),
     path("rpi/", include(("api.rpi.routers", "api"), namespace="rpi")),
     path("split/", include(("expenses.routers", "api"), namespace="expenses")),
+    path("telegram/", include(("bots.routers", "api"), namespace="telegram")),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
 ]

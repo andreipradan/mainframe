@@ -3,7 +3,7 @@ import logging
 import telegram
 from rest_framework import serializers
 
-from bots.models import Bot
+from bots.models import Bot, Message
 from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
@@ -75,3 +75,9 @@ class BotSerializer(serializers.ModelSerializer):
                     else:
                         logger.info("Deleted webhook: %s", result)
         return attrs
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = "__all__"

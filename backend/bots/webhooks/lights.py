@@ -5,7 +5,7 @@ import pytz
 import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from api.bots.webhooks.shared import BaseInlines
+from bots.webhooks.shared import BaseInlines
 from clients.lights import LightsClient, LightsException
 from clients.logs import MainframeHandler
 

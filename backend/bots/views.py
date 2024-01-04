@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 
-from api.bots.serializers import BotSerializer
-from bots.models import Bot
+from bots.serializers import BotSerializer, MessageSerializer
+from bots.models import Bot, Message
 from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
@@ -59,3 +59,9 @@ class BotViewSet(viewsets.ModelViewSet):
             )
             return JsonResponse(data={"status": "404"})
         return JsonResponse(data={"status": "200"})
+
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.order_by("-date")
+    serializer_class = MessageSerializer
+    permission_classes = (IsAdminUser,)

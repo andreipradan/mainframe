@@ -5,7 +5,7 @@ from pymongo.errors import ConfigurationError
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 
-from api.bots.webhooks.shared import BaseInlines
+from bots.webhooks.shared import BaseInlines
 from bots.models import Message
 from clients.chat import edit_message
 from clients.logs import MainframeHandler

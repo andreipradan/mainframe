@@ -354,6 +354,12 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
+              <li className={ isPathActive('/messages') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+                <Link className="nav-link" to="/messages">
+                  <span className="menu-icon"><i className="mdi mdi-message" /></span>
+                  <span className="menu-title">Messages</span>
+                </Link>
+              </li>
               <li className={ isPathActive('/users') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                 <Link className="nav-link" to="/users">
                   <span className="menu-icon"><i className="mdi mdi-human" /></span>
