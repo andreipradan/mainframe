@@ -4,7 +4,9 @@ import { Circles } from "react-loader-spinner";
 import Marquee from "react-fast-marquee";
 import "nouislider/distribute/nouislider.css";
 
-import { StocksApi } from "../../api/finance";
+import { PnlApi, StocksApi } from "../../api/finance";
+import { capitalize } from "./Accounts/AccountDetails/AccountDetails";
+import { calculateSum } from "./utils";
 import { setKwargs } from "../../redux/stocksSlice";
 import { selectStyles } from "./Categorize/EditModal";
 import BottomPagination from "../shared/BottomPagination";
@@ -12,11 +14,10 @@ import Errors from "../shared/Errors";
 import Form from "react-bootstrap/Form";
 import ListItem from "../shared/ListItem";
 import Select from "react-select";
-import {capitalize} from "./Accounts/AccountDetails/AccountDetails";
-import { calculateSum } from "./utils";
 
 const Stocks = () => {
   const dispatch = useDispatch();
+  const pnl = useSelector(state => state.pnl)
   const stocks = useSelector(state => state.stocks)
   const token = useSelector((state) => state.auth.token)
 
@@ -130,13 +131,20 @@ const Stocks = () => {
       <div className="col-12 grid-margin">
         <div className="card">
           <div className="card-body">
+            <h6>
+              Profit and Loss ({pnl.results?.length})
+              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(PnlApi.getList(token))}>
+                <i className="mdi mdi-refresh" />
+              </button>
+            </h6>
             <div className="table-responsive">
               <div className="mb-0 text-muted">
                 <div className="row">
                   <div className="col-sm-6">
-                    Profit and Loss
                     <div className="mb-0 text-muted">
-                      <small>Total: {stocks.pnl?.length}</small>
+                      <ul>
+                        {pnl.currencies?.map((c, i) => <li key={i}>{c}: {pnl.total?.[c]}</li>)}
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -155,7 +163,7 @@ const Stocks = () => {
                 </thead>
                 <tbody>
                 {
-                  stocks.loading
+                  pnl.loading
                     ? <Circles
                       visible={true}
                       width="100%"
@@ -163,8 +171,8 @@ const Stocks = () => {
                       wrapperStyle={{float: "right"}}
                       color='orange'
                     />
-                    : stocks.pnl?.length
-                        ? stocks.pnl.map((transaction, i) => <tr key={i}>
+                    : pnl.results?.length
+                        ? pnl.results.map((transaction, i) => <tr key={i}>
                           <td> {new Date(transaction.date_sold).toLocaleDateString()} </td>
                           <td> {new Date(transaction.date_acquired).toLocaleDateString()} </td>
                           <td> {transaction.ticker} </td>
@@ -178,6 +186,7 @@ const Stocks = () => {
                 </tbody>
               </table>
             </div>
+            <BottomPagination items={pnl} fetchMethod={PnlApi.getList} setKwargs={setKwargs}/>
 
           </div>
         </div>

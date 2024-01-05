@@ -26,6 +26,11 @@ import {
   update,
 } from "../redux/paymentSlice";
 import {
+  set as setPnl,
+  setErrors as setPnlErrors,
+  setLoading as setPnlLoading,
+} from "../redux/pnlSlice";
+import {
   set as setStocks,
   setErrors as setStocksErrors,
   setLoading as setStocksLoading,
@@ -203,6 +208,16 @@ export class PredictionApi {
       .then(response => dispatch(setTask({type: "train", data: response.data})))
       .catch(err => handleErrors(err, dispatch, setPredictionErrors))
   }
+}
+
+export class PnlApi {
+  static getList = (token, kwargs = null) => dispatch => {
+    dispatch(setPnlLoading(true));
+    axios
+      .get(`${base}/pnl/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setPnl(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setPnlErrors));
+  };
 }
 
 export class StocksApi {

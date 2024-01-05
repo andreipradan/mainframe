@@ -21,7 +21,28 @@ class PnLViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        response.data["total"] = PnL.objects.aggregate(Sum("pnl"))
+        currencies = (
+            PnL.objects.values_list("currency", flat=True)
+            .distinct("currency")
+            .order_by("currency")
+        )
+        tickers = (
+            PnL.objects.filter(ticker__isnull=False)
+            .values_list("ticker", flat=True)
+            .distinct("ticker")
+            .order_by("ticker")
+        )
+        response.data["currencies"] = currencies
+        response.data["tickers"] = tickers
+        aggregations = PnL.objects.aggregate(
+            **{
+                f"total_{currency}": Sum("pnl", filter=Q(currency=currency))
+                for currency in currencies
+            }
+        )
+        response.data["total"] = {
+            currency: aggregations[f"total_{currency}"] for currency in currencies
+        }
         return response
 
 

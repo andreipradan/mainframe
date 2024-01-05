@@ -17,6 +17,7 @@ import logsReducer from "../redux/logsSlice";
 import mealsReducer from "../redux/mealsSlice";
 import messagesReducer from "../redux/messagesSlice";
 import paymentReducer from "../redux/paymentSlice";
+import pnlReducer from "../redux/pnlSlice";
 import predictionReducer from "./predictionSlice";
 import rpiReducer from "../redux/rpiSlice";
 import stocksReducer from "./stocksSlice";
@@ -44,6 +45,7 @@ export default configureStore({
     meals: mealsReducer,
     messages: messagesReducer,
     payment: paymentReducer,
+    pnl: pnlReducer,
     prediction: predictionReducer,
     rpi: rpiReducer,
     stocks: stocksReducer,
