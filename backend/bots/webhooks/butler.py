@@ -91,8 +91,13 @@ def call(data, instance: Bot):
                 doc_type = "timetables"
             else:
                 return logger.error("Unhandled pdf type")
+        elif (stock_type := message.caption.lower().replace(" ", "_")) in [
+            "stock_pnl",
+            "stock_transactions",
+        ]:
+            doc_type = stock_type
         else:
-            return logger.error("Unhandled extension: %s", extension)
+            return logger.error("Unhandled document: %s", file_name)
 
         logger.info("Got %s saving...", extension)
         path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
@@ -103,7 +108,7 @@ def call(data, instance: Bot):
         import_kwargs = {"doc_type": doc_type}
         if bank:
             import_kwargs["bank"] = bank
-        finance_import(doc_type, **import_kwargs)
+        finance_import(**import_kwargs)
 
         return reply(update, f"Saved {doc_type}: {file_name}")
 

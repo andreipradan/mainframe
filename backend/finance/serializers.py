@@ -8,6 +8,7 @@ from finance.models import (
     Timetable,
     Transaction,
     StockTransaction,
+    PnL,
 )
 
 
@@ -49,6 +50,12 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
+
+
+class PnLSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = PnL
 
 
 class StockTransactionSerializer(serializers.ModelSerializer):

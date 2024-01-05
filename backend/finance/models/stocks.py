@@ -3,6 +3,23 @@ from django.db import models
 from core.models import TimeStampedModel
 
 
+class PnL(TimeStampedModel):
+    amount = models.DecimalField(decimal_places=2, max_digits=7)
+    cost_basis = models.DecimalField(decimal_places=2, max_digits=6)
+    currency = models.CharField(max_length=3)
+    date_acquired = models.DateField()
+    date_sold = models.DateField()
+    pnl = models.DecimalField(decimal_places=2, max_digits=7)
+    quantity = models.DecimalField(decimal_places=8, max_digits=11)
+    ticker = models.CharField(blank=True, max_length=5, null=True)
+
+    class Meta:
+        ordering = ["-date_sold", "-date_acquired", "ticker"]
+
+    def __str__(self):
+        return f"{self.ticker} {self.date_acquired} - {self.date_sold}"
+
+
 class StockTransaction(TimeStampedModel):
     TYPE_BUY_MARKET = 1
     TYPE_CASH_TOP_UP = 2

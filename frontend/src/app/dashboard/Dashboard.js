@@ -13,6 +13,12 @@ import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
 import {Collapse, Form} from "react-bootstrap";
 import Errors from "../shared/Errors";
+import {
+  doughnutPieOptions,
+  getBotsActiveData,
+  getLightsData,
+  sliderSettings
+} from "./chartsData";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -20,7 +26,6 @@ const Dashboard = () => {
   const token = useSelector((state) => state.auth.token)
 
   const bots = useSelector(state => state.bots)
-
   const lights = useSelector(state => state.lights)
 
   const botsActiveCount = bots.results?.filter(b => b.is_active === true).length
@@ -58,50 +63,9 @@ const Dashboard = () => {
       tooltip.style.display = isDisplayed ? "block": "none"
   }
 
-  const botsData =  {
-    labels: ["Inactive", "Active"],
-    datasets: [{
-      data: [botsInactiveCount, botsActiveCount],
-      backgroundColor: [
-        'rgba(54, 162, 235, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
-      ],
-      borderColor: [
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-      ],
-    }]
-  };
+  const botsData = getBotsActiveData(botsActiveCount, botsInactiveCount)
+  const lightsChartData = getLightsData(lightsOnCount, lightsOffCount)
 
-  const lightsChartData = {
-    datasets: [{
-      data: [lightsOnCount, lightsOffCount],
-      backgroundColor: [
-        'rgba(75, 192, 192, 0.5)',
-        'rgba(255, 99, 132, 0.5)',
-      ],
-      borderColor: [
-        'rgba(75, 192, 192, 1)',
-        'rgba(255,99,132,1)',
-      ],
-    }],
-
-    // These labels appear in the legend and in the tooltips when hovering different arcs
-    labels: [
-      "On",
-      "Off",
-    ]
-  };
-
-  const doughnutPieOptions = {
-    responsive: true,
-    animation: {
-      animateScale: true,
-      animateRotate: true
-    }
-  };
-
-  const sliderSettings = {infinite: true, speed: 500, slidesToShow: 1, slidesToScroll: 1}
   return <div>
     <div className="row">
       <div className="col-md-6 col-xl-6 grid-margin stretch-card">
@@ -521,7 +485,7 @@ const Dashboard = () => {
       </div>
     </div>
     <div className="row">
-      <div className="col-md-6 col-xl-4 grid-margin stretch-card">
+      <div className="col-md-6 col-xl-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <div className="d-flex flex-row justify-content-between">
@@ -589,7 +553,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      <div className="col-md-6 col-xl-4 grid-margin stretch-card">
+      <div className="col-md-6 col-xl-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">Portfolio Slide</h4>
@@ -634,50 +598,50 @@ const Dashboard = () => {
      setLightNameOpened(false)
      setLightName("")
    }}>
-    <Modal.Header closeButton>
-      <Modal.Title>
-        <div className="row">
-          <div className="col-lg-12 grid-margin stretch-card mb-1">
-            {
-              lightNameOpened
-                ? `Edit ${lightNameOpened?.capabilities?.name}?`
-                : null
-            }
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <div className="row">
+            <div className="col-lg-12 grid-margin stretch-card mb-1">
+              {
+                lightNameOpened
+                  ? `Edit ${lightNameOpened?.capabilities?.name}?`
+                  : null
+              }
+            </div>
           </div>
-        </div>
-        <p className="text-muted mb-0">Brightness: {lightNameOpened?.capabilities?.bright}%</p>
-      </Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      <Errors errors={lights.errors}/>
+          <p className="text-muted mb-0">Brightness: {lightNameOpened?.capabilities?.bright}%</p>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Errors errors={lights.errors}/>
 
-      {
-        lights.loadingItems?.includes(lightNameOpened.ip)
-        ? <ColorRing
-            width = "100%"
-            height = "50"
-            wrapperStyle={{width: "100%"}}
-          />
-        : <Form onSubmit={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))}>
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
+        {
+          lights.loadingItems?.includes(lightNameOpened.ip)
+          ? <ColorRing
+              width = "100%"
+              height = "50"
+              wrapperStyle={{width: "100%"}}
+            />
+          : <Form onSubmit={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))}>
+              <Form.Group className="mb-3">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
 
-                value={lightName}
-                onChange={e => setLightName(e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-      }
-    </Modal.Body>
-    <Modal.Footer>
-      <Button variant="secondary" onClick={() => {setLightName(""); setLightNameOpened(false)}}>Close</Button>
-      <Button variant="primary" onClick={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))} >
-        Update name
-      </Button>
-    </Modal.Footer>
-  </Modal>
+                  value={lightName}
+                  onChange={e => setLightName(e.target.value)}
+                />
+              </Form.Group>
+            </Form>
+        }
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => {setLightName(""); setLightNameOpened(false)}}>Close</Button>
+        <Button variant="primary" onClick={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))} >
+          Update name
+        </Button>
+      </Modal.Footer>
+    </Modal>
   </div>
 }
 

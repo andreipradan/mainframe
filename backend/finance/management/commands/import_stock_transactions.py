@@ -5,7 +5,6 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
@@ -48,7 +47,7 @@ class Command(BaseCommand):
         now = datetime.now()
 
         total = 0
-        data_path = settings.BASE_DIR / "finance" / "data" / "stocks"
+        data_path = settings.BASE_DIR / "finance" / "data" / "stock_transactions"
 
         for file_name in Path(data_path).glob(f"**/*.csv"):
             logger.info("Parsing %s", file_name.name)

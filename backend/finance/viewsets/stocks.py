@@ -2,8 +2,27 @@ from django.db.models import Sum, Q, Count
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
-from finance.models import StockTransaction
-from finance.serializers import StockTransactionSerializer
+from finance.models import StockTransaction, PnL
+from finance.serializers import StockTransactionSerializer, PnLSerializer
+
+
+class PnLViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = PnL.objects.all()
+    serializer_class = PnLSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if currency := self.request.query_params.getlist("currency"):
+            queryset = queryset.filter(currency__in=currency)
+        if ticker := self.request.query_params.getlist("ticker"):
+            queryset = queryset.filter(ticker__in=ticker)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.data["total"] = PnL.objects.aggregate(Sum("pnl"))
+        return response
 
 
 class StocksViewSet(viewsets.ModelViewSet):
@@ -31,7 +50,14 @@ class StocksViewSet(viewsets.ModelViewSet):
             .distinct("currency")
             .order_by("currency")
         )
+        tickers = (
+            StockTransaction.objects.filter(ticker__isnull=False)
+            .values_list("ticker", flat=True)
+            .distinct("ticker")
+            .order_by("ticker")
+        )
         response.data["currencies"] = currencies
+        response.data["tickers"] = tickers
         aggregations = StockTransaction.objects.aggregate(
             **{
                 f"{normalize_type(_type_display)}_total_{currency}": Sum(
@@ -49,6 +75,27 @@ class StocksViewSet(viewsets.ModelViewSet):
             },
             count_EUR=Count("id", filter=Q(currency="EUR")),
             count_USD=Count("id", filter=Q(currency="USD")),
+            **{
+                f"{ticker}_quantity": Sum(
+                    "quantity",
+                    filter=Q(
+                        ticker=ticker,
+                        type=StockTransaction.TYPE_BUY_MARKET,
+                        quantity__isnull=False,
+                    ),
+                    default=0,
+                )
+                - Sum(
+                    "quantity",
+                    filter=Q(
+                        ticker=ticker,
+                        type=StockTransaction.TYPE_SELL_MARKET,
+                        quantity__isnull=False,
+                    ),
+                    default=0,
+                )
+                for ticker in tickers
+            },
         )
         response.data["aggregations"] = {
             currency: {
@@ -76,11 +123,11 @@ class StocksViewSet(viewsets.ModelViewSet):
                 for currency in currencies
             }
         )
+        response.data["aggregations"]["quantities"] = [
+            {"ticker": k.replace(f"_quantity", ""), "value": v}
+            for (k, v) in aggregations.items()
+            if k.endswith(f"_quantity") and v
+        ]
         response.data["transactions_count"] = StockTransaction.objects.count()
         response.data["types"] = StockTransaction.TYPE_CHOICES
-        response.data["tickers"] = (
-            StockTransaction.objects.values_list("ticker")
-            .distinct("ticker")
-            .order_by("ticker")
-        )
         return response
