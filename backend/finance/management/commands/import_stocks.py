@@ -9,12 +9,10 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
-from clients import cron
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
 from finance.models.stocks import StockTransaction
+from finance.tasks import backup_finance_model
 
 
 def normalize_row(row: dict):
@@ -71,15 +69,7 @@ class Command(BaseCommand):
                 logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
-        if settings.ENV == "prod":
-            remove_crons_for_command(
-                Cron(command="import_statements", is_management=True)
-            )
-
         msg = f"Imported {total} stock transactions"
         send_telegram_message(text=msg)
         if total:
-            if settings.ENV == "prod":
-                cron.delay("backup_finance --model=Transaction")
-            else:
-                call_command("backup_finance", model="StockTransaction")
+            backup_finance_model(model="StockTransaction")

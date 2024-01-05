@@ -9,12 +9,10 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
 from bots.webhooks.shared import chunks
-from clients import cron
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
 from finance.models import Account, Transaction
+from finance.tasks import backup_finance_model
 
 
 def get_field(header):
@@ -147,7 +145,7 @@ def parse_raiffeisen_transactions(file_name, logger):
     )
     if created:
         logger.warning("New account: %s", account)
-        cron.delay("backup_finance --model=Account")
+        backup_finance_model(model="Account")
 
     header_index = starting_index + 11
     header = [x.value for x in rows[header_index]]
@@ -279,10 +277,8 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error("\nFailed files: %s", ", ".join(failed_imports))
 
-        remove_crons_for_command(Cron(command="import_statements", is_management=True))
-
         send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
         if total:
-            cron.delay("backup_finance --model=Transaction")
+            backup_finance_model(model="Transaction")

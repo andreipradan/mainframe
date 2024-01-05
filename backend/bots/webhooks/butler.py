@@ -17,10 +17,10 @@ from bots.webhooks.shared import reply
 from bots.management.commands.check_whos_next import whos_next
 from bots.management.commands.set_hooks import get_ngrok_url
 from bots.models import Bot, Message
-from clients import cron
 from clients.logs import MainframeHandler
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
+from finance.tasks import finance_import
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -99,7 +99,12 @@ def call(data, instance: Bot):
         bot.get_file(message.document.file_id).download(path)
 
         logger.info("Saved %s: %s", doc_type, file_name)
-        cron.delay(f"import_{doc_type}{f' --bank={bank}' if bank else ''}")
+
+        import_kwargs = {"doc_type": doc_type}
+        if bank:
+            import_kwargs["bank"] = bank
+        finance_import(doc_type, **import_kwargs)
+
         return reply(update, f"Saved {doc_type}: {file_name}")
 
     if not message.text:

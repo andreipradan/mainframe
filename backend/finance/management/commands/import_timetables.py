@@ -9,12 +9,10 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from PyPDF2 import PdfReader
 
-from clients import cron
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
 from finance.models import Account, Credit, Timetable
+from finance.tasks import backup_finance_model
 
 
 def extract_rows(rows):
@@ -144,7 +142,7 @@ def extract_first_page(first_page, logger):
     )
     if created:
         logger.warning("New account: %s", account)
-        cron.delay("backup_finance --model=Account")
+        backup_finance_model(model="Account")
 
     credit, created = Credit.objects.get_or_create(
         account_id=account.id,
@@ -156,7 +154,7 @@ def extract_first_page(first_page, logger):
 
     if created:
         logger.warning("New credit: %s", account)
-        cron.delay("backup_finance --model=Credit")
+        backup_finance_model(model="Credit")
 
     return Timetable(
         credit_id=credit.id,
@@ -208,10 +206,7 @@ class Command(BaseCommand):
             msg += f"\nFailed files: {', '.join(failed_imports)}"
             logger.error("Failed files: %s", ", ".join(failed_imports))
 
-        remove_crons_for_command(Cron(command="import_timetables", is_management=True))
-
         send_telegram_message(text=msg)
-
         self.stdout.write(self.style.SUCCESS(msg))
         if total:
-            cron.delay("backup_finance --model=Timetable")
+            backup_finance_model(model="Timetable")

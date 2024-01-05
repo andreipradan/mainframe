@@ -8,10 +8,20 @@ from clients.prediction import SKLearn, log_status
 from finance.models import Category, Transaction
 
 
+@db_task(expires=30)
+def backup_finance_model(model):
+    call_command("backup", app="finance", model=model)
+
+
 @db_periodic_task(crontab(minute=59, hour=23, day=1))
 @HUEY.lock_task("backup-finance-lock")
 def backup_finance():
-    call_command("backup_finance")
+    call_command("backup", app="finance")
+
+
+@db_task(expires=30)
+def finance_import(doc_type, **kwargs):
+    call_command(f"import_{doc_type}", **kwargs)
 
 
 @HUEY.signal()

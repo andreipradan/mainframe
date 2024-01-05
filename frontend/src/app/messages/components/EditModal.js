@@ -41,11 +41,13 @@ const EditModal = () => {
           <p className="text-muted mb-0">Message ID: {msg.message_id}</p>
           <p className="text-muted mb-0">Saved by: {msg.saved_by.first_name}</p>
           <hr />
-          {msg.text.split("\n").map((line, i) => <p key={i} className="text-muted mb-0">{line}</p>)}
+          {msg.text?.split("\n").map((line, i) =>
+            <p key={i} className="text-muted mb-0">{line}</p>) || <p className="text-muted">&lt; No text &gt;</p>
+          }
         </Modal.Body>
     }
     <Modal.Footer>
-      <Button variant="secondary" onClick={selectItem}>Close</Button>
+      <Button variant="secondary" onClick={() => dispatch(selectItem())}>Close</Button>
     </Modal.Footer>
   </Modal>
 }

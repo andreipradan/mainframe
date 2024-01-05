@@ -39,13 +39,6 @@ const Messages = () =>  {
                 >
                   <i className="mdi mdi-refresh"></i>
                 </button>
-                <button
-                    type="button"
-                    className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
-                    onClick={() => dispatch(setModalOpen(true))}
-                >
-                  <i className="mdi mdi-plus"></i>
-                </button>
               </h4>
               <Errors errors={errors}/>
               <div className="table-responsive">

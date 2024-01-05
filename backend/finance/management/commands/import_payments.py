@@ -6,17 +6,14 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from PyPDF2 import PdfReader
 
-from clients import cron
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
 from finance.models import Payment, Timetable
+from finance.tasks import backup_finance_model
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -123,19 +120,11 @@ class Command(BaseCommand):
                 file_name.unlink()
 
         msg = f"Imported {total} payments"
-        if settings.ENV == "prod":
-            remove_crons_for_command(
-                Cron(command="import_payments", is_management=True)
-            )
-
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS(msg))
 
         if total:
-            if settings.ENV == "prod":
-                cron.delay("backup_finance --model=Payment")
-            else:
-                call_command("backup_finance", model="Payment")
+            backup_finance_model(model="Payment")
 
     def extract_payments(self, pages):
         payments = []
