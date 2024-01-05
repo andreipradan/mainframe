@@ -19,6 +19,7 @@ const Calculator = () => {
   const timetable = useSelector(state => state.timetable)
 
   useEffect(() => {!timetable.selectedItem && dispatch(TimetableApi.getTimetables(token))}, [timetable.selectedItem])
+  useEffect(() => {!timetable.selectedItem && timetable.results?.length && dispatch(selectTimetable(timetable.results[0].id))}, [timetable.results])
 
   const latestTimetable = timetable.selectedItem?.amortization_table
   const currency = timetable.selectedItem?.credit?.currency

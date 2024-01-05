@@ -132,23 +132,31 @@ const Stocks = () => {
         <div className="card">
           <div className="card-body">
             <h6>
-              Profit and Loss ({pnl.results?.length})
+              Profit and Loss {pnl.results?.length ? `(${pnl.results?.length})` : null}
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(PnlApi.getList(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
             </h6>
             <div className="table-responsive">
-              <div className="mb-0 text-muted">
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="mb-0 text-muted">
-                      <ul>
-                        {pnl.currencies?.map((c, i) => <li key={i}>{c}: {pnl.total?.[c]}</li>)}
-                      </ul>
+              {
+                pnl.currencies?.length && pnl.total && <div className="mb-0 text-muted">
+                  <div className="row">
+                    <div className="col-sm-6">
+                      <div className="mb-0 text-muted">
+                        <ul className="list-arrow">
+                          {
+                            pnl.currencies.map((c, i) =>
+                              <li key={i} className={pnl.total[c] < 0 ? "text-danger" : pnl.total[c] > 0 ? "text-success" : "text-warning"}>
+                                {pnl.total[c] < 0 ? "-" : null} {c === "USD" ? "$" : c}{pnl.total[c] < 0 ? -pnl.total[c]: pnl.total[c]}
+                              </li>
+                            )
+                          }
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              }
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -201,7 +209,12 @@ const Stocks = () => {
               <div className="mb-0 text-muted">
                 <div className="row">
                   <div className="col-sm-6">
-                    Transactions: {stocks.count}
+                    <h6 className="text-secondary">
+                      Transactions: {stocks.count}
+                      <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(StocksApi.getList(token, stocks.kwargs))}>
+                        <i className="mdi mdi-refresh" />
+                      </button>
+                    </h6>
                     {
                       Object.keys(stocks.kwargs).length
                       ? <small className="text-warning">&nbsp;(
