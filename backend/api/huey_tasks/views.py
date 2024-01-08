@@ -1,7 +1,7 @@
 import json
 from operator import itemgetter
 
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.utils.module_loading import autodiscover_modules
 from huey.contrib.djhuey import HUEY
 from rest_framework import viewsets

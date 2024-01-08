@@ -20,7 +20,7 @@ def log_status(string, **kwargs):
 
 @HUEY.signal()
 def signal_handler(signal, task, exc=None):
-    kwargs = {"status": signal, "task_id": task.id}
+    kwargs = {"status": signal, "id": task.id}
     if exc:
         kwargs["error"] = str(exc)
     log_status(task.name, **kwargs)

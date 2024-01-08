@@ -3,9 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { ColorRing } from "react-loader-spinner";
 
 import { Collapse } from "react-bootstrap";
+import { capitalize } from "../finances/Accounts/AccountDetails/AccountDetails";
 import Errors from "../shared/Errors";
 import TasksApi from "../../api/tasks";
 
+const parseStatus = status => status === "complete"
+  ? "✅"
+  : status === "executing"
+    ? "⚙️"
+    : ["canceled", "error", "interrupted"].includes(status)
+      ? `${status} ❌`
+      : status
 
 const Tasks = () =>  {
   const dispatch = useDispatch();
@@ -88,10 +96,14 @@ const Tasks = () =>  {
                               <Collapse in={ taskOpen?.includes(result.name) }>
                                 <ul className="list-unstyled">
                                   {
-                                    Object.keys(result.details).filter(k => k !== "history").map((k, i) =>
+                                    Object.keys(result.details).filter(k => !["history", "status"].includes(k)).map((k, i) =>
                                       <li key={i} className="pl-3 mt-1">
                                         <i className="text-primary mdi mdi-chevron-right"></i>&nbsp;
-                                        {k}: {result.details[k]}
+                                        {
+                                          k === "timestamp"
+                                            ? `Last updated: ${new Date(result.details.timestamp).toLocaleString()}`
+                                            : `${capitalize(k)}: ${result.details[k]}`
+                                        }
                                       </li>
                                     )
                                   }
@@ -100,7 +112,7 @@ const Tasks = () =>  {
                                       ? <div className="pl-3">
                                         <div style={{cursor: "pointer"}} onClick={() => toggleTaskHistoryOpen(result.name)}>
                                           <i className={`mdi mdi-chevron-${taskHistoryOpen?.includes(result.name) ? 'down text-success' : 'right text-primary'}`} />
-                                          history
+                                          History
                                         </div>
                                         <Collapse in={ taskHistoryOpen?.includes(result.name) }>
                                           <ul className="list-unstyled">
@@ -112,7 +124,12 @@ const Tasks = () =>  {
                                                     Object.keys(h).map(hkey =>
                                                       hkey === "timestamp"
                                                         ? new Date(h[hkey]).toLocaleString()
-                                                        : `${hkey}: ${h[hkey]}`).join(" ")
+                                                        : hkey === "status"
+                                                          ? parseStatus(h[hkey])
+                                                          : hkey === "id"
+                                                            ? `[${h[hkey].slice(0, 3)}..${h[hkey].slice(h[hkey].length - 3, h[hkey].length)}]`
+                                                            : h[hkey]
+                                                    ).join(" ")
                                                   }
                                                 </li>
                                               )
