@@ -1,4 +1,5 @@
 import json
+from operator import itemgetter
 
 from django.http import JsonResponse
 from django.utils.module_loading import autodiscover_modules
@@ -18,16 +19,19 @@ class TasksViewSet(viewsets.ViewSet):
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         return JsonResponse(
             data={
-                "results": [
-                    {
-                        "name": t.split(".tasks.")[-1],
-                        "app": t.split(".tasks.")[0],
-                        "is_periodic": t in periodic_tasks,
-                        "details": json.loads(
-                            redis_client.get(t.split(".")[-1]) or "{}"
-                        ),
-                    }
-                    for t in HUEY._registry._registry
-                ],
+                "results": sorted(
+                    [
+                        {
+                            "name": t.split(".tasks.")[-1],
+                            "app": t.split(".tasks.")[0],
+                            "is_periodic": t in periodic_tasks,
+                            "details": json.loads(
+                                redis_client.get(t.split(".")[-1]) or "{}"
+                            ),
+                        }
+                        for t in HUEY._registry._registry
+                    ],
+                    key=itemgetter("app", "name"),
+                ),
             }
         )
