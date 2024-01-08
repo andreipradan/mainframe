@@ -6,7 +6,7 @@ redis_client = HUEY.storage.redis_client()
 
 
 def log_status(string, **kwargs):
-    new_event = {"timestamp": str(timezone.now()), **kwargs}
+    new_event = {"timestamp": timezone.now().isoformat(), **kwargs}
 
     details = json.loads(redis_client.get(string) or "{}")
     if not details:
