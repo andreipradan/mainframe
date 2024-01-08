@@ -18,6 +18,7 @@ urlpatterns = [
     path("meals/", include(("meals.routers", "api"), namespace="meals")),
     path("rpi/", include(("api.rpi.routers", "api"), namespace="rpi")),
     path("split/", include(("expenses.routers", "api"), namespace="expenses")),
+    path("tasks/", include(("api.huey_tasks.routers", "api"), namespace="tasks")),
     path("telegram/", include(("bots.routers", "api"), namespace="telegram")),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
 ]

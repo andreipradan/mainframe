@@ -21,6 +21,7 @@ import pnlReducer from "../redux/pnlSlice";
 import predictionReducer from "./predictionSlice";
 import rpiReducer from "../redux/rpiSlice";
 import stocksReducer from "./stocksSlice";
+import tasksReducer from "./tasksSlice";
 import timetableReducer from "./timetableSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 import usersSlice from "../redux/usersSlice";
@@ -49,6 +50,7 @@ export default configureStore({
     prediction: predictionReducer,
     rpi: rpiReducer,
     stocks: stocksReducer,
+    tasks: tasksReducer,
     timetable: timetableReducer,
     transactions: transactionsReducer,
     users: usersSlice,

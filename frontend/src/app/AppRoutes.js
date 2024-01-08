@@ -26,6 +26,7 @@ const Logs = lazy(() => import('./apps/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
 const Messages = lazy(() => import('./messages/Messages'));
 const Profile = lazy(() => import ("./profile/Profile"));
+const Tasks = lazy(() => import('./tasks/Tasks'));
 const Todo = lazy(() => import('./apps/TodoList'));
 const UserGroups = lazy(() => import("./users/Groups"));
 const Users = lazy(() => import('./users/Users'));
@@ -80,9 +81,10 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/commands" component={ Commands } />}
         {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
-        {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
-        {user?.is_staff && <Route exact path="/users" component={ Users } />}
         {user?.is_staff && <Route exact path="/groups" component={ UserGroups } />}
+        {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
+        {user?.is_staff && <Route exact path="/tasks" component={ Tasks } />}
+        {user?.is_staff && <Route exact path="/users" component={ Users } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
         <Route path="/basic-ui/dropdowns" component={ Dropdowns } />

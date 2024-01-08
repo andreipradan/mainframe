@@ -1,10 +1,8 @@
-import json
 import pickle
 
 import django.db.models
 from django.conf import settings
 from django.utils import timezone
-from huey.contrib.djhuey import HUEY
 from huey.signals import SIGNAL_ERROR
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -12,21 +10,7 @@ from sklearn.model_selection import train_test_split
 
 from camera.views import download_blob_into_memory
 from clients.storage import upload_blob_from_string
-
-redis_client = HUEY.storage.redis_client()
-
-
-def log_status(task_type, **kwargs):
-    new_event = {"timestamp": str(timezone.now()), **kwargs}
-
-    details = json.loads(redis_client.get(task_type) or "{}")
-    if not details:
-        details = {"history": [new_event], **new_event}
-    else:
-        details.update(new_event)
-        details["history"].insert(0, new_event)
-    redis_client.set(task_type, json.dumps(details))
-    return details
+from core.tasks import log_status
 
 
 def load(file_name):

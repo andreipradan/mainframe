@@ -3,7 +3,6 @@ import logging
 
 import redis
 from django.http import Http404, JsonResponse
-from huey.contrib.djhuey import HUEY
 from huey.signals import (
     SIGNAL_CANCELED,
     SIGNAL_COMPLETE,
@@ -17,9 +16,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
+from core.tasks import log_status, redis_client
 from clients.logs import MainframeHandler
 from finance.models import Category, Transaction
-from finance.tasks import log_status, predict, train
+from finance.tasks import predict, train
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -40,29 +40,27 @@ class PredictionViewSet(viewsets.ViewSet):
     error = "Tasks backend unreachable"
 
     def list(self, request, *args, **kwargs):
-        client = HUEY.storage.redis_client()
         try:
-            train_data = client.get("train")
+            train_data = redis_client.get("train")
         except redis.exceptions.ConnectionError:
             logger.exception(self.error)
             return JsonResponse({"detail": self.error}, status=400)
         train_data = json.loads(train_data) if train_data else None
-        predict_data = client.get("predict")
+        predict_data = redis_client.get("predict")
         predict_data = json.loads(predict_data) if predict_data else None
         return JsonResponse({"train": train_data, "predict": predict_data})
 
     @action(methods=["put"], detail=False, url_path="start-prediction")
     def start_prediction(self, request, *args, **kwargs):
-        client = HUEY.storage.redis_client()
         try:
-            redis_entry = client.get("predict")
+            redis_entry = redis_client.get("predict")
         except redis.exceptions.ConnectionError:
             logger.exception(self.error)
             return JsonResponse({"detail": self.error}, status=400)
         details = json.loads(redis_entry) if redis_entry else {}
         if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"detail": f"prediction - {status}"}, status=400)
-        client.delete("predict")
+        redis_client.delete("predict")
 
         queryset = Transaction.objects.expenses().filter(
             category=Category.UNIDENTIFIED,
@@ -78,9 +76,8 @@ class PredictionViewSet(viewsets.ViewSet):
 
     @action(methods=["put"], detail=False, url_path="start-training")
     def start_training(self, request, *args, **kwargs):
-        client = HUEY.storage.redis_client()
         try:
-            redis_entry = client.get("train")
+            redis_entry = redis_client.get("train")
         except redis.exceptions.ConnectionError:
             logger.exception(self.error)
             return JsonResponse({"detail": self.error}, status=400)
@@ -88,7 +85,7 @@ class PredictionViewSet(viewsets.ViewSet):
         details = json.loads(redis_entry) if redis_entry else {}
         if (status := details.get("status")) and status not in FINAL_STATUSES:
             return JsonResponse({"detail": f"training - {status}"}, status=400)
-        client.delete("train")
+        redis_client.delete("train")
 
         try:
             train(logger)
@@ -101,14 +98,12 @@ class PredictionViewSet(viewsets.ViewSet):
 
     @action(methods=["get"], detail=False, url_path="predict-status")
     def predict_status(self, request, *args, **kwargs):
-        client = HUEY.storage.redis_client()
-        if not (task := client.get("predict")):
+        if not (task := redis_client.get("predict")):
             raise Http404
         return JsonResponse(data={"type": "predict", **json.loads(task)})
 
     @action(methods=["get"], detail=False, url_path="train-status")
     def train_status(self, request, *args, **kwargs):
-        client = HUEY.storage.redis_client()
-        if not (task := client.get("train")):
+        if not (task := redis_client.get("train")):
             raise Http404
         return JsonResponse(data={"type": "train", **json.loads(task)})

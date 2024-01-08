@@ -58,47 +58,56 @@ const Stocks = () => {
     <Errors errors={stocks.errors}/>
 
     <div className="row">
-      <div className="col-sm-12 grid-margin">
+      <div className="col-sm-4 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>Portfolio ({stocks.aggregations?.quantities?.length ? stocks.aggregations.quantities.length : <Circles width = "100%" height = "50" />})</h6>
+            <h6>
+              Portfolio&nbsp;
+              {
+                stocks.loading
+                  ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
+                  : `(${stocks?.aggregations?.quantities?.length})`
+              }
+            </h6>
             {
-              stocks.loading
-                ? <Circles width = "100%" height = "50" />
-                : stocks.aggregations?.quantities?.length
-                  ? <Marquee duration={10000} pauseOnHover={true} >
-                    <ListItem label={"Total"} value={calculateSum(stocks.aggregations.quantities, "value")} textType={"warning"} className="mr-3" />
-                    {stocks.aggregations.quantities.map((q, i) =>
-                      <ListItem label={q.ticker} value={q.value} textType={"warning"} className="mr-3" />
-                    )}
-                  </Marquee>
-                  : "-"
+              !stocks.loading && stocks.aggregations && <div style={{maxHeight: "22vh", overflowY: "scroll"}}>
+                <ListItem label={"Total"} value={calculateSum(stocks.aggregations.quantities, "value")} textType={"warning"} className="mr-3" />
+                {
+                  stocks.aggregations?.quantities?.map((q, i) =>
+                    <ListItem key={i} label={q.ticker} value={q.value} textType={"warning"} className="mr-3" />
+
+                  )
+                }
+              </div>
             }
           </div>
         </div>
       </div>
       {
         stocks.currencies?.map((currency, i) =>
-          <div className="col-sm-6 grid-margin" key={i}>
+          <div className="col-sm-4 grid-margin" key={i}>
             <div className="card">
               <div className="card-body">
-                <h5>{currency} ({stocks.aggregations?.[currency].counts[0].value})</h5>
-                {
-                  stocks.loading
-                    ? <Circles width = "100%" height = "50" />
-                    : <>
-                      {
-                        stocks.aggregations?.[currency].totals.map((item, i) =>
-                          <ListItem
-                              key={i}
-                              label={capitalize(item.type.replace("_", " "))}
-                              value={item.value ? `${currency === "USD" ? "$" : "€"} ${item.value} (${stocks.aggregations?.[currency].counts[i+1].value})` : "-"}
-                              textType={"warning"}
-                            />
-                        )
-                      }
-                    </>
-                }
+                <h6>
+                  {currency}&nbsp;
+                  {
+                    stocks.loading
+                      ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
+                      : `(${stocks.aggregations?.[currency].counts[0].value})`
+                  }
+                </h6>
+                <div style={{maxHeight: "22vh", overflowY: "scroll"}}>
+                  {
+                    !stocks.loading && stocks.aggregations && stocks.aggregations?.[currency].totals.map((item, i) =>
+                        <ListItem
+                            key={i}
+                            label={capitalize(item.type.replace("_", " "))}
+                            value={item.value ? `${currency === "USD" ? "$" : "€"} ${item.value} (${stocks.aggregations?.[currency].counts[i+1].value})` : "-"}
+                            textType={"warning"}
+                          />
+                      )
+                  }
+                </div>
               </div>
             </div>
           </div>

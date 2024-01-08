@@ -3,11 +3,11 @@ import {
   set,
   setErrors,
   setLoading,
-} from "../redux/messagesSlice"
+} from "../redux/tasksSlice"
 
 import { handleErrors } from "./errors";
 
-class MessagesApi {
+class TasksApi {
   static getList = token => dispatch => {
     dispatch(setLoading(true));
     axios
@@ -17,6 +17,6 @@ class MessagesApi {
   };
 }
 
-let base = "telegram/messages";
+let base = "tasks";
 
-export default MessagesApi;
+export default TasksApi;

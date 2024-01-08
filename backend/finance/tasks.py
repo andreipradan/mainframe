@@ -4,7 +4,8 @@ from huey import crontab
 from huey.contrib.djhuey import HUEY, db_task, db_periodic_task
 from huey.signals import SIGNAL_ERROR
 
-from clients.prediction import SKLearn, log_status
+from core.tasks import log_status
+from clients.prediction import SKLearn
 from finance.models import Category, Transaction
 
 
@@ -22,14 +23,6 @@ def backup_finance():
 @db_task(expires=30)
 def finance_import(doc_type, **kwargs):
     call_command(f"import_{doc_type}", **kwargs)
-
-
-@HUEY.signal()
-def signal_expired(signal, task, exc=None):
-    kwargs = {"task_type": task.name, "status": signal}
-    if exc:
-        kwargs["error"] = str(exc)
-    log_status(**kwargs)
 
 
 @db_task()
