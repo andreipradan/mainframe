@@ -8,12 +8,12 @@ class Earthquake(TimeStampedModel):
     SOURCE_USGS = "usgs"
 
     additional_data = models.JSONField(blank=True, default=dict, null=True)
-    depth = models.FloatField()
+    depth = models.DecimalField(decimal_places=3, max_digits=7)
     intensity = models.CharField(blank=True, max_length=16, null=True)
     location = models.CharField(max_length=128)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    magnitude = models.FloatField()
+    latitude = models.DecimalField(decimal_places=5, max_digits=8)
+    longitude = models.DecimalField(decimal_places=5, max_digits=8)
+    magnitude = models.DecimalField(decimal_places=2, max_digits=4)
     source = models.CharField(
         max_length=5,
         choices=(
