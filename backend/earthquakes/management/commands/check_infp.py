@@ -42,7 +42,7 @@ class Command(BaseEarthquakeCommand):
         primary = result["sols"]["primary"]
         location = primary["region"].pop("name")
         timestamp = self.get_datetime(primary.pop("time"))
-        depth = primary.pop("depth")
+        depth = primary.pop("depth") / 1000
         magnitude = primary["magnitudes"]["primary"].pop("value")
         long, lat = primary["lonlat"].pop("coordinates")
         if not primary["lonlat"]:
