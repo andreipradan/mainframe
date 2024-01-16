@@ -76,11 +76,7 @@ class SavedMessagesInlines(BaseInlines):
         )
 
     def start(self, update, page=None):
-        try:
-            count = Message.objects.filter(chat_id=self.chat_id).count()
-        except ConfigurationError as e:
-            return update.message.reply_text(f"Got an error: {str(e)}")
-
+        count = Message.objects.filter(chat_id=self.chat_id).count()
         last_page = math.ceil(count / self.PER_PAGE)
         welcome_message = "Welcome {name}"
         if count:
