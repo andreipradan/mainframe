@@ -1,5 +1,6 @@
 import logging
 import math
+import telegram.error
 
 from pymongo.errors import ConfigurationError
 from telegram import InlineKeyboardButton as Button
@@ -93,10 +94,16 @@ class SavedMessagesInlines(BaseInlines):
         if not update.callback_query:
             user = update.message.from_user
             logger.info("User %s started the conversation.", user.full_name)
-            return update.message.reply_text(
-                welcome_message.format(name=user.full_name),
-                reply_markup=self.get_markup(is_top_level=True, last_page=last_page),
-            ).to_json()
+            try:
+                return update.message.reply_text(
+                    welcome_message.format(name=user.full_name),
+                    reply_markup=self.get_markup(
+                        is_top_level=True, last_page=last_page
+                    ),
+                ).to_json()
+            except telegram.error.BadRequest as e:
+                logger.error(str(e))
+                return ""
 
         message = update.callback_query.message
         full_name = update.callback_query.from_user.full_name
