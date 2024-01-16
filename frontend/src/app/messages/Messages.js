@@ -1,19 +1,31 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { Audio, ColorRing } from "react-loader-spinner";
+import Form from "react-bootstrap/Form";
 
-import { selectItem, setModalOpen } from "../../redux/messagesSlice";
-import MessagesApi from "../../api/messages";
+import { selectItem, setKwargs } from "../../redux/messagesSlice";
+import { selectStyles } from "../finances/Categorize/EditModal";
+import BottomPagination from "../shared/BottomPagination";
 import EditModal from "./components/EditModal";
 import Errors from "../shared/Errors";
+import MessagesApi from "../../api/messages";
+import Select from "react-select";
 
 
 const Messages = () =>  {
   const dispatch = useDispatch();
+  const messages = useSelector(state => state.messages)
   const token = useSelector(state => state.auth.token)
-  const {results, errors, loading, loadingItems } = useSelector(state => state.messages)
 
-  useEffect(() => {!results && dispatch(MessagesApi.getList(token))}, []);
+  const onAuthorChange = newValue => {
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargs({...(messages.kwargs || {}), author: newTypes, page: 1}))
+  }
+
+  const onChatIdChange = newValue => {
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargs({...(messages.kwargs || {}), chat_id: newTypes, page: 1}))
+  }
 
   return (
     <div>
@@ -30,18 +42,58 @@ const Messages = () =>  {
         <div className="col-lg-12 grid-margin stretch-card">
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title">
-                Saved messages
-                <button
-                    type="button"
-                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(MessagesApi.getList(token))}
-                >
-                  <i className="mdi mdi-refresh"></i>
-                </button>
-              </h4>
-              <Errors errors={errors}/>
+              <Errors errors={messages.errors}/>
               <div className="table-responsive">
+                <div className="mb-0 text-muted">
+                  <div className="row">
+                    <div className="col-sm-6">
+                      <h4 className="text-secondary">
+                        Saved messages
+                        <button
+                            type="button"
+                            className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                            onClick={() => dispatch(MessagesApi.getList(token, messages.kwargs))}
+                        >
+                          <i className="mdi mdi-refresh"></i>
+                        </button>
+                        <p className="text-small text-muted">Total: {messages.count}</p>
+                      </h4>
+                    </div>
+                    <div className="col-sm-6">
+                      <Form
+                        className="row"
+                        onSubmit={e => {e.preventDefault(); dispatch(MessagesApi.getList(token, messages.kwargs))}}
+                      >
+                        <Form.Group className="col-md-6">
+                          <Form.Label>Author</Form.Label>&nbsp;
+                          <Select
+                            closeMenuOnSelect={false}
+                            isDisabled={messages.loading}
+                            isLoading={messages.loading}
+                            isMulti
+                            onChange={onAuthorChange}
+                            options={messages.authors?.map(t => ({label: t, value: t}))}
+                            styles={selectStyles}
+                            value={messages.kwargs.author?.map(t => ({label: t, value: t}))}
+                          />
+                        </Form.Group>
+                        <Form.Group className="col-md-6">
+                          <Form.Label>Chat ID</Form.Label>&nbsp;
+                          <Select
+                            closeMenuOnSelect={false}
+                            isDisabled={messages.loading}
+                            isLoading={messages.loading}
+                            isMulti
+                            onChange={onChatIdChange}
+                            options={messages.chat_ids?.map(t => ({label: t, value: t}))}
+                            styles={selectStyles}
+                            value={messages.kwargs.chat_id?.map(t => ({label: t, value: t}))}
+                          />
+                        </Form.Group>
+                      </Form>
+                    </div>
+                  </div>
+                </div>
                 <table className="table table-hover">
                   <thead>
                     <tr>
@@ -53,10 +105,10 @@ const Messages = () =>  {
                   </thead>
                   <tbody>
                     {
-                      !loading
-                        ? results?.length
-                          ? results.map(
-                            (msg, i) => !loadingItems?.includes(msg.id)
+                      !messages.loading
+                        ? messages.results?.length
+                          ? messages.results.map(
+                            (msg, i) => !messages.loadingItems?.includes(msg.id)
                               ? <tr key={i}>
                                 <td onClick={() => dispatch(selectItem(msg.id))} className="cursor-pointer">{i + 1}</td>
                                 <td onClick={() => dispatch(selectItem(msg.id))} className="cursor-pointer">{new Date(msg.date).toLocaleString()}</td>
@@ -87,6 +139,8 @@ const Messages = () =>  {
                     }
                   </tbody>
                 </table>
+                <BottomPagination items={messages} fetchMethod={MessagesApi.getList} setKwargs={setKwargs} />
+
               </div>
             </div>
           </div>

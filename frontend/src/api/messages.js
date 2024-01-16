@@ -6,12 +6,14 @@ import {
 } from "../redux/messagesSlice"
 
 import { handleErrors } from "./errors";
+import {createSearchParams} from "./finance";
 
 class MessagesApi {
-  static getList = token => dispatch => {
+  static getList = (token, kwargs) => dispatch => {
     dispatch(setLoading(true));
+    kwargs = kwargs || {};
     axios
-      .get(`${base}/`, { headers: { Authorization: token } })
+      .get(`${base}/` + `?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then(response => dispatch(set(response.data)))
       .catch(err => handleErrors(err, dispatch, setErrors));
   };
