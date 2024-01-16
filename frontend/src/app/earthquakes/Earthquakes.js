@@ -24,15 +24,10 @@ const defaultButtonProps = {
   interactiveChildren: false,
 }
 
-
-const options = {
-  scales: {
-    yAxes: [{ticks: {beginAtZero: true, step: 20}, gridLines: {color: "rgba(204, 204, 204,0.1)"}}],
-    xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
-  },
-  elements: {point: {radius: 0}},
-}
-
+const formatTime = timestamp => new Date(timestamp).toLocaleDateString(
+    "ro-RO",
+    {day: "2-digit", month: "short", year: "2-digit", hour: "numeric", minute: "numeric"}
+)
 
 const Earthquakes = () => {
   const dispatch = useDispatch();
@@ -43,38 +38,57 @@ const Earthquakes = () => {
   useEffect(() => {setAlertOpen(!!earthquakes.errors)}, [earthquakes.errors])
 
   const data = {
-    labels: earthquakesList?.map(e => new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()),
-    datasets: [{
-      label: 'Magnitude',
-      data: earthquakesList?.map(e => e.magnitude),
-      backgroundColor: context => {
-        const ctx = context.chart.ctx;
-        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-        gradient.addColorStop(0, 'rgba(255, 99, 132, 0.2)');
-        gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
-        gradient.addColorStop(1, 'rgba(75,192,126,0.2)');
-        return gradient;
+    labels: earthquakesList?.map(e =>formatTime(e.timestamp)),
+    datasets: [
+      {
+        label: 'Magnitude',
+        data: earthquakesList?.map(e => e.magnitude),
+        backgroundColor: context => {
+          if (earthquakesList[context.dataIndex].additional_data?.sols?.primary?.region?.type === "world")
+            return "rgba(114,167,203,0.25)"
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, 'rgba(255, 99, 132, 0.2)');
+          gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
+          gradient.addColorStop(1, 'rgba(75,192,126,0.2)');
+          return gradient;
+        },
+        borderColor: context => {
+          if (earthquakesList[context.dataIndex].additional_data?.sols?.primary?.region?.type === "world")
+            return "gray"
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
+          gradient.addColorStop(0, 'rgba(255,99,132,1)');
+          gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
+          gradient.addColorStop(1, 'rgb(75,192,126)');
+          return gradient;
+        },
+        borderWidth: 1,
+        fill: false,
       },
-      borderColor: context => {
-        const ctx = context.chart.ctx;
-        const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
-        gradient.addColorStop(0, 'rgba(255,99,132,1)');
-        gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
-        gradient.addColorStop(1, 'rgb(75,192,126)');
-        return gradient;
-      },
-      borderWidth: 1,
-      fill: false
-    }]
+    ]
   }
+
+  const options = {
+    scales: {
+      yAxes: [{
+        ticks: {beginAtZero: true, step: 20},
+        gridLines: {color: "rgba(204, 204, 204,0.1)"}
+      }],
+      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
+    },
+    elements: {point: {radius: 0}},
+    tooltips: {
+      callbacks: {
+        title: tooltipItem =>
+            `${earthquakesList[tooltipItem[0].index].location}\n${tooltipItem[0].label}`,
+      }
+    }
+  }
+
   const [series, setSeries] = useState(null)
   const [root, setRoot] = useState(null)
   const [chart, setChart] = useState(null)
-
-
-  useEffect(() => {
-    !earthquakes.results && dispatch(EarthquakesApi.getList(token))
-  }, [dispatch, earthquakes.results, token]);
 
   useLayoutEffect(() => {
     const root = am5.Root.new("map")
@@ -156,7 +170,7 @@ const Earthquakes = () => {
 
       let container = am5.Container.new(root, {});
       let color = colorSet.next();
-      let radius = 7 + value;
+      let radius = 1 + value;
       container.children.push(am5.Circle.new(root, {
         radius: radius -1,
         fill: value < 3 ? 'green' : value < 4 ? 'orange' : value < 5 ? 'darkorange' : 'red',
@@ -208,104 +222,138 @@ const Earthquakes = () => {
     </div>
 
     {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
-      {earthquakes.errors}
+      {earthquakes.errors?.detail}
     </Alert>}
     <div className="row">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-body">
-              <h4 className="card-title">
-                Latest Earthquakes
-                <button type="button"
-                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                  onClick={
-                    () => {
-                      dispatch(EarthquakesApi.getList(token))
-                      dispatch(BotsApi.getList(token))
-                    }
-                  }>
-                  <i className="mdi mdi-refresh"></i>
-                </button>
-              </h4>
-              <p className="card-description d-flex">
-                Last check:&nbsp;
-                {earthquakes.loading
-                  ? <Circles
+      <div className="col-12">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">
+              Latest Earthquakes
+              <button type="button"
+                className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                onClick={
+                  () => {
+                    dispatch(EarthquakesApi.getList(token, earthquakes.kwargs))
+                    dispatch(BotsApi.getList(token))
+                  }
+                }>
+                <i className="mdi mdi-refresh"></i>
+              </button>
+              <div className="form-check float-right ml-4">
+                <label className="form-check-label text-muted">
+                  <input type="checkbox" className="form-check-input" onChange={() => dispatch(setKwargs({...earthquakes.kwargs, local_events: !earthquakes.kwargs.local_events}))} checked={earthquakes.kwargs.local_events}/>
+                  <i className="input-helper"></i>
+                  Only local events
+                </label>
+              </div>
+              <div className="form-check float-right ml-4">
+                <label className="form-check-label text-muted">
+                  <input type="checkbox" className="form-check-input" onChange={() => dispatch(setKwargs({...earthquakes.kwargs, magnitude_gt5: !earthquakes.kwargs.magnitude_gt5}))} checked={earthquakes.kwargs.magnitude_gt5}/>
+                  <i className="input-helper"></i>
+                  > 5 ML
+                </label>
+              </div>
+              <div className="form-check float-right">
+                <label className="form-check-label text-muted">
+                  <input type="checkbox" className="form-check-input" onChange={() => dispatch(setKwargs({...earthquakes.kwargs, largest_events: !earthquakes.kwargs.largest_events}))} checked={earthquakes.kwargs.largest_events}/>
+                  <i className="input-helper"></i>
+                  Largest events
+                </label>
+              </div>
+            </h4>
+            <p className="card-description d-flex">
+              Last check:&nbsp;
+              {earthquakes.loading
+                ? <Circles
+                    visible={true}
+                    height="15"
+                    width="100%"
+                    ariaLabel="ball-triangle-loading"
+                    wrapperStyle={{}}
+                    wrapperClass={{}}
+                    color='orange'
+                  />
+                : <span> {earthquakes.last_check || "-"}</span>
+              }
+            </p>
+            <div className="row">
+              <div className="col-md-12">
+                {
+                  earthquakes.loading ?
+                    <BallTriangle
                       visible={true}
-                      height="15"
                       width="100%"
                       ariaLabel="ball-triangle-loading"
                       wrapperStyle={{}}
                       wrapperClass={{}}
-                      color='orange'
+                      color = '#e15b64'
                     />
-                  : <span> {earthquakes.last_check || "-"}</span>
+                  : <Bar
+                      data={data}
+                      options={options}
+                      height={100}
+                      onElementsClick={(e) => e?.[0]?._index && zoomToGeoPoint(earthquakesList[e[0]._index])}
+                    />
                 }
-              </p>
-              <div className="row">
-                <div className="col-md-12">
-                  {
-                    earthquakes.loading ?
-                      <BallTriangle
-                        visible={true}
-                        width="100%"
-                        ariaLabel="ball-triangle-loading"
-                        wrapperStyle={{}}
-                        wrapperClass={{}}
-                        color = '#e15b64'
-                      />
-                    : <Bar
-                        data={data}
-                        options={options}
-                        height={100}
-                        onElementsClick={(e) => e?.[0]?._index && zoomToGeoPoint(earthquakesList[e[0]._index])}
-                      />
-                  }
-                </div>
               </div>
-              <div className="row">
-                <div className="col-md-7">
-                  <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
-                    <table className="table" >
-                      <thead>
-                      <tr style={{position: "sticky", top: 0, zIndex: 1}} className="bg-gray-dark">
-                        <th> Time </th>
-                        <th> Magnitude </th>
-                        <th> Location </th>
-                        <th> Depth </th>
-                        <th> Location </th>
-                        <th> Source </th>
-                      </tr>
-                      </thead>
-                      <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
-                      {
-                        earthquakes.results?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
-                          <td>
-                            {new Date(e.timestamp).toLocaleDateString() + " " + new Date(e.timestamp).toLocaleTimeString()}
-                          </td>
-                          <td className={e.magnitude > 5 ? "text-danger" : ""}> {e.magnitude} {e.intensity ? `(${e.intensity})` : null}</td>
-                          <td>
-                            <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
-                          </td>
-                          <td className="font-weight-medium"> {e.depth} km </td>
-                          <td className="font-weight-medium"> {e.location} </td>
-                          <td> {e.source} </td>
-                        </tr>)
-                      }
-                      </tbody>
-                    </table>
-                  </div>
-                  <BottomPagination items={earthquakes} fetchMethod={EarthquakesApi.getList} setKwargs={setKwargs} />
+            </div>
+            <div className="row mt-3">
+              <div className="col-md-7">
+                <div className="table-responsive table-hover" style={{overflow: "auto", maxHeight: "40vh"}}>
+                  <table className="table" >
+                    <thead>
+                    <tr style={{position: "sticky", top: 0, zIndex: 1}} className="bg-gray-dark">
+                      <th> Time </th>
+                      <th> Magnitude </th>
+                      <th> Location </th>
+                      <th> Depth </th>
+                      <th> Location </th>
+                      <th> Source </th>
+                    </tr>
+                    </thead>
+                    <tbody style={{maxHeight: "100px", overflowY: "scroll"}}>
+                    {
+                      earthquakes.results?.map((e, i) => <tr key={i} onClick={() => zoomToGeoPoint(e)}>
+                        <td>
+                          {formatTime(e.timestamp)}
+                          {
+                            e.additional_data?.sols?.primary?.receiveTime
+                              ? <p className="small">Rec: {formatTime(e.additional_data.sols.primary.receiveTime)}</p>
+                              : null
+                          }
+                        </td>
+                        <td className={
+                          e.magnitude < 5
+                            ? "text-success"
+                            : e.magnitude < 6
+                              ? "text-warning"
+                              : "text-danger"
+                        }>
+                          {e.magnitude} {e.intensity ? `(${e.intensity})` : null}
+                        </td>
+                        <td>
+                          <a rel="noopener noreferrer" target="_blank" href={`https://www.google.com/maps/place/${e.latitude}+${e.longitude}`}><i className="mdi mdi-map" /></a>
+                        </td>
+                        <td className="font-weight-medium"> {parseFloat(e.depth).toFixed(2)} km </td>
+                        <td className="font-weight-medium"> {e.location} </td>
+                        <td> {e.source} </td>
+                      </tr>)
+                    }
+                    </tbody>
+                  </table>
+                </div>
+                <BottomPagination items={earthquakes} fetchMethod={EarthquakesApi.getList} setKwargs={setKwargs} />
 
-                </div>
-                <div className="col-md-5">
-                  <div id="map" style={{ width: "100%", height: "350px" }} />
-                </div>
+              </div>
+              <div className="col-md-5">
+                <div id="map" style={{ width: "100%", height: "350px" }} />
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
   </div>
 }
 
