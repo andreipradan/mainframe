@@ -78,11 +78,22 @@ const Tasks = () =>  {
                 {
                   !loading
                     ? results?.length
-                      ? results.map(
+                      ? results.slice().sort((a, b) =>
+                          Object.keys(a.details).length < Object.keys(b.details).length
+                              ? 1
+                              : a.is_periodic < b.is_periodic
+                                ? 1
+                                : -1
+                      ).map(
                         (result, i) =>
                           <li key={i} className="mt-2">
-                            <div  key={i} style={{cursor: "pointer"}} onClick={() => result.details && toggleTaskOpen(result.name)}>
-                              <i className={`mdi mdi-chevron-${taskOpen?.includes(result.name) ? 'down text-success' : 'right text-primary'}`} />
+                            <div  key={i} style={result.details.status ? {cursor: "pointer"} : {}} onClick={() => result.details && toggleTaskOpen(result.name)}>
+                              {
+                                result.details.status
+                                  ? <i className={`mdi mdi-chevron-${taskOpen?.includes(result.name) ? 'down text-success' : 'right text-primary'}`} />
+                                  : <i className="mdi mdi-close" />
+                              }
+
                               &nbsp;{result.app}.{result.name}{result.is_periodic ? " (P)" : null}&nbsp;
                               {
                                 result.details.status === 'complete'
@@ -112,7 +123,7 @@ const Tasks = () =>  {
                                       ? <div className="pl-3">
                                         <div style={{cursor: "pointer"}} onClick={() => toggleTaskHistoryOpen(result.name)}>
                                           <i className={`mdi mdi-chevron-${taskHistoryOpen?.includes(result.name) ? 'down text-success' : 'right text-primary'}`} />
-                                          History
+                                          History ({result.details.history?.length})
                                         </div>
                                         <Collapse in={ taskHistoryOpen?.includes(result.name) }>
                                           <ul className="list-unstyled">
