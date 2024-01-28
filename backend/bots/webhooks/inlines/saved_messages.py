@@ -2,7 +2,6 @@ import logging
 import math
 import telegram.error
 
-from pymongo.errors import ConfigurationError
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 
@@ -55,7 +54,7 @@ class SavedMessagesInlines(BaseInlines):
             [
                 [
                     Button(
-                        f"{item.chat_title} by {item.author['full_name']}",
+                        f"{item.chat_title}, {item.author['full_name']}, {item.date.strftime('%d %b %Y')}",
                         callback_data=f"fetch {self.chat_id} {item.id} {page}",
                     )
                 ]
