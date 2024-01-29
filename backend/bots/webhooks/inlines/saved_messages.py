@@ -2,8 +2,8 @@ import logging
 import math
 import telegram.error
 
-from telegram import InlineKeyboardButton as Button
-from telegram import InlineKeyboardMarkup as Keyboard
+from telegram import KeyboardButton as Button
+from telegram import ReplyKeyboardMarkup as Keyboard
 
 from bots.webhooks.shared import BaseInlines
 from bots.models import Message
