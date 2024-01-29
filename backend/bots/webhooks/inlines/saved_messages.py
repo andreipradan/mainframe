@@ -2,8 +2,8 @@ import logging
 import math
 import telegram.error
 
-from telegram import KeyboardButton as Button
-from telegram import ReplyKeyboardMarkup as Keyboard
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
 
 from bots.webhooks.shared import BaseInlines
 from bots.models import Message
@@ -54,7 +54,7 @@ class SavedMessagesInlines(BaseInlines):
             [
                 [
                     Button(
-                        f"{item.chat_title}{' ❌' if not item.text else ''} by {item.author['full_name']}\n{item.date.strftime('%d %b %Y')}",
+                        f"{item.chat_title}{' ❌' if not item.text else ''}, {item.author['full_name']}, {item.date.strftime('%d %b %Y')}",
                         callback_data=f"fetch {self.chat_id} {item.id} {page}",
                     )
                 ]
