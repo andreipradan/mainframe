@@ -54,7 +54,7 @@ class SavedMessagesInlines(BaseInlines):
             [
                 [
                     Button(
-                        f"{item.chat_title}{not item.text and ' ❌'} by {item.author['full_name']}\n{item.date.strftime('%d %b %Y')}",
+                        f"{item.chat_title}{' ❌' if not item.text else ''} by {item.author['full_name']}\n{item.date.strftime('%d %b %Y')}",
                         callback_data=f"fetch {self.chat_id} {item.id} {page}",
                     )
                 ]
