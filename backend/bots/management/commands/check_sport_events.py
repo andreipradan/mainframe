@@ -46,8 +46,6 @@ class Command(BaseCommand):
         def send_message(text):
             return bot.send_message(
                 chat_id=chat_id,
-                disable_notification=True,
-                disable_web_page_preview=True,
                 text=text,
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )

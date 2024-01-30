@@ -41,8 +41,23 @@ class Bot(TimeStampedModel):
         self.last_called_on = timezone.now()
         self.save()
 
-    def send_message(self, chat_id, text, **kwargs):
-        return self.telegram_bot.send_message(chat_id=chat_id, text=text, **kwargs)
+    def send_message(
+        self,
+        chat_id,
+        text,
+        disable_notification=True,
+        disable_web_page_preview=True,
+        parse_mode=telegram.ParseMode.HTML,
+        **kwargs,
+    ):
+        return self.telegram_bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            disable_notification=disable_notification,
+            disable_web_page_preview=disable_web_page_preview,
+            parse_mode=parse_mode,
+            **kwargs,
+        )
 
 
 class Message(TimeStampedModel):

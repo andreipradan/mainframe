@@ -56,8 +56,15 @@ def call(data, instance: Bot):
         return logger.info("No message or chat: %s", update.to_dict())
 
     if message.new_chat_title:
-        save_to_db(update.message, chat=bot.get_chat(update.message.chat_id))
-        return reply(update, text="Saved ✔")
+        if (
+            isinstance(config := instance.additional_data.get("whos_next", None), dict)
+            and config.get("chat_id", None) == message.chat_id
+        ):
+            save_to_db(update.message, chat=bot.get_chat(update.message.chat_id))
+            config["posted"] = True
+            instance.save()
+            return reply(update, text="Saved ✔")
+        return logger.info(f"[{message.chat_id}] New chat title: {message.chat.title}")
 
     if message.new_chat_members:
         new_members = [u.full_name for u in message.new_chat_members]

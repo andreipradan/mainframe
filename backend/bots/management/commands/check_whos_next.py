@@ -1,7 +1,5 @@
-import datetime
 import logging
 
-import telegram
 from django.core.management.base import BaseCommand, CommandError
 
 from bots.models import Bot
@@ -11,26 +9,18 @@ from clients.logs import ManagementCommandsHandler
 def whos_next():
     bot = Bot.objects.get(additional_data__whos_next__isnull=False)
 
-    whos_next = bot.additional_data["whos_next"]
-    if not isinstance(whos_next, dict) or not (chat_id := whos_next.get("chat_id")):
+    config = bot.additional_data["whos_next"]
+    if not isinstance(config, dict) or not (chat_id := config.get("chat_id")):
         raise CommandError("chat_id missing from whos_next in bot additional data")
-    if not whos_next.get("post_order") or not isinstance(
-        whos_next.get("post_order"), list
-    ):
-        raise CommandError(
-            "post_order missing from whos_next in bot additional data "
-            "or not of type list"
-        )
-    if not (start_date := whos_next.get("start_date")):
-        raise CommandError("start_date missing from whos_next in bot additional data")
+    if not (post_order := config.get("post_order")):
+        raise CommandError("post_order missing from whos_next in bot additional data")
+    if not isinstance(post_order, list):
+        raise CommandError("post_order not a list")
+    if len(post_order) < 2:
+        raise CommandError("post_order contains less than 2 items")
 
-    post_order = whos_next["post_order"]
-    start_date = datetime.datetime.strptime(start_date, "%d.%m.%Y").date()
-    tomorrow = datetime.datetime.now().date() + datetime.timedelta(days=1)
-
-    days = (tomorrow - start_date).days
-    today, tomorrow = post_order[(days - 1) % 3], post_order[days % 3]
-    msg = f"Az: <b>{today}</b>\nMâine: <b>{tomorrow}</b>"
+    current, _, prev = post_order
+    msg = f"A fost: <b>{prev}</b>\nUrmează: <b>{current}</b>"
     return msg, bot, chat_id
 
 
@@ -38,16 +28,8 @@ class Command(BaseCommand):
     def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
-
         logger.info("Checking who's next")
 
         msg, bot, chat_id = whos_next()
-
-        bot.send_message(
-            chat_id=chat_id,
-            text=msg,
-            disable_notification=True,
-            disable_web_page_preview=True,
-            parse_mode=telegram.ParseMode.HTML,
-        )
+        bot.send_message(chat_id=chat_id, text=msg)
         self.stdout.write(self.style.SUCCESS("Done."))
