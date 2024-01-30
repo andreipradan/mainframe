@@ -19,7 +19,11 @@ def whos_next():
     if len(post_order) < 2:
         raise CommandError("post_order contains less than 2 items")
 
-    current, _, prev = post_order
+    if config["posted"]:
+        prev, current, _ = post_order
+    else:
+        current, _, prev = post_order
+
     msg = f"A fost: <b>{prev}</b>\nUrmează: <b>{current}</b>"
     return msg, bot, chat_id
 
