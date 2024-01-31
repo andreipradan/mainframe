@@ -11,6 +11,17 @@ import { selectStyles } from "./Categorize/EditModal";
 import { selectItem as selectTimetable } from "../../redux/timetableSlice";
 import Errors from "../shared/Errors";
 
+const PMT = (ir, np, pv, fv, type) => {
+    let pmt, pvif;
+    fv || (fv = 0);
+    type || (type = 0);
+    if (ir === 0) return -(pv + fv)/np;
+    pvif = Math.pow(1 + ir, np);
+    pmt = - ir * (pv * pvif + fv) / (pvif - 1);
+    if (type === 1) pmt /= (1 + ir);
+    return pmt;
+}
+
 const Calculator = () => {
   const history = useHistory();
   const dispatch = useDispatch();
@@ -24,32 +35,41 @@ const Calculator = () => {
   const latestTimetable = timetable.selectedItem?.amortization_table
   const currency = timetable.selectedItem?.credit?.currency
 
-  const [calculatorAmount, setCalculatorAmount] = useState(0)
-  const [calculatorMonths, setCalculatorMonths] = useState(0)
-  const [calculatorSaved, setCalculatorSaved] = useState(0)
-  const [otherAmounts, setOtherAmounts] = useState(null)
+  const [durationAmount, setDurationAmount] = useState(6000)
+  const [durationMonths, setDurationMonths] = useState(0)
+  const [durationSaved, setDurationSaved] = useState(0)
+  const [durationOtherAmounts, setDurationOtherAmounts] = useState(null)
 
-  useEffect(() => latestTimetable?.length && updateAmount(6000), [latestTimetable])
+  const [monthlyAmount, setMonthlyAmount] = useState(6000)
+  const [monthlyMonths, setMonthlyMonths] = useState(1)
+  const [monthlyOtherAmounts, setMonthlyOtherAmounts] = useState(null)
 
-  const setSuggestions = index => {
+  useEffect(() => {
+      if (latestTimetable?.length) {
+        updateDurationAmount(6000)
+        updateMonthlyAmount(6000)
+      }
+    },
+    [latestTimetable]
+  )
+
+  const onChangeTimetable = newValue => {dispatch(selectTimetable(newValue.value))}
+
+  const setDurationSuggestions = index => {
     const suggestedAmounts = {}
     Array.from(new Array(7), (x, i) => i + index - 3).filter(i => i > 0).map(i => {
       suggestedAmounts[i] = calculateSum(latestTimetable.slice(0, i), "principal")
     })
-    setOtherAmounts(suggestedAmounts)
+    setDurationOtherAmounts(suggestedAmounts)
     const saved = (
       calculateSum(latestTimetable.slice(0, index), "interest")
       + calculateSum(latestTimetable.slice(0, index), "insurance")
     ).toFixed(2)
-    setCalculatorSaved(saved)
+    setDurationSaved(saved)
   }
 
-  const onChangeTimetable = newValue => {
-    dispatch(selectTimetable(newValue.value))
-  }
-
-  const updateAmount = value => {
-    setCalculatorAmount(value)
+  const updateDurationAmount = value => {
+    setDurationAmount(value)
     if (!latestTimetable) return
     let amount = 0
     let index = 0
@@ -61,21 +81,46 @@ const Calculator = () => {
       }
       amount += principal
     }
-    setCalculatorMonths(index)
-    setSuggestions(index)
+    setDurationMonths(index)
+    setDurationSuggestions(index)
   }
-  const updateMonths = value => {
-    setCalculatorMonths(value)
+  const updateDurationMonths = value => {
+    setDurationMonths(value)
     if (!latestTimetable) return
     const amount = calculateSum(latestTimetable.slice(0, value), "principal")
-    setCalculatorAmount(amount)
-    setSuggestions(value)
+    setDurationAmount(amount)
+    setDurationSuggestions(value)
+  }
+
+  const setMonthlySuggestions = index => {
+    const suggestedAmounts = {}
+    const remaining = calculateSum(latestTimetable, "principal")
+    const interest = timetable.selectedItem.interest / 100
+    Array.from(new Array(7), (x, i) => i + index - 3).filter(i => i > 0).map(i => {
+      const rem = remaining - (monthlyAmount * i)
+      const inter = interest * rem / 12
+      const newRate = -PMT(interest / 12, latestTimetable.length - i + 1, rem)
+      suggestedAmounts[i] = `${newRate.toFixed(2)} 
+      (${inter.toFixed(2)} + ${(newRate - inter).toFixed(2)})`
+    })
+    setMonthlyOtherAmounts(suggestedAmounts)
+  }
+
+  const updateMonthlyAmount = value => {
+    setMonthlyAmount(value)
+    if (!latestTimetable) return
+    setMonthlySuggestions(monthlyMonths || 1)
+  }
+  const updateMonthlyMonths = value => {
+    setMonthlyMonths(value)
+    if (!latestTimetable) return
+    setMonthlySuggestions(value)
   }
 
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
-        Calculator
+        Prepayment calculator
         {
           timetable.loading
             ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
@@ -106,6 +151,8 @@ const Calculator = () => {
                 Timetable: {timetable.selectedItem.id === timetable.results[0].id ? `${timetable.selectedItem.date} (latest)` : timetable.selectedItem.date}<br/>
                 Interest: {timetable.selectedItem.interest}%<br/>
                 IRCC: {timetable.selectedItem.ircc}%<br/>
+                Remaining amount: {currency ? currency : null} {calculateSum(latestTimetable, "principal")}<br />
+                Remaining months: {latestTimetable.length}
               </small>
             : null
         }
@@ -124,13 +171,12 @@ const Calculator = () => {
       }
     </div>
     <Errors errors={timetable.errors}/>
-
     <div className="row">
-      <div className="col-sm-12 grid-margin">
+      <div className="col-sm-6 grid-margin">
         <div className="card">
           <div className="card-body">
             <h6>
-              Prepayment calculator {currency ? `(${currency})` : null}
+              Reduce duration
             <form className="nav-link mt-2 mt-md-0 search" onSubmit={e => e.preventDefault()}>
               <div className="row">
                 <div className="col-md-4">
@@ -139,8 +185,8 @@ const Calculator = () => {
                     type="search"
                     className="form-control bg-transparent"
                     placeholder="Amount"
-                    value={calculatorAmount}
-                    onChange={e => updateAmount(parseFloat(e.target.value) || 0)}
+                    value={durationAmount}
+                    onChange={e => updateDurationAmount(parseFloat(e.target.value) || 0)}
                   />
                 </div>
                 <div className="col-md-4">
@@ -149,8 +195,8 @@ const Calculator = () => {
                     type="number"
                     className="form-control bg-transparent"
                     placeholder="# of months"
-                    value={calculatorMonths}
-                    onChange={e => updateMonths(parseInt(e.target.value) || 0)}
+                    value={durationMonths}
+                    onChange={e => updateDurationMonths(parseInt(e.target.value) || 0)}
                   />
                 </div>
                 <div className="col-md-4">
@@ -159,19 +205,19 @@ const Calculator = () => {
                     type="search"
                     className="form-control bg-transparent"
                     placeholder="Saved"
-                    value={calculatorSaved}
-                    onChange={e => setCalculatorSaved(parseFloat(e.target.value))}
+                    value={durationSaved}
+                    onChange={e => setDurationSaved(parseFloat(e.target.value))}
                   />
                 </div>
 
               </div>
             </form>
             {
-              otherAmounts && <div className="text-muted small">
+              durationOtherAmounts && <div className="text-muted small">
               Other Amounts:
               <ul>
-                {Object.keys(otherAmounts).map(i => <li key={i} className={parseInt(i) === calculatorMonths ? "text-success" : "text-muted"}>
-                  {i} month(s): {otherAmounts[i].toFixed(2)}
+                {Object.keys(durationOtherAmounts).map(i => <li key={i} className={parseInt(i) === durationMonths ? "text-success" : "text-muted"}>
+                  {i} month(s): {durationOtherAmounts[i].toFixed(2)}
                 </li>)}
               </ul>
               </div>
@@ -180,6 +226,50 @@ const Calculator = () => {
           </div>
         </div>
       </div>
+      <div className="col-sm-6 grid-margin">
+        <div className="card">
+          <div className="card-body">
+            <h6>
+              Reduce monthly payment
+              <div className="nav-link mt-2 mt-md-0 search">
+                <div className="row">
+                  <div className="col-md-6">
+                    <input
+                      disabled={!latestTimetable || timetable.loading}
+                      type="search"
+                      className="form-control bg-transparent"
+                      placeholder="Amount"
+                      value={monthlyAmount}
+                      onChange={e => updateMonthlyAmount(parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <input
+                      disabled={!latestTimetable || timetable.loading}
+                      type="number"
+                      className="form-control bg-transparent"
+                      placeholder="# of months"
+                      value={monthlyMonths}
+                      onChange={e => updateMonthlyMonths(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+              </div>
+              {
+                monthlyOtherAmounts && <div className="text-muted small">
+                Other Amounts:
+                <ul>
+                  {Object.keys(monthlyOtherAmounts).map(i => <li key={i} className={parseInt(i) === monthlyMonths ? "text-success" : "text-muted"}>
+                    {i} month(s): {monthlyOtherAmounts[i]}
+                  </li>)}
+                </ul>
+                </div>
+              }
+            </h6>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 }
