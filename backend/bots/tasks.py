@@ -1,5 +1,6 @@
 from collections import deque
 
+from django.conf import settings
 from django.core.management import call_command
 from huey import crontab
 from huey.contrib.djhuey import HUEY, db_periodic_task
@@ -16,6 +17,8 @@ def backup_bots():
 @db_periodic_task(crontab(minute=0, hour=19))
 @HUEY.lock_task("who-s-next-reminder-lock")
 def who_s_next_reminder():
+    if settings.ENV != "prod":
+        return
     bot = Bot.objects.get(additional_data__whos_next__isnull=False)
     config = bot.additional_data["whos_next"]
     post_order = config["post_order"]
