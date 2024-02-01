@@ -203,13 +203,15 @@ def call(data, instance: Bot):
                 try:
                     name = config["theme"]["name"]
                     user = config["theme"]["user"]
-                    return reply(update, f"Tema e: {name}, propusă de {user}")
+                    return reply(
+                        update, f"<b>Tema</b>: {name}\n<b>Propusă de</b>: {user}"
+                    )
                 except (KeyError, TypeError):
                     return reply(update, "Nu e nici o temă propusă")
             name = " ".join(args)
             config["theme"] = {"name": name, "user": from_user.full_name}
             instance.save()
-            return reply(update, f'"{name}" - bun, am notat')
+            return reply(update, f"<b>{name}</b>\nBun, am notat ✍️")
         return logger.info(f"[{message.chat_id}] who's next not available on this chat")
 
     if cmd == "translate":
