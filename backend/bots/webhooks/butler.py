@@ -195,7 +195,10 @@ def call(data, instance: Bot):
         return SavedMessagesInlines(chat_id).start(update, page=1)
 
     if cmd == "tema":
-        if config := instance.additional_data.get("whos_next", None):
+        if (
+            isinstance(config := instance.additional_data.get("whos_next", None), dict)
+            and config.get("chat_id", None) == message.chat_id
+        ):
             if not args:
                 try:
                     name = config["theme"]["name"]
@@ -204,10 +207,10 @@ def call(data, instance: Bot):
                 except (KeyError, TypeError):
                     return reply(update, "Nu e nici o temă propusă")
             name = " ".join(args)
-            config["theme"] = {"name": name, "user": user}
+            config["theme"] = {"name": name, "user": from_user.full_name}
             instance.save()
             return reply(update, f'"{name}" - bun, am notat')
-        return logger.info(f"[{message.chat_id}] who's next config not found")
+        return logger.info(f"[{message.chat_id}] who's next not available on this chat")
 
     if cmd == "translate":
         return reply(update, translate_text(" ".join(args)))
