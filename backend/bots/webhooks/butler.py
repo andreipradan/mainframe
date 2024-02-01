@@ -207,7 +207,7 @@ def call(data, instance: Bot):
                         update, f"<b>Tema</b>: {name}\n<b>Propusă de</b>: {user}"
                     )
                 except (KeyError, TypeError):
-                    return reply(update, "Nu e nici o temă propusă")
+                    return reply(update, "Nu e nici o temă propusă 🤷")
             name = " ".join(args)
             config["theme"] = {"name": name, "user": from_user.full_name}
             instance.save()
