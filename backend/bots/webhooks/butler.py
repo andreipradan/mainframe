@@ -211,7 +211,7 @@ def call(data, instance: Bot):
             name = " ".join(args)
             config["theme"] = {"name": name, "user": from_user.full_name}
             instance.save()
-            return reply(update, f"<b>{name}</b>\nBun, am notat ✍️")
+            return reply(update, f"Bun, am notat ✍️")
         return logger.info(f"[{message.chat_id}] who's next not available on this chat")
 
     if cmd == "translate":
