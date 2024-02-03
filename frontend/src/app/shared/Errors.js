@@ -12,7 +12,7 @@ const Errors = props => {
           ? <p className="text-danger">{props.errors.detail}</p>
           : props.errors?.length
             ? <ul className="text-danger">
-              {props.errors.map((err, i) => <li key={i}>{err}</li>)}
+              {props.errors?.map((err, i) => <li key={i}>{err}</li>)}
               </ul>
             : props.errors?.constructor === Object
               ? <ul>
