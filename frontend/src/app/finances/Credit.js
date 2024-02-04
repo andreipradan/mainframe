@@ -119,7 +119,7 @@ const Credit = () => {
           const item = tooltipItem[0]
           const otherValue = parseFloat(data.datasets[item.datasetIndex === 0 ? 1 : 0].data[item.index])
           const currentValue = parseFloat(data.datasets[item.datasetIndex].data[item.index]);
-          return `Total: ${currentValue + otherValue}`
+          return `Total: ${(currentValue + otherValue).toFixed(2)}`
         }
       }
     }

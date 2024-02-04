@@ -34,7 +34,7 @@ class PnLViewSet(viewsets.ModelViewSet):
         )
         response.data["currencies"] = currencies
         response.data["tickers"] = tickers
-        aggregations = PnL.objects.aggregate(
+        aggregations = self.get_queryset().aggregate(
             **{
                 f"total_{currency}": Sum("pnl", filter=Q(currency=currency))
                 for currency in currencies

@@ -8,7 +8,7 @@ const BottomPagination = props => {
   const currentPage = !props.items.previous
     ? 1
     : (parseInt(new URL(props.items.previous).searchParams.get("page")) || 1) + 1
-  const perPage = props.perPage || 25
+  const perPage = props.items.length
   const lastPage = Math.ceil(props.items.count / perPage)
   const token = useSelector((state) => state.auth.token)
   useEffect(() => dispatch(props.fetchMethod(token, kwargs)), [kwargs]);

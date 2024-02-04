@@ -69,22 +69,22 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/apps/camera" component={ Camera } />}
         {user?.is_staff && <Route exact path="/apps/logs" component={ Logs } />}
         {user?.is_staff && <Route exact path="/apps/todo" component={ Todo } />}
+        {user?.is_staff && <Route exact path="/auth/groups" component={ UserGroups } />}
+        {user?.is_staff && <Route exact path="/auth/users" component={ Users } />}
         {user?.is_staff && <Route exact path="/bots" component={ Bots } />}
+        {user?.is_staff && <Route exact path="/credit/calculator" component={ FinancesCalculator } />}
+        {user?.is_staff && <Route exact path="/credit/details" component={ FinancesCredit } />}
+        {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
+        {user?.is_staff && <Route exact path="/credit/timetables" component={ FinancesTimetables } />}
         {user?.is_staff && <Route exact path="/finances/accounts" component={ FinancesAccounts } />}
         {user?.is_staff && <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />}
-        {user?.is_staff && <Route exact path="/finances/calculator" component={ FinancesCalculator } />}
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
-        {user?.is_staff && <Route exact path="/finances/credit/details" component={ FinancesCredit } />}
-        {user?.is_staff && <Route exact path="/finances/credit/payments" component={ FinancesPayments } />}
-        {user?.is_staff && <Route exact path="/finances/credit/timetables" component={ FinancesTimetables } />}
-        {user?.is_staff && <Route exact path="/finances/stocks" component={ FinancesStocks } />}
         {user?.is_staff && <Route exact path="/commands" component={ Commands } />}
         {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
-        {user?.is_staff && <Route exact path="/groups" component={ UserGroups } />}
         {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
+        {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
         {user?.is_staff && <Route exact path="/tasks" component={ Tasks } />}
-        {user?.is_staff && <Route exact path="/users" component={ Users } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
         <Route path="/basic-ui/dropdowns" component={ Dropdowns } />

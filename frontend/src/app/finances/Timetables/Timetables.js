@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
@@ -6,8 +6,6 @@ import "nouislider/distribute/nouislider.css";
 import { TimetableApi } from "../../../api/finance";
 import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
 import TimetableEditModal from "./components/TimetableEditModal";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import {useHistory} from "react-router-dom";
 import Errors from "../../shared/Errors";
 
@@ -17,8 +15,6 @@ const Timetables = () => {
 
   const token = useSelector((state) => state.auth.token)
   const timetable = useSelector(state => state.timetable)
-
-  const [timetableToDelete, setTimetableToDelete] = useState(false)
 
   useEffect(() => {!timetable.results && dispatch(TimetableApi.getTimetables(token))}, []);
 
@@ -42,14 +38,14 @@ const Timetables = () => {
         </ol>
       </nav>
     </div>
-    <div className="row ">
+    <div className="row">
       <div className="col-12 grid-margin">
         <div className="card">
           <div className="card-body">
             <div className="table-responsive">
               <Errors errors={timetable.errors}/>
               <div className="mb-0 text-muted">Total: {timetable.count}</div>
-              <table className="table">
+              <table className="table table-hover">
                 <thead>
                   <tr>
                     <th> Date </th>
@@ -57,7 +53,6 @@ const Timetables = () => {
                     <th> Margin </th>
                     <th> IRCC </th>
                     <th> Months </th>
-                    <th> Actions </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -71,25 +66,18 @@ const Timetables = () => {
                         color='orange'
                       />
                     : timetable.results?.length
-                        ? timetable.results.map((timetable, i) => <tr key={i}>
-                          <td> {timetable.date} </td>
-                          <td> {timetable.interest}% </td>
-                          <td> {timetable.margin}% </td>
-                          <td> {timetable.ircc}% </td>
-                          <td> {timetable.amortization_table.length} </td>
-                          <td>
-                            <i
-                              style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-eye text-primary"
-                              onClick={() => dispatch(selectTimetable(timetable.id))}
-                            />
-                            <i
-                              style={{cursor: "pointer"}}
-                              className="mr-2 mdi mdi-trash-can-outline text-danger"
-                              onClick={() => setTimetableToDelete(timetable)}
-                            />
-                          </td>
-                        </tr>)
+                        ? timetable.results.map((timetable, i) =>
+                          <tr
+                            key={i}
+                            onClick={() => dispatch(selectTimetable(timetable.id))}
+                            style={{cursor: "pointer"}}
+                          >
+                            <td> {timetable.date} </td>
+                            <td> {timetable.interest}% </td>
+                            <td> {timetable.margin}% </td>
+                            <td> {timetable.ircc}% </td>
+                            <td> {timetable.amortization_table.length} </td>
+                          </tr>)
                       : <tr><td colSpan={6}><span>No timetables found</span></td></tr>
                 }
                 </tbody>
@@ -100,34 +88,6 @@ const Timetables = () => {
       </div>
     </div>
     <TimetableEditModal />
-    <Modal centered show={timetableToDelete} onHide={() => setTimetableToDelete(false)}>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <div className="row">
-            <div className="col-lg-12 grid-margin stretch-card mb-1">
-              Are you sure you want to delete timetable from {timetableToDelete.date}?
-            </div>
-          </div>
-          <p className="text-muted mb-0">Delete timetable</p>
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        Delete timetable from {timetableToDelete?.date} containing {timetableToDelete?.number_of_months} months ?
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="success" onClick={() => setTimetableToDelete(false)}>No, go back</Button>
-        <Button
-          variant="danger"
-          onClick={() => {
-            dispatch(TimetableApi.deleteTimetable(token, timetable.id))
-            setTimetableToDelete(false)
-          }}
-        >
-          Yes, delete!
-        </Button>
-      </Modal.Footer>
-    </Modal>
-
   </div>
 }
 

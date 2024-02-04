@@ -40,24 +40,31 @@ const Calculator = () => {
   const [durationSaved, setDurationSaved] = useState(0)
   const [durationOtherAmounts, setDurationOtherAmounts] = useState(null)
 
-  const [monthlyAmount, setMonthlyAmount] = useState(6000)
-  const [monthlyMonths, setMonthlyMonths] = useState(1)
+  const [monthlyAmount, setMonthlyAmount] = useState(0)
+  const [monthlyError, setMonthlyError] = useState('')
   const [monthlyOtherAmounts, setMonthlyOtherAmounts] = useState(null)
 
   useEffect(() => {
       if (latestTimetable?.length) {
         updateDurationAmount(6000)
-        updateMonthlyAmount(6000)
+        setMonthlyAmount(Math.round((parseFloat(latestTimetable[0].total) + 2500)/500) * 500)
       }
     },
     [latestTimetable]
   )
 
+  useEffect(() => {
+    if (latestTimetable?.length) {
+      setMonthlySuggestions()
+      setMonthlyError(monthlyAmount < latestTimetable[0].total ? `Amount must be >= ${latestTimetable[0].total}` : "")
+    }
+  }, [monthlyAmount]);
+
   const onChangeTimetable = newValue => {dispatch(selectTimetable(newValue.value))}
 
   const setDurationSuggestions = index => {
     const suggestedAmounts = {}
-    Array.from(new Array(7), (x, i) => i + index - 3).filter(i => i > 0).map(i => {
+    Array.from(new Array(5), (x, i) => i + index - 2).filter(i => i > 0).map(i => {
       suggestedAmounts[i] = calculateSum(latestTimetable.slice(0, i), "principal")
     })
     setDurationOtherAmounts(suggestedAmounts)
@@ -92,29 +99,25 @@ const Calculator = () => {
     setDurationSuggestions(value)
   }
 
-  const setMonthlySuggestions = index => {
+  const setMonthlySuggestions = () => {
     const suggestedAmounts = {}
     const remaining = calculateSum(latestTimetable, "principal")
     const interest = timetable.selectedItem.interest / 100
-    Array.from(new Array(7), (x, i) => i + index - 3).filter(i => i > 0).map(i => {
+    Array.from(new Array(latestTimetable.length), (x, i) => i).filter(i => i > 0).map(i => {
       const rem = remaining - (monthlyAmount * i)
       const inter = interest * rem / 12
-      const newRate = -PMT(interest / 12, latestTimetable.length - i + 1, rem)
-      suggestedAmounts[i] = `${newRate.toFixed(2)} 
-      (${inter.toFixed(2)} + ${(newRate - inter).toFixed(2)})`
+      const remainingMonths = latestTimetable.length - i;
+      const newRate = -PMT(interest / 12, remainingMonths + 1, rem)
+      if (rem > 0)
+        suggestedAmounts[i] = {
+          rate: newRate.toFixed(2),
+          interest: inter.toFixed(2),
+          principal: (newRate - inter).toFixed(2),
+          remaining: rem.toFixed(2),
+          months: remainingMonths
+        }
     })
     setMonthlyOtherAmounts(suggestedAmounts)
-  }
-
-  const updateMonthlyAmount = value => {
-    setMonthlyAmount(value)
-    if (!latestTimetable) return
-    setMonthlySuggestions(monthlyMonths || 1)
-  }
-  const updateMonthlyMonths = value => {
-    setMonthlyMonths(value)
-    if (!latestTimetable) return
-    setMonthlySuggestions(value)
   }
 
   return <div>
@@ -189,7 +192,7 @@ const Calculator = () => {
                     onChange={e => updateDurationAmount(parseFloat(e.target.value) || 0)}
                   />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <input
                     disabled={!latestTimetable || timetable.loading}
                     type="number"
@@ -199,15 +202,8 @@ const Calculator = () => {
                     onChange={e => updateDurationMonths(parseInt(e.target.value) || 0)}
                   />
                 </div>
-                <div className="col-md-4">
-                  <input
-                    disabled={true}
-                    type="search"
-                    className="form-control bg-transparent"
-                    placeholder="Saved"
-                    value={durationSaved}
-                    onChange={e => setDurationSaved(parseFloat(e.target.value))}
-                  />
+                <div className="col-md-5 pt-2" style={{textAlign: "center"}}>
+                  Saved: RON {durationSaved}
                 </div>
 
               </div>
@@ -233,36 +229,51 @@ const Calculator = () => {
               Reduce monthly payment
               <div className="nav-link mt-2 mt-md-0 search">
                 <div className="row">
-                  <div className="col-md-6">
-                    <input
-                      disabled={!latestTimetable || timetable.loading}
-                      type="search"
-                      className="form-control bg-transparent"
-                      placeholder="Amount"
-                      value={monthlyAmount}
-                      onChange={e => updateMonthlyAmount(parseFloat(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="col-md-6">
+                  <div className="col-md-4">
                     <input
                       disabled={!latestTimetable || timetable.loading}
                       type="number"
-                      className="form-control bg-transparent"
-                      placeholder="# of months"
-                      value={monthlyMonths}
-                      onChange={e => updateMonthlyMonths(parseInt(e.target.value) || 0)}
+                      min={Math.ceil(latestTimetable?.[0]?.total)}
+                      className={`form-control bg-transparent ${monthlyError ? 'is-invalid' : ''}`}
+                      placeholder="Amount"
+                      value={monthlyAmount}
+                      onChange={e => setMonthlyAmount(parseFloat(e.target.value) || 0)}
                     />
+                    <small>{monthlyError}</small>
+                  </div>
+                  <div className="col-md-5 pt-2" style={{textAlign: "center"}}>
+                    Maturity in: {Object.keys(monthlyOtherAmounts || {}).length} months
                   </div>
                 </div>
               </div>
               {
-                monthlyOtherAmounts && <div className="text-muted small">
-                Other Amounts:
-                <ul>
-                  {Object.keys(monthlyOtherAmounts).map(i => <li key={i} className={parseInt(i) === monthlyMonths ? "text-success" : "text-muted"}>
-                    {i} month(s): {monthlyOtherAmounts[i]}
-                  </li>)}
-                </ul>
+                monthlyOtherAmounts && <div className="table-responsive">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th> # </th>
+                        <th> Total </th>
+                        <th> Interest </th>
+                        <th> Principal </th>
+                        <th> Remaining </th>
+                        <th> Maturity </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        Object.keys(monthlyOtherAmounts).map((i) =>
+                          <tr key={i}>
+                            <td>{i}</td>
+                            <td>{monthlyOtherAmounts[i].rate}</td>
+                            <td>{monthlyOtherAmounts[i].interest}</td>
+                            <td>{monthlyOtherAmounts[i].principal}</td>
+                            <td>{monthlyOtherAmounts[i].remaining}</td>
+                            <td>{monthlyOtherAmounts[i].months}</td>
+                          </tr>
+                        )
+                      }
+                    </tbody>
+                  </table>
                 </div>
               }
             </h6>

@@ -7,6 +7,7 @@ import "nouislider/distribute/nouislider.css";
 import { PnlApi, StocksApi } from "../../api/finance";
 import { capitalize } from "./Accounts/AccountDetails/AccountDetails";
 import { calculateSum } from "./utils";
+import { setKwargs as setPnlKwargs } from "../../redux/pnlSlice";
 import { setKwargs } from "../../redux/stocksSlice";
 import { selectStyles } from "./Categorize/EditModal";
 import BottomPagination from "../shared/BottomPagination";
@@ -21,14 +22,16 @@ const Stocks = () => {
   const stocks = useSelector(state => state.stocks)
   const token = useSelector((state) => state.auth.token)
 
-  const onCurrencyChange = newValue => {
+  const onCurrencyChange = (newValue, store = stocks) => {
+    const setKwargsMethod = store === stocks ? setKwargs : setPnlKwargs;
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(stocks.kwargs || {}), currency: newTypes, page: 1}))
+    dispatch(setKwargsMethod({...(store.kwargs || {}), currency: newTypes, page: 1}))
   }
 
-  const onTickerChange = newValue => {
+  const onTickerChange = (newValue, store = stocks) => {
+    const setKwargsMethod = store === stocks ? setKwargs : setPnlKwargs;
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(stocks.kwargs || {}), ticker: newTypes, page: 1}))
+    dispatch(setKwargsMethod({...(store.kwargs || {}), ticker: newTypes, page: 1}))
   }
 
   const onTypeChange = newValue => {
@@ -140,14 +143,16 @@ const Stocks = () => {
       <div className="col-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>
-              Profit and Loss {pnl.results?.length ? `(${pnl.results?.length})` : null}
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(PnlApi.getList(token))}>
-                <i className="mdi mdi-refresh" />
-              </button>
-            </h6>
             <div className="table-responsive">
-              {
+              <div className="mb-0 text-muted">
+                <div className="row">
+                  <div className="col-sm-6">
+                    <h6 className="text-secondary">
+                      Profit and Loss {pnl.results?.length ? `(${pnl.results?.length})` : null}
+                      <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(PnlApi.getList(token))}>
+                        <i className="mdi mdi-refresh" />
+                      </button>
+                      {
                 pnl.currencies?.length && pnl.total && <div className="mb-0 text-muted">
                   <div className="row">
                     <div className="col-sm-6">
@@ -166,6 +171,44 @@ const Stocks = () => {
                   </div>
                 </div>
               }
+                    </h6>
+                  </div>
+                  <div className="col-sm-6">
+                    <Form
+                      className="row"
+                      onSubmit={e => {e.preventDefault(); dispatch(StocksApi.getList(token, pnl.kwargs))}}
+                    >
+                      <Form.Group className="col-md-6">
+                        <Form.Label>Currency</Form.Label>&nbsp;
+                        <Select
+                          closeMenuOnSelect={false}
+                          isDisabled={pnl.loading}
+                          isLoading={pnl.loading}
+                          isMulti
+                          onChange={(e) => onCurrencyChange(e, pnl)}
+                          options={pnl.currencies?.map(t => ({label: t, value: t}))}
+                          styles={selectStyles}
+                          value={pnl.kwargs.currency?.map(t => ({label: t, value: t}))}
+                        />
+                      </Form.Group>
+                      <Form.Group className="col-md-6">
+                        <Form.Label>Ticker</Form.Label>&nbsp;
+                        <Select
+                          closeMenuOnSelect={false}
+                          isDisabled={pnl.loading}
+                          isLoading={pnl.loading}
+                          isMulti
+                          onChange={(e) => onTickerChange(e, pnl)}
+                          options={pnl.tickers?.map(t => ({label: t, value: t}))}
+                          styles={selectStyles}
+                          value={pnl.kwargs.ticker?.map(t => ({label: t, value: t}))}
+                        />
+                      </Form.Group>
+                    </Form>
+                  </div>
+                </div>
+              </div>
+
               <table className="table table-hover">
                 <thead>
                   <tr>
@@ -192,11 +235,11 @@ const Stocks = () => {
                         ? pnl.results.map((transaction, i) => <tr key={i}>
                           <td> {new Date(transaction.date_sold).toLocaleDateString()} </td>
                           <td> {new Date(transaction.date_acquired).toLocaleDateString()} </td>
-                          <td> {transaction.ticker} </td>
+                          <td style={{cursor: "pointer"}} onClick={() => onTickerChange([{value: transaction.ticker}], pnl)}> {transaction.ticker} </td>
                           <td> {parseFloat(transaction.quantity)} </td>
                           <td> {transaction.currency === "USD" ? "$" : "€"}{transaction.cost_basis} </td>
                           <td> {transaction.currency === "USD" ? "$" : "€"}{transaction.amount} </td>
-                          <td> {transaction.pnl} </td>
+                          <td className={`text-${transaction.pnl < 0 ? 'danger' : 'success'}`}> {transaction.pnl} </td>
                         </tr>)
                       : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
                 }
