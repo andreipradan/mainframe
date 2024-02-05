@@ -231,13 +231,14 @@ const Calculator = () => {
                 <div className="row">
                   <div className="col-md-4">
                     <input
-                      disabled={!latestTimetable || timetable.loading}
-                      type="number"
-                      min={Math.ceil(latestTimetable?.[0]?.total)}
                       className={`form-control bg-transparent ${monthlyError ? 'is-invalid' : ''}`}
-                      placeholder="Amount"
-                      value={monthlyAmount}
+                      disabled={!latestTimetable || timetable.loading}
+                      min={Math.round((parseFloat(latestTimetable[0].total) + 2500)/500) * 500}
                       onChange={e => setMonthlyAmount(parseFloat(e.target.value) || 0)}
+                      placeholder="Amount"
+                      step={500}
+                      type="number"
+                      value={monthlyAmount}
                     />
                     <small>{monthlyError}</small>
                   </div>
