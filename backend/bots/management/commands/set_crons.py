@@ -17,7 +17,7 @@ class Command(BaseCommand):
         logger.info("[Crons] Setting")
         crons = Cron.objects.filter(is_active=True)
         if not crons:
-            logger.error("No active crons in the database")
+            logger.warning("No active crons in the database")
         set_crons(crons, clear_all=True)
         logger.info("[Crons] Done")
 
