@@ -10,13 +10,16 @@ import { selectItem } from "../../redux/tasksSlice";
 import Errors from "../shared/Errors";
 import TasksApi from "../../api/tasks";
 
-const parseStatus = status => status === "complete"
+const parseStatus = status => {
+  const icon = status === "complete"
   ? "✅"
   : status === "executing"
     ? "⚙️"
     : ["canceled", "error", "interrupted"].includes(status)
-      ? `${status} ❌`
-      : status
+      ? "❌"
+      : "❓"
+  return `${capitalize(status)} ${icon}`
+}
 
 const Tasks = () =>  {
   const dispatch = useDispatch();
@@ -25,7 +28,9 @@ const Tasks = () =>  {
   const [taskErrorsOpen, setTaskErrorsOpen] = useState(false)
   const [taskHistoryOpen, setTaskHistoryOpen] = useState(false)
 
-  useEffect(() => !results && dispatch(TasksApi.getList(token)), [])
+  useEffect(() => {
+    if (!results) dispatch(TasksApi.getList(token))
+  }, [])
 
   return (
     <div>
@@ -66,10 +71,11 @@ const Tasks = () =>  {
                   <tr>
                     <th>#</th>
                     <th>Task</th>
-                    <th>Is periodic?</th>
+                    <th className="text-center">Is periodic?</th>
                     <th>Status</th>
                     <th>Last Run</th>
-                    {/*<th>Actions</th>*/}
+                    <th>Events</th>
+                    <th>Errors</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -84,22 +90,24 @@ const Tasks = () =>  {
                           >
                             <td>{i + 1}</td>
                             <td>{task.app}.{task.name}</td>
-                            <td>{task.is_periodic ? <i className="mdi mdi-check text-success" /> : null}</td>
+                            <td className="text-center">{task.is_periodic ? <i className="mdi mdi-check text-success" /> : null}</td>
                             {
                               task.history?.length
                                 ? <>
                                   <td className={`text-${task.status === "error" ? 'danger' : task.status === "executing" ? 'warning' : 'success'}`}>{task.status ? capitalize(task.status) : "-"}</td>
                                   <td>{new Date(task.timestamp).toLocaleString()}</td>
+                                  <td>{task.history.length}</td>
+                                  <td>{task.errors?.length}</td>
                                 </>
-                                : <td colSpan={2}>Didn't run</td>
+                                : <td colSpan={4} className="text-center">Didn't run</td>
                             }
                           </tr>
                         )
                         : <tr>
-                          <td colSpan={5}>No crons available</td>
+                          <td colSpan={7}>No tasks available</td>
                         </tr>
                       : <tr>
-                        <td colSpan={6}>
+                        <td colSpan={8}>
                           <ColorRing
                             width="100%"
                             radius="9"
@@ -116,7 +124,10 @@ const Tasks = () =>  {
                 dispatch(selectItem(null))
                 setTaskErrorsOpen(false)
                 setTaskHistoryOpen(false)
-              }}>
+              }}
+              dialogClassName="min-vw-50"
+
+              >
                 <Modal.Header closeButton>
                   <Modal.Title>
                     <div className="row">
@@ -124,20 +135,22 @@ const Tasks = () =>  {
                         {selectedItem?.name}
                       </div>
                     </div>
-                    <p className="text-muted mt-0 mb-0">App: {selectedItem?.app} </p>
+                    <p
+                      className="text-muted mt-0 mb-0">App: {selectedItem?.app} </p>
                     {
                       selectedItem?.timestamp
-                        ? <p className="text-muted mt-0 mb-0">Last run: {selectedItem?.timestamp ? new Date(selectedItem.timestamp).toLocaleString() : null} </p>
+                        ? <p className="text-muted mt-0 mb-0">Last
+                          run: {selectedItem?.timestamp ? new Date(selectedItem.timestamp).toLocaleString() : null} </p>
                         : null
                     }
-
+                    <p className="text-muted mt-0 mb-0">ID: {selectedItem?.id} </p>
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                   <ul className="list-unstyled">
                     {
                       selectedItem
-                        ? Object.keys(selectedItem).filter(k => !["timestamp", "name", "app"].includes(k)).map((k, i) =>
+                        ? Object.keys(selectedItem).filter(k => !["timestamp", "name", "app", "id"].includes(k)).map((k, i) =>
                           ["errors", "history"].includes(k)
                             ? <li key={i}>
                               {
@@ -151,17 +164,15 @@ const Tasks = () =>  {
                                       {
                                         selectedItem[k].map((h, i) =>
                                           <li key={i} className="pl-4 mt-1">
-                                            <i className="text-primary mdi mdi-chevron-right"></i>&nbsp;
+                                            <i className="text-secondary mdi mdi-arrow-right mr-1"/>
                                             {
-                                              Object.keys(h).map(hkey =>
+                                              Object.keys(h).filter(k => k !== "id").map(hkey =>
                                                 hkey === "timestamp"
                                                   ? new Date(h[hkey]).toLocaleString()
                                                   : hkey === "status"
                                                     ? parseStatus(h[hkey])
-                                                    : hkey === "id"
-                                                      ? `[${h[hkey].slice(0, 3)}..${h[hkey].slice(h[hkey].length - 3, h[hkey].length)}]`
-                                                      : h[hkey]
-                                              ).join(" ")
+                                                    : h[hkey]
+                                              ).join(" - ")
                                             }
                                           </li>
                                         )
@@ -178,7 +189,9 @@ const Tasks = () =>  {
                                   <i className="mdi mdi-close"/>
                                 }
                                 </li>
-                              : <li key={i}>{capitalize(k)}: {selectedItem[k]}</li>
+                              : k === "status"
+                                ? <li key={i}>Status: {parseStatus(selectedItem[k])}</li>
+                                : <li key={i}>{capitalize(k)}: {selectedItem[k]}</li>
                           )
                         : null
                     }
