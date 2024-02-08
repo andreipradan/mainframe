@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import { ColorRing } from "react-loader-spinner";
-
 import { Collapse } from "react-bootstrap";
+import { ColorRing } from "react-loader-spinner";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+
 import { capitalize } from "../finances/Accounts/AccountDetails/AccountDetails";
+import { selectItem } from "../../redux/tasksSlice";
 import Errors from "../shared/Errors";
 import TasksApi from "../../api/tasks";
 
@@ -18,35 +21,11 @@ const parseStatus = status => status === "complete"
 const Tasks = () =>  {
   const dispatch = useDispatch();
   const token = useSelector(state => state.auth.token)
-  const {results, errors, loading } = useSelector(state => state.tasks)
-  const [taskOpen, setTaskOpen] = useState(null)
-  const [taskHistoryOpen, setTaskHistoryOpen] = useState(null)
+  const {errors, loading, results, selectedItem } = useSelector(state => state.tasks)
+  const [taskErrorsOpen, setTaskErrorsOpen] = useState(false)
+  const [taskHistoryOpen, setTaskHistoryOpen] = useState(false)
 
-  const addStatusOpen = status => {
-    if (!taskOpen?.length)
-      setTaskOpen([status])
-    else if (!taskOpen.includes(status))
-      setTaskOpen([status])
-  }
-  const toggleTaskOpen = (name) => setTaskOpen(
-    taskOpen?.length
-      ? taskOpen.includes(name)
-        ? taskOpen.filter(s => s !== name)
-        : [...taskOpen, name]
-      : [name]
-  )
-  const toggleTaskHistoryOpen = (name) => setTaskHistoryOpen(
-    taskHistoryOpen?.length
-      ? taskHistoryOpen.includes(name)
-        ? taskHistoryOpen.filter(s => s !== name)
-        : [...taskHistoryOpen, name]
-      : [name]
-  )
-
-  useEffect(() => {!results && dispatch(TasksApi.getList(token))}, []);
-  useEffect(() => {
-    results?.map(r => r.details.status === 'executing' && addStatusOpen(r.name))
-  }, [results]);
+  useEffect(() => !results && dispatch(TasksApi.getList(token)), [])
 
   return (
     <div>
@@ -66,108 +45,157 @@ const Tasks = () =>  {
               <h4 className="card-title">
                 Current tasks
                 <button
-                    type="button"
-                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(TasksApi.getList(token))}
+                  type="button"
+                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                  onClick={() => dispatch(TasksApi.getList(token))}
                 >
                   <i className="mdi mdi-refresh"></i>
                 </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm border-0 bg-transparent"
+                  onClick={() => dispatch(TasksApi.flushLocks(token))}
+                >
+                  <i className="mdi mdi-lock-reset"></i>
+                </button>
               </h4>
               <Errors errors={errors}/>
-              <ul className="list-unstyled">
-                {
-                  !loading
-                    ? results?.length
-                      ? results.slice().sort((a, b) =>
-                          Object.keys(a.details).length < Object.keys(b.details).length
-                              ? 1
-                              : a.is_periodic < b.is_periodic
-                                ? 1
-                                : -1
-                      ).map(
-                        (result, i) =>
-                          <li key={i} className="mt-2">
-                            <div  key={i} style={result.details.status ? {cursor: "pointer"} : {}} onClick={() => result.details && toggleTaskOpen(result.name)}>
-                              {
-                                result.details.status
-                                  ? <i className={`mdi mdi-chevron-${taskOpen?.includes(result.name) ? 'down text-success' : 'right text-primary'}`} />
-                                  : <i className="mdi mdi-close" />
-                              }
-
-                              &nbsp;{result.app}.{result.name}{result.is_periodic ? " (P)" : null}&nbsp;
-                              {
-                                result.details.status === 'complete'
-                                  ? <i className="mdi mdi-check-circle-outline text-success" />
-                                  : result.details.status === "executing"
-                                    ? <i className="mdi mdi-cogs" />
-                                    : null
-                              }
-                            </div>
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Task</th>
+                    <th>Is periodic?</th>
+                    <th>Status</th>
+                    <th>Last Run</th>
+                    {/*<th>Actions</th>*/}
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    !loading
+                      ? results?.length
+                        ? results.map(
+                          (task, i) => <tr
+                            key={i}
+                            onClick={() => task.id ? dispatch(selectItem(task.id)) : null}
+                            className={task.id ? "cursor-pointer" : null}
+                          >
+                            <td>{i + 1}</td>
+                            <td>{task.app}.{task.name}</td>
+                            <td>{task.is_periodic ? <i className="mdi mdi-check text-success" /> : null}</td>
                             {
-                              <Collapse in={ taskOpen?.includes(result.name) }>
-                                <ul className="list-unstyled">
-                                  {
-                                    Object.keys(result.details).filter(k => !["history", "status"].includes(k)).map((k, i) =>
-                                      <li key={i} className="pl-3 mt-1">
-                                        <i className="text-primary mdi mdi-chevron-right"></i>&nbsp;
-                                        {
-                                          k === "timestamp"
-                                            ? `Last updated: ${new Date(result.details.timestamp).toLocaleString()}`
-                                            : `${capitalize(k)}: ${result.details[k]}`
-                                        }
-                                      </li>
-                                    )
-                                  }
-                                  {
-                                    result.details.history?.length
-                                      ? <div className="pl-3">
-                                        <div style={{cursor: "pointer"}} onClick={() => toggleTaskHistoryOpen(result.name)}>
-                                          <i className={`mdi mdi-chevron-${taskHistoryOpen?.includes(result.name) ? 'down text-success' : 'right text-primary'}`} />
-                                          History ({result.details.history?.length})
-                                        </div>
-                                        <Collapse in={ taskHistoryOpen?.includes(result.name) }>
-                                          <ul className="list-unstyled">
-                                            {
-                                              result.details.history.map((h, i) =>
-                                                <li key={i} className="pl-4 mt-1">
-                                                  <i className="text-primary mdi mdi-chevron-right"></i>&nbsp;
-                                                  {
-                                                    Object.keys(h).map(hkey =>
-                                                      hkey === "timestamp"
-                                                        ? new Date(h[hkey]).toLocaleString()
-                                                        : hkey === "status"
-                                                          ? parseStatus(h[hkey])
-                                                          : hkey === "id"
-                                                            ? `[${h[hkey].slice(0, 3)}..${h[hkey].slice(h[hkey].length - 3, h[hkey].length)}]`
-                                                            : h[hkey]
-                                                    ).join(" ")
-                                                  }
-                                                </li>
-                                              )
-                                            }
-                                          </ul>
-                                        </Collapse>
-                                      </div>
-                                      : null
-                                  }
-                                </ul>
-                              </Collapse>
+                              task.history?.length
+                                ? <>
+                                  <td className={`text-${task.status === "error" ? 'danger' : task.status === "executing" ? 'warning' : 'success'}`}>{task.status ? capitalize(task.status) : "-"}</td>
+                                  <td>{new Date(task.timestamp).toLocaleString()}</td>
+                                </>
+                                : <td colSpan={2}>Didn't run</td>
                             }
-                          </li>
+                          </tr>
                         )
-                      : <tr><td colSpan={6}>No tasks available</td></tr>
-                    : <tr>
-                      <td colSpan={6}>
-                        <ColorRing
-                            width = "100%"
-                            radius = "9"
-                            color = 'green'
+                        : <tr>
+                          <td colSpan={5}>No crons available</td>
+                        </tr>
+                      : <tr>
+                        <td colSpan={6}>
+                          <ColorRing
+                            width="100%"
+                            radius="9"
+                            color='green'
                             wrapperStyle={{width: "100%"}}
                           />
                         </td>
                       </tr>
-                }
-              </ul>
+                  }
+                  </tbody>
+                </table>
+              </div>
+              <Modal centered show={!!selectedItem} onHide={() => {
+                dispatch(selectItem(null))
+                setTaskErrorsOpen(false)
+                setTaskHistoryOpen(false)
+              }}>
+                <Modal.Header closeButton>
+                  <Modal.Title>
+                    <div className="row">
+                      <div className="col-lg-12 stretch-card">
+                        {selectedItem?.name}
+                      </div>
+                    </div>
+                    <p className="text-muted mt-0 mb-0">App: {selectedItem?.app} </p>
+                    {
+                      selectedItem?.timestamp
+                        ? <p className="text-muted mt-0 mb-0">Last run: {selectedItem?.timestamp ? new Date(selectedItem.timestamp).toLocaleString() : null} </p>
+                        : null
+                    }
+
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <ul className="list-unstyled">
+                    {
+                      selectedItem
+                        ? Object.keys(selectedItem).filter(k => !["timestamp", "name", "app"].includes(k)).map((k, i) =>
+                          ["errors", "history"].includes(k)
+                            ? <li key={i}>
+                              {
+                                <div>
+                                  <div style={{cursor: "pointer"}} onClick={() => k === "history" ? setTaskHistoryOpen(!taskHistoryOpen) : setTaskErrorsOpen(!taskErrorsOpen)}>
+                                    <i className={`mdi mdi-chevron-${(k === "history" ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`} />
+                                    {capitalize(k)} ({selectedItem[k]?.length})
+                                  </div>
+                                  <Collapse in={ k === "history" ? taskHistoryOpen : taskErrorsOpen }>
+                                    <ul className="list-unstyled">
+                                      {
+                                        selectedItem[k].map((h, i) =>
+                                          <li key={i} className="pl-4 mt-1">
+                                            <i className="text-primary mdi mdi-chevron-right"></i>&nbsp;
+                                            {
+                                              Object.keys(h).map(hkey =>
+                                                hkey === "timestamp"
+                                                  ? new Date(h[hkey]).toLocaleString()
+                                                  : hkey === "status"
+                                                    ? parseStatus(h[hkey])
+                                                    : hkey === "id"
+                                                      ? `[${h[hkey].slice(0, 3)}..${h[hkey].slice(h[hkey].length - 3, h[hkey].length)}]`
+                                                      : h[hkey]
+                                              ).join(" ")
+                                            }
+                                          </li>
+                                        )
+                                      }
+                                    </ul>
+                                  </Collapse>
+                                </div>
+                              }
+                            </li>
+                            : k === "is_periodic"
+                              ? <li key={i}>Is periodic: {
+                                selectedItem.is_periodic ?
+                                  <i className="mdi mdi-check text-success"/> :
+                                  <i className="mdi mdi-close"/>
+                                }
+                                </li>
+                              : <li key={i}>{capitalize(k)}: {selectedItem[k]}</li>
+                          )
+                        : null
+                    }
+                  </ul>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={e => {
+                    e.preventDefault()
+                    dispatch(selectItem(null))
+                  }}>Close</Button>
+                  <Button variant="danger" className="float-left" onClick={evt => {
+                    evt.preventDefault()
+                    dispatch(TasksApi.deleteHistory(token, selectedItem?.name))
+                  }}>Delete history
+                  </Button>
+                </Modal.Footer>
+              </Modal>
             </div>
           </div>
         </div>
