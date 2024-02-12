@@ -105,9 +105,9 @@ def parse_week(args) -> List[Meal]:
     for k, v in months.items():
         week = week.replace(f" {k}", f" {v}")
 
-    current_date = (
-        datetime.strptime(week, "%d %b").date() - timedelta(days=7)
-    ).replace(year=datetime.today().year)
+    current_date = datetime.strptime(week, "%d %b").date().replace(
+        year=datetime.today().year
+    ) - timedelta(days=7)
 
     rows = soup.select(".slider-menu-for-day > div > .row")
     if not rows:
