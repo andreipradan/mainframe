@@ -63,7 +63,7 @@ class SKLearn:
         log_status("train", accuracy=f"{accuracy:.2f}")
         if accuracy < 0.95:
             error = f"Insufficient accuracy: {accuracy:.2f}"
-            log_status("train", status=SIGNAL_ERROR, error=error)
+            log_status("train", status=SIGNAL_ERROR, errors=[error])
             raise ValueError(error)
 
         prefix = f"{timezone.now():%Y_%m_%d_%H_%M_%S}_{accuracy}"

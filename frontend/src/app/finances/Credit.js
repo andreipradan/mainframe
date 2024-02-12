@@ -125,8 +125,8 @@ const Credit = () => {
     }
   }
 
-  const onExcludePrepaymentsChange = (e) => {
-    if (e.target.checked) {
+  const onExcludePrepaymentsChange = () => {
+    if (!excludePrepayments) {
       setBarChartPrincipal(payment.results?.filter(p => !p.is_prepayment).map(p => p.principal).reverse())
       setBarChartInterest(payment.results?.filter(p => !p.is_prepayment).map(p => p.interest).reverse())
       setBarChartLabels(payment.results?.filter(p => !p.is_prepayment).map(p => p.date).reverse())
@@ -415,7 +415,7 @@ const Credit = () => {
                 }
               </div>
             </h4>
-            <div className="form-check">
+            <div className="form-check" onClick={onExcludePrepaymentsChange}>
               <label htmlFor="" className="form-check-label">
                 <input className="checkbox" type="checkbox"
                   checked={excludePrepayments}

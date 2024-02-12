@@ -5,22 +5,29 @@ from huey.contrib.djhuey import HUEY
 redis_client = HUEY.storage.redis_client()
 
 
-def log_status(string, **kwargs):
+def log_status(key, errors=None, **kwargs):
     new_event = {"timestamp": timezone.now().isoformat(), **kwargs}
+    errors = errors or []
 
-    details = json.loads(redis_client.get(string) or "{}")
+    details = json.loads(redis_client.get(key) or "{}")
     if not details:
-        details = {"history": [new_event], **new_event}
+        details = {"errors": errors, "history": [new_event], **new_event}
     else:
         details.update(new_event)
-        details["history"].insert(0, new_event)
-    redis_client.set(string, json.dumps(details))
+        if "errors" not in details:
+            details["errors"] = errors
+        else:
+            details["errors"] = [*errors, *details["errors"][:29]]
+        details["history"] = [new_event, *details["history"][:999]]
+    redis_client.set(key, json.dumps(details))
     return details
 
 
 @HUEY.signal()
 def signal_handler(signal, task, exc=None):
-    kwargs = {"status": signal, "id": task.id}
+    now = timezone.now().isoformat()
+    errors = []
+    kwargs = {"id": task.id, "status": signal, "timestamp": now}
     if exc:
-        kwargs["error"] = str(exc)
-    log_status(task.name, **kwargs)
+        errors.append({"timestamp": now, "msg": str(exc)})
+    log_status(task.name, errors, **kwargs)

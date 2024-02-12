@@ -65,7 +65,7 @@ def train(logger):
     )
     count = qs.count()
     if not count:
-        log_status("train", status=SIGNAL_ERROR, error="No trained data")
+        log_status("train", status=SIGNAL_ERROR, errors=["No trained data"])
         raise ValueError("No trained data")
     log_status("train", count=count)
     logger.info("Training on %d confirmed transactions...", count)
