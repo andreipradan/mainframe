@@ -34,10 +34,15 @@ class BotViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def webhook(self, request, **kwargs):
         instance = self.get_object()
+        data = request.data
         if not (
-            user := request.data.get(
-                "message", request.data.get("callback_query", {})
-            ).get("from", {})
+            user := data.get(
+                "message",
+                data.get(
+                    "edited_message",
+                    data.get("callback_query", {}),
+                ).get("from", {}),
+            )
         ):
             logger.error("No user found in webhook data")
             return JsonResponse(data={"status": "404"})
