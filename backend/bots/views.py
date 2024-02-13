@@ -39,8 +39,8 @@ class BotViewSet(viewsets.ModelViewSet):
             user := data.get(
                 "message",
                 data.get(
-                    "edited_message",
-                    data.get("callback_query", {}),
+                    "callback_query",
+                    data.get("edited_message", {}),
                 ).get("from", {}),
             )
         ):
