@@ -41,8 +41,8 @@ class BotViewSet(viewsets.ModelViewSet):
                 data.get(
                     "callback_query",
                     data.get("edited_message", {}),
-                ).get("from", {}),
-            )
+                ),
+            ).get("from", {})
         ):
             logger.error("No user found in webhook data")
             return JsonResponse(data={"status": "404"})
