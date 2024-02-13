@@ -52,7 +52,7 @@ class BotViewSet(viewsets.ModelViewSet):
                 str(user.get("id")) in instance.whitelist,
             )
         ):
-            logger.error("User not whitelisted")
+            logger.error(f"User {user} not whitelisted")
             return JsonResponse(data={"status": "404"})
 
         try:
