@@ -1,4 +1,5 @@
 import json
+from importlib import import_module
 
 from django.http import JsonResponse
 from django.utils.module_loading import autodiscover_modules
@@ -34,6 +35,14 @@ class TasksViewSet(viewsets.ViewSet):
 
     @staticmethod
     def list(request):
+        def is_revoked(task):
+            *module, task = task.split(".")
+            module = ".".join(module)
+            try:
+                return getattr(import_module(module), task).is_revoked()
+            except (AttributeError, ModuleNotFoundError, ValueError) as e:
+                return str(e)
+
         autodiscover_modules("tasks")
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         return JsonResponse(
@@ -44,6 +53,7 @@ class TasksViewSet(viewsets.ViewSet):
                             "app": t.split(".tasks.")[0],
                             "name": t.split(".tasks.")[-1],
                             "is_periodic": t in periodic_tasks,
+                            "is_revoked": is_revoked(t),
                             **json.loads(redis_client.get(t.split(".")[-1]) or "{}"),
                         }
                         for t in HUEY._registry._registry
