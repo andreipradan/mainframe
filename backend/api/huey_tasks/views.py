@@ -1,14 +1,25 @@
 import json
 from importlib import import_module
 
+from django.core.exceptions import BadRequest
 from django.http import JsonResponse
 from django.utils.module_loading import autodiscover_modules
 from huey.contrib.djhuey import HUEY
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAdminUser
 
 from core.tasks import redis_client
+
+
+def is_revoked(task):
+    *module, task = task.split(".")
+    module = ".".join(module)
+    try:
+        return getattr(import_module(module), task).is_revoked()
+    except (AttributeError, ModuleNotFoundError, ValueError) as e:
+        return str(e)
 
 
 def task_sorter(item):
@@ -35,14 +46,6 @@ class TasksViewSet(viewsets.ViewSet):
 
     @staticmethod
     def list(request):
-        def is_revoked(task):
-            *module, task = task.split(".")
-            module = ".".join(module)
-            try:
-                return getattr(import_module(module), task).is_revoked()
-            except (AttributeError, ModuleNotFoundError, ValueError) as e:
-                return str(e)
-
         autodiscover_modules("tasks")
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         return JsonResponse(
@@ -62,3 +65,35 @@ class TasksViewSet(viewsets.ViewSet):
                 ),
             }
         )
+
+    @staticmethod
+    def retrieve(*args, **kwargs):
+        name = kwargs["pk"]
+
+        autodiscover_modules("tasks")
+        periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
+        for t in HUEY._registry._registry:
+            app, task_name = t.split(".tasks.")
+            if task_name == name:
+                return JsonResponse(
+                    data={
+                        "app": app,
+                        "name": name,
+                        "is_periodic": t in periodic_tasks,
+                        "is_revoked": is_revoked(t),
+                        **json.loads(redis_client.get(t.split(".")[-1]) or "{}"),
+                    },
+                    safe=True,
+                )
+        raise NotFound()
+
+    @action(methods=["put"], detail=True)
+    def revoke(self, request, *args, **kwargs):
+        task = kwargs["pk"]
+        try:
+            app = request.data["app"]
+            method = request.data["method"]
+            getattr(getattr(import_module(f"{app}.tasks"), task), method)()
+        except (AttributeError, ModuleNotFoundError, ValueError) as e:
+            raise BadRequest(str(e))
+        return self.list(request)
