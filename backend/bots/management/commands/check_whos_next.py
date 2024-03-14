@@ -24,8 +24,12 @@ def whos_next():
     else:
         current, _, prev = post_order
 
+    if config.get("initial"):
+        previous_msg = "Pfuui...no bun. Incepe: "
+    else:
+        previous_msg = f"A fost: <b>{prev}</b>\nUrmează: "
     msg = (
-        f"A fost: <b>{prev}</b>\nUrmează: <b>{current}</b>\n"
+        f"{previous_msg}<b>{current}</b>\n"
         f"{config['theme']}\n"
         f"Mai multe <a href='{config['url']}'>aici</a>"
     )

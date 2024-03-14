@@ -46,7 +46,14 @@ def who_s_next_reminder():
     config = bot.additional_data["whos_next"]
     config["theme"] = fetch_tomorrow(config["url"])
     post_order = config["post_order"]
-    if not config["posted"]:
+
+    if config.get("initial"):
+        text = (
+            f"Pfuui no bun. Incepe: <b>{post_order[0]}</b> 🥳\n"
+            f"{config['theme']}\n"
+            f"Mai multe <a href='{config['url']}'>aici</a>"
+        )
+    elif not config["posted"]:
         text = (
             f"Ei ceapa ta <b>{post_order[0]} 😒</b>\nMâine tot tu tre sa bagi\n"
             f"{config['theme']}\n"
@@ -61,6 +68,7 @@ def who_s_next_reminder():
 
         post_order = deque(post_order)
         post_order.rotate(-1)
+        config["initial"] = False
         config["post_order"] = list(post_order)
         config["posted"] = False
     bot.save()
