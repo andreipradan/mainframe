@@ -194,24 +194,20 @@ def call(data, instance: Bot):
             chat_id = int(args[0])
         return SavedMessagesInlines(chat_id).start(update, page=1)
 
-    if cmd == "tema":
+    if cmd == "theme":
         if (
             isinstance(config := instance.additional_data.get("whos_next", None), dict)
             and config.get("chat_id", None) == message.chat_id
         ):
             if not args:
                 try:
-                    name = config["theme"]["name"]
-                    user = config["theme"]["user"]
-                    return reply(
-                        update, f"<b>Tema</b>: {name}\n<b>Propusă de</b>: {user}"
-                    )
+                    return reply(update, config["theme"])
                 except (KeyError, TypeError):
                     return reply(update, "Nu e nici o temă propusă 🤷")
             name = " ".join(args)
-            config["theme"] = {"name": name, "user": from_user.full_name}
+            config["theme"] = f"{name} (proposed by {from_user.full_name})"
             instance.save()
-            return reply(update, f"Bun, am notat ✍️")
+            return reply(update, f"S-a notat ✍️")
         return logger.info(f"[{message.chat_id}] who's next not available on this chat")
 
     if cmd == "translate":
