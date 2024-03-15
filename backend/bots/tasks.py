@@ -23,6 +23,14 @@ def healthcheck():
     healthchecks.ping()
 
 
+@periodic_task(crontab(minute=0, hour=13))
+@HUEY.lock_task("fidelis-lock")
+def fidelis():
+    if settings.ENV != "prod":
+        return
+    call_command("check_fidelis")
+
+
 @db_periodic_task(crontab(minute=0, hour=19))
 @HUEY.lock_task("who-s-next-reminder-lock")
 def who_s_next_reminder():
