@@ -16,7 +16,7 @@ def whos_next():
         raise CommandError("post_order missing from whos_next in bot additional data")
     if not isinstance(post_order, list):
         raise CommandError("post_order not a list")
-    if len(post_order) < 2:
+    if len(post_order) < 2:  # noqa: PLR2004
         raise CommandError("post_order contains less than 2 items")
 
     if config["posted"]:
@@ -28,9 +28,13 @@ def whos_next():
         previous_msg = "Pfuui...no bun. Incepe: "
     else:
         previous_msg = f"A fost: <b>{prev}</b>\nUrmează: "
+
+    theme = config["theme"]
+    if config["posted"]:
+        theme += "\nNoua tema se anunta la 9 PM"
     msg = (
         f"{previous_msg}<b>{current}</b>\n"
-        f"{config['theme']}\n"
+        f"{theme}\n"
         f"Mai multe <a href='{config['url']}'>aici</a>"
     )
 

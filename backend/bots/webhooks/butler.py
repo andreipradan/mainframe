@@ -10,13 +10,13 @@ from google.auth.exceptions import DefaultCredentialsError
 from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
 
+from bots.management.commands.check_whos_next import whos_next
+from bots.management.commands.set_hooks import get_ngrok_url
+from bots.models import Bot, Message
 from bots.webhooks.inlines.bus import BusInline
 from bots.webhooks.inlines.meals import MealsInline
 from bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from bots.webhooks.shared import reply
-from bots.management.commands.check_whos_next import whos_next
-from bots.management.commands.set_hooks import get_ngrok_url
-from bots.models import Bot, Message
 from clients.logs import MainframeHandler
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
 
 
-def call(data, instance: Bot):
+def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
     bot = instance.telegram_bot
     update = telegram.Update.de_json(data, bot)
 
@@ -62,9 +62,12 @@ def call(data, instance: Bot):
         ):
             save_to_db(update.message, chat=bot.get_chat(update.message.chat_id))
             config["posted"] = True
+            config["initial"] = False
             instance.save()
             return reply(update, text="Saved ✔")
-        return logger.info(f"[{message.chat_id}] New chat title: {message.chat.title}")
+        return logger.info(
+            "[%s] New chat title: %s", message.chat.id, message.chat.title
+        )
 
     if message.new_chat_members:
         new_members = [u.full_name for u in message.new_chat_members]
@@ -138,7 +141,7 @@ def call(data, instance: Bot):
             latest := Earthquake.objects.order_by("-timestamp").first()
         ):
             return reply(update, text="No earthquakes stored")
-        if len(args) == 2 and args[0] == "set_min_magnitude":
+        if len(args) == 2 and args[0] == "set_min_magnitude":  # noqa: PLR2004
             instance.additional_data["earthquake"]["min_magnitude"] = args[1]
             instance.save()
             return reply(update, text=f"Updated min magnitude to {args[1]}")
@@ -194,30 +197,18 @@ def call(data, instance: Bot):
             chat_id = int(args[0])
         return SavedMessagesInlines(chat_id).start(update, page=1)
 
-    if cmd == "theme":
-        if (
-            isinstance(config := instance.additional_data.get("whos_next", None), dict)
-            and config.get("chat_id", None) == message.chat_id
-        ):
-            if not args:
-                try:
-                    return reply(update, config["theme"])
-                except (KeyError, TypeError):
-                    return reply(update, "Nu e nici o temă propusă 🤷")
-            name = " ".join(args)
-            config["theme"] = f"{name} (proposed by {from_user.full_name})"
-            instance.save()
-            return reply(update, f"S-a notat ✍️")
-        return logger.info(f"[{message.chat_id}] who's next not available on this chat")
-
     if cmd == "translate":
-        return reply(update, translate_text(" ".join(args)))
+        return reply(
+            update,
+            translate_text(" ".join(args)),
+            parse_mode=telegram.ParseMode.MARKDOWN,
+        )
 
     logger.error("Unhandled: %s", update.to_dict())
 
 
-def translate_text(text):
-    if len(text) > 255:
+def translate_text(text):  # noqa: PLR0911
+    if len(text) > 255:  # noqa: PLR2004
         return "Too many characters. Try sending less than 255 characters"
 
     if not text.strip():
@@ -232,7 +223,7 @@ def translate_text(text):
         return help_text
 
     kwargs = text.split(" ")[0].split("=")
-    if len(kwargs) == 2 and kwargs[0] == "target":
+    if len(kwargs) == 2 and kwargs[0] == "target":  # noqa: PLR2004
         if not kwargs[1]:
             return help_text
 

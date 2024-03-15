@@ -35,18 +35,19 @@ def fidelis():
 @HUEY.lock_task("who-s-next-reminder-lock")
 def who_s_next_reminder():
     def fetch_tomorrow(url):
-        soup = BeautifulSoup(requests.get(url).content, parser="html")
+        soup = BeautifulSoup(requests.get(url, timeout=30).content, parser="html")
         tomorrow = soup.find(id="calendar-azi").find_next_sibling()
         if not tomorrow:
             url = soup.li.find_next_sibling().a.attrs["href"]
-            soup = BeautifulSoup(requests.get(url).content, parser="html")
+            soup = BeautifulSoup(requests.get(url, timeout=30).content, parser="html")
             tomorrow = soup.tr
         if not tomorrow.th:
             tomorrow = tomorrow.find_next_sibling()
         day = tomorrow.th.text.strip()
         week_day = tomorrow.th.find_next_sibling().text.strip()
         red = " 🔴" if "red" in tomorrow.attrs["class"] or week_day == "D" else ""
-        return f"[{day} {week_day}{red}] <a href='{tomorrow.a.attrs['href']}'>{tomorrow.a.text}</a>"
+        prefix = f"[{day} {week_day}{red}]"
+        return f"{prefix} <a href='{tomorrow.a.attrs['href']}'>{tomorrow.a.text}</a>"
 
     if settings.ENV != "prod":
         return

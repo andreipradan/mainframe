@@ -43,13 +43,14 @@ def chunks(lst, n):
         yield lst[i : i + n]
 
 
-def reply(update, text):
+def reply(update, text, **kwargs):
     try:
         update.message.reply_text(
-            text[:1000] + ("" if len(text) <= 1000 else "[truncated]"),
+            text[:1000] + ("" if len(text) <= 1000 else "[truncated]"),  # noqa: PLR2004
             disable_notification=True,
             disable_web_page_preview=True,
             parse_mode=telegram.ParseMode.HTML,
+            **kwargs,
         )
     except telegram.error.BadRequest as e:
         logger.exception(e)
@@ -57,12 +58,7 @@ def reply(update, text):
 
 
 def validate_message(message, bot, custom_logger):
-    if not message:
-        custom_logger.warning("No message")
-        return ""
-
-    text = message.text
-    if not text:
+    if not message or not (text := message.text):
         custom_logger.warning("No message text")
         return ""
 
