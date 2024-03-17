@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "finance",
     "meals",
     "transit_lines",
+    "watchers",
 ]
 
 MIDDLEWARE = [
@@ -98,7 +99,9 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        ),
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",

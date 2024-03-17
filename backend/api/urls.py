@@ -21,4 +21,5 @@ urlpatterns = [
     path("tasks/", include(("api.huey_tasks.routers", "api"), namespace="tasks")),
     path("telegram/", include(("bots.routers", "api"), namespace="telegram")),
     path("users/", include(("api.user.routers", "api"), namespace="users")),
+    path("watchers/", include(("watchers.routers", "api"), namespace="watcher")),
 ]
