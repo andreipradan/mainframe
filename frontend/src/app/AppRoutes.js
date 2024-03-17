@@ -30,6 +30,7 @@ const Tasks = lazy(() => import('./tasks/Tasks'));
 const Todo = lazy(() => import('./apps/TodoList'));
 const UserGroups = lazy(() => import("./users/Groups"));
 const Users = lazy(() => import('./users/Users'));
+const Watchers = lazy(() => import('./watchers/Watchers'));
 
 const Buttons = lazy(() => import('./basic-ui/Buttons'));
 const Dropdowns = lazy(() => import('./basic-ui/Dropdowns'));
@@ -85,6 +86,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
         {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
         {user?.is_staff && <Route exact path="/tasks" component={ Tasks } />}
+        {user?.is_staff && <Route exact path="/watchers" component={ Watchers } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
         <Route path="/basic-ui/dropdowns" component={ Dropdowns } />

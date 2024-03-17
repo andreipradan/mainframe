@@ -40,6 +40,11 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
         ? state.results.find(t => t.id === action.payload)
         : null
     },
+    setCompletedLoadingItem: (state, action) => {
+      state.loadingItems = state.loadingItems
+        ? state.loadingItems.filter(i => i !== action.payload)
+        : null
+    },
     setErrors: (state, action) => {
       state.errors = action.payload
       state.loading = false

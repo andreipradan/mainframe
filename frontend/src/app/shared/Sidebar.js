@@ -332,6 +332,12 @@ const Sidebar = () => {
                   <span className="menu-title">Tasks</span>
                 </Link>
               </li>
+              <li className={ isPathActive('/watchers') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+                <Link className="nav-link" to="/watchers">
+                  <span className="menu-icon"><i className="mdi mdi-eye-plus" /></span>
+                  <span className="menu-title">Watchers</span>
+                </Link>
+              </li>
               <li className="nav-item nav-category"><span className="nav-link">Finances</span></li>
               <li className={ isPathActive('/finances') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                 <div className={ appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setFinancesMenuOpen(!financesMenuOpen) } data-toggle="collapse">

@@ -25,6 +25,7 @@ import tasksReducer from "./tasksSlice";
 import timetableReducer from "./timetableSlice";
 import transactionsReducer from "../redux/transactionsSlice";
 import usersSlice from "../redux/usersSlice";
+import watchersSlice from "../redux/watchersSlice";
 
 export default configureStore({
   reducer: {
@@ -54,5 +55,6 @@ export default configureStore({
     timetable: timetableReducer,
     transactions: transactionsReducer,
     users: usersSlice,
+    watchers: watchersSlice,
   },
 });
