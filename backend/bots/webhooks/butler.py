@@ -202,7 +202,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         return reply(
             update,
             translate_text(" ".join(args)),
-            parse_mode=telegram.ParseMode.MARKDOWN,
+            parse_mode=None,
         )
 
     logger.error("Unhandled: %s", update.to_dict())
