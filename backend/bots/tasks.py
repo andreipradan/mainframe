@@ -11,6 +11,22 @@ from bots.models import Bot
 from clients import healthchecks
 
 
+def fetch_tomorrow(url):
+    soup = BeautifulSoup(requests.get(url, timeout=30).content, parser="html")
+    tomorrow = soup.find(id="calendar-azi").find_next_sibling()
+    if not tomorrow:
+        url = soup.li.find_next_sibling().a.attrs["href"]
+        soup = BeautifulSoup(requests.get(url, timeout=30).content, parser="html")
+        tomorrow = soup.tr
+    if not tomorrow.th:
+        tomorrow = tomorrow.find_next_sibling()
+    day = tomorrow.th.text.strip()
+    week_day = tomorrow.th.find_next_sibling().text.strip()
+    red = " 🔴" if "red" in tomorrow.attrs["class"] or week_day == "D" else ""
+    prefix = f"[{day} {week_day}{red}]"
+    return f"{prefix} <a href='{tomorrow.a.attrs['href']}'>{tomorrow.a.text}</a>"
+
+
 @db_periodic_task(crontab(minute=59, hour=23, day=2))
 @HUEY.lock_task("backup-bots-lock")
 def backup_bots():
@@ -34,21 +50,6 @@ def fidelis():
 @db_periodic_task(crontab(minute=0, hour=19))
 @HUEY.lock_task("who-s-next-reminder-lock")
 def who_s_next_reminder():
-    def fetch_tomorrow(url):
-        soup = BeautifulSoup(requests.get(url, timeout=30).content, parser="html")
-        tomorrow = soup.find(id="calendar-azi").find_next_sibling()
-        if not tomorrow:
-            url = soup.li.find_next_sibling().a.attrs["href"]
-            soup = BeautifulSoup(requests.get(url, timeout=30).content, parser="html")
-            tomorrow = soup.tr
-        if not tomorrow.th:
-            tomorrow = tomorrow.find_next_sibling()
-        day = tomorrow.th.text.strip()
-        week_day = tomorrow.th.find_next_sibling().text.strip()
-        red = " 🔴" if "red" in tomorrow.attrs["class"] or week_day == "D" else ""
-        prefix = f"[{day} {week_day}{red}]"
-        return f"{prefix} <a href='{tomorrow.a.attrs['href']}'>{tomorrow.a.text}</a>"
-
     if settings.ENV != "prod":
         return
     bot = Bot.objects.get(additional_data__whos_next__isnull=False)

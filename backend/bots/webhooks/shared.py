@@ -44,12 +44,15 @@ def chunks(lst, n):
 
 
 def reply(update, text, **kwargs):
+    kwargs = {
+        "disable_notification": True,
+        "disable_web_page_preview": True,
+        "parse_mode": telegram.ParseMode.HTML,
+        **kwargs,
+    }
     try:
         update.message.reply_text(
             text[:1000] + ("" if len(text) <= 1000 else "[truncated]"),  # noqa: PLR2004
-            disable_notification=True,
-            disable_web_page_preview=True,
-            parse_mode=telegram.ParseMode.HTML,
             **kwargs,
         )
     except telegram.error.BadRequest as e:

@@ -145,10 +145,10 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
             instance.additional_data["earthquake"]["min_magnitude"] = args[1]
             instance.save()
             return reply(update, text=f"Updated min magnitude to {args[1]}")
-        return reply(
-            update,
-            text=f"{parse_event(latest)}\nLast check: {earthquake['last_check']}",
-        )
+        msg = parse_event(latest)
+        if last_check := earthquake.get("last_check"):
+            msg += f"\nLast check: {last_check}"
+        return reply(update, text=msg)
 
     if cmd == "get_chat_id":
         return reply(update, text=f"Chat ID: {update.message.chat_id}")
@@ -161,14 +161,15 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         return MealsInline.start(update, page=1)
 
     if cmd == "next":
+        config = instance.additional_data.get("whos_next")
         try:
-            return reply(update, whos_next()[0])
+            return reply(update, whos_next(config))
         except CommandError as e:
             return reply(update, str(e))
 
     if cmd == "randomize":
         if len(args) not in range(2, 51):
-            return reply(update, "Must contain a list of 2-50 items separated by space")
+            return reply(update, "Must contain 2-50 items separated by spaces")
         random.shuffle(args)
         return reply(update, "\n".join(f"{i+1}. {item}" for i, item in enumerate(args)))
 
