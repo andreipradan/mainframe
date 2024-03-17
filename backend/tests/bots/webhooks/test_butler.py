@@ -475,6 +475,77 @@ class TestMisc:
 @mock.patch("bots.webhooks.butler.logger")
 @mock.patch("telegram.Update.de_json", return_value=MagicMock(callback_query=None))
 @pytest.mark.django_db
+class TestTranslate:
+    help_text = (
+        "/translate <insert text here>\n"
+        "/translate target=<language_code> <insert text here>\n"
+        "Language codes here: https://cloud.google.com/translate/docs/languages"
+    )
+    translate_defaults = {**DEFAULT_REPLY_KWARGS, "parse_mode": None}
+
+    def test_help(self, update, logger, _):
+        update = prepare_update(update, text="/translate help")
+        bot = BotFactory(whitelist=["foo_username"])
+        call({}, bot)
+        assert logger.error.call_args_list == []
+        assert logger.warning.call_args_list == []
+        assert update.message.reply_text.call_args_list == [
+            mock.call(self.help_text, **self.translate_defaults),
+        ]
+
+    @pytest.mark.parametrize("cmd", ["", "source=a", "target=foo", "source=a target=b"])
+    def test_missing_text(self, update, logger, _, cmd):
+        update = prepare_update(update, text=f"/translate {cmd}")
+        bot = BotFactory(whitelist=["foo_username"])
+        call({}, bot)
+        assert logger.error.call_args_list == []
+        assert logger.warning.call_args_list == []
+        assert update.message.reply_text.call_args_list == [
+            mock.call("Missing text to translate", **DEFAULT_REPLY_KWARGS)
+        ]
+
+    @pytest.mark.parametrize(
+        "dataset",
+        [
+            {"cmd": "foo text", "source": None, "target": None},
+            {"cmd": "source=sc foo text", "source": "sc", "target": None},
+            {"cmd": "target=tg foo text", "source": None, "target": "tg"},
+            {"cmd": "source=sc target=tg foo text", "source": "sc", "target": "tg"},
+        ],
+    )
+    @mock.patch("bots.webhooks.butler.translate_text")
+    def test_translate(self, translate_text, update, logger, _, dataset):
+        translate_text.return_value = "foo translation"
+        update = prepare_update(update, text=f"/translate {dataset['cmd']}")
+        bot = BotFactory(whitelist=["foo_username"])
+        call({}, bot)
+        assert logger.error.call_args_list == []
+        assert logger.warning.call_args_list == []
+        translate_text.assert_called_once_with(
+            "foo text", source=dataset["source"], target=dataset["target"]
+        )
+        assert update.message.reply_text.call_args_list == [
+            mock.call("foo translation", **self.translate_defaults)
+        ]
+
+    def test_too_many_chars(self, update, logger, _):
+        update = prepare_update(update, text="/translate " + "a" * 256)
+        bot = BotFactory(whitelist=["foo_username"])
+        call({}, bot)
+        assert logger.error.call_args_list == []
+        assert logger.warning.call_args_list == []
+        assert update.message.reply_text.call_args_list == [
+            mock.call(
+                "Too many characters. Try sending less than 255 characters",
+                **self.translate_defaults,
+            ),
+        ]
+
+
+@mock.patch.object(Bot, "telegram_bot")
+@mock.patch("bots.webhooks.butler.logger")
+@mock.patch("telegram.Update.de_json", return_value=MagicMock(callback_query=None))
+@pytest.mark.django_db
 class TestWhoSNext:
     def test_who_s_next(self, update, logger, _):
         update = prepare_update(update, text="/next")

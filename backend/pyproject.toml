@@ -34,3 +34,7 @@ lint.select = [
     "S101", # asserts allowed in tests
     "PLR2004", # magic value used in comparison
 ]
+"**/tests/**/*.py" = [
+    "S101", # asserts allowed in tests
+    "PLR2004", # magic value used in comparison
+]

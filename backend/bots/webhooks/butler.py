@@ -1,14 +1,9 @@
 import logging
 import random
 
-import six
 import telegram
 from django.conf import settings
 from django.core.management import CommandError
-from google.api_core.exceptions import GoogleAPICallError
-from google.auth.exceptions import DefaultCredentialsError
-from google.cloud import translate_v2 as translate
-from google.cloud.exceptions import BadRequest
 
 from bots.management.commands.check_whos_next import whos_next
 from bots.management.commands.set_hooks import get_ngrok_url
@@ -18,6 +13,7 @@ from bots.webhooks.inlines.meals import MealsInline
 from bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from bots.webhooks.shared import reply
 from clients.logs import MainframeHandler
+from clients.translate import translate_text
 from earthquakes.management.commands.base_check import parse_event
 from earthquakes.models import Earthquake
 from finance.tasks import finance_import
@@ -199,64 +195,33 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         return SavedMessagesInlines(chat_id).start(update, page=1)
 
     if cmd == "translate":
-        return reply(
-            update,
-            translate_text(" ".join(args)),
-            parse_mode=None,
-        )
+        if args == ["help"]:
+            return reply(
+                update,
+                "/translate <insert text here>\n"
+                "/translate target=<language_code> <insert text here>\n"
+                "Language codes here: https://cloud.google.com/translate/docs/languages",
+                parse_mode=None,
+            )
+        source, target = None, None
+        if args and args[0].startswith("source="):
+            source = args.pop(0).replace("source=", "")
+        if args and args[0].startswith("target="):
+            target = args.pop(0).replace("target=", "")
+
+        text = " ".join(args)
+        if len(text) > 255:  # noqa: PLR2004
+            return reply(
+                update, "Too many characters. Try sending less than 255 characters"
+            )
+
+        if not text.strip():
+            return reply(update, "Missing text to translate")
+
+        translation = translate_text(text, source=source, target=target)
+        return reply(update, translation, parse_mode=None)
 
     logger.error("Unhandled: %s", update.to_dict())
-
-
-def translate_text(text):  # noqa: PLR0911
-    if len(text) > 255:  # noqa: PLR2004
-        return "Too many characters. Try sending less than 255 characters"
-
-    if not text.strip():
-        return "Missing text to translate"
-
-    help_text = (
-        "/translate <insert text here>\n"
-        "/translate target=<language_code> <insert text here>\n"
-        "Language codes here: https://cloud.google.com/translate/docs/languages"
-    )
-    if text == "help":
-        return help_text
-
-    kwargs = text.split(" ")[0].split("=")
-    if len(kwargs) == 2 and kwargs[0] == "target":  # noqa: PLR2004
-        if not kwargs[1]:
-            return help_text
-
-        target = kwargs[1]
-        text = " ".join(text.split(" ")[1:])
-        if not text.strip():
-            return help_text
-    else:
-        target = "en"
-
-    try:
-        translate_client = translate.Client()
-    except DefaultCredentialsError:
-        return "Couldn't authenticate to google cloud"
-
-    if isinstance(text, six.binary_type):
-        text = text.decode("utf-8")
-
-    # Text can also be a sequence of strings, in which case this method
-    # will return a sequence of results for each text.
-    try:
-        result = translate_client.translate(
-            text, target_language=target, format_="text"
-        )
-    except (GoogleAPICallError, BadRequest) as e:
-        logger.error(e)
-        return "Something went wrong. For usage and examples type '/translate help'."
-
-    return (
-        "💬 Translate\n"
-        f"[{result['detectedSourceLanguage']}] {result['translatedText']}"
-    )
 
 
 def save_to_db(message, chat, text=None):
