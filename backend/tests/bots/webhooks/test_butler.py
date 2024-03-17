@@ -537,7 +537,7 @@ class TestTranslate:
         assert update.message.reply_text.call_args_list == [
             mock.call(
                 "Too many characters. Try sending less than 255 characters",
-                **self.translate_defaults,
+                **DEFAULT_REPLY_KWARGS,
             ),
         ]
 
