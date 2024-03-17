@@ -52,9 +52,9 @@ async def fetch(session, sem, line, occ, url):
             async with session.get(
                 url, headers={"Referer": "https://ctpcj.ro/"}
             ) as response:
-                if response.status != 200:
+                if response.status != 200:  # noqa: PLR2004
                     msg = f"Unexpected status for {url}. Status: {response.status}"
-                    if response.status == 404:
+                    if response.status == 404:  # noqa: PLR2004
                         logger.warning(msg)
                     else:
                         raise ValueError(msg)
@@ -90,6 +90,8 @@ def parse_schedule(args) -> Optional[Schedule]:
     except ValueError:
         if date_row == "20.02.20232":
             schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y2")
+        elif date_row == ".":
+            schedule_start_date = None
         else:
             raise
 
