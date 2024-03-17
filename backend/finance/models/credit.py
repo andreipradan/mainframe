@@ -67,7 +67,7 @@ class Credit(TimeStampedModel):
 
     @property
     def latest_timetable(self):
-        return self.timetable_set.order_by("-date").first()
+        return self.timetable_set.order_by("-date", "-created_at").first()
 
 
 class Payment(TimeStampedModel):
@@ -113,7 +113,7 @@ class Timetable(TimeStampedModel):
     margin = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
-        ordering = ("-date",)
+        ordering = ("-date", "-created_at")
 
     @property
     def interest(self):
