@@ -10,7 +10,7 @@ from tests.factories.watchers import WatcherFactory
 class TestWatcherViews:
     def test_create(self, client, staff_session):
         response = client.post(
-            reverse("api:watchers-list"),
+            "/api/watchers/",
             data={
                 "name": "foo",
                 "selector": ".foo-selector",
@@ -24,7 +24,7 @@ class TestWatcherViews:
             "created_at": mock.ANY,
             "updated_at": mock.ANY,
             "is_active": False,
-            "latest": "",
+            "latest": {},
             "name": "foo",
             "request": {},
             "selector": ".foo-selector",
@@ -42,7 +42,7 @@ class TestWatcherViews:
             "created_at": mock.ANY,
             "id": watcher.id,
             "is_active": True,
-            "latest": "",
+            "latest": {},
             "name": "",
             "request": {},
             "selector": ".foo-selector",
@@ -66,7 +66,7 @@ class TestWatcherViews:
                     "created_at": mock.ANY,
                     "id": watcher.id,
                     "is_active": True,
-                    "latest": "",
+                    "latest": {},
                     "name": "",
                     "request": {},
                     "selector": ".foo-selector",
