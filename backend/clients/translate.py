@@ -28,7 +28,7 @@ def translate_text(text, source=None, target="en"):  # noqa: PLR0911
     try:
         result = translate_client.translate(text, **default_kwargs)
     except BadRequest as e:
-        return "Bad request\n" + "\n".join(err["message"] for err in e.errors)
+        return "🛑 Bad request:\n" + "\n".join(err["message"] for err in e.errors)
     except GoogleAPICallError as e:
         logger.error(e)
         return "Something went wrong. For usage and examples type '/translate help'."
