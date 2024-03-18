@@ -27,14 +27,13 @@ def translate_text(text, source=None, target="en"):  # noqa: PLR0911
 
     try:
         result = translate_client.translate(text, **default_kwargs)
-    except (GoogleAPICallError, BadRequest) as e:
+    except BadRequest as e:
+        return str(e)
+    except GoogleAPICallError as e:
         logger.error(e)
         return "Something went wrong. For usage and examples type '/translate help'."
 
+    msg = f"💬 Translation: {result['translatedText']}"
     if "detectedSourceLanguage" in result:
-        return (
-            "💬 Translation:\n"
-            f"Detected source language: {result['detectedSourceLanguage']}"
-            f"Translation: {result['translatedText']}"
-        )
-    return f"💬 Translation: {result['translatedText']}"
+        msg += f"\nDetected language: {result['detectedSourceLanguage']}"
+    return msg
