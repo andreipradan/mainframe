@@ -21,15 +21,17 @@ def translate_text(text, source=None, target="en"):  # noqa: PLR0911
     if isinstance(text, six.binary_type):
         text = text.decode("utf-8")
 
+    default_kwargs = {"target_language": target, "format_": "text"}
+    if source:
+        default_kwargs["source_language"] = source
+
     try:
-        result = translate_client.translate(
-            text, target_language=target, source_language=source, format_="text"
-        )
+        result = translate_client.translate(text, **default_kwargs)
     except (GoogleAPICallError, BadRequest) as e:
         logger.error(e)
         return "Something went wrong. For usage and examples type '/translate help'."
 
-    if not source:
+    if "detectedSourceLanguage" in result:
         return (
             "💬 Translation:\n"
             f"Detected source language: {result['detectedSourceLanguage']}"
