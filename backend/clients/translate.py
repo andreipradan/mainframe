@@ -29,8 +29,10 @@ def translate_text(text, source=None, target="en"):  # noqa: PLR0911
         logger.error(e)
         return "Something went wrong. For usage and examples type '/translate help'."
 
-    return (
-        "💬 Translation:\n"
-        f"Detected source language: {result['detectedSourceLanguage']}"
-        f"Translation: {result['translatedText']}"
-    )
+    if not source:
+        return (
+            "💬 Translation:\n"
+            f"Detected source language: {result['detectedSourceLanguage']}"
+            f"Translation: {result['translatedText']}"
+        )
+    return f"💬 Translation: {result['translatedText']}"
