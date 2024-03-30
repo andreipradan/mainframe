@@ -22,12 +22,13 @@ class TestWatcherViews:
         assert response.data == {
             "id": mock.ANY,
             "created_at": mock.ANY,
-            "updated_at": mock.ANY,
+            "cron": "",
             "is_active": False,
             "latest": {},
             "name": "foo",
             "request": {},
             "selector": ".foo-selector",
+            "updated_at": mock.ANY,
             "url": "https://example.com",
         }
 
@@ -40,6 +41,7 @@ class TestWatcherViews:
         assert response.status_code == 200
         assert response.json() == {
             "created_at": mock.ANY,
+            "cron": "",
             "id": watcher.id,
             "is_active": True,
             "latest": {},
@@ -64,6 +66,7 @@ class TestWatcherViews:
             "results": [
                 {
                     "created_at": mock.ANY,
+                    "cron": "",
                     "id": watcher.id,
                     "is_active": True,
                     "latest": {},
