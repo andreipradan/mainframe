@@ -7,7 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
 from clients.logs import MainframeHandler
-from watchers.management.commands.run_watchers import run_watcher
 from watchers.models import Watcher
 from watchers.serializers import WatcherSerializer
 
@@ -23,7 +22,7 @@ class WatcherViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["PUT"])
     def run(self, request, pk=None):
         obj = self.get_object()
-        result = run_watcher(obj)
+        result = obj.run()
         if isinstance(result, str):
             raise BadRequest(result)
         return JsonResponse({"result": result})

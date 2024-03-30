@@ -44,7 +44,7 @@ def healthcheck():
 def fidelis():
     if settings.ENV != "prod":
         return
-    call_command("check_fidelis")
+    call_command("run_watchers", name=["fidelis", "foo"])
 
 
 @db_periodic_task(crontab(minute=0, hour=19))
