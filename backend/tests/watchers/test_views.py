@@ -6,9 +6,11 @@ from django.urls import reverse
 from tests.factories.watchers import WatcherFactory
 
 
+@mock.patch("watchers.models.schedule_watcher", return_value="{}")
+@mock.patch("watchers.serializers.redis_client.get", return_value="{}")
 @pytest.mark.django_db
 class TestWatcherViews:
-    def test_create(self, client, staff_session):
+    def test_create(self, _, __, client, staff_session):
         response = client.post(
             "/api/watchers/",
             data={
@@ -26,13 +28,14 @@ class TestWatcherViews:
             "is_active": False,
             "latest": {},
             "name": "foo",
+            "redis": {},
             "request": {},
             "selector": ".foo-selector",
             "updated_at": mock.ANY,
             "url": "https://example.com",
         }
 
-    def test_detail(self, client, staff_session):
+    def test_detail(self, _, __, client, staff_session):
         watcher = WatcherFactory()
         response = client.get(
             reverse("api:watchers-detail", args=[watcher.id]),
@@ -46,13 +49,14 @@ class TestWatcherViews:
             "is_active": True,
             "latest": {},
             "name": "",
+            "redis": {},
             "request": {},
             "selector": ".foo-selector",
             "updated_at": mock.ANY,
             "url": "",
         }
 
-    def test_list(self, client, staff_session):
+    def test_list(self, _, __, client, staff_session):
         watcher = WatcherFactory()
         response = client.get(
             reverse("api:watchers-list"),
@@ -71,6 +75,7 @@ class TestWatcherViews:
                     "is_active": True,
                     "latest": {},
                     "name": "",
+                    "redis": {},
                     "request": {},
                     "selector": ".foo-selector",
                     "updated_at": mock.ANY,
