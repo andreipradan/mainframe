@@ -16,6 +16,7 @@ const Watchers = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {results, errors, loading, loadingItems, selectedItem } = useSelector(state => state.watchers)
 
+  const [cron, setCron] = useState("");
   const [isActive, setIsActive] = useState(selectedItem?.is_active || false);
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
@@ -30,6 +31,7 @@ const Watchers = () =>  {
   useEffect(() => {!results && dispatch(WatchersApi.getList(token))}, []);
   useEffect(() => {
     if (selectedItem) {
+      setCron(selectedItem.cron)
       setIsActive(selectedItem.is_active)
       setLatest(JSON.stringify(selectedItem.latest, null, "\t"))
       setName(selectedItem.name)
@@ -203,6 +205,14 @@ const Watchers = () =>  {
             />
           </Form.Group>
           <Form.Group className="mb-3">
+            <Form.Label>Cron</Form.Label>
+            <Form.Control
+              type="text"
+              value={cron}
+              onChange={e => setCron(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
             <Form.Label>Selector</Form.Label>
             <Form.Control
               type="text"
@@ -279,6 +289,7 @@ const Watchers = () =>  {
           </Button>
           <Button variant="success" disabled={!!requestAnnotations || !!latestAnnotations} onClick={() => {
             dispatch(WatchersApi.update(token, selectedItem?.id, {
+              cron: cron,
               is_active: isActive,
               latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
               name: name,

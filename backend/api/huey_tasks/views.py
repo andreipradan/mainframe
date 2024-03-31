@@ -5,7 +5,7 @@ from django.core.exceptions import BadRequest
 from django.http import JsonResponse
 from django.utils.module_loading import autodiscover_modules
 from huey.contrib.djhuey import HUEY
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAdminUser
@@ -53,11 +53,13 @@ class TasksViewSet(viewsets.ViewSet):
                 "results": sorted(
                     [
                         {
-                            "app": t.split(".tasks.")[0],
-                            "name": t.split(".tasks.")[-1],
+                            "app": t.split(".")[0],
+                            "name": t.split(".")[-1],
                             "is_periodic": t in periodic_tasks,
                             "is_revoked": is_revoked(t),
-                            **json.loads(redis_client.get(t.split(".")[-1]) or "{}"),
+                            **json.loads(
+                                redis_client.get(f"tasks.{t.split('.')[-1]}") or "{}"
+                            ),
                         }
                         for t in HUEY._registry._registry
                     ],
@@ -95,5 +97,5 @@ class TasksViewSet(viewsets.ViewSet):
             method = request.data["method"]
             getattr(getattr(import_module(f"{app}.tasks"), task), method)()
         except (AttributeError, ModuleNotFoundError, ValueError) as e:
-            raise BadRequest(str(e))
+            raise BadRequest(str(e)) from e
         return self.list(request)

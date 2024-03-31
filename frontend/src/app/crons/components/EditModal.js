@@ -89,7 +89,6 @@ const EditModal = () => {
           <Form.Label>Expression</Form.Label>
           <Form.Control
             type="text"
-            
             value={expression}
             onChange={e => setExpression(e.target.value)}
           />

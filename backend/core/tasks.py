@@ -7,6 +7,7 @@ redis_client = HUEY.storage.redis_client()
 
 
 def log_status(key, errors=None, **kwargs):
+    key = f"tasks.{key}"
     new_event = {"timestamp": timezone.now().isoformat(), **kwargs}
     errors = errors or []
 
