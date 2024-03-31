@@ -15,5 +15,6 @@ class Command(BaseCommand):
         logger.info("[Set watcher tasks] Setting tasks for all watchers with crons")
         for watcher in Watcher.objects.exclude(cron=""):
             watcher.schedule()
+            logger.info("[Set watcher tasks] %s - set", watcher.name)
         send_telegram_message(text="[[huey]] up")
         logger.info("[Set watcher tasks] Done")

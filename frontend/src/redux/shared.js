@@ -18,6 +18,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.count += 1
       state.errors = null
       state.loading = false
+      state.modalOpen = false
       state.results = state.results
         ? [...state.results, action.payload].sort((a, b) =>
             a.name > b.name ? 1 : -1

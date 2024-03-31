@@ -4,11 +4,13 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 from django.db import models
+from django.utils import timezone
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task, task
 
 from clients.logs import MainframeHandler
 from core.models import TimeStampedModel
+from core.tasks import log_status
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -42,9 +44,11 @@ class Watcher(TimeStampedModel):
                 "url": urljoin(self.url, found.attrs["href"])
                 if found.attrs["href"].startswith("/")
                 else found.attrs["href"],
+                "timestamp": timezone.now().isoformat(),
             }
             self.save()
             logger.info("[%s] Done - Found new items!", self.name)
+            log_status(self.name, msg="Found new item!")
             return True
         logger.info("[%s] Done - Nothing new", self.name)
         return False
@@ -53,8 +57,7 @@ class Watcher(TimeStampedModel):
         schedule_watcher(self)
 
     def save(self, *args, **kwargs):
-        if self.name == "fidelis" and self.cron:
-            schedule_watcher(self)
+        schedule_watcher(self)
         return super().save(*args, **kwargs)
 
 
@@ -67,5 +70,8 @@ def schedule_watcher(watcher: Watcher):
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
-    schedule = crontab(*watcher.cron.split())
-    periodic_task(schedule, name=watcher.name)(wrapper)
+        logger.info("Unregistered task: %s", watcher.name)
+    if watcher.is_active and watcher.cron:
+        schedule = crontab(*watcher.cron.split())
+        periodic_task(schedule, name=watcher.name)(wrapper)
+        logger.info("Scheduled task: %s", watcher.name)

@@ -1,6 +1,6 @@
 import axios from "./index";
 import {
-  set, setItem, setCompletedLoadingItem, setErrors, setLoading, setLoadingItems, update
+  create, set, setItem, setCompletedLoadingItem, setErrors, setLoading, setLoadingItems, update
 } from "../redux/watchersSlice";
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
@@ -8,6 +8,13 @@ import { toastParams } from "./auth";
 
 
 class WatchersApi {
+  static create = (token, data) => dispatch => {
+    dispatch(setLoading());
+    axios
+      .post(base, data, { headers: { Authorization: token } })
+      .then((response) => dispatch(create(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
   static getItem = (token, id) => dispatch => {
     dispatch(setLoadingItems(id));
     axios

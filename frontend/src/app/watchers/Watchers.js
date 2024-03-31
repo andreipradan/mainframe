@@ -9,12 +9,15 @@ import Errors from "../shared/Errors";
 import WatchersApi from "../../api/watchers";
 import AceEditor from "react-ace";
 import Form from "react-bootstrap/Form";
+import {capitalize} from "../finances/Accounts/AccountDetails/AccountDetails";
+import {Collapse} from "react-bootstrap";
+import {parseStatus} from "../tasks/Tasks";
 
 
 const Watchers = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results, errors, loading, loadingItems, selectedItem } = useSelector(state => state.watchers)
+  const {results, errors, loading, loadingItems, modalOpen, selectedItem } = useSelector(state => state.watchers)
 
   const [cron, setCron] = useState("");
   const [isActive, setIsActive] = useState(selectedItem?.is_active || false);
@@ -28,6 +31,9 @@ const Watchers = () =>  {
   const [request, setRequest] = useState(null);
   const [requestAnnotations, setRequestAnnotations] = useState(null);
 
+  const [taskErrorsOpen, setTaskErrorsOpen] = useState(false)
+  const [taskHistoryOpen, setTaskHistoryOpen] = useState(false)
+
   useEffect(() => {!results && dispatch(WatchersApi.getList(token))}, []);
   useEffect(() => {
     if (selectedItem) {
@@ -40,6 +46,7 @@ const Watchers = () =>  {
       setUrl(selectedItem.url)
     }
   }, [selectedItem]);
+
   const onLatestChange = (e, i) => {
     setLatest(e)
     try {
@@ -62,6 +69,22 @@ const Watchers = () =>  {
       setRequestAnnotations(!requestAnnotations ? [annotation] : [...requestAnnotations, annotation])
     }
   }
+
+  const clearModal = () => {
+    setCron("")
+    setIsActive(false)
+    setLatest("{}")
+    setName("")
+    setRequest("{}")
+    setSelector("")
+    setUrl("")
+  }
+  const closeModal = () => {
+    dispatch(selectItem())
+    dispatch(setModalOpen(false))
+    clearModal()
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -89,7 +112,10 @@ const Watchers = () =>  {
                 <button
                     type="button"
                     className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
-                    onClick={() => dispatch(setModalOpen(true))}
+                    onClick={() => {
+                      clearModal()
+                      dispatch(setModalOpen(true))
+                    }}
                 >
                   <i className="mdi mdi-plus"></i>
                 </button>
@@ -101,9 +127,12 @@ const Watchers = () =>  {
                     <tr>
                       <th> # </th>
                       <th> Name </th>
+                      <th> Active? </th>
+                      <th> Cron </th>
                       <th> URL </th>
-                      <th> Is Active? </th>
-                      <th> Last updated </th>
+                      <th> Last check </th>
+                      <th> Last status </th>
+                      <th> Last update </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -112,24 +141,34 @@ const Watchers = () =>  {
                         ? results?.length
                           ? results.map(
                             (watcher, i) => !loadingItems?.includes(watcher.id)
-                              ? <tr key={i} onClick={() => dispatch(selectItem(watcher.id))} >
+                              ? <tr key={i}
+                                    onClick={() => dispatch(selectItem(watcher.id))}>
                                 <td className="cursor-pointer">{i + 1}</td>
                                 <td className="cursor-pointer">{watcher.name}</td>
+                                <td className="cursor-pointer">
+                                  <i
+                                    className={`mdi mdi-${watcher.is_active ? "check text-success" : "alert text-danger"}`}/>
+                                </td>
+                                <td className="cursor-pointer">{watcher.cron}</td>
                                 <td className="cursor-pointer">{watcher.url}</td>
-                                <td className="cursor-pointer">
-                                  <i className={`mdi mdi-${watcher.is_active ? "check text-success" : "alert text-danger"}`} />
+                                <td
+                                  className="cursor-pointer">{watcher.redis.history?.[0]?.timestamp ? new Date(watcher.redis.history[0].timestamp).toLocaleString() : "-"}</td>
+                                <td className={
+                                  `text-${watcher.redis.history?.[0]?.status === "complete" ? 'success' : watcher.redis.history?.[0]?.status === "executing" ? 'warning' : 'danger'}`
+                                }
+                                >
+                                  {watcher.redis.history?.[0]?.status ? capitalize(watcher.redis.history[0].status) : "-"}
                                 </td>
-                                <td className="cursor-pointer">
-                                  {new Date(watcher.updated_at).toLocaleString()}
-                                </td>
+                                <td className="cursor-pointer">{watcher.latest?.timestamp ? new Date(watcher.latest.timestamp).toLocaleString() : "-"}</td>
+
                               </tr>
-                          : <tr key={i}>
-                            <td colSpan={6}>
-                              <ColorRing
-                                  width = "100%"
-                                  height = "50"
-                                  wrapperStyle={{width: "100%"}}
-                                />
+                              : <tr key={i}>
+                                <td colSpan={6}>
+                                  <ColorRing
+                                    width="100%"
+                                    height="50"
+                                    wrapperStyle={{width: "100%"}}
+                                  />
                             </td>
                           </tr>
                             )
@@ -153,127 +192,199 @@ const Watchers = () =>  {
         </div>
       </div>
       <EditModal />
-      <Modal centered show={!!selectedItem} onHide={() => dispatch(selectItem(null))}>
+      <Modal centered show={!!selectedItem || modalOpen} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">
               <div className="col-lg-12 grid-margin stretch-card">
-                Edit {selectedItem?.name} watcher ?
-                <button type="button"
+                {selectedItem ? "Edit" : "Add"} {selectedItem?.name} watcher?
+                {
+                  selectedItem
+                    ? <button
+                        type="button"
                         className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                        onClick={() => dispatch(WatchersApi.getItem(token, selectedItem?.id))}>
-                  <i className="mdi mdi-refresh"></i>
-                </button>
+                        onClick={() => dispatch(WatchersApi.getItem(token, selectedItem?.id))}
+                      >
+                        <i className="mdi mdi-refresh"></i>
+                      </button>
+                    : null
+                }
               </div>
             </div>
-            <p className="text-muted mb-0">Watcher details</p>
+            {
+              selectedItem
+                ? <>
+                  <p className="text-muted mb-0">Previous runs</p>
+                  <ul className="list-unstyled text-muted">
+                    {
+                      selectedItem?.redis
+                        ? Object.keys(selectedItem?.redis).map((k, i) =>
+                          ["errors", "history"].includes(k)
+                            ? <li key={i}>
+                              {
+                                <div>
+                                  <div
+                                    style={{cursor: "pointer"}}
+                                    onClick={() =>
+                                      k === "history"
+                                        ? setTaskHistoryOpen(!taskHistoryOpen)
+                                        : setTaskErrorsOpen(!taskErrorsOpen)}
+                                  >
+                                    <i
+                                      className={`mdi mdi-chevron-${(k === "history" ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}/>
+                                    {capitalize(k)} ({selectedItem?.redis[k]?.length})
+                                  </div>
+                                  <Collapse
+                                    in={k === "history" ? taskHistoryOpen : taskErrorsOpen}>
+                                    <ul className="list-unstyled">
+                                      {
+                                        selectedItem?.redis[k].map((h, i) =>
+                                          <li key={i} className="pl-4 mt-1">
+                                            <i
+                                              className="text-secondary mdi mdi-arrow-right mr-1"/>
+                                            {new Date(h.timestamp).toLocaleString()}
+                                            <ul className="list-unstyled">
+                                              {Object.keys(h).filter(k => k !== "timestamp").map(hkey =>
+                                                <li className="pl-3">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
+                                            </ul>
+                                          </li>
+                                        )
+                                      }
+                                    </ul>
+                                  </Collapse>
+                                </div>
+                              }
+                            </li>
+                            : k === "status"
+                              ? <li key={i}>Last status: {selectedItem?.redis[k]}</li>
+                              : <li key={i}>{capitalize(k)}: {selectedItem?.redis[k]}</li>
+                        )
+                        : null
+                    }
+                    {
+                      selectedItem?.redis?.history?.[0]?.timestamp
+                        ? <li>Last
+                          check: {new Date(selectedItem.redis.history[0].timestamp).toLocaleString()}</li>
+                        : null
+                    }
+                    {
+                      selectedItem?.redis?.history?.[0]?.status
+                        ? <li>Last
+                          status: {parseStatus(selectedItem.redis.history[0].status)}</li>
+                        : null
+                    }
+                  </ul>
+                </>
+                : null
+            }
           </Modal.Title>
         </Modal.Header>
         {
           loadingItems?.includes(selectedItem?.id)
             ? <ColorRing
-                width = "100%"
-                height = "50"
-                wrapperStyle={{width: "100%"}}
-              />
+              width="100%"
+              height="50"
+              wrapperStyle={{width: "100%"}}
+            />
             : <Modal.Body>
-                    <Errors errors={errors}/>
+              <Errors errors={errors}/>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>URL</Form.Label>
-            <Form.Control
-              type="text"
-              value={url}
-              onChange={e => setUrl(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Check
-              type="switch"
-              id="custom-switch"
-              label="Is Active"
-              checked={isActive}
-              onChange={() => {setIsActive(!isActive)}}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Cron</Form.Label>
-            <Form.Control
-              type="text"
-              value={cron}
-              onChange={e => setCron(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Selector</Form.Label>
-            <Form.Control
-              type="text"
-              value={selector}
-              onChange={e => setSelector(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Latest data</Form.Label>
-            <AceEditor
-            className={(latestAnnotations) ? "form-control is-invalid" : ""}
-            annotations={latestAnnotations}
-            placeholder="Latest data"
-            mode="json"
-            theme="monokai"
-            onChange={onLatestChange}
-            fontSize={12}
-            showPrintMargin={true}
-            showGutter={true}
-            highlightActiveLine={true}
-            value={latest}
-            setOptions={{
-              enableBasicAutocompletion: false,
-              enableLiveAutocompletion: false,
-              enableSnippets: false,
-              showLineNumbers: true,
-              tabSize: 2,
-              wrap: true
-            }}
-            width="100%"
-            height="100px"
-          />
-          </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Check
+                  type="switch"
+                  id="custom-switch"
+                  label="Is Active"
+                  checked={isActive}
+                  onChange={() => {
+                    setIsActive(!isActive)
+                  }}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Cron</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={cron}
+                  onChange={e => setCron(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>URL</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Selector</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={selector}
+                  onChange={e => setSelector(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Latest data</Form.Label>
+                <AceEditor
+                  className={(latestAnnotations) ? "form-control is-invalid" : ""}
+                  annotations={latestAnnotations}
+                  placeholder="Latest data"
+                  mode="json"
+                  theme="monokai"
+                  onChange={onLatestChange}
+                  fontSize={12}
+                  showPrintMargin={true}
+                  showGutter={true}
+                  highlightActiveLine={true}
+                  value={latest}
+                  setOptions={{
+                    enableBasicAutocompletion: false,
+                    enableLiveAutocompletion: false,
+                    enableSnippets: false,
+                    showLineNumbers: true,
+                    tabSize: 2,
+                    wrap: true
+                  }}
+                  width="100%"
+                  height="100px"
+                />
+              </Form.Group>
 
-          <Form.Group className="mb-3">
-          <Form.Label>Request parameters</Form.Label>
-            <AceEditor
-            className={(requestAnnotations) ? "form-control is-invalid" : ""}
-            annotations={requestAnnotations}
-            placeholder="Request parameters"
-            mode="json"
-            theme="monokai"
-            onChange={onRequestChange}
-            fontSize={12}
-            showPrintMargin={true}
-            showGutter={true}
-            highlightActiveLine={true}
-            value={request}
-            setOptions={{
-              enableBasicAutocompletion: false,
-              enableLiveAutocompletion: false,
-              enableSnippets: false,
-              showLineNumbers: true,
-              tabSize: 2,
-            }}
-            width="100%"
-            height="100px"
-          />
-          </Form.Group>
-
-        </Modal.Body>
+              <Form.Group className="mb-3">
+                <Form.Label>Request parameters</Form.Label>
+                <AceEditor
+                  className={(requestAnnotations) ? "form-control is-invalid" : ""}
+                  annotations={requestAnnotations}
+                  placeholder="Request parameters"
+                  mode="json"
+                  theme="monokai"
+                  onChange={onRequestChange}
+                  fontSize={12}
+                  showPrintMargin={true}
+                  showGutter={true}
+                  highlightActiveLine={true}
+                  value={request}
+                  setOptions={{
+                    enableBasicAutocompletion: false,
+                    enableLiveAutocompletion: false,
+                    enableSnippets: false,
+                    showLineNumbers: true,
+                    tabSize: 2,
+                  }}
+                  width="100%"
+                  height="100px"
+                />
+              </Form.Group>
+            </Modal.Body>
         }
 
         <Modal.Footer>
@@ -281,24 +392,47 @@ const Watchers = () =>  {
             e.preventDefault()
             dispatch(selectItem(null))
           }}>Close</Button>
-          <Button variant="primary" className="float-left" onClick={evt => {
-            evt.preventDefault()
-            dispatch(WatchersApi.run(token, selectedItem?.id))
-          }}>
-            <i className="mdi mdi-play" /> Run watcher
-          </Button>
-          <Button variant="success" disabled={!!requestAnnotations || !!latestAnnotations} onClick={() => {
-            dispatch(WatchersApi.update(token, selectedItem?.id, {
-              cron: cron,
-              is_active: isActive,
-              latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
-              name: name,
-              requesst: JSON.parse(request.replace(/[\r\n\t]/g, "")),
-              selector: selector,
-            }))
-          }}>
-            Save Changes
-          </Button>
+          {
+            selectedItem
+              ? <>
+                  <Button variant="primary" className="float-left" onClick={evt => {
+                    evt.preventDefault()
+                    dispatch(WatchersApi.run(token, selectedItem?.id))
+                  }}>
+                    <i className="mdi mdi-play"/> Run watcher
+                  </Button>
+                  <Button variant="success"
+                    disabled={!!requestAnnotations || !!latestAnnotations}
+                    onClick={() => {
+                      dispatch(WatchersApi.update(token, selectedItem?.id, {
+                        cron: cron,
+                        is_active: isActive,
+                        latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
+                        name: name,
+                        requesst: JSON.parse(request.replace(/[\r\n\t]/g, "")),
+                        selector: selector,
+                        url: url,
+                      }))
+                  }}>
+                    Save Changes
+                  </Button>
+                </>
+              : <Button variant="primary"
+                  disabled={!!requestAnnotations || !!latestAnnotations}
+                  onClick={() => {
+                    dispatch(WatchersApi.create(token, {
+                      cron: cron,
+                      is_active: isActive,
+                      latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
+                      name: name,
+                      requesst: JSON.parse(request.replace(/[\r\n\t]/g, "")),
+                      selector: selector,
+                      url: url,
+                    }))
+                }}>
+                  Create
+                </Button>
+          }
         </Modal.Footer>
       </Modal>
     </div>

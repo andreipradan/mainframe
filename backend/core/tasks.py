@@ -13,9 +13,8 @@ def log_status(key, errors=None, **kwargs):
 
     details = json.loads(redis_client.get(key) or "{}")
     if not details:
-        details = {"errors": errors, "history": [new_event], **new_event}
+        details = {"errors": errors, "history": [new_event]}
     else:
-        details.update(new_event)
         if "errors" not in details:
             details["errors"] = errors
         else:

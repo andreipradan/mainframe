@@ -3,6 +3,6 @@ import {getBaseSliceOptions} from "./shared";
 
 export const watchersSlice = createSlice(getBaseSliceOptions("watchers"));
 export const {
-  selectItem, set, setCompletedLoadingItem, setErrors, setItem, setLoading, setLoadingItems, setModalOpen, update,
+  create, modalOpen, selectItem, set, setCompletedLoadingItem, setErrors, setItem, setLoading, setLoadingItems, setModalOpen, update,
 } = watchersSlice.actions;
 export default watchersSlice.reducer;

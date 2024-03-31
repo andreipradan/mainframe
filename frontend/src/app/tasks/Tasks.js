@@ -10,16 +10,10 @@ import { selectItem } from "../../redux/tasksSlice";
 import Errors from "../shared/Errors";
 import TasksApi from "../../api/tasks";
 
-const parseStatus = status => {
-  const icon = status === "complete"
-  ? "✅"
-  : status === "executing"
-    ? "⚙️"
-    : ["canceled", "error", "interrupted"].includes(status)
-      ? "❌"
-      : "❓"
-  return `${capitalize(status)} ${icon}`
-}
+export const parseStatus = status =>
+  <span className={
+    `text-${status === "complete" ? 'success' : status === "executing" ? 'warning' : 'danger'}`
+  }>{capitalize(status)}</span>
 
 const Tasks = () =>  {
   const dispatch = useDispatch();
@@ -193,15 +187,11 @@ const Tasks = () =>  {
                                               <li key={i} className="pl-4 mt-1">
                                                 <i
                                                   className="text-secondary mdi mdi-arrow-right mr-1"/>
-                                                {
-                                                  Object.keys(h).filter(k => k !== "id").map(hkey =>
-                                                    hkey === "timestamp"
-                                                      ? new Date(h[hkey]).toLocaleString()
-                                                      : hkey === "status"
-                                                        ? parseStatus(h[hkey])
-                                                        : h[hkey]
-                                                  ).join(" - ")
-                                                }
+                                                {new Date(h.timestamp).toLocaleString()}
+                                                <ul className="list-unstyled">
+                                                  {Object.keys(h).filter(k => k !== "timestamp").map(hkey =>
+                                                    <li className="pl-3 mt-1">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
+                                                </ul>
                                               </li>
                                             )
                                           }

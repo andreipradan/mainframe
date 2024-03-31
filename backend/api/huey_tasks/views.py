@@ -75,7 +75,7 @@ class TasksViewSet(viewsets.ViewSet):
         autodiscover_modules("tasks")
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         for t in HUEY._registry._registry:
-            app, task_name = t.split(".tasks.")
+            app, task_name = t.split(".")[0], t.split(".")[-1]
             if task_name == name:
                 return JsonResponse(
                     data={
@@ -83,7 +83,7 @@ class TasksViewSet(viewsets.ViewSet):
                         "name": name,
                         "is_periodic": t in periodic_tasks,
                         "is_revoked": is_revoked(t),
-                        **json.loads(redis_client.get(t.split(".")[-1]) or "{}"),
+                        **json.loads(redis_client.get(f"tasks.{name}") or "{}"),
                     },
                     safe=True,
                 )
