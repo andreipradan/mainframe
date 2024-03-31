@@ -23,6 +23,7 @@ const Watchers = () =>  {
   const [isActive, setIsActive] = useState(selectedItem?.is_active || false);
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
+  const [top, setTop] = useState(selectedItem?.top || false);
   const [url, setUrl] = useState("");
 
   const [latest, setLatest] = useState(null);
@@ -43,6 +44,7 @@ const Watchers = () =>  {
       setName(selectedItem.name)
       setRequest(JSON.stringify(selectedItem.request, null, "\t"))
       setSelector(selectedItem.selector)
+      setTop(selectedItem.top)
       setUrl(selectedItem.url)
     }
   }, [selectedItem]);
@@ -77,6 +79,7 @@ const Watchers = () =>  {
     setName("")
     setRequest("{}")
     setSelector("")
+    setTop(false)
     setUrl("")
   }
   const closeModal = () => {
@@ -333,6 +336,15 @@ const Watchers = () =>  {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
+                <Form.Check
+                  type="switch"
+                  id="top-switch"
+                  label="Top search"
+                  checked={top}
+                  onChange={() => {setTop(!top)}}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
                 <Form.Label>Latest data</Form.Label>
                 <AceEditor
                   className={(latestAnnotations) ? "form-control is-invalid" : ""}
@@ -409,8 +421,9 @@ const Watchers = () =>  {
                         is_active: isActive,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                         name: name,
-                        requesst: JSON.parse(request.replace(/[\r\n\t]/g, "")),
+                        request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
                         selector: selector,
+                        top: top,
                         url: url,
                       }))
                   }}>
@@ -425,8 +438,9 @@ const Watchers = () =>  {
                       is_active: isActive,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                       name: name,
-                      requesst: JSON.parse(request.replace(/[\r\n\t]/g, "")),
+                      request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
                       selector: selector,
+                      top: top,
                       url: url,
                     }))
                 }}>
