@@ -5,6 +5,8 @@ import requests
 import telegram
 from bs4 import BeautifulSoup
 from django.db import models
+from django.db.models import signals
+from django.dispatch import receiver
 from django.utils import timezone
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task, task
@@ -68,9 +70,6 @@ class Watcher(TimeStampedModel):
         logger.info("[%s] Done - %s", self.name, message)
         return message
 
-    def schedule(self):
-        schedule_watcher(self)
-
     def save(self, *args, **kwargs):
         schedule_watcher(self)
         return super().save(*args, **kwargs)
@@ -90,3 +89,14 @@ def schedule_watcher(watcher: Watcher):
         schedule = crontab(*watcher.cron.split())
         periodic_task(schedule, name=watcher.name)(wrapper)
         logger.info("Scheduled task: %s", watcher.name)
+
+
+@receiver(signals.post_delete, sender=Watcher)
+def post_delete(sender, instance, **kwargs):
+    instance.cron = ""
+    schedule_watcher(instance)
+
+
+@receiver(signals.post_save, sender=Watcher)
+def post_save(sender, instance, **kwargs):
+    schedule_watcher(instance)

@@ -4,7 +4,7 @@ from django.core.management import BaseCommand
 
 from clients.chat import send_telegram_message
 from clients.logs import ManagementCommandsHandler
-from watchers.models import Watcher
+from watchers.models import Watcher, schedule_watcher
 
 
 class Command(BaseCommand):
@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
         logger.info("[Set watcher tasks] Setting tasks for all watchers with crons")
         for watcher in Watcher.objects.exclude(cron=""):
-            watcher.schedule()
+            schedule_watcher(watcher)
             logger.info("[Set watcher tasks] %s - set", watcher.name)
         send_telegram_message(text="[[huey]] up")
         logger.info("[Set watcher tasks] Done")
