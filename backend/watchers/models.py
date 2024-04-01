@@ -70,10 +70,6 @@ class Watcher(TimeStampedModel):
         logger.info("[%s] Done - %s", self.name, message)
         return message
 
-    def save(self, *args, **kwargs):
-        schedule_watcher(self)
-        return super().save(*args, **kwargs)
-
 
 @task()
 def schedule_watcher(watcher: Watcher):
