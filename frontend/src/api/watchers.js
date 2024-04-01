@@ -1,6 +1,6 @@
 import axios from "./index";
 import {
-  create, set, setItem, setCompletedLoadingItem, setErrors, setLoading, setLoadingItems, update
+  create, deleteItem, set, setItem, setCompletedLoadingItem, setErrors, setLoading, setLoadingItems, update
 } from "../redux/watchersSlice";
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
@@ -13,6 +13,13 @@ class WatchersApi {
     axios
       .post(base, data, { headers: { Authorization: token } })
       .then((response) => dispatch(create(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+  static delete = (token, id) => dispatch => {
+    dispatch(setLoadingItems(id));
+    axios
+      .delete(`${base}${id}/`, { headers: { Authorization: token } })
+      .then(() => dispatch(deleteItem(id)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static getItem = (token, id) => dispatch => {
@@ -34,11 +41,11 @@ class WatchersApi {
     axios
       .put(`${base}${id}/run/`, {}, { headers: { Authorization: token } })
       .then(response => {
-        if (response.data.result) {
-          toast.success("Found new article!", toastParams)
+        if (response.data.result.startsWith("Found")) {
+          toast.success(response.data.result, toastParams)
           dispatch(this.getItem(token, id))
         }
-        else toast.warning("No new articles found", toastParams)
+        else toast.warning(response.data.result, toastParams)
         dispatch(setCompletedLoadingItem(id));
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));

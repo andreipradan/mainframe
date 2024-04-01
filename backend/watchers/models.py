@@ -20,7 +20,6 @@ logger.addHandler(MainframeHandler())
 
 class Watcher(TimeStampedModel):
     cron = models.CharField(blank=True, max_length=32)
-    is_active = models.BooleanField(default=True)
     latest = models.JSONField(default=dict)
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
@@ -53,17 +52,21 @@ class Watcher(TimeStampedModel):
                 "timestamp": timezone.now().isoformat(),
             }
             self.save()
-            logger.info("[%s] Done - Found new items!", self.name)
-            log_status(self.name, msg="Found new item!")
+
+            message = "Found new item!"
+            logger.info("[%s] Done - %s", self.name, message)
+            log_status(self.name, msg=message)
             text = (
                 f"📣 <b>New <i>{self.name}</i> found!</b> 📣\n"
                 f"<a href='{url}'>{found.text}</a>\n"
                 f"All items <a href='{self.url}'>here</a>"
             )
             send_telegram_message(text, parse_mode=telegram.ParseMode.HTML)
-            return True
-        logger.info("[%s] Done - Nothing new", self.name)
-        return False
+            return message
+
+        message = "No new items found"
+        logger.info("[%s] Done - %s", self.name, message)
+        return message
 
     def schedule(self):
         schedule_watcher(self)
@@ -83,7 +86,7 @@ def schedule_watcher(watcher: Watcher):
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
         logger.info("Unregistered task: %s", watcher.name)
-    if watcher.is_active and watcher.cron:
+    if watcher.cron:
         schedule = crontab(*watcher.cron.split())
         periodic_task(schedule, name=watcher.name)(wrapper)
         logger.info("Scheduled task: %s", watcher.name)

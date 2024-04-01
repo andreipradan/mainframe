@@ -20,7 +20,6 @@ const Watchers = () =>  {
   const {results, errors, loading, loadingItems, modalOpen, selectedItem } = useSelector(state => state.watchers)
 
   const [cron, setCron] = useState("");
-  const [isActive, setIsActive] = useState(selectedItem?.is_active || false);
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
   const [top, setTop] = useState(selectedItem?.top || false);
@@ -39,7 +38,6 @@ const Watchers = () =>  {
   useEffect(() => {
     if (selectedItem) {
       setCron(selectedItem.cron)
-      setIsActive(selectedItem.is_active)
       setLatest(JSON.stringify(selectedItem.latest, null, "\t"))
       setName(selectedItem.name)
       setRequest(JSON.stringify(selectedItem.request, null, "\t"))
@@ -74,7 +72,6 @@ const Watchers = () =>  {
 
   const clearModal = () => {
     setCron("")
-    setIsActive(false)
     setLatest("{}")
     setName("")
     setRequest("{}")
@@ -86,6 +83,15 @@ const Watchers = () =>  {
     dispatch(selectItem())
     dispatch(setModalOpen(false))
     clearModal()
+  }
+  const duplicate = watcher => {
+    setCron(watcher.cron)
+    setLatest(JSON.stringify(watcher.latest, null, "\t"))
+    setName(watcher.name)
+    setRequest(JSON.stringify(watcher.request, null, "\t"))
+    setSelector(watcher.selector)
+    setTop(watcher.top)
+    setUrl(watcher.url)
   }
 
   return (
@@ -123,19 +129,20 @@ const Watchers = () =>  {
                   <i className="mdi mdi-plus"></i>
                 </button>
               </h4>
-              <Errors errors={errors}/>
+              {!selectedItem && !modalOpen ? <Errors errors={errors}/> : null}
+
               <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
                     <tr>
                       <th> # </th>
                       <th> Name </th>
-                      <th> Active? </th>
                       <th> Cron </th>
                       <th> URL </th>
                       <th> Last check </th>
                       <th> Last status </th>
                       <th> Last update </th>
+                      <th> Actions </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -144,26 +151,40 @@ const Watchers = () =>  {
                         ? results?.length
                           ? results.map(
                             (watcher, i) => !loadingItems?.includes(watcher.id)
-                              ? <tr key={i}
-                                    onClick={() => dispatch(selectItem(watcher.id))}>
-                                <td className="cursor-pointer">{i + 1}</td>
-                                <td className="cursor-pointer">{watcher.name}</td>
-                                <td className="cursor-pointer">
-                                  <i
-                                    className={`mdi mdi-${watcher.is_active ? "check text-success" : "alert text-danger"}`}/>
+                              ? <tr key={i}>
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{i + 1}</td>
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.name}</td>
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron}</td>
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.url}</td>
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>
+                                  {watcher.redis.history?.[0]?.timestamp ? new Date(watcher.redis.history[0].timestamp).toLocaleString() : "-"}
                                 </td>
-                                <td className="cursor-pointer">{watcher.cron}</td>
-                                <td className="cursor-pointer">{watcher.url}</td>
                                 <td
-                                  className="cursor-pointer">{watcher.redis.history?.[0]?.timestamp ? new Date(watcher.redis.history[0].timestamp).toLocaleString() : "-"}</td>
-                                <td className={
-                                  `text-${watcher.redis.history?.[0]?.status === "complete" ? 'success' : watcher.redis.history?.[0]?.status === "executing" ? 'warning' : 'danger'}`
-                                }
+                                  className={
+                                    `text-${
+                                      watcher.redis.history?.[0]?.status === "complete"
+                                        ? 'success'
+                                        : watcher.redis.history?.[0]?.status === "executing"
+                                          ? 'warning' : 'danger'
+                                    }`
+                                  }
+                                  onClick={() => dispatch(selectItem(watcher.id))}
                                 >
                                   {watcher.redis.history?.[0]?.status ? capitalize(watcher.redis.history[0].status) : "-"}
                                 </td>
-                                <td className="cursor-pointer">{watcher.latest?.timestamp ? new Date(watcher.latest.timestamp).toLocaleString() : "-"}</td>
-
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>
+                                  {watcher.latest?.timestamp ? new Date(watcher.latest.timestamp).toLocaleString() : "-"}
+                                </td>
+                                <td>
+                                  <i
+                                    onClick={() => {duplicate(watcher);dispatch(setModalOpen(true))}}
+                                    className="cursor-pointer mdi mdi-content-copy"
+                                  />
+                                  <i
+                                    onClick={() => dispatch(WatchersApi.run(token, watcher?.id))}
+                                    className="ml-1 cursor-pointer mdi mdi-play text-primary"
+                                  />
+                                </td>
                               </tr>
                               : <tr key={i}>
                                 <td colSpan={6}>
@@ -199,7 +220,7 @@ const Watchers = () =>  {
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">
-              <div className="col-lg-12 grid-margin stretch-card">
+              <div className="col-lg-12 stretch-card">
                 {selectedItem ? "Edit" : "Add"} {selectedItem?.name} watcher?
                 {
                   selectedItem
@@ -215,10 +236,10 @@ const Watchers = () =>  {
               </div>
             </div>
             {
-              selectedItem
+              selectedItem && Object.keys(selectedItem.redis).length
                 ? <>
                   <p className="text-muted mb-0">Previous runs</p>
-                  <ul className="list-unstyled text-muted">
+                  <ul className="mb-0 list-unstyled text-muted">
                     {
                       selectedItem?.redis
                         ? Object.keys(selectedItem?.redis).map((k, i) =>
@@ -298,17 +319,6 @@ const Watchers = () =>  {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Check
-                  type="switch"
-                  id="custom-switch"
-                  label="Is Active"
-                  checked={isActive}
-                  onChange={() => {
-                    setIsActive(!isActive)
-                  }}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -400,6 +410,13 @@ const Watchers = () =>  {
         }
 
         <Modal.Footer>
+          {
+            selectedItem
+              ? <Button variant="danger" onClick={() => dispatch(WatchersApi.delete(token, selectedItem.id))}>
+                  Delete
+                </Button>
+              : null
+          }
           <Button variant="secondary" onClick={e => {
             e.preventDefault()
             dispatch(selectItem(null))
@@ -407,18 +424,11 @@ const Watchers = () =>  {
           {
             selectedItem
               ? <>
-                  <Button variant="primary" className="float-left" onClick={evt => {
-                    evt.preventDefault()
-                    dispatch(WatchersApi.run(token, selectedItem?.id))
-                  }}>
-                    <i className="mdi mdi-play"/> Run watcher
-                  </Button>
-                  <Button variant="success"
+                  <Button variant="primary"
                     disabled={!!requestAnnotations || !!latestAnnotations}
                     onClick={() => {
                       dispatch(WatchersApi.update(token, selectedItem?.id, {
                         cron: cron,
-                        is_active: isActive,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                         name: name,
                         request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
@@ -435,7 +445,6 @@ const Watchers = () =>  {
                   onClick={() => {
                     dispatch(WatchersApi.create(token, {
                       cron: cron,
-                      is_active: isActive,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                       name: name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
