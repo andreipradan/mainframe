@@ -59,16 +59,18 @@ class Watcher(TimeStampedModel):
             logger.info("[%s] Done - %s", self.name, message)
             log_status(self.name, msg=message)
             text = (
-                f"📣 <b>New <i>{self.name}</i> found!</b> 📣\n"
+                f"📣 <b>New <i>{self.name}</i> item!</b> 📣\n"
                 f"<a href='{url}'>{found.text}</a>\n"
                 f"All items <a href='{self.url}'>here</a>"
             )
             send_telegram_message(text, parse_mode=telegram.ParseMode.HTML)
-            return message
+
+            return self
 
         message = "No new items found"
+        log_status(self.name, msg=message)
         logger.info("[%s] Done - %s", self.name, message)
-        return message
+        return False
 
 
 @task()

@@ -41,13 +41,20 @@ class WatchersApi {
     axios
       .put(`${base}${id}/run/`, {}, { headers: { Authorization: token } })
       .then(response => {
-        if (response.data.result.startsWith("Found")) {
-          toast.success(response.data.result, toastParams)
-          dispatch(this.getItem(token, id))
+        if (response.data) {
+          toast.success("Found new item!", toastParams)
+          dispatch(setItem(response.data))
         }
-        else toast.warning(response.data.result, toastParams)
+        else toast.warning("No new items found", toastParams)
         dispatch(setCompletedLoadingItem(id));
       })
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  }
+  static test = (token, url, selector) => dispatch => {
+    dispatch(setLoading());
+    axios
+      .put(`${base}test/`, {url: url, selector: selector}, { headers: { Authorization: token } })
+      .then(response => toast.success(response.data.result, toastParams))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   }
   static update = (token, id, data) => dispatch => {

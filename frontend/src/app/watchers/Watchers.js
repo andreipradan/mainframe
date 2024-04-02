@@ -1,17 +1,19 @@
 import React, {useEffect, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import {Audio, ColorRing} from "react-loader-spinner";
-import {selectItem, setModalOpen} from "../../redux/watchersSlice";
-import EditModal from "../crons/components/EditModal";
-import Modal from "react-bootstrap/Modal";
+
+import AceEditor from "react-ace";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
+import { Audio, ColorRing } from "react-loader-spinner";
+import { Collapse } from "react-bootstrap";
+
+import EditModal from "../crons/components/EditModal";
 import Errors from "../shared/Errors";
 import WatchersApi from "../../api/watchers";
-import AceEditor from "react-ace";
-import Form from "react-bootstrap/Form";
-import {capitalize} from "../finances/Accounts/AccountDetails/AccountDetails";
-import {Collapse} from "react-bootstrap";
-import {parseStatus} from "../tasks/Tasks";
+import { capitalize } from "../finances/Accounts/AccountDetails/AccountDetails";
+import { parseStatus } from "../tasks/Tasks";
+import { selectItem, setModalOpen } from "../../redux/watchersSlice";
 
 
 const Watchers = () =>  {
@@ -22,7 +24,7 @@ const Watchers = () =>  {
   const [cron, setCron] = useState("");
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
-  const [top, setTop] = useState(selectedItem?.top || false);
+  const [top, setTop] = useState(selectedItem?.top || true);
   const [url, setUrl] = useState("");
 
   const [latest, setLatest] = useState(null);
@@ -155,9 +157,13 @@ const Watchers = () =>  {
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{i + 1}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.name}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron}</td>
-                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.url}</td>
+                                <td><a href={watcher.url} target="_blank">{watcher.url}</a></td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>
-                                  {watcher.redis.history?.[0]?.timestamp ? new Date(watcher.redis.history[0].timestamp).toLocaleString() : "-"}
+                                  {
+                                    watcher.redis.history?.[0]?.timestamp
+                                      ? new Date(watcher.redis.history[0].timestamp).toLocaleString()
+                                      : "-"
+                                  }
                                 </td>
                                 <td
                                   className={
@@ -417,6 +423,13 @@ const Watchers = () =>  {
                 </Button>
               : null
           }
+          <Button
+            variant="outline-warning"
+            disabled={!url || !selector}
+            onClick={() => dispatch(WatchersApi.test(token, url, selector))}
+          >
+            Test
+          </Button>
           <Button variant="secondary" onClick={e => {
             e.preventDefault()
             dispatch(selectItem(null))
