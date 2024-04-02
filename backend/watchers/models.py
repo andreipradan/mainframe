@@ -43,14 +43,15 @@ class Watcher(TimeStampedModel):
         if not elements:
             raise ValueError(f"[{self.name}] Watcher did not found any elements")
 
-        if self.latest.get("title") != (found := elements[0 if self.top else -1]).text:
+        found = elements[0 if self.top else -1]
+        if self.latest.get("title") != (title := found.text.strip()):
             url = (
                 urljoin(self.url, found.attrs["href"])
                 if not found.attrs["href"].startswith("http")
                 else found.attrs["href"]
             )
             self.latest = {
-                "title": found.text.strip(),
+                "title": title,
                 "url": url,
                 "timestamp": timezone.now().isoformat(),
             }
@@ -60,7 +61,7 @@ class Watcher(TimeStampedModel):
             logger.info("[%s] Done - %s", self.name, message)
             log_status(self.name, msg=message)
             text = (
-                f"<a href='{url}'>{found.text}</a>\n"
+                f"<a href='{url}'>{title}</a>\n"
                 f"All items <a href='{self.url}'>here</a>"
             )
             kwargs = {"parse_mode": telegram.ParseMode.HTML}
