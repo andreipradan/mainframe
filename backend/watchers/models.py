@@ -50,7 +50,7 @@ class Watcher(TimeStampedModel):
                 else found.attrs["href"]
             )
             self.latest = {
-                "title": found.text,
+                "title": found.text.strip(),
                 "url": url,
                 "timestamp": timezone.now().isoformat(),
             }

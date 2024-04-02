@@ -76,12 +76,12 @@ const Watchers = () =>  {
 
   const clearModal = () => {
     setChatId("")
-    setCron("")
+    setCron("* * * * *")
     setLatest("{}")
     setName("")
     setRequest("{}")
     setSelector("")
-    setTop(false)
+    setTop(true)
     setUrl("")
   }
   const closeModal = () => {
