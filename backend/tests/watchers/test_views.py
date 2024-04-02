@@ -22,9 +22,10 @@ class TestWatcherViews:
         )
         assert response.status_code == 201, response.content
         assert response.data == {
-            "id": mock.ANY,
+            "chat_id": None,
             "created_at": mock.ANY,
             "cron": "",
+            "id": mock.ANY,
             "latest": {},
             "name": "foo",
             "redis": {},
@@ -43,6 +44,7 @@ class TestWatcherViews:
         )
         assert response.status_code == 200
         assert response.json() == {
+            "chat_id": None,
             "created_at": mock.ANY,
             "cron": "",
             "id": watcher.id,
@@ -69,6 +71,7 @@ class TestWatcherViews:
             "previous": None,
             "results": [
                 {
+                    "chat_id": None,
                     "created_at": mock.ANY,
                     "cron": "",
                     "id": watcher.id,
