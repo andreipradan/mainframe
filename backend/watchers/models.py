@@ -46,7 +46,7 @@ class Watcher(TimeStampedModel):
         if self.latest.get("title") != (found := elements[0 if self.top else -1]).text:
             url = (
                 urljoin(self.url, found.attrs["href"])
-                if found.attrs["href"].startswith("/")
+                if not found.attrs["href"].startswith("http")
                 else found.attrs["href"]
             )
             self.latest = {
