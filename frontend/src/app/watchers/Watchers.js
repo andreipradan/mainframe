@@ -453,7 +453,7 @@ const Watchers = () =>  {
                     disabled={!!requestAnnotations || !!latestAnnotations}
                     onClick={() => {
                       dispatch(WatchersApi.update(token, selectedItem?.id, {
-                        chat_id: chatId,
+                        chat_id: chatId || null,
                         cron: cron,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                         name: name,
@@ -470,7 +470,7 @@ const Watchers = () =>  {
                   disabled={!!requestAnnotations || !!latestAnnotations}
                   onClick={() => {
                     dispatch(WatchersApi.create(token, {
-                      chat_id: chatId,
+                      chat_id: chatId || null,
                       cron: cron,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                       name: name,
