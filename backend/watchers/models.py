@@ -21,6 +21,7 @@ logger.addHandler(MainframeHandler())
 
 
 class Watcher(TimeStampedModel):
+    chat_id = models.BigIntegerField(blank=True, null=True)
     cron = models.CharField(blank=True, max_length=32)
     latest = models.JSONField(default=dict)
     name = models.CharField(max_length=255, unique=True)
@@ -59,11 +60,15 @@ class Watcher(TimeStampedModel):
             logger.info("[%s] Done - %s", self.name, message)
             log_status(self.name, msg=message)
             text = (
-                f"📣 <b>New <i>{self.name}</i> item!</b> 📣\n"
                 f"<a href='{url}'>{found.text}</a>\n"
                 f"All items <a href='{self.url}'>here</a>"
             )
-            send_telegram_message(text, parse_mode=telegram.ParseMode.HTML)
+            kwargs = {"parse_mode": telegram.ParseMode.HTML}
+            if self.chat_id:
+                kwargs["chat_id"] = self.chat_id
+            else:
+                text = f"📣 <b>New <i>{self.name}</i> item!</b> 📣\n{text}"
+            send_telegram_message(text, **kwargs)
 
             return self
 

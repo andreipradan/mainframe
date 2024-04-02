@@ -9,6 +9,7 @@ i18n
       resources:{
           en: {
               translations: {
+                "Apps": "Apps",
                 "Basic Elements": "Basic Elements",
                 "Basic Table": "Basic Table",
                 "Basic UI Elements": "Basic UI Elements",

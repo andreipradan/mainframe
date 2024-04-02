@@ -21,6 +21,7 @@ const Watchers = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {results, errors, loading, loadingItems, modalOpen, selectedItem } = useSelector(state => state.watchers)
 
+  const [chatId, setChatId] = useState("");
   const [cron, setCron] = useState("");
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
@@ -39,6 +40,7 @@ const Watchers = () =>  {
   useEffect(() => {!results && dispatch(WatchersApi.getList(token))}, []);
   useEffect(() => {
     if (selectedItem) {
+      setChatId(selectedItem.chat_id || "")
       setCron(selectedItem.cron)
       setLatest(JSON.stringify(selectedItem.latest, null, "\t"))
       setName(selectedItem.name)
@@ -73,6 +75,7 @@ const Watchers = () =>  {
   }
 
   const clearModal = () => {
+    setChatId("")
     setCron("")
     setLatest("{}")
     setName("")
@@ -87,6 +90,7 @@ const Watchers = () =>  {
     clearModal()
   }
   const duplicate = watcher => {
+    setChatId(watcher.chat_id || "")
     setCron(watcher.cron)
     setLatest(JSON.stringify(watcher.latest, null, "\t"))
     setName(watcher.name)
@@ -274,8 +278,8 @@ const Watchers = () =>  {
                                               className="text-secondary mdi mdi-arrow-right mr-1"/>
                                             {new Date(h.timestamp).toLocaleString()}
                                             <ul className="list-unstyled">
-                                              {Object.keys(h).filter(k => k !== "timestamp").map(hkey =>
-                                                <li className="pl-3">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
+                                              {Object.keys(h).filter(k => k !== "timestamp").map((hkey, hi) =>
+                                                <li key={hi} className="pl-3">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
                                             </ul>
                                           </li>
                                         )
@@ -325,6 +329,14 @@ const Watchers = () =>  {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Chat Id</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={chatId}
+                  onChange={e => setChatId(e.target.value)}
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -441,6 +453,7 @@ const Watchers = () =>  {
                     disabled={!!requestAnnotations || !!latestAnnotations}
                     onClick={() => {
                       dispatch(WatchersApi.update(token, selectedItem?.id, {
+                        chat_id: chatId,
                         cron: cron,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                         name: name,
@@ -457,6 +470,7 @@ const Watchers = () =>  {
                   disabled={!!requestAnnotations || !!latestAnnotations}
                   onClick={() => {
                     dispatch(WatchersApi.create(token, {
+                      chat_id: chatId,
                       cron: cron,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                       name: name,

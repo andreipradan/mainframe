@@ -255,22 +255,22 @@ const Sidebar = () => {
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
                         <Link className={ isPathActive('/apps/camera') ? 'nav-link active' : 'nav-link' } to="/apps/camera">
-                          <Trans>Camera</Trans>
+                          Camera
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link className={ isPathActive('/devices') ? 'nav-link active' : 'nav-link' } to="/devices">
-                          <Trans>Devices</Trans>
+                          Devices
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link className={ isPathActive('/apps/logs') ? 'nav-link active' : 'nav-link' } to="/apps/logs">
-                          <span className="menu-title"><Trans>Logs</Trans></span>
+                          <span className="menu-title">Logs</span>
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link className={ isPathActive('/apps/todo') ? 'nav-link active' : 'nav-link' } to="/apps/todo">
-                          <Trans>To do List</Trans>
+                          ToTrans>
                         </Link>
                       </li>
                     </ul>
@@ -282,7 +282,7 @@ const Sidebar = () => {
                   <span className="menu-icon">
                     <i className="mdi mdi-account-multiple"></i>
                   </span>
-                  <span className="menu-title"><Trans>Auth</Trans></span>
+                  <span className="menu-title">Auth</span>
                   <i className="menu-arrow"></i>
                 </div>
                 <Collapse in={ authMenuOpen }>
@@ -290,12 +290,12 @@ const Sidebar = () => {
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
                         <Link className={ isPathActive('/auth/groups') ? 'nav-link active' : 'nav-link' } to="/auth/groups">
-                          <Trans>Groups</Trans>
+                          Groups
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link className={ isPathActive('/auth/users') ? 'nav-link active' : 'nav-link' } to="/auth/users">
-                          <Trans>Users</Trans>
+                          Users
                         </Link>
                       </li>
                     </ul>
@@ -305,7 +305,7 @@ const Sidebar = () => {
               <li className={ isPathActive('/bots') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                 <Link className="nav-link" to="/bots">
                   <span className="menu-icon"><i className="mdi mdi-speedometer"></i></span>
-                  <span className="menu-title"><Trans>Bots</Trans></span>
+                  <span className="menu-title">Bots</span>
                 </Link>
               </li>
               <li className={ isPathActive('/commands') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
@@ -317,7 +317,7 @@ const Sidebar = () => {
               <li className={ isPathActive('/crons') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                 <Link className="nav-link" to="/crons">
                   <span className="menu-icon"><i className="mdi mdi-timer"></i></span>
-                  <span className="menu-title"><Trans>Crons</Trans></span>
+                  <span className="menu-title">Crons</span>
                 </Link>
               </li>
               <li className={ isPathActive('/messages') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
@@ -344,7 +344,7 @@ const Sidebar = () => {
                   <span className="menu-icon">
                     <i className="mdi mdi-credit-card-outline"></i>
                   </span>
-                  <span className="menu-title"><Trans>Accounts</Trans></span>
+                  <span className="menu-title">Accounts</span>
                   <i className="menu-arrow"></i>
                 </div>
                 <Collapse in={ financesMenuOpen }>
@@ -370,7 +370,7 @@ const Sidebar = () => {
                   <span className="menu-icon">
                     <i className="mdi mdi-cash-multiple"></i>
                   </span>
-                  <span className="menu-title"><Trans>Credit</Trans></span>
+                  <span className="menu-title">Credit</span>
                   <i className="menu-arrow"></i>
                 </div>
                 <Collapse in={ creditMenuOpen }>
@@ -403,7 +403,7 @@ const Sidebar = () => {
               <li className={ isPathActive('/stocks') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                 <Link className="nav-link" to="/stocks">
                   <span className="menu-icon"><i className="mdi mdi-chart-bar"></i></span>
-                  <span className="menu-title"><Trans>Stocks</Trans></span>
+                  <span className="menu-title">Stocks</span>
                 </Link>
               </li>
             </>
@@ -443,7 +443,7 @@ const Sidebar = () => {
         <li className={ isPathActive('/earthquakes') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
           <Link className="nav-link" to="/earthquakes">
             <span className="menu-icon"><i className="mdi mdi-earth"></i></span>
-            <span className="menu-title"><Trans>Earthquakes</Trans></span>
+            <span className="menu-title">Earthquakes</span>
           </Link>
         </li>
         <li className={ isPathActive('/meals') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
