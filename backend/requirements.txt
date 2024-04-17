@@ -35,3 +35,4 @@ setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerabil
 tornado>=6.3.3 # not directly required, pinned by Snyk to avoid a vulnerability
 certifi>=2023.7.22 # not directly required, pinned by Snyk to avoid a vulnerability
 dnspython>=2.6.0rc1 # not directly required, pinned by Snyk to avoid a vulnerability
+sqlparse>=0.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
