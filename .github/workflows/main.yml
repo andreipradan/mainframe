@@ -120,7 +120,7 @@ jobs:
             --allow-unauthenticated
 
   frontend-build:
-    name: Build React App
+    name: FE - Build
     runs-on: ubuntu-latest
     needs:
       - changes
@@ -157,10 +157,10 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: build
-          path: frontend/.docker/build
+          path: frontend/build
 
   frontend-deploy:
-    name: Deploy to GCR
+    name: FE - Deploy
     needs: frontend-build
     runs-on: ubuntu-latest
     permissions:
