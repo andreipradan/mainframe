@@ -6,9 +6,9 @@ on:
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCR_PROJECT }}
-  RUN_REGION: europe-west4
-  SERVICE_NAME: mainframe-frontend
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+  RUN_REGION: ${{ secrets.REGION }}
+  SERVICE_NAME: ${{ secrets.SERVICE }}
 
 jobs:
   build:
@@ -71,9 +71,9 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v0.4.0
         with:
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
           token_format: 'access_token'
-          workload_identity_provider: ${{ secrets.GCR_WIP }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0.2.1
