@@ -1,9 +1,10 @@
 import json
 
+from django.conf import settings
 from django.utils import timezone
 from huey.contrib.djhuey import HUEY
 
-redis_client = HUEY.storage.redis_client()
+redis_client = HUEY.storage.redis_client.from_url(settings.HUEY["connection"]["url"])
 
 
 def log_status(key, errors=None, **kwargs):

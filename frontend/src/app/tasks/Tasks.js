@@ -80,8 +80,8 @@ const Tasks = () =>  {
                         ? results.map(
                           (task, i) => <tr
                             key={i}
-                            onClick={() => task.id ? dispatch(selectItem(task.id)) : null}
-                            className={task.id ? "cursor-pointer" : null}
+                            onClick={() => dispatch(selectItem(task.id))}
+                            className="cursor-pointer"
                           >
                             <td>{i + 1}</td>
                             <td>{task.app}.{task.name}</td>
@@ -91,12 +91,12 @@ const Tasks = () =>  {
                               task.history?.length
                                 ? <>
                                   <td className={
-                                    `text-${task.status === "complete" ? 'success' : task.status === "executing" ? 'warning' : 'danger'}`
+                                    `text-${task.history[0].status === "complete" ? 'success' : task.history[0].status === "executing" ? 'warning' : 'danger'}`
                                   }
                                   >
-                                    {task.status ? capitalize(task.status) : "-"}
+                                    {task.history[0].status ? capitalize(task.history[0].status) : "-"}
                                   </td>
-                                  <td>{new Date(task.timestamp).toLocaleString()}</td>
+                                  <td>{new Date(task.history?.[0]?.timestamp).toLocaleString()}</td>
                                   <td>{task.history.length}</td>
                                   <td>{task.errors?.length}</td>
                                 </>

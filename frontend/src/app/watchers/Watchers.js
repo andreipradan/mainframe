@@ -197,7 +197,7 @@ const Watchers = () =>  {
                                 </td>
                               </tr>
                               : <tr key={i}>
-                                <td colSpan={6}>
+                                <td colSpan={8}>
                                   <ColorRing
                                     width="100%"
                                     height="50"
@@ -206,9 +206,9 @@ const Watchers = () =>  {
                             </td>
                           </tr>
                             )
-                          : <tr><td colSpan={6}>No watchers available</td></tr>
+                          : <tr><td colSpan={8}>No watchers available</td></tr>
                         : <tr>
-                          <td colSpan={6}>
+                          <td colSpan={8}>
                             <Audio
                                 width = "100%"
                                 radius = "9"

@@ -55,6 +55,7 @@ class TasksViewSet(viewsets.ViewSet):
                         {
                             "app": t.split(".")[0],
                             "name": t.split(".")[-1],
+                            "id": f"{t.split('.')[0]}.{t.split('.')[-1]}",
                             "is_periodic": t in periodic_tasks,
                             "is_revoked": is_revoked(t),
                             **json.loads(
@@ -81,6 +82,7 @@ class TasksViewSet(viewsets.ViewSet):
                     data={
                         "app": app,
                         "name": name,
+                        "id": f"{app}.{name}",
                         "is_periodic": t in periodic_tasks,
                         "is_revoked": is_revoked(t),
                         **json.loads(redis_client.get(f"tasks.{name}") or "{}"),

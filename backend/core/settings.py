@@ -257,14 +257,11 @@ HUEY = {
     "utc": True,  # Use UTC for all times internally.
     "blocking": True,  # Perform blocking pop rather than poll Redis.
     "connection": {
-        "host": "localhost",
-        "port": 6379,
-        "db": 0,
         "connection_pool": None,  # Definitely you should use pooling!
         # ... tons of other options, see redis-py for details.
         # huey-specific connection parameters.
         "read_timeout": 1,  # If not polling (blocking pop), use timeout.
-        "url": None,  # Allow Redis config via a DSN.
+        "url": env("REDIS_URL"),  # Allow Redis config via a DSN.
     },
     "consumer": {
         "workers": 3,
