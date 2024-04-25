@@ -149,7 +149,7 @@ jobs:
 
   frontend-deploy:
     name: Deploy to GCR
-    needs: build
+    needs: frontend-build
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
