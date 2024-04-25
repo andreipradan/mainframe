@@ -4,10 +4,13 @@ from django.conf import settings
 from django.utils import timezone
 from huey.contrib.djhuey import HUEY
 
-redis_client = HUEY.storage.redis_client.from_url(settings.HUEY["connection"]["url"])
+
+def get_redis_client():
+    return HUEY.storage.redis_client.from_url(settings.HUEY["connection"]["url"])
 
 
 def log_status(key, errors=None, **kwargs):
+    redis_client = get_redis_client()
     key = f"tasks.{key}"
     new_event = {"timestamp": timezone.now().isoformat(), **kwargs}
     errors = errors or []

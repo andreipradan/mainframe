@@ -16,8 +16,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-from core.tasks import log_status, redis_client
 from clients.logs import MainframeHandler
+from core.tasks import get_redis_client, log_status
 from finance.models import Category, Transaction
 from finance.tasks import predict, train
 
@@ -40,6 +40,7 @@ class PredictionViewSet(viewsets.ViewSet):
     error = "Tasks backend unreachable"
 
     def list(self, request, *args, **kwargs):
+        redis_client = get_redis_client()
         try:
             train_data = redis_client.get("train")
         except redis.exceptions.ConnectionError:
@@ -52,6 +53,7 @@ class PredictionViewSet(viewsets.ViewSet):
 
     @action(methods=["put"], detail=False, url_path="start-prediction")
     def start_prediction(self, request, *args, **kwargs):
+        redis_client = get_redis_client()
         try:
             redis_entry = redis_client.get("predict")
         except redis.exceptions.ConnectionError:
@@ -76,6 +78,7 @@ class PredictionViewSet(viewsets.ViewSet):
 
     @action(methods=["put"], detail=False, url_path="start-training")
     def start_training(self, request, *args, **kwargs):
+        redis_client = get_redis_client()
         try:
             redis_entry = redis_client.get("train")
         except redis.exceptions.ConnectionError:
@@ -98,12 +101,14 @@ class PredictionViewSet(viewsets.ViewSet):
 
     @action(methods=["get"], detail=False, url_path="predict-status")
     def predict_status(self, request, *args, **kwargs):
+        redis_client = get_redis_client()
         if not (task := redis_client.get("predict")):
             raise Http404
         return JsonResponse(data={"type": "predict", **json.loads(task)})
 
     @action(methods=["get"], detail=False, url_path="train-status")
     def train_status(self, request, *args, **kwargs):
+        redis_client = get_redis_client()
         if not (task := redis_client.get("train")):
             raise Http404
         return JsonResponse(data={"type": "train", **json.loads(task)})

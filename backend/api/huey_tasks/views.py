@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAdminUser
 
-from core.tasks import redis_client
+from core.tasks import get_redis_client
 
 
 def is_revoked(task):
@@ -35,7 +35,7 @@ class TasksViewSet(viewsets.ViewSet):
 
     @action(methods=["delete"], detail=True, url_path="delete-history")
     def delete_history(self, request, *args, **kwargs):
-        results = redis_client.delete(kwargs["pk"])
+        results = get_redis_client().delete(kwargs["pk"])
         if results:
             return self.list(request)
         return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data={})
@@ -46,6 +46,7 @@ class TasksViewSet(viewsets.ViewSet):
 
     @staticmethod
     def list(request):
+        client = get_redis_client()
         autodiscover_modules("tasks")
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         return JsonResponse(
@@ -59,7 +60,7 @@ class TasksViewSet(viewsets.ViewSet):
                             "is_periodic": t in periodic_tasks,
                             "is_revoked": is_revoked(t),
                             **json.loads(
-                                redis_client.get(f"tasks.{t.split('.')[-1]}") or "{}"
+                                client.get(f"tasks.{t.split('.')[-1]}") or "{}"
                             ),
                         }
                         for t in HUEY._registry._registry
@@ -72,7 +73,7 @@ class TasksViewSet(viewsets.ViewSet):
     @staticmethod
     def retrieve(*args, **kwargs):
         name = kwargs["pk"]
-
+        client = get_redis_client()
         autodiscover_modules("tasks")
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         for t in HUEY._registry._registry:
@@ -85,7 +86,7 @@ class TasksViewSet(viewsets.ViewSet):
                         "id": f"{app}.{name}",
                         "is_periodic": t in periodic_tasks,
                         "is_revoked": is_revoked(t),
-                        **json.loads(redis_client.get(f"tasks.{name}") or "{}"),
+                        **json.loads(client.get(f"tasks.{name}") or "{}"),
                     },
                     safe=True,
                 )
