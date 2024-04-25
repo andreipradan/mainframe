@@ -32,11 +32,13 @@ jobs:
           restore-keys: |
             nodeModules-
       - name: Install dependencies
+        working-directory: frontend
         run: npm install --frozen-lockfile
         env:
           CI: true
 
       - name: Build Development
+        working-directory: frontend
         run: npm run build
         env:
           CI: false
@@ -45,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@main
         with:
           name: build
-          path: build
+          path: frontend/build
 
   deploy-gcr:
     name: Deploy to GCR
