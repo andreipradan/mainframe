@@ -110,7 +110,7 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: build
-          path: .docker/build
+          path: frontend/.docker/build
 
       - name: Setup GCloud Auth
         id: auth
