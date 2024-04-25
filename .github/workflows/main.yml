@@ -62,8 +62,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 2
-      - name: check frontend
-        id: check_frontend
+      - name: changes
+        id: changes
         uses: dorny/paths-filter@v2
         with:
           filters: |
