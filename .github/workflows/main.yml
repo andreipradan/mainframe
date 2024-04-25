@@ -76,7 +76,7 @@ jobs:
           ENV=ci pytest tests --cov=. --ds core.settings --nomigrations
 
   backend-deploy:
-    name: Deploy Django App
+    name: BE - Deploy
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'

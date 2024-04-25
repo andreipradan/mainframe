@@ -1,6 +1,5 @@
 import multiprocessing
 
-bind = "0.0.0.0:$PORT"
 chdir = "/app"
 log_file = "-"
 max_requests = 1000

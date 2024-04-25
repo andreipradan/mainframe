@@ -3,7 +3,8 @@ import logging
 import six
 from google.api_core.exceptions import GoogleAPICallError
 from google.auth.exceptions import DefaultCredentialsError
-from google.cloud import translate_v2 as translate
+
+# from google.cloud import translate_v2 as translate
 from google.cloud.exceptions import BadRequest
 
 from clients.logs import MainframeHandler
@@ -13,8 +14,9 @@ logger.addHandler(MainframeHandler())
 
 
 def translate_text(text, source=None, target="en"):  # noqa: PLR0911
+    return "Translate library not installed"
     try:
-        translate_client = translate.Client()
+        translate_client = translate.Client()  # noqa: F821
     except DefaultCredentialsError:
         return "Couldn't authenticate to google cloud"
 
