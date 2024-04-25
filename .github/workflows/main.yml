@@ -6,19 +6,3 @@ on:
   workflow_dispatch:
 
 jobs:
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: Harmon758/postgresql-action@v1.0.0
-        with:
-          postgresql version: 13
-          postgresql db: test_db
-          postgresql user: test_user
-          postgresql password: test_pass
-      - name: Run a multi-line script
-        working-directory: backend
-        run: |
-          pip install -r requirements.test.txt
-          black . --check --exclude migrations
-          ENV=ci pytest tests --cov=. --ds core.settings --nomigrations

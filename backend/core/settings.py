@@ -261,7 +261,7 @@ HUEY = {
         # ... tons of other options, see redis-py for details.
         # huey-specific connection parameters.
         "read_timeout": 1,  # If not polling (blocking pop), use timeout.
-        "url": env("REDIS_URL"),  # Allow Redis config via a DSN.
+        "url": env("REDIS_URL", default=None),  # Allow Redis config via a DSN.
     },
     "consumer": {
         "workers": 3,
