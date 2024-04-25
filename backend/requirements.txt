@@ -8,7 +8,7 @@ django-extensions==3.2.1
 djangorestframework==3.14.0
 google-cloud-storage==2.9.0
 google-cloud-translate==3.10.1  #--no-cache-dir
-gunicorn==20.1.0
+gunicorn==22.0.0
 huey==2.5.0
 ipython==8.13.2
 lxml==4.9.3
