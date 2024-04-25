@@ -129,7 +129,7 @@ jobs:
           gcloud builds submit \
             --quiet \
             --tag="gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA" \
-            --gcs-log-dir="gs://cloud-build-logs"
+            --gcs-log-dir="gs://build-frontend-logs"
         working-directory: frontend/.docker
 
       # Deploy image to Cloud Run
