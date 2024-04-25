@@ -7,7 +7,7 @@ from tests.factories.watchers import WatcherFactory
 
 
 @mock.patch("watchers.models.schedule_watcher", return_value="{}")
-@mock.patch("watchers.serializers.redis_client.get", return_value="{}")
+@mock.patch("watchers.serializers.get_redis_client", return_value={})
 @pytest.mark.django_db
 class TestWatcherViews:
     def test_create(self, _, __, client, staff_session):
