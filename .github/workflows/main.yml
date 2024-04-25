@@ -56,54 +56,21 @@ jobs:
 
 
   check:
-    outputs:
-      backend_changed: ${{ steps.check_backend.outputs.backend_changed }}
-      frontend_changed: ${{ steps.check_frontend.outputs.frontend_changed }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 2
-      - name: check backend files
-        id: check_backend
-        run: |
-          echo "=============== list changed files ==============="
-          git diff --name-only HEAD^ HEAD
-          
-          echo "========== check paths of changed files =========="
-          git diff --name-only HEAD^ HEAD &gt; files.txt
-          while IFS= read -r file
-          do
-            echo $file
-            if [[ $file != backend/* ]]; then
-              echo "This file is not under the directory 'backend'."
-              echo "::set-output name=backend_changed::false"
-              break
-            else
-              echo "::set-output name=backend_changed::true"
-            fi
-          done &lt; files.txt
-      - name: check frontend files
+      - name: check frontend
         id: check_frontend
-        run: |
-          echo "=============== list changed files ==============="
-          git diff --name-only HEAD^ HEAD
-          
-          echo "========== check paths of changed files =========="
-          git diff --name-only HEAD^ HEAD &gt; files.txt
-          while IFS= read -r file
-          do
-            echo $file
-            if [[ $file != frontend/* ]]; then
-              echo "This file is not under the directory 'frontend'."
-              echo "::set-output name=frontend_changed::false"
-              break
-            else
-              echo "::set-output name=frontend_changed::true"
-            fi
-          done &lt; files.txt
-
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
 
   frontend-build:
     name: Build React App
@@ -112,7 +79,7 @@ jobs:
       - black
       - tests
       - check
-    if: needs.check.outputs.frontend_changed == 'true'
+    if: needs.check.steps.changes.outputs.frontend == 'true'
     steps:
       - name: Checkout Repo
         uses: actions/checkout@master
