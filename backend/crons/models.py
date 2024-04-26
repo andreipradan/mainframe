@@ -1,15 +1,23 @@
-from django.conf import settings
-from django.db import models
+import logging
 
+from django.core.management import call_command
+from django.db import models
+from django.db.models import signals
+from django.dispatch import receiver
+from huey import crontab
+from huey.contrib.djhuey import HUEY, periodic_task, task
+
+from clients.logs import MainframeHandler
 from core.models import TimeStampedModel
+
+logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 class Cron(TimeStampedModel):
     command = models.CharField(max_length=512)
     expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
-    is_management = models.BooleanField(default=False)
-    description = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ("command", "expression")
@@ -17,18 +25,32 @@ class Cron(TimeStampedModel):
     def __repr__(self):
         return f"{self.command} - {self.expression}"
 
-    @property
-    def management_command(self):
-        lock_name = self.command.replace(" ", "_").replace("-", "_")
-        flock = f"/usr/bin/flock -n /tmp/{lock_name}.lockfile"
-        manage_path = settings.BASE_DIR / "manage.py"
-        return f"{flock} {settings.PYTHON_PATH} {manage_path} {self.command}"
 
-    @classmethod
-    def unparse(cls, cmd):
-        manage_path = str(settings.BASE_DIR / "manage.py")
-        if ".lockfile " in cmd:
-            cmd = cmd.split(".lockfile ")[1]
-        if manage_path in cmd:
-            cmd = cmd.replace(f"{settings.PYTHON_PATH} {manage_path} ", "")
-        return cmd.strip()
+@task()
+def schedule_cron(cron: Cron, **kwargs):
+    if kwargs:
+        logger.info("[%s] schedule_cron got kwargs: %s", cron.command, kwargs)
+
+    def wrapper():
+        call_command(cron.command)
+
+    task_name = f"crons.models.{cron.command}"
+    if task_name in HUEY._registry._registry:
+        task_class = HUEY._registry.string_to_task(task_name)
+        HUEY._registry.unregister(task_class)
+        logger.info("Unregistered task: %s", cron.command)
+    if cron.expression:
+        schedule = crontab(*cron.expression.split())
+        periodic_task(schedule, name=cron.command)(wrapper)
+        logger.info("Scheduled task: %s", cron.command)
+
+
+@receiver(signals.post_delete, sender=Cron)
+def post_delete(sender, instance, **kwargs):
+    instance.expression = ""
+    schedule_cron(instance)
+
+
+@receiver(signals.post_save, sender=Cron)
+def post_save(sender, instance, **kwargs):
+    schedule_cron(instance)

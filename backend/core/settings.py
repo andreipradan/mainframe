@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "api",
     "api.user",
     "api.authentication",
+    "api.huey_tasks",
     "bots",
     "crons",
     "devices",

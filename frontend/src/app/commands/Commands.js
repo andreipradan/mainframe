@@ -7,7 +7,7 @@ import Modal from "react-bootstrap/Modal";
 import CommandsApi from "../../api/commands";
 import EditModal from "../crons/components/EditModal";
 import Errors from "../shared/Errors";
-import {Collapse} from "react-bootstrap";
+import {Col, Collapse, Row} from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 
 
@@ -19,18 +19,31 @@ const Commands = () =>  {
 
   const [appOpen, setAppOpen] = useState(null)
   const [commandArguments, setCommandArguments] = useState("")
+  const [cron, setCron] = useState("")
   const [selectedCommand, setSelectedCommand] = useState(null)
 
-  const onSubmit = e => {
-    e.preventDefault()
-    dispatch(CommandsApi.run(token, selectedCommand, commandArguments))
+  const clearForm = () => {
     setCommandArguments("")
+    setCron("")
     setSelectedCommand(null)
+  }
+  const onSubmit = (e, operation = "run") => {
+    e.preventDefault()
+    if (operation === "run")
+      dispatch(CommandsApi.run(token, selectedCommand.name, commandArguments))
+    else if (operation === "set-cron")
+      dispatch(CommandsApi.setCron(token, selectedCommand.name, cron, selectedCommand?.cron?.id))
+    else if (operation === "delete-cron")
+      dispatch(CommandsApi.deleteCron(token, selectedCommand.name, selectedCommand?.cron?.id))
+    clearForm()
   }
 
   useEffect(() => {!results && dispatch(CommandsApi.getList(token))}, []);
   useEffect(() => {
-    selectedCommand && commandArgumentsRef.current && commandArgumentsRef.current.focus()
+    if (selectedCommand) {
+      commandArgumentsRef.current && commandArgumentsRef.current.focus()
+      setCron(selectedCommand.cron?.expression)
+    }
   }, [selectedCommand]);
 
   return (
@@ -75,16 +88,12 @@ const Commands = () =>  {
                                 {
                                   result.commands.length
                                     ? result.commands.map((command, i) =>
-                                      <li key={i} className="pl-3 mt-1">
-                                        <button
-                                          type="button "
-                                          className="btn btn-sm btn-outline-primary border-0"
-                                          onClick={() => setSelectedCommand(command)}
-                                        >
-                                          <i className="mdi mdi-play"></i>
-                                        </button>&nbsp;
-                                        {command}
-
+                                      <li
+                                        key={i}
+                                        className="pl-3 mt-1 cursor-pointer"
+                                        onClick={() => setSelectedCommand(command)}
+                                      >
+                                        <i className="mdi mdi-play text-success"></i> {command.name}
                                       </li>)
                                     : null
                                 }
@@ -96,13 +105,13 @@ const Commands = () =>  {
                     : <tr>
                       <td colSpan={6}>
                         <ColorRing
-                            width = "100%"
-                            radius = "9"
-                            color = 'green'
-                            wrapperStyle={{width: "100%"}}
-                          />
-                        </td>
-                      </tr>
+                          width = "100%"
+                          radius = "9"
+                          color = 'green'
+                          wrapperStyle={{width: "100%"}}
+                        />
+                      </td>
+                    </tr>
                 }
               </ul>
             </div>
@@ -110,41 +119,83 @@ const Commands = () =>  {
         </div>
       </div>
       <EditModal />
-      <Modal centered show={!!selectedCommand} onHide={() => setSelectedCommand(null)}>
+      <Modal centered show={!!selectedCommand} onHide={clearForm}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">
               <div className="col-lg-12 grid-margin stretch-card">
-                Are you sure you want to run "{selectedCommand}"?
+                {selectedCommand?.name}
               </div>
             </div>
             <p className="text-muted mb-0">
-              This will run <b>{selectedCommand}</b>
+              Run / Set cron for <b>{selectedCommand?.name}</b>
             </p>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={onSubmit}>
+          <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Command Arguments</Form.Label>
-              <Form.Control
-                ref={commandArgumentsRef}
-                type="text"
-                value={commandArguments}
-                onChange={e => setCommandArguments(e.target.value)}
-              />
+              <Row>
+                <Col md={6}>
+                  <Form.Control
+                    type="text"
+                    value={cron}
+                    onChange={e => setCron(e.target.value)}
+                    placeholder={"Cron"}
+                  />
+                </Col>
+                <Col md={3}>
+                  <Button
+                    disabled={!cron}
+                    variant="warning"
+                    className="h-100 w-100"
+                    onClick={evt => {onSubmit(evt, "set-cron")}}
+                  >
+                    Set
+                  </Button>
+                </Col>
+                <Col md={3}>
+                  <Button
+                    disabled={!selectedCommand?.cron}
+                    variant="outline-danger"
+                    className="h-100 w-100"
+                    onClick={evt => {onSubmit(evt, "delete-cron")}}
+                  >
+                    <i className="mdi mdi-trash-can-outline" />
+                  </Button>
+                </Col>
+              </Row>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Row>
+                <Col md={9}>
+                  <Form.Control
+                    ref={commandArgumentsRef}
+                    type="text"
+                    value={commandArguments}
+                    onChange={e => setCommandArguments(e.target.value)}
+                    placeholder={"Command arguments"}
+                  />
+                </Col>
+                <Col md={3}>
+                  <Button
+                    variant="primary"
+                    className="float-left h-100 w-100"
+                    onClick={evt => {onSubmit(evt)}}
+                  >
+                    Run
+                  </Button>
+                </Col>
+              </Row>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={e => {
             e.preventDefault()
-            setCommandArguments("")
-            setSelectedCommand(null)
+            clearForm()
           }}>Close</Button>
-          <Button variant="warning" className="float-left" onClick={evt => {onSubmit(evt)}}>
-            Yes, run it!
-          </Button>
+
         </Modal.Footer>
       </Modal>
     </div>

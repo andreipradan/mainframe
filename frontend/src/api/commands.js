@@ -10,6 +10,18 @@ import { toastParams } from "./auth";
 
 
 class CommandsApi {
+  static deleteCron = (token, command, cronId = null) => dispatch => {
+    dispatch(setLoading(true));
+    const data = {}
+    if (cronId) data.cron_id = cronId
+    axios
+      .put(`${base}/${command}/delete-cron/`, data, { headers: { Authorization: token } })
+      .then(response => {
+        toast.warning(`"${command}" cron deleted`, toastParams)
+        dispatch(set(response.data))
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors))
+  };
   static getList = token => dispatch => {
     dispatch(setLoading(true));
     axios
@@ -25,6 +37,19 @@ class CommandsApi {
         toast.success(`"${command}" executed successfully!`, toastParams)
         dispatch(setLoading(false))
         dispatch(setErrors(null))
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors))
+  };
+  static setCron = (token, command, cron, cronId = null) => dispatch => {
+    dispatch(setLoading(true));
+    const data = {expression: cron}
+    if (cronId) data.cron_id = cronId
+    axios
+      .put(`${base}/${command}/set-cron/`, data, { headers: { Authorization: token } })
+      .then(response => {
+        toast.success(`"${command}" cron set to ${cron}`, toastParams)
+        dispatch(set(response.data))
+
       })
       .catch((err) => handleErrors(err, dispatch, setErrors))
   };

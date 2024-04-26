@@ -35,10 +35,12 @@ class TasksViewSet(viewsets.ViewSet):
 
     @action(methods=["delete"], detail=True, url_path="delete-history")
     def delete_history(self, request, *args, **kwargs):
-        results = get_redis_client().delete(kwargs["pk"])
+        results = get_redis_client().delete(f"tasks.{kwargs['pk']}")
         if results:
             return self.list(request)
-        return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data={})
+        return JsonResponse(
+            status=status.HTTP_400_BAD_REQUEST, data={"detail": "No history found"}
+        )
 
     @staticmethod
     def list(request):
