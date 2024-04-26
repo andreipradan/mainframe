@@ -19,15 +19,13 @@ jobs:
       - name: send telegram message
         uses: appleboy/telegram-action@master
         with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: html
+          message: |
+            ${{ github.actor }} pushed <a href='https://github.com/${{ github.repository }}/commit/${{github.sha}}'>${{ github.event.commits[0].message }}</a> on ${{ github.repository }}
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            ${{ github.actor }} created commit:
-            Commit message: ${{ github.event.commits[0].message }}
-
-            Repository: ${{ github.repository }}
-
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
   changes:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
@@ -45,6 +43,22 @@ jobs:
             frontend:
               - 'frontend/**'
 
+  notify-no-changes:
+    name: Notify there are no changes
+    runs-on: ubuntu-latest
+    if: |
+      ${{ needs.changes.outputs.backend == 'false' }} &&
+      ${{ needs.changes.outputs.frontend == 'false' }}
+    steps:
+      - name: send telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: html
+          message: No backend or frontend changes
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
   black:
     name: runner / black
     runs-on: ubuntu-latest
