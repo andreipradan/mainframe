@@ -8,7 +8,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-from clients.cron import remove_crons_for_command, set_crons
 from clients.logs import MainframeHandler
 from crons.models import Cron
 from crons.serializers import CronSerializer
@@ -21,18 +20,6 @@ class CronViewSet(viewsets.ModelViewSet):
     queryset = Cron.objects.order_by("-is_active", "command")
     serializer_class = CronSerializer
     permission_classes = (IsAdminUser,)
-
-    def perform_create(self, serializer):
-        instance = serializer.save()
-        set_crons([instance], replace=False)
-
-    def perform_destroy(self, instance):
-        remove_crons_for_command(instance)
-        super().perform_destroy(instance)
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        set_crons([instance], replace=True)
 
     @action(detail=True, methods=["put"])
     def kill(self, request, **kwargs):
@@ -56,4 +43,4 @@ class CronViewSet(viewsets.ModelViewSet):
                 data={"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return JsonResponse(data={}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(data={"detail": "ok"}, status=status.HTTP_204_NO_CONTENT)
