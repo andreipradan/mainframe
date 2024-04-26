@@ -21,9 +21,11 @@ jobs:
         with:
           disable_notification: true
           disable_web_page_preview: true
-          format: html
+          format: markup
           message: |
-            ${{ github.actor }} pushed <a href='https://github.com/${{ github.repository }}/commit/${{github.sha}}'>${{ github.event.commits[0].message }}</a> on ${{ github.repository }}
+            New changes: [${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/commit/${{github.sha}})
+            Author: ${{ github.actor }}
+            Repo: ${{ github.repository }}
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
   changes:
