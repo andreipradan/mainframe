@@ -15,6 +15,7 @@ logger.addHandler(MainframeHandler())
 
 
 class Cron(TimeStampedModel):
+    args = models.JSONField(default=list)
     command = models.CharField(max_length=512)
     expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
@@ -32,7 +33,11 @@ def schedule_cron(cron: Cron, **kwargs):
         logger.info("[%s] schedule_cron got kwargs: %s", cron.command, kwargs)
 
     def wrapper():
-        call_command(cron.command)
+        command, *args = cron.command.split()
+        call_command(
+            command,
+            **{arg.split("=")[0].replace("--", ""): arg.split("=")[1] for arg in args},
+        )
 
     task_name = f"crons.models.{cron.command}"
     if task_name in HUEY._registry._registry:

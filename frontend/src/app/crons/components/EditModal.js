@@ -103,16 +103,6 @@ const EditModal = () => {
             onChange={() => {setIsActive(!isActive)}}
           />
         </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Is Management Command?</Form.Label>
-          <Form.Check
-            checked={isManagement}
-            type="switch"
-            id="checkbox-2"
-            label=""
-            onChange={() => {setIsManagement(!isManagement)}}
-          />
-        </Form.Group>
       </Form>
     </Modal.Body>
     }
