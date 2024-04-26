@@ -58,8 +58,6 @@ def mainframe(request):
         send_telegram_message(text=f"{PREFIX} Permission denied")
         return HttpResponseForbidden("Permission denied.")
 
-    # If request reached this point we are in a good shape
-    # Process the GitHub events
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
 
     payload = json.loads(request.body)
