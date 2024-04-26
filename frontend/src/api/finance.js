@@ -19,19 +19,24 @@ import {
   setLoading as setCategoriesLoading,
 } from "../redux/categoriesSlice";
 import {
-  set as setExchangeRates,
-  setErrors as setExchangeErrors,
-  setLoading as setExchangeLoading,
-} from "../redux/exchangeSlice";
-import {
   set as setPayments,
   setErrors as setPaymentErrors,
   setLoading as setPaymentLoading,
-  setLoadingPayments,
+  setLoadingItems as setLoadingPayments,
   update,
 } from "../redux/paymentSlice";
 import {
-  deleteTimetable,
+  set as setPnl,
+  setErrors as setPnlErrors,
+  setLoading as setPnlLoading,
+} from "../redux/pnlSlice";
+import {
+  set as setStocks,
+  setErrors as setStocksErrors,
+  setLoading as setStocksLoading,
+} from "../redux/stocksSlice";
+import {
+  deleteItem as deleteTimetable,
   set as setTimetables,
   setErrors as setTimetableErrors,
   setLoading as setTimetableLoading,
@@ -40,8 +45,8 @@ import {
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
-  setLoadingTransactions,
-  updateTransaction,
+  setLoadingItems as setLoadingTransactions,
+  update as updateTransaction,
 } from "../redux/transactionsSlice";
 import {
   set as setPredictionResults,
@@ -52,7 +57,8 @@ import {
 } from "../redux/predictionSlice"
 import {handleErrors} from "./errors";
 
-const createSearchParams = params => {
+export const createSearchParams = params => {
+  if (params === null) return ""
   return new URLSearchParams(
     Object.entries(params).flatMap(([key, values]) =>
       Array.isArray(values)
@@ -79,12 +85,6 @@ export class FinanceApi {
       .then((response) => dispatch(createAccount(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   }
-  static deleteTimetable = (token, timetableId) => (dispatch) => {
-    axios
-      .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
-      .then(() => {dispatch(deleteTimetable(timetableId))})
-      .catch((err) => handleErrors(err, dispatch));
-  };
   static getAccount = (token, accountId) => (dispatch) => {
     dispatch(setAccountsLoading(true));
     axios
@@ -122,27 +122,13 @@ export class FinanceApi {
       .then(response => {dispatch(set(response.data))})
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static getCreditPayments = (token, page = null) => (dispatch) => {
+  static getCreditPayments = (token, kwargs = null) => (dispatch) => {
+    kwargs = kwargs || {}
     dispatch(setPaymentLoading(true));
     axios
-      .get(`${base}/payments/` + `?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(`${base}/payments/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setPayments(response.data)))
       .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
-  };
-  static getCreditTimetables = (token, page = null) => (dispatch) => {
-    dispatch(setTimetableLoading(true));
-    axios
-      .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTimetables(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  };
-  static getExchangeRates = (token, kwargs = null) => (dispatch) => {
-    dispatch(setExchangeLoading(true));
-    kwargs = kwargs || {};
-    axios
-      .get(`${base}/exchange-rate/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setExchangeRates(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setExchangeErrors));
   };
   static getTransaction = (token, transactionId) => dispatch => {
     dispatch(setLoadingTransactions(transactionId));
@@ -222,6 +208,44 @@ export class PredictionApi {
       .then(response => dispatch(setTask({type: "train", data: response.data})))
       .catch(err => handleErrors(err, dispatch, setPredictionErrors))
   }
+}
+
+export class PnlApi {
+  static getList = (token, kwargs = null) => dispatch => {
+    dispatch(setPnlLoading(true));
+    axios
+      .get(`${base}/pnl/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setPnl(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setPnlErrors));
+  };
+}
+
+export class StocksApi {
+  static getList = (token, kwargs = null) => dispatch => {
+    dispatch(setStocksLoading(true));
+    axios
+      .get(`${base}/stocks/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setStocks(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setStocksErrors));
+  };
+}
+
+export class TimetableApi {
+  static deleteTimetable = (token, timetableId) => (dispatch) => {
+    axios
+      .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
+      .then(() => {dispatch(deleteTimetable(timetableId))})
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
+  static getTimetables = (token, page = null) => (dispatch) => {
+    dispatch(setTimetableLoading(true));
+    axios
+      .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(setTimetables(response.data))
+      })
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
 }
 
 let base = "finance";

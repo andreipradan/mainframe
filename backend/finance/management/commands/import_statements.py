@@ -8,13 +8,11 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 
-from api.bots.webhooks.shared import chunks
-from clients import cron
+from bots.webhooks.shared import chunks
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
 from finance.models import Account, Transaction
+from finance.tasks import backup_finance_model
 
 
 def get_field(header):
@@ -111,19 +109,25 @@ def parse_raiffeisen_transactions(file_name, logger):
     if not starting_index:
         raise ValidationError("Could not find starting index")
 
-    assert rows[starting_index][0].value == "Nume client:"
+    if rows[starting_index][0].value != "Nume client:":
+        raise AssertionError
     middle_name, first_name, last_name = [
         n.capitalize() for n in rows[starting_index][1].value.split()
     ]
-    assert rows[starting_index + 2][0].value == "Numar client:"
+    if rows[starting_index + 2][0].value != "Numar client:":
+        raise AssertionError
     client_code = rows[starting_index + 2][1].value
-    assert rows[starting_index + 4][0].value == "Unitate Bancara:"
+    if rows[starting_index + 4][0].value != "Unitate Bancara:":
+        raise AssertionError
     bank = rows[starting_index + 4][1].value
-    assert rows[starting_index + 6][0].value == "Cod IBAN:"
+    if rows[starting_index + 6][0].value != "Cod IBAN:":
+        raise AssertionError
     number = " ".join(chunks(rows[starting_index + 6][1].value, 4))
-    assert rows[starting_index + 6][2].value == "Tip cont:"
+    if rows[starting_index + 6][2].value != "Tip cont:":
+        raise AssertionError
     account_type = "Current" if rows[starting_index + 6][3].value == "curent" else None
-    assert rows[starting_index + 6][4].value == "Valuta:"
+    if rows[starting_index + 6][4].value != "Valuta:":
+        raise AssertionError
     currency = (
         "RON"
         if rows[starting_index + 6][5].value == "LEI"
@@ -140,12 +144,12 @@ def parse_raiffeisen_transactions(file_name, logger):
         type=account_type,
     )
     if created:
-        logger.warning(f"New account: {account}")
-        cron.delay("backup_finance --model=Account")
+        logger.warning("New account: %s", account)
+        backup_finance_model(model="Account")
 
     header_index = starting_index + 11
     header = [x.value for x in rows[header_index]]
-    assert header == [
+    if header != [
         "Data inregistrare",
         "Data tranzactiei",
         "Suma debit",
@@ -158,9 +162,11 @@ def parse_raiffeisen_transactions(file_name, logger):
         "Denumire Banca \nordonator/ beneficiar",
         "Nr. cont in/din care se \n efectueaza tranzactiile",
         "Descrierea tranzactiei",
-    ]
+    ]:
+        raise AssertionError
 
-    assert not any([x.value for x in rows[header_index + 1]])
+    if any(x.value for x in rows[header_index + 1]):
+        raise AssertionError
     rows = rows[header_index + 2 :]
     transactions = []
     while any((row := [x.value for x in rows.pop(0)])):
@@ -195,12 +201,9 @@ def parse_raiffeisen_transactions(file_name, logger):
 
 
 def parse_revolut_transactions(file_name, _):
-    current_account = Account.objects.get(
+    current_account, savings_account = Account.objects.filter(
         bank__icontains="revolut",
-        type=Account.TYPE_CURRENT,
-    )
-    savings_account = Account.objects.get(
-        bank__icontains="revolut", type=Account.TYPE_SAVINGS
+        type__in=[Account.TYPE_CURRENT, Account.TYPE_SAVINGS],
     )
 
     with open(file_name) as file:
@@ -225,7 +228,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--bank", type=str, required=True)
 
-    def handle(self, *args, **options):
+    def handle(self, *_, **options):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 
@@ -239,7 +242,7 @@ class Command(BaseCommand):
         else:
             raise NotImplementedError(f"Missing bank parser for: {bank}")
 
-        logger.info(f"Importing{f' {bank}' if bank else ''} statements")
+        logger.info("Importing%s statements", f" {bank}" if bank else "")
         now = datetime.now()
 
         total = 0
@@ -247,7 +250,7 @@ class Command(BaseCommand):
         failed_imports = []
 
         for file_name in Path(data_path).glob(f"**/*.{extension}"):
-            logger.info(f"Parsing {file_name.name}")
+            logger.info("Parsing %s", file_name.name)
             transactions = parser(file_name, logger)
 
             try:
@@ -258,25 +261,24 @@ class Command(BaseCommand):
                 failed_imports.append(str(file_name))
                 continue
             except IntegrityError as e:
-                logger.error(f"{e}\nFile: {file_name}")
+                logger.error("%s\nFile: %s", e, file_name)
                 file_name.rename(f"{file_name}.{now}.failed")
                 failed_imports.append(str(file_name))
                 continue
             else:
                 results_count = len(results)
-                logger.info(f"{file_name.stem}: {results_count} rows")
+                logger.info("%s: %d rows", file_name.stem, results_count)
                 total += results_count
-                logger.info(f"Import completed - Deleting {file_name.stem}")
+                logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
         msg = f"Imported {total} {bank} transactions"
         if failed_imports:
             msg += f"\nFailed files: {', '.join(failed_imports)}"
-            logger.error(msg)
-
-        remove_crons_for_command(Cron(command="import_statements", is_management=True))
+            logger.error("\nFailed files: %s", ", ".join(failed_imports))
 
         send_telegram_message(text=msg)
 
         self.stdout.write(self.style.SUCCESS(msg))
-        total and cron.delay("backup_finance --model=Transaction")
+        if total:
+            backup_finance_model(model="Transaction")

@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from decimal import Decimal
+from functools import cached_property
 from pathlib import Path
 
 from django.conf import settings
@@ -9,19 +10,20 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from PyPDF2 import PdfReader
 
-from api.bots.webhooks.shared import chunks
-from clients import cron
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
-from finance.models import Payment
+from finance.models import Payment, Timetable
+from finance.tasks import backup_finance_model
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-def normalize_month(month):
-    return [
+def normalize_amount(amount):
+    return Decimal(amount.replace(".", "").replace(",", "."))
+
+
+def parse_date(day, month, year):
+    months = [
         "ianuarie",
         "februarie",
         "martie",
@@ -34,72 +36,58 @@ def normalize_month(month):
         "octombrie",
         "noiembrie",
         "decembrie",
-    ].index(month) + 1
+    ]
+    return datetime(year=int(year), month=months.index(month) + 1, day=int(day)).date()
 
 
-def normalize_amount(amount):
-    return Decimal(amount.replace(".", "").replace(",", "."))
+def parse_installment(rows):
+    payment_type = "Rata credit"
+    row = rows.pop(0).replace(f"{payment_type} ", "")
+    day, month, year, total, remaining = row.split()
+    principal = validate_starts_with(rows.pop(0), payment_type, "Principal", 1)
+    interest = validate_starts_with(rows.pop(0), payment_type, "Dobanda", 2)
+    additional_data = {
+        "from": validate_starts_with(rows.pop(0), payment_type, "Din contul", 3)
+    }
+    return Payment(
+        additional_data=additional_data,
+        date=parse_date(day, month, year),
+        interest=normalize_amount(interest),
+        principal=normalize_amount(principal),
+        remaining=normalize_amount(remaining),
+        total=normalize_amount(total),
+    )
 
 
-def extract_payment(row):
-    payment = {}
-    for item in row:
-        if item.startswith("Rata credit "):
-            item = item.replace("Rata credit ", "")
-            day, month, year, total, remaining = item.split()
-            payment["total"] = normalize_amount(total)
-            payment["remaining"] = normalize_amount(remaining)
-            payment["date"] = datetime(
-                year=int(year),
-                month=normalize_month(month),
-                day=int(day),
-            ).date()
-        if item.startswith("Principal: "):
-            item = item.replace("Principal: ", "")
-            payment["principal"] = normalize_amount(item)
-        if item.startswith("Dobanda: "):
-            item = item.replace("Dobanda: ", "")
-            payment["interest"] = normalize_amount(item)
-        if item.startswith("Rambursare anticipata de principal "):
-            item = item.replace("Rambursare anticipata de principal ", "")
-            day, month, year, total, remaining = item.split()
-            payment["date"] = datetime(
-                year=int(year),
-                month=normalize_month(month),
-                day=int(day),
-            ).date()
-            payment["is_prepayment"] = True
-            payment["remaining"] = normalize_amount(remaining)
-            total = normalize_amount(total)
-            payment["principal"] = total
-            payment["total"] = total
-        if item.startswith("Referinta: "):
-            item = item.replace("Referinta: ", "")
-            payment["reference"] = item
-    return Payment(**payment)
+def parse_interest(rows):
+    payment_type = "Dobanda datorata"
+    row = rows.pop(0).replace(f"{payment_type} ", "")
+    day, month, year, total, remaining = row.split()
+    account = validate_starts_with(rows.pop(0), payment_type, "Din contul", 1)
+    interest = validate_starts_with(rows.pop(0), payment_type, "Dobanda", 2)
+    details = validate_starts_with(rows.pop(0), payment_type, "Detalii", 3)
+    reference = validate_starts_with(rows.pop(0), payment_type, "Referinta", 4)
+    return Payment(
+        additional_data={"details": details, "from": account},
+        date=parse_date(day, month, year),
+        interest=normalize_amount(interest),
+        reference=reference,
+        remaining=normalize_amount(remaining),
+        total=normalize_amount(total),
+    )
 
 
-def extract_payments(pages):
-    payments = []
-    for page in pages:
-        header = "Balanta Debit Credit Detalii tranzactie Data"
-        contents = [
-            item
-            for item in (
-                page.extract_text()
-                .split(header)[1]
-                .strip()
-                .split("\n \n")[0]
-                .replace("Roxana Petria", "")
-            ).split("\n")
-            if "Alocare fonduri" not in item and item
-        ]
-        payments.extend([extract_payment(payment) for payment in chunks(contents, 4)])
-    return payments
+def validate_starts_with(row, payment_type, expected_field, line_no):
+    if not row.startswith(f"{expected_field}: "):
+        raise ValidationError(
+            f"Expected <{payment_type}> line #{line_no} to be <{expected_field}...>."
+            f" Found <{row}> instead"
+        )
+    return row.replace(f"{expected_field}: ", "")
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 
@@ -108,34 +96,101 @@ class Command(BaseCommand):
 
         total = 0
         data_path = settings.BASE_DIR / "finance" / "data" / "payments"
-        failed_imports = []
         for file_name in Path(data_path).glob("**/*.pdf"):
             reader = PdfReader(file_name)
-            payments = extract_payments(reader.pages)
+            payments = self.extract_payments(reader.pages)
             try:
                 results = Payment.objects.bulk_create(payments, ignore_conflicts=True)
             except ValidationError as e:
                 logger.error(str(e))
-                file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
-                failed_imports.append(file_name.stem)
+                file_name.rename(
+                    f"{data_path}/{file_name.stem}.{now}.validation_error.failed"
+                )
                 continue
             except IntegrityError as e:
-                logger.error(f"{e}\nFile: {file_name.stem}")
-                file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
-                failed_imports.append(file_name.stem)
+                logger.error("%s\nFile: %s", e, file_name.stem)
+                file_name.rename(
+                    f"{data_path}/{file_name.stem}.{now}.integrity_error.failed"
+                )
                 continue
             else:
-                logger.info(f"{file_name.stem} - done")
+                logger.info("%s - done", file_name.stem)
                 total += len(results)
-                logger.info(f"Import completed - Deleting {file_name.stem}")
+                logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
         msg = f"Imported {total} payments"
-        if failed_imports:
-            msg += f"\nFailed files: {', '.join(failed_imports)}"
-            logger.error(msg)
-
-        remove_crons_for_command(Cron(command="import_payments", is_management=True))
         send_telegram_message(text=msg)
         self.stdout.write(self.style.SUCCESS(msg))
-        total and cron.delay("backup_finance --model=Payment")
+
+        if total:
+            backup_finance_model(model="Payment")
+
+    def extract_payments(self, pages):
+        payments = []
+        for page in pages:
+            header = "Balanta Debit Credit Detalii tranzactie Data"
+            contents = page.extract_text().split(header)[1].strip().split("\n \n")[0]
+            rows = [
+                r for r in contents.split("\n")[:-1] if "Alocare fonduri" not in r and r
+            ]
+            payments.extend(self.parse_rows(rows))
+        return payments
+
+    def parse_prepayment(self, rows):
+        payment_type = "Rambursare anticipata de principal"
+        row = rows.pop(0).replace(f"{payment_type} ", "")
+        day, month, year, total, remaining = row.split()
+        date = parse_date(day, month, year)
+        additional_data = {
+            "from": validate_starts_with(rows.pop(0), payment_type, "Din contul", 1),
+            "details": validate_starts_with(rows.pop(0), payment_type, "Detalii", 2),
+        }
+        reference = validate_starts_with(rows.pop(0), payment_type, "Referinta", 3)
+        total = normalize_amount(total)
+        return Payment(
+            additional_data=additional_data,
+            date=date,
+            is_prepayment=True,
+            principal=total,
+            reference=reference,
+            remaining=normalize_amount(remaining),
+            saved=self.parse_saved(date, total),
+            total=total,
+        )
+
+    def parse_rows(self, rows):
+        payments = []
+        while rows:
+            if rows[0].startswith("Rata credit "):
+                payments.append(parse_installment(rows))
+            elif rows[0].startswith("Rambursare anticipata de principal "):
+                payments.append(self.parse_prepayment(rows))
+            elif rows[0].startswith("Dobanda datorata "):
+                payments.append(parse_interest(rows))
+            else:
+                raise ValidationError(f"Unexpected row type: {rows[0]}")
+        return payments
+
+    def parse_saved(self, date, principal):
+        timetable = None
+        for t in self.timetables:  # timetables ordered by date descending
+            if t.date < date:  # first timetable before this payment
+                timetable = t
+                break
+        if not timetable:
+            return 0
+
+        amount, saved = Decimal(0), Decimal(0)
+        for i, payment in enumerate(timetable.amortization_table):
+            payment_principal = Decimal(payment["principal"])
+            if amount + payment_principal > principal:
+                break
+            amount += payment_principal
+            saved += Decimal(payment["interest"]) + Decimal(payment["insurance"])
+
+        return saved
+
+    @cached_property
+    def timetables(self):
+        return Timetable.objects.all()

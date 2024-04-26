@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from google.cloud import storage
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 
 from clients.logs import MainframeHandler
 from clients.system import get_folder_contents
@@ -41,7 +41,7 @@ def list_blobs_with_prefix(prefix):
 
 class CameraViewSet(viewsets.ViewSet):
     base_path = settings.BASE_DIR / "build" / "static" / "media"
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)
 
     def list(self, request, **kwargs):
         prefix = request.GET.get("path", kwargs.get("path", ""))
@@ -121,7 +121,7 @@ class CameraViewSet(viewsets.ViewSet):
         try:
             download_blob(filename, self.base_path)
         except FileNotFoundError:
-            logger.warning(f"Path {file_path} does not exist. Creating...")
+            logger.warning("Path %s does not exist. Creating...", file_path)
             Path(f"{self.base_path}/{file_path}").mkdir(parents=True)
             download_blob(filename, self.base_path)
         return self.list(request, path=file_path)

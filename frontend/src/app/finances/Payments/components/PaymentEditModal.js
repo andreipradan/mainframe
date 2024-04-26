@@ -10,20 +10,17 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
 import { FinanceApi } from "../../../../api/finance";
-import {selectPayment} from "../../../../redux/paymentSlice";
+import { selectItem as selectPayment } from "../../../../redux/paymentSlice";
 import Form from "react-bootstrap/Form";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../../../shared/Errors";
 
 const PaymentEditModal = () => {
   const dispatch = useDispatch();
   const payment = useSelector(state => state.payment)
-  const selectedPayment = useSelector(state => state.payment.selectedPayment)
+  const selectedPayment = useSelector(state => state.payment.selectedItem)
   const token = useSelector((state) => state.auth.token)
 
   const [saved, setSaved] = useState(null);
-
-  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
-  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
 
   useEffect(() => {
     if (selectedPayment) setSaved(selectedPayment.saved || 0)
@@ -40,11 +37,10 @@ const PaymentEditModal = () => {
       </Modal.Title>
     </Modal.Header>
     <Modal.Body>
+      <Errors errors={payment.errors}/>
+
       {
-        paymentAlertOpen && <div className="col-sm-12 grid-margin"><Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert></div>
-      }
-      {
-        payment.loadingPayments?.includes(selectedPayment?.id)
+        payment.loadingItems?.includes(selectedPayment?.id)
         ? <ColorRing
             width = "100%"
             height = "50"
@@ -60,7 +56,7 @@ const PaymentEditModal = () => {
               <Form.Label>Saved</Form.Label>
               <Form.Control
                 type="text"
-                autoFocus
+                
                 value={saved}
                 onChange={e => setSaved(e.target.value)}
               />

@@ -1,15 +1,15 @@
 import asyncio
 import csv
+import logging
 import re
 from datetime import datetime
+from typing import List, Optional
 
 import aiohttp
-import logging
-from typing import List, Optional
 
 from clients import scraper
 from clients.logs import MainframeHandler
-from transit_lines.models import TransitLine, Schedule
+from transit_lines.models import Schedule, TransitLine
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -52,9 +52,9 @@ async def fetch(session, sem, line, occ, url):
             async with session.get(
                 url, headers={"Referer": "https://ctpcj.ro/"}
             ) as response:
-                if response.status != 200:
+                if response.status != 200:  # noqa: PLR2004
                     msg = f"Unexpected status for {url}. Status: {response.status}"
-                    if response.status == 404:
+                    if response.status == 404:  # noqa: PLR2004
                         logger.warning(msg)
                     else:
                         raise ValueError(msg)
@@ -78,11 +78,11 @@ async def fetch_many(urls):
 def parse_schedule(args) -> Optional[Schedule]:
     response, line, occ, url = args
     if not response or "<title> 404 Not Found" in response:
-        logger.warning(f"No or 404 in response for {url}")
+        logger.warning("No or 404 in response for %s", url)
         return
 
     rows = [row.strip() for row in response.split("\n") if row.strip()]
-    date_row = rows[2].split(",")[1]
+    date_row = rows[2].split(",")[1].rstrip(".")
     try:
         schedule_start_date = (
             datetime.strptime(date_row, "%d.%m.%Y") if date_row else None
@@ -90,6 +90,8 @@ def parse_schedule(args) -> Optional[Schedule]:
     except ValueError:
         if date_row == "20.02.20232":
             schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y2")
+        elif date_row == ".":
+            schedule_start_date = None
         else:
             raise
 
@@ -122,7 +124,8 @@ class CTPClient:
                 f"Invalid line_type: {line_type}. Must be one of {choices}"
             )
         url = cls.LIST_URL.format(
-            f"{line_type}-line{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
+            f"{line_type}-line"
+            f"{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
         )
         soup = scraper.fetch(url, logger)
         if isinstance(soup, Exception) or "EROARE" in soup.text:
@@ -157,7 +160,7 @@ class CTPClient:
                 update_fields=["type", "terminal1", "terminal2"],
                 unique_fields=["name"],
             )
-            logger.info(f"Stored {len(lines)} transit lines in db")
+            logger.info("Stored %d transit lines in db", len(lines))
         return lines
 
     @classmethod
@@ -183,7 +186,7 @@ class CTPClient:
                     ]
                 )
         logger.info(
-            f"Fetching {len(schedules)} schedules for {len(lines)} transit lines"
+            "Fetching %d schedules for %d transit lines", len(schedules), len(lines)
         )
         schedules = [s for s in asyncio.run(fetch_many(schedules)) if s]
         if commit:
@@ -197,5 +200,5 @@ class CTPClient:
                 ],
                 unique_fields=list(*Schedule._meta.unique_together),
             )
-            logger.info(f"Stored {len(schedules)} schedules in db")
+            logger.info("Stored %d schedules in db", len(schedules))
         return schedules

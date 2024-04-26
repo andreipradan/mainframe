@@ -9,12 +9,10 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from PyPDF2 import PdfReader
 
-from clients import cron
 from clients.chat import send_telegram_message
-from clients.cron import remove_crons_for_command
 from clients.logs import ManagementCommandsHandler
-from crons.models import Cron
 from finance.models import Account, Credit, Timetable
+from finance.tasks import backup_finance_model
 
 
 def extract_rows(rows):
@@ -39,7 +37,8 @@ def extract_amortization_table(pages):
         *rows, _, page = page.extract_text().split("\n")
         rows = filter(lambda x: x[0].isdigit(), rows)
         current_page, _ = page.split("/")
-        assert i + 2 == int(current_page)
+        if i + 2 != int(current_page):
+            raise AssertionError
         amortization_table.extend(extract_rows(rows))
     return amortization_table
 
@@ -57,37 +56,51 @@ def extract_summary(summary):
         _,
         no_of_months,
     ) = filter(bool, summary.split("\n"))
-    assert client_code.startswith("Cod Client")
+    if not client_code.startswith("Cod Client"):
+        raise AssertionError
     client_code = client_code.replace("Cod Client ", "")
     last_name_str, last_name, first_name_str, first_name = full_name.split()
-    assert last_name_str == "Numele"
-    assert first_name_str == "Prenumele"
-    assert account_number.startswith("Număr cont ")
+    if last_name_str != "Numele":
+        raise AssertionError
+    if first_name_str != "Prenumele":
+        raise AssertionError
+    if not account_number.startswith("Număr cont "):
+        raise AssertionError
     account_number = account_number.replace("Număr cont ", "")
-    assert credit_number_and_date.startswith("Număr şi data contract credit")
+    if not credit_number_and_date.startswith("Număr şi data contract credit"):
+        raise AssertionError
     credit_number = credit_number_and_date.replace(
         "Număr şi data contract credit", ""
     ).replace(" -", "")
-    assert interest.startswith("Rata dobânzii ")
-    assert interest.endswith(" compusă din:")
+    if not interest.startswith("Rata dobânzii "):
+        raise AssertionError
+    if not interest.endswith(" compusă din:"):
+        raise AssertionError
     interest = (
         interest.replace("Rata dobânzii ", "")
         .replace(" compusă din:", "")
         .replace(",", ".")
     )
-    assert margin_and_ircc.startswith("Marjă: ")
-    assert " şi Indice  IRCC : " in margin_and_ircc
+    if not margin_and_ircc.startswith("Marjă: "):
+        raise AssertionError
+    if " şi Indice  IRCC : " not in margin_and_ircc:
+        raise AssertionError
     margin, *_, ircc = margin_and_ircc.replace("Marjă: ", "").split()
-    assert credit_total_and_currency.startswith("Valoare credit ")
+    if not credit_total_and_currency.startswith("Valoare credit "):
+        raise AssertionError
     credit_total, currency_str, currency = credit_total_and_currency.replace(
         "Valoare credit ", ""
     ).split()
-    assert currency_str == "Moneda"
+    if currency_str != "Moneda":
+        raise AssertionError
     credit_total = credit_total.replace(".", "").replace(",", ".")
-    assert no_of_months.startswith("perioadă de")
-    assert no_of_months.endswith(" luni")
+    if not no_of_months.startswith("perioadă de"):
+        raise AssertionError
+    if not no_of_months.endswith(" luni"):
+        raise AssertionError
     no_of_months = no_of_months.replace("perioadă de", "").replace(" luni", "")
-    assert Decimal(interest) == Decimal(margin) + Decimal(ircc)
+    if Decimal(interest) != Decimal(margin) + Decimal(ircc):
+        raise AssertionError
     return {
         "account__client_code": client_code,
         "account__first_name": first_name,
@@ -106,17 +119,19 @@ def extract_summary(summary):
 
 def extract_first_page(first_page, logger):
     summary, contents = first_page.extract_text().split("TABEL DE AMORTIZARE")
-    fields, _, *rows, footer, page = [x for x in contents.split("\n") if x]
-    assert fields == (
+    fields, _, *rows, footer, __ = [x for x in contents.split("\n") if x]
+    if fields != (
         "Data următoarei plăţi "
         "Suma de plată "
         "Dobânda "
         "Rata capital Capital datorat la sfârşitul perioadei"
         "Primă asigurare"
-    ), "Format has changed, please update extraction logic"
-    assert footer.startswith(
+    ):
+        raise AssertionError("Format has changed, please update extraction logic")
+    if not footer.startswith(
         "Scadenţar al Rambursării Creditului şi Dobânzilor Data raport:"
-    )
+    ):
+        raise AssertionError
     date = footer.split("Data raport: ")[-1]
     summary = extract_summary(summary)
     account, created = Account.objects.get_or_create(
@@ -126,8 +141,8 @@ def extract_first_page(first_page, logger):
         number=summary["account__number"],
     )
     if created:
-        logger.warning(f"New account: {account}")
-        cron.delay("backup_finance --model=Account")
+        logger.warning("New account: %s", account)
+        backup_finance_model(model="Account")
 
     credit, created = Credit.objects.get_or_create(
         account_id=account.id,
@@ -138,8 +153,8 @@ def extract_first_page(first_page, logger):
     )
 
     if created:
-        logger.warning(f"New credit: {account}")
-        cron.delay("backup_finance --model=Credit")
+        logger.warning("New credit: %s", account)
+        backup_finance_model(model="Credit")
 
     return Timetable(
         credit_id=credit.id,
@@ -151,7 +166,7 @@ def extract_first_page(first_page, logger):
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         logger = logging.getLogger(__name__)
         logger.addHandler(ManagementCommandsHandler())
 
@@ -176,24 +191,22 @@ class Command(BaseCommand):
                 failed_imports.append(file_name.stem)
                 continue
             except IntegrityError as e:
-                logger.error(f"{e}\nFile: {file_name.stem}")
+                logger.error("%s\nFile: %s", e, file_name.stem)
                 file_name.rename(f"{data_path}/{file_name.stem}.{now}.failed")
                 failed_imports.append(file_name.stem)
                 continue
             else:
-                logger.info(f"{file_name.stem} - done")
+                logger.info("%s - done", file_name.stem)
                 total += 1
-                logger.info(f"Import completed - Deleting {file_name.stem}")
+                logger.info("Import completed - Deleting %s", file_name.stem)
                 file_name.unlink()
 
         msg = f"Imported {total} timetables"
         if failed_imports:
             msg += f"\nFailed files: {', '.join(failed_imports)}"
-            logger.error(msg)
-
-        remove_crons_for_command(Cron(command="import_timetables", is_management=True))
+            logger.error("Failed files: %s", ", ".join(failed_imports))
 
         send_telegram_message(text=msg)
-
         self.stdout.write(self.style.SUCCESS(msg))
-        total and cron.delay("backup_finance --model=Timetable")
+        if total:
+            backup_finance_model(model="Timetable")

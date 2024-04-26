@@ -9,9 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import environ
@@ -29,29 +27,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 DEBUG = int(env("DEBUG", default=0))
-ENV = env("ENV", default=None)
-PYTHON_PATH = env("PYTHON_PATH")
+PYTHON_PATH = env("PYTHON_PATH", default=None)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY", default="test-secret")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
-if ENV not in ["ci", "local"]:
-    sentry_sdk.init(
-        dsn=env("SENTRY_DSN"),
-        integrations=[
-            DjangoIntegration(),
-        ],
-        traces_sample_rate=1.0,
-        send_default_pii=False,
-        profiles_sample_rate=1.0,
-    )
-else:
-    ALLOWED_HOSTS += ["localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -72,9 +55,12 @@ INSTALLED_APPS = [
     "crons",
     "devices",
     "earthquakes",
+    "exchange",
+    "expenses",
     "finance",
     "meals",
     "transit_lines",
+    "watchers",
 ]
 
 MIDDLEWARE = [
@@ -108,26 +94,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": env("DB_ENGINE", default="django.db.backends.postgresql"),
-        "NAME": env("DB_DATABASE", default="mainframe_db"),
-        "USER": env("DB_USER", default="mainframe_user"),
-        "PASSWORD": env("DB_PASSWORD", default="mainframe_pass"),
-        "HOST": env("DB_HOST", default="localhost"),
-        "PORT": env("DB_PORT", default=5432),
-    }
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        ),
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -176,7 +150,7 @@ AUTH_USER_MODEL = "api_user.User"
 # ##################################################################### #
 # ################### REST FRAMEWORK             ###################### #
 # ##################################################################### #
-
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.AllowAllUsersModelBackend"]
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "api.authentication.backends.ActiveSessionAuthentication",
@@ -195,20 +169,11 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Load the default ones
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
-if DEBUG:
-    ALLOWED_HOSTS += [".ngrok-free.app"]
-    CORS_ALLOWED_ORIGINS += [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://*.ngrok-free.app",
-    ]
-    CSRF_TRUSTED_ORIGINS += ["https://*.ngrok-free.app"]
 # ##################################################################### #
 #  TESTING
 # ##################################################################### #
 
 TESTING = False
-TEST_RUNNER = "core.test_runner.CoreTestRunner"
 
 LOGGING = {
     "version": 1,
@@ -236,8 +201,52 @@ LOGGING = {
         },
     },
 }
-if ENV != "local":
-    LOGGING["loggers"]["django"]["handlers"].append("mainframe")
+
+DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
+    "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
+)
+
+if (ENV := env("ENV", default=None)) in ["local", "prod"]:
+    if ENV == "local":
+        INSTALLED_APPS += ["debug_toolbar"]
+        MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+        INTERNAL_IPS = ["127.0.0.1"]
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+        }
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DB_DATABASE"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
+        }
+    }
+    if ENV == "prod":
+        LOGGING["loggers"]["django"]["handlers"].append("mainframe")
+        sentry_sdk.init(
+            dsn=env("SENTRY_DSN"),
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=1.0,
+            send_default_pii=False,
+            profiles_sample_rate=1.0,
+        )
+elif ENV in ["ci", "test"]:
+    DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "test_db",
+            "USER": "test_user",
+            "PASSWORD": "test_pass",
+            "HOST": "localhost",
+            "PORT": 5433 if ENV == "test" else 5432,
+        }
+    }
+else:
+    raise ValueError(f"Invalid ENV variable set: {ENV}")
 
 
 HUEY = {
@@ -248,17 +257,14 @@ HUEY = {
     "utc": True,  # Use UTC for all times internally.
     "blocking": True,  # Perform blocking pop rather than poll Redis.
     "connection": {
-        "host": "localhost",
-        "port": 6379,
-        "db": 0,
         "connection_pool": None,  # Definitely you should use pooling!
         # ... tons of other options, see redis-py for details.
         # huey-specific connection parameters.
         "read_timeout": 1,  # If not polling (blocking pop), use timeout.
-        "url": None,  # Allow Redis config via a DSN.
+        "url": env("REDIS_URL", default=None),  # Allow Redis config via a DSN.
     },
     "consumer": {
-        "workers": 1,
+        "workers": 3,
         "worker_type": "thread",
         "initial_delay": 0.1,  # Smallest polling interval, same as -d.
         "backoff": 1.15,  # Exponential backoff using this rate, -b.

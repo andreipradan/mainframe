@@ -130,3 +130,5 @@ dmypy.json
 .pyre/
 .env__
 /mainframe.json
+
+newrelic.ini

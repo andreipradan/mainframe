@@ -7,7 +7,8 @@ from finance.models import (
     Payment,
     Timetable,
     Transaction,
-    ExchangeRate,
+    StockTransaction,
+    PnL,
 )
 
 
@@ -45,16 +46,28 @@ class CreditSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ExchangeRateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ExchangeRate
-        fields = "__all__"
-
-
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
+
+
+class PnLSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = PnL
+
+
+class StockTransactionSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = "__all__"
+        model = StockTransaction
+
+    @staticmethod
+    def get_type(instance: StockTransaction):
+        return instance.get_type_display()
 
 
 class TimetableSerializer(serializers.ModelSerializer):
@@ -62,8 +75,9 @@ class TimetableSerializer(serializers.ModelSerializer):
     number_of_months = serializers.ReadOnlyField()
 
     class Meta:
-        model = Timetable
+        depth = 1
         fields = "__all__"
+        model = Timetable
 
 
 class TransactionSerializer(serializers.ModelSerializer):

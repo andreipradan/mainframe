@@ -10,15 +10,20 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
 import { FinanceApi } from "../../../../api/finance";
-import {selectTimetable} from "../../../../redux/timetableSlice";
+import { selectItem as selectTimetable } from "../../../../redux/timetableSlice";
 
 const TimetableEditModal = () => {
   const dispatch = useDispatch();
   const loadingTimetables = useSelector(state => state.timetable.loadingTimetables)
-  const timetable = useSelector(state => state.timetable.selectedTimetable)
+  const timetable = useSelector(state => state.timetable.selectedItem)
   const token = useSelector((state) => state.auth.token)
 
-  return <Modal centered show={!!timetable} onHide={() => dispatch(selectTimetable())}>
+  return <Modal
+    centered
+    show={!!timetable}
+    onHide={() => dispatch(selectTimetable())}
+    dialogClassName={"min-vw-75"}
+  >
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">

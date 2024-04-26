@@ -19,7 +19,7 @@ const Navbar = () => {
   return (
       <nav className="navbar p-0 fixed-top d-flex flex-row">
         <div className="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
-          <Link className="navbar-brand brand-logo-mini" to="/">
+          <Link className="navbar-brand brand-logo-mini" to={user?.is_staff ? "/" : "/expenses"}>
             <img src={logoMini} alt="logo"/>
           </Link>
         </div>
@@ -201,14 +201,18 @@ const Navbar = () => {
               <Dropdown.Menu className="navbar-dropdown preview-list navbar-profile-dropdown-menu">
                 <h6 className="p-3 mb-0"><Trans>Profile</Trans></h6>
                 <Dropdown.Divider/>
-                <Dropdown.Item href="!#" onClick={evt => evt.preventDefault()} className="preview-item">
+                <Dropdown.Item href="!#" onClick={evt => {
+                  evt.preventDefault()
+                  history.push("/profile")
+                }
+                } className="preview-item">
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
                       <i className="mdi mdi-settings text-success"></i>
                     </div>
                   </div>
                   <div className="preview-item-content">
-                    <p className="preview-subject mb-1"><Trans>Settings</Trans></p>
+                    <p className="preview-subject mb-1">Settings</p>
                   </div>
                 </Dropdown.Item>
                 <Dropdown.Divider/>
@@ -216,7 +220,7 @@ const Navbar = () => {
                     href="!#"
                     onClick={evt => {
                       evt.preventDefault()
-                      dispatch(AuthApi.Logout({user, token}, history))
+                      dispatch(AuthApi.Logout(token, history))
                     }}
                     className="preview-item">
                   <div className="preview-thumbnail">

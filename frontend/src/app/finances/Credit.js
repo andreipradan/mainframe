@@ -4,7 +4,6 @@ import { Bar, Doughnut } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import { ProgressBar } from "react-bootstrap";
 import { Tooltip } from "react-tooltip";
-import Alert from "react-bootstrap/Alert";
 import Marquee from "react-fast-marquee";
 import Select from "react-select";
 import "nouislider/distribute/nouislider.css";
@@ -12,30 +11,27 @@ import "nouislider/distribute/nouislider.css";
 import { FinanceApi } from "../../api/finance";
 import { calculateSum, getPercentage } from "./utils";
 import { selectStyles } from "./Categorize/EditModal";
-import ListItem from "./shared/ListItem";
+import ListItem from "../shared/ListItem";
+import Errors from "../shared/Errors";
 
 const Credit = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
   const overview = useSelector(state => state.credit)
-  const [overviewAlertOpen, setOverviewAlertOpen] = useState(false)
-  useEffect(() => {setOverviewAlertOpen(!!overview.errors)}, [overview.errors])
   useEffect(() => {
-    if (!overview.details) dispatch(FinanceApi.getCredit(token))
+    if (!overview.credit) dispatch(FinanceApi.getCredit(token))
     else onChangeCurrency()
-    }, [overview.details]
+    }, [overview.credit]
   );
-  const credit = overview.details?.credit
-  const rates = overview.details?.rates
-  const latestTimetable = overview.details?.latest_timetable.amortization_table
+  const credit = overview.credit
+  const rates = overview.rates
+  const latestTimetable = overview.latest_timetable?.amortization_table
 
   const payment = useSelector(state => state.payment)
-  const [paymentAlertOpen, setPaymentAlertOpen] = useState(false)
-  useEffect(() => {setPaymentAlertOpen(!!payment.errors)}, [payment.errors])
   useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
 
-  const saved = calculateSum(payment.results, "saved")
+  const saved = overview.payment_stats?.saved
 
   const [excludePrepayments, setExcludePrepayments] = useState(false)
   const [barChartPrincipal, setBarChartPrincipal] = useState(null)
@@ -123,14 +119,14 @@ const Credit = () => {
           const item = tooltipItem[0]
           const otherValue = parseFloat(data.datasets[item.datasetIndex === 0 ? 1 : 0].data[item.index])
           const currentValue = parseFloat(data.datasets[item.datasetIndex].data[item.index]);
-          return `Total: ${currentValue + otherValue}`
+          return `Total: ${(currentValue + otherValue).toFixed(2)}`
         }
       }
     }
   }
 
-  const onExcludePrepaymentsChange = (e) => {
-    if (e.target.checked) {
+  const onExcludePrepaymentsChange = () => {
+    if (!excludePrepayments) {
       setBarChartPrincipal(payment.results?.filter(p => !p.is_prepayment).map(p => p.principal).reverse())
       setBarChartInterest(payment.results?.filter(p => !p.is_prepayment).map(p => p.interest).reverse())
       setBarChartLabels(payment.results?.filter(p => !p.is_prepayment).map(p => p.date).reverse())
@@ -159,6 +155,7 @@ const Credit = () => {
   const [paidInterest, setPaidInterest] = useState(null)
 
   const getAmountInCurrency = (amount, currency = selectedCurrency) => {
+    if (!rates?.length) return amount
     const rate = currency
       ? currency.label === credit.currency
         ? 1
@@ -174,8 +171,8 @@ const Credit = () => {
         }
       : newValue
 
-    const totalPaid = calculateSum(payment.results, "total")
-    const interestPaid = calculateSum(payment.results, "interest")
+    const totalPaid = parseFloat(overview.payment_stats?.total)
+    const interestPaid = parseFloat(overview.payment_stats?.interest)
 
     const principalRemaining = calculateSum(latestTimetable, "principal")
     const interestRemaining = calculateSum(latestTimetable, "interest")
@@ -195,8 +192,8 @@ const Credit = () => {
 
     setPaidTotal(getAmountInCurrency(totalPaid, currency))
     setPaidInterest(getAmountInCurrency(interestPaid, currency))
-    setPaidPrepaid(getAmountInCurrency(calculateSum(payment.results, "total", "is_prepayment"), currency))
-    setPaidPrincipal(getAmountInCurrency(calculateSum(payment.results, "principal"), currency))
+    setPaidPrepaid(getAmountInCurrency(overview.payment_stats?.prepaid, currency))
+    setPaidPrincipal(getAmountInCurrency(overview.payment_stats?.principal, currency))
 
     setBarChartPrincipal(barChartPrincipal?.map(p => getAmountInCurrency(p, currency)))
     setBarChartInterest(barChartInterest?.map(p => getAmountInCurrency(p, currency)))
@@ -252,7 +249,7 @@ const Credit = () => {
     <div className="page-header">
       <h6 className="page-title">
       {
-        selectedCurrency?.label && selectedCurrency.label !== credit?.currency
+        rates?.length && selectedCurrency?.label && selectedCurrency.label !== credit?.currency
           ? <small className="text-warning">
               Rate: 1 {selectedCurrency.label} = {rates.find(r => r.symbol === selectedCurrency.value)?.value} {credit?.currency}<br/>
               From: {rates.find(r => r.symbol === selectedCurrency.value)?.date}<br/>
@@ -261,27 +258,31 @@ const Credit = () => {
           : null
       }
       </h6>
-      <Select
-        placeholder={"Currency"}
-        value={{label: selectedCurrency?.label || "Currency", value: selectedCurrency?.value || "Currency"}}
-        onChange={onChangeCurrency}
-        options={
-          [
-            {label: credit?.currency, value: credit?.currency},
-            {label: "EUR", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "EUR").symbol},
-            {label: "USD", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "USD").symbol},
-            ...rates?.map(c =>
-                ({label: c.symbol.replace(credit?.currency, ""), value: c.symbol})
-            ).filter(r => !["RON", "EUR", "USD"].includes(r.label))
-          ]
-        }
-        styles={selectStyles}
-        isClearable={true}
-        closeMenuOnSelect={true}
-      />
+      {
+        rates?.length
+          ? <Select
+            placeholder={"Currency"}
+            value={{label: selectedCurrency?.label || "Currency", value: selectedCurrency?.value || "Currency"}}
+            onChange={onChangeCurrency}
+            options={
+              [
+                {label: credit?.currency, value: credit?.currency},
+                {label: "EUR", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "EUR").symbol},
+                {label: "USD", value: rates.find(r => r.symbol.replace(credit?.currency, "") === "USD").symbol},
+                ...rates.map(c =>
+                    ({label: c.symbol.replace(credit?.currency, ""), value: c.symbol})
+                ).filter(r => !["RON", "EUR", "USD"].includes(r.label))
+              ]
+            }
+            styles={selectStyles}
+            isClearable={true}
+            closeMenuOnSelect={true}
+          />
+        : null
+      }
     </div>
-    {overviewAlertOpen && <Alert variant="danger" dismissible onClose={() => setOverviewAlertOpen(false)}>{overview.errors}</Alert>}
-    {paymentAlertOpen && <Alert variant="danger" dismissible onClose={() => setPaymentAlertOpen(false)}>{payment.errors}</Alert>}
+    <Errors errors={overview.errors}/>
+    <Errors errors={payment.errors}/>
 
     <div className="row">
       <div className="col-sm-12 col-lg-4 grid-margin">
@@ -312,10 +313,10 @@ const Credit = () => {
             {
               overview.loading
                 ? <Circles />
-                : overview.details
+                : overview.credit
                   ? <>
                     <ListItem label={"Total"} value={remainingTotal} textType={"primary"}/>
-                    <ListItem label={"Date"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
+                    <ListItem label={"Last day"} value={latestTimetable[latestTimetable.length - 1]?.date} textType={"warning"} />
                     <ListItem label={"Months"} value={`${latestTimetable.length} (${(latestTimetable.length / 12).toFixed(1)} yrs)`} />
                     <ListItem label={"Insurance"} value={remainingInsurance} />
                     <ListItem label={"Principal"} value={remainingPrincipal} textType={"success"} />
@@ -356,13 +357,19 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h5>
-              Progress: {getPercentage(paidTotal, remainingTotal)}%
+              Progress: {getPercentage(paidPrincipal, summaryCredit)}%
               &nbsp;<i id="progress-bar-tip" className="mdi mdi-information-outline"/>
             </h5>
             {
               overview.loading || payment.loading
                 ? <Circles />
-                : credit ? <ProgressBar now={paidPrincipal | 0} max={summaryCredit | 0}/> : "-"
+                : credit
+                  ? <ProgressBar
+                      now={paidPrincipal | 0}
+                      max={summaryCredit | 0}
+                      label={`${paidPrincipal} / ${summaryCredit}`}
+                    />
+                  : "-"
             }
             </div>
           </div>
@@ -394,7 +401,7 @@ const Credit = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              Payments {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
+              Latest payments {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getCreditPayments(token))}>
                 <i className="mdi mdi-refresh" />
               </button>
@@ -408,7 +415,7 @@ const Credit = () => {
                 }
               </div>
             </h4>
-            <div className="form-check">
+            <div className="form-check" onClick={onExcludePrepaymentsChange}>
               <label htmlFor="" className="form-check-label">
                 <input className="checkbox" type="checkbox"
                   checked={excludePrepayments}
@@ -446,7 +453,7 @@ const Credit = () => {
           <div className="card-body">
             <h4 className="card-title">Remaining: {remainingTotal} {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h4>
             {
-              overview.loading ? <Circles /> : overview.details ? <Doughnut data={remainingData} options={doughnutPieOptions} /> : "-"
+              overview.loading ? <Circles /> : overview.credit ? <Doughnut data={remainingData} options={doughnutPieOptions} /> : "-"
             }
           </div>
         </div>
@@ -454,22 +461,23 @@ const Credit = () => {
     </div>
 
     <Tooltip anchorSelect="#progress-bar-tip" place={"bottom-start"}>
-      Total paid of the remaining total
+      Paid principal related to the total of the borrowed amount
     </Tooltip>
     <Tooltip anchorSelect="#paid-percentage" place="bottom-start">
+        {getPercentage(paidTotal, summaryCredit)}% of the total credit<br />
       ~ {getPercentage(paidTotal, remainingTotal)}% of the remaining total
     </Tooltip>
     <Tooltip anchorSelect="#prepaid-percentage" place="bottom-start">
-      {getPercentage(paidPrepaid, credit?.total)}% of the total credit<br />
+      {getPercentage(paidPrepaid, summaryCredit)}% of the total credit<br />
       {getPercentage(paidPrepaid, paidTotal)}% of the paid amount
     </Tooltip>
     <Tooltip anchorSelect="#principal-percentage" place="bottom-start">
-      {getPercentage(paidPrincipal, credit?.total)}% of the total credit<br />
+      {getPercentage(paidPrincipal, summaryCredit)}% of the total credit<br />
       {getPercentage(paidPrincipal, remainingPrincipal)}% of the remaining principal<br />
       {getPercentage(paidPrincipal, paidTotal)}% of the paid amount
     </Tooltip>
     <Tooltip anchorSelect="#interest-percentage" place="bottom-start">
-      { getPercentage(paidInterest, credit?.total) }% of the total credit<br />
+      { getPercentage(paidInterest, summaryCredit) }% of the total credit<br />
       ~ { getPercentage(paidInterest, remainingInterest) }% of the remaining interest<br />
       { getPercentage(paidInterest, paidTotal) }% of the paid amount
     </Tooltip>

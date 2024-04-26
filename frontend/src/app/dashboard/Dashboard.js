@@ -1,16 +1,24 @@
 import React, {useEffect, useState} from 'react';
-import Slider from "react-slick";
-import { Doughnut } from 'react-chartjs-2';
-import { useDispatch, useSelector } from "react-redux";
-import {BallTriangle, InfinitySpin, LineWave} from "react-loader-spinner";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import Nouislider from 'nouislider-react';
-import "nouislider/distribute/nouislider.css";
+import Slider from "react-slick";
+import { BallTriangle, ColorRing, InfinitySpin, LineWave } from "react-loader-spinner";
+import { Doughnut } from 'react-chartjs-2';
 import { SliderPicker } from 'react-color';
+import { useDispatch, useSelector } from "react-redux";
+import "nouislider/distribute/nouislider.css";
 
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
 import {Collapse, Form} from "react-bootstrap";
-import Alert from "react-bootstrap/Alert";
+import Errors from "../shared/Errors";
+import {
+  doughnutPieOptions,
+  getBotsActiveData,
+  getLightsData,
+  sliderSettings
+} from "./chartsData";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -18,14 +26,13 @@ const Dashboard = () => {
   const token = useSelector((state) => state.auth.token)
 
   const bots = useSelector(state => state.bots)
-
   const lights = useSelector(state => state.lights)
 
   const botsActiveCount = bots.results?.filter(b => b.is_active === true).length
   const botsInactiveCount = bots.results?.filter(b => b.is_active === false).length
 
-  const lightsOnCount = lights.list?.filter(b => b.capabilities.power === "on").length
-  const lightsOffCount = lights.list?.filter(b => b.capabilities.power === "off").length
+  const lightsOnCount = lights.results?.filter(b => b.capabilities.power === "on").length
+  const lightsOffCount = lights.results?.filter(b => b.capabilities.power === "off").length
 
   const [lightsExpanded, setLightsExpanded] = useState(null)
   const [lightColors, setLightColors] = useState(null)
@@ -34,24 +41,21 @@ const Dashboard = () => {
     lightsExpanded?.map(l => l.ip === ip ? {...l, expanded: !l.expanded} : l)
   )
 
-  const [botsAlertOpen, setBotsAlertOpen] = useState(false)
-  const [lightsAlertOpen, setLightsAlertOpen] = useState(false)
-
-  useEffect(() => {setLightsAlertOpen(!!lights.errors)}, [lights.errors])
-  useEffect(() => {setBotsAlertOpen(!!bots.errors)}, [bots.errors])
+  const [lightName, setLightName] = useState("")
+  const [lightNameOpened, setLightNameOpened] = useState(false)
 
   useEffect(() => {
     !bots.results && dispatch(BotsApi.getList(token));
-    !lights.list && dispatch(LightsApi.getList(token));
+    !lights.results && dispatch(LightsApi.getList(token));
   }, []);
 
   useEffect( () => {
-    if (lights.list) {
+    if (lights.results) {
       if (!lightsExpanded)
-        setLightsExpanded(lights.list?.map(l => ({ip: l.ip, expanded: false})))
-      setLightColors(lights.list?.map(l => ({ip: l.ip, color: "#0059ff"})))
+        setLightsExpanded(lights.results?.map(l => ({ip: l.ip, expanded: false})))
+      setLightColors(lights.results?.map(l => ({ip: l.ip, color: "#0059ff"})))
     }
-  }, [lights.list])
+  }, [lights.results])
 
   const onSlide = (i, isDisplayed) => () => {
     const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
@@ -59,50 +63,9 @@ const Dashboard = () => {
       tooltip.style.display = isDisplayed ? "block": "none"
   }
 
-  const botsData =  {
-    labels: ["Inactive", "Active"],
-    datasets: [{
-      data: [botsInactiveCount, botsActiveCount],
-      backgroundColor: [
-        'rgba(54, 162, 235, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
-      ],
-      borderColor: [
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-      ],
-    }]
-  };
+  const botsData = getBotsActiveData(botsActiveCount, botsInactiveCount)
+  const lightsChartData = getLightsData(lightsOnCount, lightsOffCount)
 
-  const lightsChartData = {
-    datasets: [{
-      data: [lightsOnCount, lightsOffCount],
-      backgroundColor: [
-        'rgba(75, 192, 192, 0.5)',
-        'rgba(255, 99, 132, 0.5)',
-      ],
-      borderColor: [
-        'rgba(75, 192, 192, 1)',
-        'rgba(255,99,132,1)',
-      ],
-    }],
-
-    // These labels appear in the legend and in the tooltips when hovering different arcs
-    labels: [
-      "On",
-      "Off",
-    ]
-  };
-
-  const doughnutPieOptions = {
-    responsive: true,
-    animation: {
-      animateScale: true,
-      animateRotate: true
-    }
-  };
-
-  const sliderSettings = {infinite: true, speed: 500, slidesToShow: 1, slidesToScroll: 1}
   return <div>
     <div className="row">
       <div className="col-md-6 col-xl-6 grid-margin stretch-card">
@@ -125,11 +88,11 @@ const Dashboard = () => {
                   color = '#e15b64'
                 />
                 : <>
-                    {botsAlertOpen && <Alert variant="danger" dismissible onClose={() => setBotsAlertOpen(false)}>{bots.errors}</Alert>}
+                    <Errors errors={bots.errors}/>
                     <div className="aligner-wrapper">
                       <Doughnut data={botsData} options={doughnutPieOptions} />
                     </div>
-                  </>
+                </>
             }
           </div>
         </div>
@@ -175,12 +138,13 @@ const Dashboard = () => {
                 </button>
                 <div className="mr-auto text-sm-right pt-2 pt-sm-0">
                   <Form.Check
-                    checked={!!lights?.list?.some(l => l.capabilities.power === "on")}
+                    checked={!!lights?.results?.some(l => l.capabilities.power === "on")}
+                    disabled={lights.loading}
                     type="switch"
                     id="checkbox-toggle"
                     label=""
                     onChange={() => {
-                      const action = lights?.list?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on
+                      const action = lights?.results?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on
                       dispatch(action(token))
                     }}
                   />
@@ -189,7 +153,7 @@ const Dashboard = () => {
               </h4>
             <div className="row">
               <div className="col-12">
-                {lightsAlertOpen && <Alert variant="danger" dismissible onClose={() => setLightsAlertOpen(false)}>{lights.errors}</Alert>}
+                <Errors errors={lights.errors}/>
                 <div className="preview-list">
                   {
                     lights.loading
@@ -202,8 +166,8 @@ const Dashboard = () => {
                         glassColor = '#c0efff'
                         color = '#e15b64'
                       />
-                      : lights.list
-                        ? lights.list.map((light, i) =>
+                      : lights.results?.length
+                        ? lights.results.map((light, i) =>
                           <div key={i}>
                             <div className="preview-item border-bottom">
                               <div className="preview-thumbnail">
@@ -219,6 +183,7 @@ const Dashboard = () => {
                                 <div className="mr-auto text-sm-right pt-2 pt-sm-0">
                                   <Form.Check
                                     checked={light.capabilities.power === "on"}
+                                    disabled={lights.loadingItems?.includes(light.ip)}
                                     type="switch"
                                     id={`checkbox-${i}`}
                                     label=""
@@ -233,7 +198,11 @@ const Dashboard = () => {
                             </div>
                             <Collapse in={ getExpanded(light.ip) }>
                               <div className="slider" id={`slider-${i}`}>
-                                {lights.loadingLights?.includes(light.ip)
+                                <button onClick={() => {
+                                  setLightNameOpened(light)
+                                  setLightName(light.capabilities.name)
+                                }} className="btn btn-outline-secondary btn-sm" >Change name? </button><br/><br/>
+                                {lights.loadingItems?.includes(light.ip)
                                   ? <LineWave
                                     visible={true}
                                     width="100%"
@@ -283,7 +252,7 @@ const Dashboard = () => {
                                     />
                                   </>
                                   }
-                                </div>
+                              </div>
                             </Collapse>
                           </div>)
                         : <div className="preview-item">
@@ -516,7 +485,7 @@ const Dashboard = () => {
       </div>
     </div>
     <div className="row">
-      <div className="col-md-6 col-xl-4 grid-margin stretch-card">
+      <div className="col-md-6 col-xl-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <div className="d-flex flex-row justify-content-between">
@@ -584,7 +553,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      <div className="col-md-6 col-xl-4 grid-margin stretch-card">
+      <div className="col-md-6 col-xl-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">Portfolio Slide</h4>
@@ -625,6 +594,54 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+   <Modal centered show={lightNameOpened} onHide={() => {
+     setLightNameOpened(false)
+     setLightName("")
+   }}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <div className="row">
+            <div className="col-lg-12 grid-margin stretch-card mb-1">
+              {
+                lightNameOpened
+                  ? `Edit ${lightNameOpened?.capabilities?.name}?`
+                  : null
+              }
+            </div>
+          </div>
+          <p className="text-muted mb-0">Brightness: {lightNameOpened?.capabilities?.bright}%</p>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Errors errors={lights.errors}/>
+
+        {
+          lights.loadingItems?.includes(lightNameOpened.ip)
+          ? <ColorRing
+              width = "100%"
+              height = "50"
+              wrapperStyle={{width: "100%"}}
+            />
+          : <Form onSubmit={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))}>
+              <Form.Group className="mb-3">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+
+                  value={lightName}
+                  onChange={e => setLightName(e.target.value)}
+                />
+              </Form.Group>
+            </Form>
+        }
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => {setLightName(""); setLightNameOpened(false)}}>Close</Button>
+        <Button variant="primary" onClick={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))} >
+          Update name
+        </Button>
+      </Modal.Footer>
+    </Modal>
   </div>
 }
 

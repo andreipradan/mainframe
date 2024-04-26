@@ -1,4 +1,4 @@
-import environ
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -10,8 +10,10 @@ NULLABLE_KWARGS = {"blank": True, "null": True}
 
 
 def get_default_credit():
-    code = environ.Env()("DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE")
-    return Credit.objects.select_related("account").get(account__client_code=code)
+    code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
+    return Credit.objects.select_related("account", "currency").get(
+        account__client_code=code
+    )
 
 
 def validate_amortization_table(value):
@@ -19,7 +21,7 @@ def validate_amortization_table(value):
         raise ValidationError("amortization_table must be a list")
 
     month_fields = {"date", "insurance", "interest", "principal", "remaining", "total"}
-    if not all([set(month) == month_fields for month in value]):
+    if not all(set(month) == month_fields for month in value):
         raise ValidationError(
             "amortization_table contains items that do not have "
             f"these exact keys: {month_fields}"
@@ -54,7 +56,7 @@ class Account(TimeStampedModel):
 
 class Credit(TimeStampedModel):
     account = models.ForeignKey(on_delete=models.CASCADE, to="finance.Account")
-    currency = models.CharField(max_length=3)
+    currency = models.ForeignKey("exchange.Currency", on_delete=models.DO_NOTHING)
     date = models.DateField()
     number = models.IntegerField(unique=True)
     number_of_months = models.IntegerField()
@@ -65,18 +67,7 @@ class Credit(TimeStampedModel):
 
     @property
     def latest_timetable(self):
-        return self.timetable_set.order_by("-date").first()
-
-
-class ExchangeRate(TimeStampedModel):
-    date = models.DateField()
-    source = models.CharField(max_length=64)
-    symbol = models.CharField(max_length=6)
-    value = models.DecimalField(decimal_places=4, max_digits=10)
-
-    class Meta:
-        ordering = ("-date", "symbol")
-        unique_together = "date", "source", "symbol"
+        return self.timetable_set.order_by("-date", "-created_at").first()
 
 
 class Payment(TimeStampedModel):
@@ -85,6 +76,7 @@ class Payment(TimeStampedModel):
         on_delete=models.CASCADE,
         to="finance.Credit",
     )
+    additional_data = models.JSONField(blank=True, default=dict, null=True)
     date = models.DateField()
     interest = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     is_prepayment = models.BooleanField(default=False)
@@ -95,10 +87,11 @@ class Payment(TimeStampedModel):
     total = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
-        ordering = ("-date",)
+        ordering = ("-date", "-created_at")
         constraints = (
             models.UniqueConstraint(
-                name="%(app_label)s_%(class)s_credit_date_is_prepayment_reference_total_uniq",
+                name="%(app_label)s_%(class)s_credit_date_"
+                "is_prepayment_reference_total_uniq",
                 fields=("credit", "date", "is_prepayment", "reference", "total"),
             ),
             models.UniqueConstraint(
@@ -120,7 +113,7 @@ class Timetable(TimeStampedModel):
     margin = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
-        ordering = ("-date",)
+        ordering = ("-date", "-created_at")
 
     @property
     def interest(self):

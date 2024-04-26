@@ -8,17 +8,17 @@ import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 
 import AceEditor from "react-ace";
-import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import CreatableSelect from 'react-select/creatable';
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
-import ListItem from "../shared/ListItem";
+import ListItem from "../../shared/ListItem";
 import { FinanceApi } from "../../../api/finance";
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { create as createCategory } from "../../../redux/categoriesSlice"
-import { selectTransaction } from "../../../redux/transactionsSlice";
+import { selectItem as selectTransaction } from "../../../redux/transactionsSlice";
+import Errors from "../../shared/Errors";
 
 export const createOption = label => ({label: getTypeLabel(label), value: label})
 
@@ -48,16 +48,14 @@ const EditModal = () => {
   const categories = useSelector(state => state.categories)
   const kwargs = useSelector(state => state.transactions.kwargs) || {}
   const transactions = useSelector(state => state.transactions)
-  const transaction = transactions.selectedTransaction
+  const transaction = transactions.selectedItem
 
   const closeModal = () => dispatch(selectTransaction())
-  const [alertOpen, setAlertOpen] = useState(false)
   const [category, setCategory] = useState("")
   const [showSaveAllModal, setShowSaveAllModal] = useState(false)
   const [type, setType] = useState("")
 
   useEffect(() => {!categories.results && dispatch(FinanceApi.getCategories(token))}, [])
-  useEffect(() => {setAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
     setCategory(transaction?.category)
     setType(transaction?.type)
@@ -103,11 +101,8 @@ const EditModal = () => {
       </Modal.Title>
     </Modal.Header>
     <Modal.Body>
-      {
-        alertOpen && <div className="col-sm-12 grid-margin"><Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>
-          {transactions.errors}
-        </Alert></div>
-      }
+      <Errors errors={transactions.errors}/>
+
       <Form onSubmit={e => {
         e.preventDefault()
         dispatch(FinanceApi.updateTransaction(

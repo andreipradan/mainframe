@@ -55,7 +55,7 @@ class Command(BaseEarthquakeCommand):
             intensity=None,
             latitude=lat,
             longitude=long,
-            location=props["place"],
+            location=props["place"] or "N/A",
             magnitude=props["mag"],
             source=Earthquake.SOURCE_USGS,
         )

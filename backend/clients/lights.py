@@ -1,4 +1,5 @@
 import operator
+
 import yeelight
 
 
@@ -25,6 +26,14 @@ class LightsClient:
         bulb = yeelight.Bulb(ip, auto_on=True)
         try:
             return bulb.set_color_temp(color_temp)
+        except yeelight.main.BulbException as e:
+            raise LightsException(e)
+
+    @classmethod
+    def set_name(cls, ip, name):
+        bulb = yeelight.Bulb(ip)
+        try:
+            return bulb.set_name(name)
         except yeelight.main.BulbException as e:
             raise LightsException(e)
 

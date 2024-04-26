@@ -22,8 +22,7 @@ def get_magnitude_icon(magnitude):
         return "🟡"
     if magnitude < 6:
         return "🟠"
-    else:
-        return "🔴"
+    return "🔴"
 
 
 def parse_event(event: Earthquake):
@@ -44,7 +43,7 @@ class BaseEarthquakeCommand(BaseCommand):
     source = NotImplemented
     url = NotImplemented
 
-    def handle(self, *args, **options):
+    def handle(self, *_, **options):
         healthchecks.ping(self.source)
         try:
             response = self.fetch(**options)
@@ -92,7 +91,14 @@ class BaseEarthquakeCommand(BaseCommand):
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
         events = [
-            event for event in events if float(event.magnitude) >= float(min_magnitude)
+            event
+            for event in events
+            if float(event.magnitude) >= float(min_magnitude)
+            and event.additional_data.get("sols", {})
+            .get("primary", {})
+            .get("region", {})
+            .get("type")
+            == "local"
         ]
 
         if len(events):
@@ -113,7 +119,7 @@ class BaseEarthquakeCommand(BaseCommand):
     def fetch_events(self, response):
         raise NotImplementedError
 
-    def parse_earthquake(self, card):
+    def parse_earthquake(self, card) -> Earthquake:
         raise NotImplementedError
 
     def set_last_check(self, instance):

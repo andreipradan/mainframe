@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 
 def fetch(url, logger):
-    logger.info(f"Fetching: {url}")
+    logger.info("Fetching: %s", url)
     try:
         response = requests.get(url, timeout=45)
         response.raise_for_status()

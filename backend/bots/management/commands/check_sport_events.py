@@ -2,14 +2,12 @@ import asyncio
 import json
 import logging
 import math
-
 from datetime import datetime
 from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import aiohttp
 import telegram
-
 from bs4 import BeautifulSoup
 from django.core.management import BaseCommand, CommandError
 
@@ -21,7 +19,7 @@ logger.addHandler(ManagementCommandsHandler())
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         logger.info("Checking today's sport events")
         try:
             bot = Bot.objects.get(additional_data__sport_events__isnull=False)
@@ -39,7 +37,8 @@ class Command(BaseCommand):
             categories, list
         ):
             raise CommandError(
-                "categories missing from sport_events in bot additional data or not of type list"
+                "categories missing from sport_events in bot additional data or "
+                "not of type list"
             )
 
         results = fetch_all(categories)
@@ -47,8 +46,6 @@ class Command(BaseCommand):
         def send_message(text):
             return bot.send_message(
                 chat_id=chat_id,
-                disable_notification=True,
-                disable_web_page_preview=True,
                 text=text,
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )
@@ -66,10 +63,10 @@ class Command(BaseCommand):
             ]
 
         logger.info(
-            f"Got {results_size} characters results. Split in {batches_no} batches."
+            "Got %d character results. Split in %d batches.", results_size, batches_no
         )
         if batches_no > 10:
-            logger.warning(f"Too many batches: {batches_no}, sending only the first 10")
+            logger.warning("Too many batches: %s, sending only first 10", batches_no)
             chunks = chunks[:10]
 
         entity = ""
@@ -79,13 +76,13 @@ class Command(BaseCommand):
                 send_message(f"{entity}{chunk}\n[{batch_no}]")
                 entity = ""
             except telegram.error.BadRequest as e:
-                logger.warning(f"{batch_no} Bad request: {e}")
+                logger.warning("%d Bad request: %s", batch_no, e)
                 if "can't find end of the entity" in str(e):
                     location = int(e.message.split()[-1])
                     entity = bytes(chunk, encoding="utf-8")[
                         location : location + 1
                     ].decode()
-                    logger.info(f'Fixed entity "{entity}"')
+                    logger.info('Fixed entity "%s"', entity)
                     send_message(f"{chunk}{entity}[{batch_no}]")
 
         self.stdout.write(self.style.SUCCESS("Done."))

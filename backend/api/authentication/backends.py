@@ -1,10 +1,9 @@
 import jwt
-
-from rest_framework import authentication, exceptions
 from django.conf import settings
+from rest_framework import authentication, exceptions
 
-from api.user.models import User
 from api.authentication.models import ActiveSession
+from api.user.models import User
 
 
 class ActiveSessionAuthentication(authentication.BaseAuthentication):

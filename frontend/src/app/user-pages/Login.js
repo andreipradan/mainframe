@@ -5,7 +5,6 @@ import AuthApi from "../../api/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { Dna } from "react-loader-spinner";
 import Alert from "react-bootstrap/Alert";
-import logo from "../../assets/images/logo.svg"
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -20,24 +19,22 @@ const Login = () => {
     dispatch(AuthApi.Login({email, password}, history))
   }
 
-  useEffect(() => {setMessageOpen(!!auth.message)}, [auth.message])
+  useEffect(() => setMessageOpen(!!auth.message), [auth.message])
 
   return <div>
     <div className="d-flex align-items-center auth px-0">
       <div className="row w-100 mx-0">
         <div className="col-lg-6 mx-auto">
           <div className="card text-left py-5 px-4 px-sm-5">
-            <div className="brand-logo">
-              <img src={logo} alt="logo"/>
-            </div>
+            <h2 className="brand-logo">Sign in</h2>
             <h4>Hello! let's get started</h4>
             <h6 className="font-weight-light">
               {messageOpen && <Alert variant="success" dismissible onClose={() => setMessageOpen(false)}>{auth.message}</Alert>}
 
               {
-                auth.errors?.length || auth.errors?.success === "False"
-                  ? auth.errors?.msg
-                    ? <p className="text-danger">{auth.errors.msg}</p>
+                auth.errors?.length || auth.errors?.detail
+                  ? auth.errors?.detail
+                    ? <p className="text-danger">{auth.errors.detail}</p>
                     : auth.errors?.length
                       ? <ul className="text-danger">{auth.errors.map((err, i) => <li key={i}>{err}</li>)}</ul>
                       : null

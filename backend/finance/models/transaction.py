@@ -112,4 +112,7 @@ class Transaction(TimeStampedModel):
         ordering = ["-completed_at"]
 
     def __str__(self):
-        return f"{self.started_at} - {self.get_type_display()} - {self.amount} {self.currency}"
+        return (
+            f"{self.started_at} - {self.get_type_display()} - "
+            f"{self.amount} {self.currency}"
+        )

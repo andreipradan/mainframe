@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import {BallTriangle, Circles } from "react-loader-spinner";
-import Alert from "react-bootstrap/Alert";
 import CameraApi from "../../api/camera";
-import {setAlertOpen, setMessagesOpen} from "../../redux/cameraSlice";
+import { setMessagesOpen } from "../../redux/cameraSlice";
+import Errors from "../shared/Errors";
+import Alert from "react-bootstrap/Alert";
 
 export const Camera = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const { alertOpen, errors, loading, loadingFiles, messages, messagesOpen, path, results } = useSelector(state => state.camera)
+  const { errors, loading, loadingFiles, messages, messagesOpen, path, results } = useSelector(state => state.camera)
 
   useEffect(() => {
     !results && dispatch(CameraApi.getList(token));
   }, []);
 
-  useEffect(() => {dispatch(setAlertOpen(!!errors))}, [errors])
   useEffect(() => {dispatch(setMessagesOpen(!!messages))}, [messages])
 
   const [currentImage, setCurrentImage] = useState(null)
@@ -51,7 +51,15 @@ export const Camera = () => {
                     <i className="mdi mdi-refresh"></i>
                   </button>
                 </div>
-                <nav aria-label="breadcrumb">
+                <div className="text-small">
+                  <a
+                    href="https://console.cloud.google.com/storage/browser/mainframe-media/2023/12?project=mainframe-pradan-dev"
+                    target="_blank"
+                  >
+                    Storage
+                  </a>
+                </div>
+                <nav aria-label="breadcrumb" className="mt-1">
                   <ol className="breadcrumb">
                     <li style={{cursor: "pointer"}} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token))}>
                       Home
@@ -66,7 +74,7 @@ export const Camera = () => {
                   </ol>
                 </nav>
               </h4>
-              {alertOpen && <Alert variant="danger" dismissible onClose={() => dispatch(setAlertOpen(false))}>{errors}</Alert>}
+              <Errors errors={errors} />
               {messagesOpen && <Alert variant="success" dismissible onClose={() => dispatch(setMessagesOpen(false))}>
                 {messages[0]}
                 <small className="text-muted">{messages?.[1]}</small>

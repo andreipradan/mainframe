@@ -2,7 +2,6 @@ import json
 import logging
 from functools import cached_property
 
-import axiom
 import environ
 from django.conf import settings
 
@@ -35,6 +34,8 @@ class AxiomHandler(logging.Handler):
 
     @cached_property
     def client(self):
+        import axiom
+
         return axiom.Client(environ.Env()("AXIOM_TOKEN"))
 
     def emit(self, record: logging.LogRecord) -> None:

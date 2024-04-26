@@ -1,15 +1,83 @@
-name: CI
+name: Mainframe pipeline
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+
+env:
+  BACKEND_SERVICE: ${{ secrets.BACKEND_SERVICE }}
+  FRONTEND_SERVICE: ${{ secrets.FRONTEND_SERVICE }}
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+  RUN_REGION: ${{ secrets.REGION }}
 
 jobs:
-  tests:
+  notify-telegram:
+    name: Notify telegram
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: send telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: markdown
+          message: |
+            New changes: [${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/commit/${{github.sha}})
+            Author: ${{ github.actor }}
+            Repo: ${{ github.repository }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+  changes:
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+
+  black:
+    name: runner / black
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check files using the black formatter
+        uses: rickstaa/action-black@v1
+        id: action_black
+        with:
+          black_args: "backend --exclude migrations"
+      - name: Create Pull Request
+        if: steps.action_black.outputs.is_formatted == 'true'
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Format Python code with psf/black push"
+          commit-message: ":art: Format Python code with psf/black"
+          body: |
+            There appear to be some python formatting errors in ${{ github.sha }}. This pull request
+            uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
+          base: ${{ github.head_ref }} # Creates pull request onto pull request or commit branch
+          branch: actions/black
+      - name: Fail if black requires formatting
+        if: steps.action_black.outputs.is_formatted == 'true'
+        run: exit 1
+  tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
       - uses: Harmon758/postgresql-action@v1.0.0
         with:
           postgresql version: 13
@@ -19,7 +87,165 @@ jobs:
       - name: Run a multi-line script
         working-directory: backend
         run: |
-          mv test.env .env
           pip install -r requirements.test.txt
           black . --check --exclude migrations
-          pytest . --cov=. --ds core.settings --nomigrations
+          ENV=ci pytest tests --cov=. --ds core.settings --nomigrations
+
+  backend-deploy:
+    name: BE - Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    needs:
+      - black
+      - tests
+      - changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    steps:
+      - name: Notify BE start deployment
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: markdown
+          message: Starting BE deployment
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup GCloud Auth
+        id: auth
+        uses: google-github-actions/auth@v0.4.0
+        with:
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.1
+
+      - name: Build & Push
+        run: |-
+          gcloud builds submit \
+            --quiet \
+            --tag="gcr.io/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
+            --gcs-log-dir="gs://build-backend-logs"
+        working-directory: backend
+
+      # Deploy image to Cloud Run
+      - name: Deploy GCR
+        run: |-
+          gcloud run deploy "$BACKEND_SERVICE" \
+            --quiet \
+            --region "$RUN_REGION" \
+            --image "gcr.io/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
+            --platform "managed" \
+            --allow-unauthenticated
+      - name: Notify
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: markdown
+          message: Successful BE deployment 🚀
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+
+  frontend-build:
+    name: FE - Build
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@master
+
+      - name: Setup Node.js (NPM)
+        uses: actions/setup-node@master
+        with:
+          node-version: '14.x'
+
+      - name: Use cached node_modules
+        uses: actions/cache@master
+        with:
+          path: node_modules
+          key: nodeModules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            nodeModules-
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install --frozen-lockfile
+        env:
+          CI: true
+
+      - name: Build Development
+        working-directory: frontend
+        run: npm run build
+        env:
+          CI: false
+
+      - name: Archive Production Artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: build
+          path: frontend/build
+
+  frontend-deploy:
+    name: FE - Deploy
+    needs: frontend-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: build
+          path: frontend/.docker/build
+
+      - name: Setup GCloud Auth
+        id: auth
+        uses: google-github-actions/auth@v0.4.0
+        with:
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.1
+
+      # Build and push image to Google Container Registry
+      - name: Build & Push
+        run: |-
+          gcloud builds submit \
+            --quiet \
+            --tag="gcr.io/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
+            --gcs-log-dir="gs://build-frontend-logs"
+        working-directory: frontend/.docker
+
+      # Deploy image to Cloud Run
+      - name: Deploy GCR
+        run: |-
+          gcloud run deploy "$FRONTEND_SERVICE" \
+            --quiet \
+            --region "$RUN_REGION" \
+            --image "gcr.io/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
+            --platform "managed" \
+            --allow-unauthenticated
+      - name: Notify
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: html
+          message: Successful FE deployment 🚀
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}

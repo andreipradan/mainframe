@@ -37,14 +37,10 @@ class TransitLine(TimeStampedModel):
     def __str__(self):
         return f"{self.name} ({self.terminal1} - {self.terminal2})"
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
+    def save(self, *args, **kwargs):
         if self.favorite_of:
             self.favorite_of = sorted(set(self.favorite_of))
-        return super().save(
-            force_insert=False, force_update=False, using=None, update_fields=None
-        )
+        return super().save(*args, **kwargs)
 
     def add_to_favorites(self, who):
         self.favorite_of.append(who)

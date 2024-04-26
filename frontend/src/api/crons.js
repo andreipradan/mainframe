@@ -8,7 +8,9 @@ import {
   setLoadingCron,
   update,
 } from "../redux/cronsSlice";
-import {handleErrors} from "./errors";
+import { handleErrors } from "./errors";
+import { toast } from "react-toastify";
+import { toastParams } from "./auth";
 
 
 class CronsApi {
@@ -42,6 +44,20 @@ class CronsApi {
     axios
       .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
       .then(() => dispatch(setErrors([`Process ${cronCommand} killed`])))
+      .catch((err) => {
+        if (err.response.status === 404)
+          return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
+        return handleErrors(err, dispatch, setErrors)
+      });
+  };
+  static run = (token, cronId, cronCommand) => dispatch => {
+    dispatch(setLoading(true));
+    axios
+      .put(`${base}/${cronId}/run/`, {}, { headers: { Authorization: token } })
+      .then(() => {
+        toast.success(`"${cronCommand}" executed successfully!`, toastParams)
+        dispatch(setLoading(false))
+      })
       .catch((err) => {
         if (err.response.status === 404)
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))

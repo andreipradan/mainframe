@@ -1,0 +1,26 @@
+name: telegram message
+on:
+  workflow_run:
+    workflows:
+      - Mainframe pipeline
+    branches:
+      - main
+    types:
+      - completed
+      - requested
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: markdown
+          message: |
+            ${{ github.event.workflow_run.name }} #${{ github.event.workflow_run.id}}: [${{ github.event.action }}](${{ github.event.workflow_run.html_url }})
+            ${{ github.event.workflow_run.conclusion }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}

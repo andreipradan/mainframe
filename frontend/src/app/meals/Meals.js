@@ -4,7 +4,7 @@ import { ColorRing } from "react-loader-spinner";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 
-import {select} from "../../redux/mealsSlice";
+import { selectItem as select } from "../../redux/mealsSlice";
 import Alert from "react-bootstrap/Alert";
 import EditModal from "../meals/components/EditModal";
 import MealsApi from "../../api/meals";
@@ -63,7 +63,7 @@ const Meals = () =>  {
                 weekends={true}
                 events={meals?.map(meal => ({
                   id: meal.id,
-                  title: meal.name.substring(0, 15) + "...",
+                  title: meal.name.substring(0, 10) + "...",
                   start: new Date(meal.date + "T" + meal.time + ":00")
                 }))}
                 eventContent={renderEventContent}

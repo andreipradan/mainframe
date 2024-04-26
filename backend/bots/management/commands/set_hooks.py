@@ -6,7 +6,6 @@ import requests
 import telegram
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from requests.exceptions import ConnectionError
 
 from bots.models import Bot
 from clients.chat import send_telegram_message
@@ -22,8 +21,6 @@ def get_ngrok_url(name="mainframe"):
     for tunnel in resp["tunnels"]:
         if tunnel["name"] == name:
             return tunnel["public_url"]
-    else:
-        logger.warning(f"Tunnel not found: {name}")
 
 
 def set_github_hook(ngrok_url):
@@ -42,7 +39,7 @@ def set_github_hook(ngrok_url):
     repository = g.get_repo(f"{env('GITHUB_USERNAME')}/mainframe")
     hooks = repository.get_hooks()
 
-    logger.warning(f"[GitHub] Deleting all hooks [{hooks.totalCount}]")
+    logger.warning("[GitHub] Deleting all hooks [%d]", hooks.totalCount)
     for hook in hooks:
         hook.delete()
 
@@ -50,18 +47,18 @@ def set_github_hook(ngrok_url):
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    def handle(self, *_, **__):
         try:
             ngrok_url = get_ngrok_url()
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             raise CommandError("Failed to get ngrok tunnels. Is ngrok running?")
         if not ngrok_url:
             raise CommandError("Tunnel 'mainframe' not found")
 
         set_github_hook(ngrok_url)
-        logger.info(f"[Hooks][GitHub] Done")
+        logger.info("[Hooks][GitHub] Done")
         for bot in Bot.objects.filter(is_active=True):
-            url = f"{ngrok_url}/api/bots/{bot.id}/webhook/"
+            url = f"{ngrok_url}/api/telegram/bots/{bot.id}/webhook/"
             try:
                 response = bot.telegram_bot.set_webhook(url)
                 logger.info(

@@ -1,10 +1,9 @@
-from django.db import models
-
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin,
 )
+from django.db import models
 
 
 class UserManager(BaseUserManager):
@@ -22,9 +21,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password):
-        """
-        Create and return a `User` with superuser (admin) permissions.
-        """
+        """Create and return a `User` with superuser (admin) permissions."""
         if password is None:
             raise TypeError("Superusers must have a password.")
         if email is None:
@@ -43,7 +40,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(db_index=True, max_length=255, unique=True)
     email = models.EmailField(db_index=True, unique=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True)
 
@@ -53,8 +50,4 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return f"{self.name} | {self.email}"
-
-    @property
-    def name(self):
-        return self.email.split("@")[0]
+        return f"{self.username} ({self.email})"

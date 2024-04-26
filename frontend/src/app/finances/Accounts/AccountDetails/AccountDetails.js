@@ -5,46 +5,33 @@ import { useHistory, useParams } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import { Collapse, Dropdown } from "react-bootstrap";
-import Alert from "react-bootstrap/Alert";
 import DatePicker from "react-datepicker";
 import Marquee from "react-fast-marquee";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import EditModal from "./EditModal";
-import ListItem from "../../shared/ListItem";
+import TransactionEditModal from "./components/TransactionEditModal";
+import ListItem from "../../../shared/ListItem";
 import { FinanceApi } from "../../../../api/finance";
 import { getTypeLabel } from "../../Categorize/EditModal";
-import { setSelectedAccount } from "../../../../redux/accountsSlice";
-import { selectTransaction } from "../../../../redux/transactionsSlice";
+import { setModalOpen, setSelectedAccount } from "../../../../redux/accountsSlice";
+import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
+import Errors from "../../../shared/Errors";
+import AccountEditModal from "./components/AccountEditModal";
 
 export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`
 
-const getRandomColor = () => {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
-  return color;
-}
-
 const getColor = (type, border = false) => {
   switch (type) {
-    case "ATM": return `rgba(255,245,64,${border ? 1 : 0.2})`
-    case "CARD_PAYMENT": return `rgba(255,0,52,${border ? 1 : 0.2})`
-    case "CARD_REFUND": return `rgba(75,192,126,${border ? 1 : 0.2})`
-    case "EXCHANGE": return `rgba(153,102,255,${border ? 1 : 0.2})`
-    case "FEE": return `rgba(255,0,0,${border ? 1 : 0.2})`
-    case "TOPUP": return `rgba(54,162,235, ${border ? 1 : 0.2})`
-    case "TRANSFER": return `rgba(255,159,64,${border ? 1 : 0.2})`
-    case "UNIDENTIFIED": return `rgba(255,255,255,${border ? 1 : 0.2})`
-
-    case "Heating": return `rgba(255,0,52,${border ? 1 : 0.2})`
-    case "Restaurants": return `rgba(153,102,255,${border ? 1 : 0.2})`
-    case "Transport": return `rgba(75,192,126,${border ? 1 : 0.2})`
-    case "Savings": return `rgba(54,162,235, ${border ? 1 : 0.2})`
-    case "Unidentified": return `rgba(255,245,64,${border ? 1 : 0.2})`
-    default:
-      return getRandomColor()
+    case "cash": return `rgba(255,245,64,${border ? 1 : 0.2})`
+    case "health": return `rgba(75,192,126,${border ? 1 : 0.2})`
+    case "restaurants": return `rgba(255,198,0,${border ? 1 : 0.2})`
+    case "savings": return `rgba(54,162,235, ${border ? 1 : 0.2})`
+    case "shopping": return `rgba(153,102,255,${border ? 1 : 0.2})`
+    case "transport": return `rgba(75,192,126,${border ? 1 : 0.2})`
+    case "travel": return `rgba(54,162,235, ${border ? 1 : 0.2})`
+    case "utilities": return `rgba(255,159,64,${border ? 1 : 0.2})`
+    default: return `rgba(255,255,255,${border ? 0.2 : 0.1})`
   }
 }
 
@@ -55,16 +42,12 @@ const AccountDetails = () => {
   const { id } = useParams();
 
   const accounts = useSelector(state => state.accounts)
-  const [alertOpen, setAlertOpen] = useState(false)
-  useEffect(() => {setAlertOpen(!!accounts.errors)}, [accounts.errors])
   useEffect(() => {
     !accounts.selectedAccount &&
     dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]
   )
 
   const transactions = useSelector(state => state.transactions)
-  const [transactionsAlertOpen, setTransactionsAlertOpen] = useState(false)
-  useEffect(() => {setTransactionsAlertOpen(!!transactions.errors)}, [transactions.errors])
   useEffect(() => {
     if (accounts.selectedAccount && selectedDate) {
       dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
@@ -159,26 +142,31 @@ const AccountDetails = () => {
         {
           !accounts.selectedAccount
             ? <Circles height={30}/>
-            : <Dropdown className="btn btn-outline-primary">
-              <Dropdown.Toggle as="a" className="cursor-pointer">
-                {accounts.selectedAccount.bank} ({accounts.selectedAccount.type})
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {
-                  accounts.results?.map((acc, i) =>
-                    <Dropdown.Item key={i} href="!#" onClick={evt => {
-                      evt.preventDefault()
-                      dispatch(setSelectedAccount(accounts.results.find(a => a.id === acc.id)))
-                      history.push(`/finances/accounts/${acc.id}`)
-                    }} className="preview-item" active={acc.id === accounts.selectedAccount.id}>
-                      <div className="preview-item-content">
-                        <p className="preview-subject mb-1">{acc.bank} ({acc.type})</p>
-                      </div>
-                    </Dropdown.Item>
-                  )
-                }
-              </Dropdown.Menu>
-            </Dropdown>
+            : <>
+              <Dropdown className="btn btn-outline-primary">
+                <Dropdown.Toggle as="a" className="cursor-pointer">
+                  {accounts.selectedAccount.bank} ({accounts.selectedAccount.type})
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  {
+                    accounts.results?.map((acc, i) =>
+                      <Dropdown.Item key={i} href="!#" onClick={evt => {
+                        evt.preventDefault()
+                        dispatch(setSelectedAccount(accounts.results.find(a => a.id === acc.id)))
+                        history.push(`/finances/accounts/${acc.id}`)
+                      }} className="preview-item" active={acc.id === accounts.selectedAccount.id}>
+                        <div className="preview-item-content">
+                          <p className="preview-subject mb-1">{acc.bank} ({acc.type})</p>
+                        </div>
+                      </Dropdown.Item>
+                    )
+                  }
+                </Dropdown.Menu>
+              </Dropdown>
+              <div className="btn cursor-pointer" onClick={() => dispatch(setModalOpen(true))}>
+                <i className="mdi mdi-pencil" />
+              </div>
+            </>
         }
       </h3>
       <nav aria-label="breadcrumb">
@@ -194,7 +182,8 @@ const AccountDetails = () => {
         </ol>
       </nav>
     </div>
-    {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{accounts.errors}</Alert>}
+
+    <Errors errors={accounts.errors}/>
     <div className="row">
       <div className="col-sm-12 col-lg-6 grid-margin">
         <div className="card">
@@ -371,8 +360,7 @@ const AccountDetails = () => {
                 </button>
               </div>
             </h4>
-            {transactionsAlertOpen && <Alert variant="danger" dismissible onClose={() => setTransactionsAlertOpen(false)}>{transactions.errors}</Alert>}
-
+           <Errors errors={transactions.errors}/>
             <Collapse in={ searchOpen }>
               <ul className="navbar-nav w-100 rounded">
                 <li className="nav-item w-100">
@@ -593,7 +581,8 @@ const AccountDetails = () => {
         </div>
       </div>
     </div>
-    <EditModal />
+    <AccountEditModal />
+    <TransactionEditModal />
 
   </div>
 }
