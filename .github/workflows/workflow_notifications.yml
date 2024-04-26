@@ -1,0 +1,21 @@
+name: telegram message
+on:
+  workflow_run:
+    workflows:
+      - CI/CD
+    branches:
+      - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          message: |
+            <a target='_blank' href='${{ github.event.workflow_run.html_url }}'>${{ github.event.workflow_run.name }} - ${{ github.event.workflow_run.conclusion }}</a>
+
