@@ -23,6 +23,7 @@ jobs:
           disable_web_page_preview: true
           format: markdown
           message: |
+            Workflow: [#${{ github.event.workflow_run.id}}](${{ github.event.workflow_run.workflow_url }})
             New changes: [${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/commit/${{github.sha}})
             Author: ${{ github.actor }}
             Repo: ${{ github.repository }}
