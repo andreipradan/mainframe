@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 
-from bots.serializers import BotSerializer, MessageSerializer
 from bots.models import Bot, Message
+from bots.serializers import BotSerializer, MessageSerializer
 from clients.logs import MainframeHandler
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class BotViewSet(viewsets.ModelViewSet):
                 str(user.get("id")) in instance.whitelist,
             )
         ):
-            logger.error(f"User {user} not whitelisted")
+            logger.error("User %s not whitelisted", user)
             return JsonResponse(data={"status": "404"})
 
         try:
