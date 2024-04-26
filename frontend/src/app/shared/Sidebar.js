@@ -270,7 +270,7 @@ const Sidebar = () => {
                       </li>
                       <li className="nav-item">
                         <Link className={ isPathActive('/apps/todo') ? 'nav-link active' : 'nav-link' } to="/apps/todo">
-                          ToTrans>
+                          To do List
                         </Link>
                       </li>
                     </ul>

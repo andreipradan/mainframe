@@ -80,7 +80,10 @@ class Watcher(TimeStampedModel):
 
 
 @task()
-def schedule_watcher(watcher: Watcher):
+def schedule_watcher(watcher: Watcher, **kwargs):
+    if kwargs:
+        logger.info("[%s] schedule_watcher got kwargs: %s", watcher.name, kwargs)
+
     def wrapper():
         watcher.run()
 
