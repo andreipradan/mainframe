@@ -18,9 +18,9 @@ jobs:
         with:
           disable_notification: true
           disable_web_page_preview: true
-          format: html
+          format: markdown
           message: |
-            ${{ github.event.workflow_run.name }}: <a target='_blank' href='${{ github.event.workflow_run.html_url }}'>${{ github.event.action }}</a>
+            ${{ github.event.workflow_run.name }} #${{ github.event.workflow_run.id}}: [${{ github.event.action }}](${{ github.event.workflow_run.html_url }})
             ${{ github.event.workflow_run.conclusion }}
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
