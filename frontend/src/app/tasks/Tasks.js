@@ -50,13 +50,6 @@ const Tasks = () =>  {
                 >
                   <i className="mdi mdi-refresh"></i>
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-sm border-0 bg-transparent"
-                  onClick={() => dispatch(TasksApi.flushLocks(token))}
-                >
-                  <i className="mdi mdi-lock-reset"></i>
-                </button>
               </h4>
               {!selectedItem && <Errors errors={errors}/>}
               <div className="table-responsive">

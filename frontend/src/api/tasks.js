@@ -43,18 +43,6 @@ class TasksApi {
       .then(response => dispatch(set(response.data)))
       .catch(err => handleErrors(err, dispatch, setErrors));
   };
-  static flushLocks = token => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .put(`${base}/flush-locks/`, {},{ headers: { Authorization: token } })
-      .then(() => {
-          toast.success(`Logs flushed successfully!`, toastParams)
-          dispatch(setLoading(false))
-          dispatch(setErrors(null))
-        }
-      )
-      .catch(err => handleErrors(err, dispatch, setErrors));
-  };
   static revoke = (token, taskName, app, method) => dispatch => {
     dispatch(setLoading(true));
     axios
