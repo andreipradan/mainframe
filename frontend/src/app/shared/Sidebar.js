@@ -285,6 +285,7 @@ const Sidebar = () => {
                   <span className="menu-title">Auth</span>
                   <i className="menu-arrow"></i>
                 </div>
+
                 <Collapse in={ authMenuOpen }>
                   <div>
                     <ul className="nav flex-column sub-menu">

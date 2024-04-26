@@ -43,23 +43,6 @@ jobs:
             frontend:
               - 'frontend/**'
 
-  notify-no-changes:
-    needs: changes
-    name: Notify there are no changes
-    runs-on: ubuntu-latest
-    if: |
-      ${{ needs.changes.outputs.backend == 'false' }} &&
-      ${{ needs.changes.outputs.frontend == 'false' }}
-    steps:
-      - name: send telegram message
-        uses: appleboy/telegram-action@master
-        with:
-          disable_notification: true
-          disable_web_page_preview: true
-          format: html
-          message: No backend or frontend changes
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
   black:
     name: runner / black
     runs-on: ubuntu-latest
@@ -149,6 +132,15 @@ jobs:
             --image "gcr.io/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
             --allow-unauthenticated
+      - name: Notify
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: html
+          message: Successful BE deployment 🚀
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
 
   frontend-build:
     name: FE - Build
@@ -237,3 +229,12 @@ jobs:
             --image "gcr.io/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
             --allow-unauthenticated
+      - name: Notify
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: html
+          message: Successful FE deployment 🚀
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}

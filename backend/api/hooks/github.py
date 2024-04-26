@@ -59,7 +59,6 @@ def mainframe(request):
         return HttpResponseForbidden("Permission denied.")
 
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
-
     payload = json.loads(request.body)
 
     if event != "workflow_run":
