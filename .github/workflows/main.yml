@@ -44,6 +44,7 @@ jobs:
               - 'frontend/**'
 
   notify-no-changes:
+    needs: changes
     name: Notify there are no changes
     runs-on: ubuntu-latest
     if: |
