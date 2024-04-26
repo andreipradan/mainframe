@@ -103,6 +103,15 @@ jobs:
       - changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     steps:
+      - name: Notify BE start deployment
+        uses: appleboy/telegram-action@master
+        with:
+          disable_notification: true
+          disable_web_page_preview: true
+          format: markdown
+          message: Starting BE deployment
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
         uses: actions/checkout@v4
 
@@ -139,7 +148,7 @@ jobs:
         with:
           disable_notification: true
           disable_web_page_preview: true
-          format: html
+          format: markdown
           message: Successful BE deployment 🚀
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
