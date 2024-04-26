@@ -30,6 +30,8 @@ def log_status(key, errors=None, **kwargs):
 
 @HUEY.signal()
 def signal_handler(signal, task, exc=None):
+    if task.name in ["check_infp", "check_usgs"] and not exc:
+        return
     now = timezone.now().isoformat()
     errors = []
     kwargs = {"id": task.id, "status": signal, "timestamp": now}

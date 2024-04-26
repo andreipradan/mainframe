@@ -1,11 +1,9 @@
 import logging
 from datetime import datetime
 
-import environ
 import pytz
 import requests
 from requests import Response
-from sentry_sdk.crons import monitor
 
 from clients.logs import ManagementCommandsHandler
 from earthquakes.management.commands.base_check import BaseEarthquakeCommand
@@ -18,18 +16,18 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_INFP
     url = "https://web.infp.ro/quakes"
 
-    @monitor(monitor_slug=environ.Env()("SENTRY_INFP"))
     def handle(self, *args, **options):
         super().handle(*args, **options)
 
     def fetch(self, **__):
-        return requests.get(self.url, timeout=30, verify=False)
+        return requests.get(self.url, timeout=30, verify=False)  # noqa S501
 
     def fetch_events(self, response: Response):
+        magnitude_2 = 2
         return [
             r
             for r in response.json()["result"]
-            if r["sols"]["primary"]["magnitudes"]["primary"]["value"] >= 2
+            if r["sols"]["primary"]["magnitudes"]["primary"]["value"] >= magnitude_2
         ]
 
     def get_datetime(self, string):
