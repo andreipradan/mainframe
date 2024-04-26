@@ -13,9 +13,12 @@ jobs:
       - name: send telegram message
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
+          disable_notification: true
+          disable_web_page_preview: true
           format: html
           message: |
-            <a target='_blank' href='${{ github.event.workflow_run.html_url }}'>${{ github.event.workflow_run.name }} - ${{ github.event.workflow_run.conclusion }}</a>
+            <a target='_blank' href='${{ github.event.workflow_run.html_url }}'>${{ github.event.workflow_run.name }} - ${{ github.event.action }}</a>
+            ${{ github.event.workflow_run.conclusion }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
 
