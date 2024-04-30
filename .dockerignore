@@ -23,7 +23,7 @@ dump.rdb
 env.sample
 frontend
 mainframe-pradan-dev-a93167ad1ec9.json
-manage.py
+src/manage.py
 pyproject.toml
 requirements-dev.lock
 src/mainframe/.env

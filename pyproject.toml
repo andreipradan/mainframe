@@ -22,6 +22,7 @@ dependencies = [
     "pillow==10.0.1",
     "psutil==5.9.5",
     "psycopg2-binary==2.9.5",
+    "pygithub>=2.3.0",
     "pyjwt==2.6.0",
     "pypdf2==3.0.1",
     "python-crontab==2.7.1",
@@ -66,11 +67,13 @@ env = [
     "ENV=test"
 ]
 python_files = ["test_*.py"]
+pythonpath = "src"
 
 [tool.rye]
 managed = true
 dev-dependencies = [
     "black>=24.4.2",
+    "django-debug-toolbar>=4.3.0",
     "factory-boy>=3.3.0",
     "ipython>=8.24.0",
     "pytest>=8.2.0",
@@ -81,7 +84,9 @@ dev-dependencies = [
 virtual = true
 
 [tool.rye.scripts]
-dev = "python manage.py runserver"
+dev = "python src/manage.py runserver"
+migrate = "python src/manage.py migrate"
+shell = "python src/manage.py shell_plus"
 
 [tool.ruff]
 target-version = "py310"
