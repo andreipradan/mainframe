@@ -90,7 +90,7 @@ jobs:
       - name: Run a multi-line script
         run: |
           pip install -r requirements-dev.lock
-          ENV=ci PYTHONPATH=src pytest tests --cov=. --ds mainframe.core.settings --nomigrations
+          PYTHONPATH=src ENV=ci pytest tests --cov=. --ds mainframe.core.settings --nomigrations
 
   backend-deploy:
     name: BE - Deploy
