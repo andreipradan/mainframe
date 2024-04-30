@@ -35,8 +35,8 @@ class LoginSerializer(serializers.Serializer):
 
         if not user.is_active:
             error = (
-                "Your account is not active, "
-                "please refer to a member of the staff to update your account"
+                "Your account is not active, please refer to a member "
+                "of the staff to update your account"
             )
             raise exceptions.AuthenticationFailed(error)
 
