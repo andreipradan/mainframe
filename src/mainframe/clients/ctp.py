@@ -9,6 +9,7 @@ import aiohttp
 from mainframe.clients import scraper
 from mainframe.clients.logs import MainframeHandler
 from mainframe.transit_lines.models import Schedule, TransitLine
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -51,9 +52,9 @@ async def fetch(session, sem, line, occ, url):
             async with session.get(
                 url, headers={"Referer": "https://ctpcj.ro/"}
             ) as response:
-                if response.status != 200:  # noqa: PLR2004
+                if response.status != status.HTTP_200_OK:
                     msg = f"Unexpected status for {url}. Status: {response.status}"
-                    if response.status == 404:  # noqa: PLR2004
+                    if response.status == status.HTTP_404_NOT_FOUND:
                         logger.warning(msg)
                     else:
                         raise ValueError(msg)
