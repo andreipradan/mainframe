@@ -166,9 +166,6 @@ REST_FRAMEWORK = {
 #  CORS
 # ##################################################################### #
 
-CORS_ALLOW_ALL_ORIGINS = True
-
-# Load the default ones
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 # ##################################################################### #
