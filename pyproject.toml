@@ -63,11 +63,11 @@ addopts = """\
            --disable-socket \
            -v
 """
-env = [
-    "ENV=test"
-]
 python_files = ["test_*.py"]
 pythonpath = "src"
+
+[tool.pytest_env]
+ENV = { value = "test", skip_if_set = true }
 
 [tool.rye]
 managed = true
