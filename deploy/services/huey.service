@@ -3,7 +3,7 @@ Description=huey task queue service
 
 [Service]
 User=rpi
-WorkingDirectory=/home/rpi/projects/mainframe
+WorkingDirectory=/home/rpi/projects/mainframe/src
 ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_huey -w 4
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_tasks
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[huey]] down
