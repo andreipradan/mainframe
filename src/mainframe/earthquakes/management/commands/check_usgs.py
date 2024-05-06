@@ -51,7 +51,7 @@ class Command(BaseEarthquakeCommand):
         return Earthquake(
             timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(pytz.utc),
             depth=depth,
-            intensity=None,
+            intensity="",
             latitude=lat,
             longitude=long,
             location=props["place"] or "N/A",
