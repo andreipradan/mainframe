@@ -6,7 +6,7 @@ User=rpi
 Environment="NEW_RELIC_CONFIG_FILE=newrelic.ini"
 ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/newrelic-admin run-program /home/rpi/projects/.virtualenvs/mainframe/bin/gunicorn -b 0:7777 --workers 3 --log-file=/var/log/mainframe/server.log core.wsgi
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_crons
-ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[backend]] down
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[backend]] down
 Restart=on-success
 TimeoutSec=900
 WorkingDirectory=/home/rpi/projects/mainframe/src

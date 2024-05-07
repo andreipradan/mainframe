@@ -6,7 +6,7 @@ User=rpi
 WorkingDirectory=/home/rpi/projects/mainframe/src
 ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_huey -w 4
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_tasks
-ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[huey]] down
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[huey]] down
 Restart=on-success
 TimeoutSec=900
 
