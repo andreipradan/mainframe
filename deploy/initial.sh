@@ -65,9 +65,9 @@ echo "[env] Done."
 
 echo "[postgres] Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "[postgres] Done."
 
-echo "[sklearn] Installing scikit-learn deps..." && \
-  sudo apt-get install gfortran libatlas-base-dev libopenblas-dev liblapack-dev -y && \
-  echo "[sklearn] Done."
+#echo "[sklearn] Installing scikit-learn deps..." && \
+#  sudo apt-get install gfortran libatlas-base-dev libopenblas-dev liblapack-dev -y && \
+#  echo "[sklearn] Done."
 
 echo "[redis] Installing redis..." && \
   sudo apt install redis-server -y && \
