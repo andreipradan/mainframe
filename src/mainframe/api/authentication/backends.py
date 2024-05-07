@@ -1,5 +1,6 @@
 import jwt
 from django.conf import settings
+from jwt.exceptions import ExpiredSignatureError
 from mainframe.api.authentication.models import ActiveSession
 from mainframe.api.user.models import User
 from rest_framework import authentication, exceptions
@@ -18,7 +19,10 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
         return self._authenticate_credentials(token)
 
     def _authenticate_credentials(self, token):
-        jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        try:
+            jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        except ExpiredSignatureError as e:
+            raise exceptions.AuthenticationFailed(e) from e
 
         try:
             active_session = ActiveSession.objects.get(token=token)
