@@ -22,7 +22,7 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
         try:
             jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except ExpiredSignatureError as e:
-            raise exceptions.AuthenticationFailed(e) from e
+            raise exceptions.AuthenticationFailed(self.auth_error_message) from e
 
         try:
             active_session = ActiveSession.objects.get(token=token)
