@@ -89,15 +89,17 @@ def mainframe(request):  # noqa: C901, PLR0911
         return HttpResponse("pong")
 
     action = " ".join(payload["action"].split("_"))
-    wf_run = payload.get("workflow_run", payload["workflow_job"])
+    wf_run = payload.get(event)
     name = wf_run["name"]
+    if event == "workflow_job":
+        name = f"[{wf_run['workflow_name']}] {name}"
     conclusion = wf_run.get("conclusion", "")
     branch = wf_run["head_branch"]
     message = (
         f"<a href='{wf_run['html_url']}'><b>{name}</b></a> {action}"
         f" {f'({conclusion.title()})' if conclusion else ''} "
     )
-    if branch == "main" and name == "unit tests":
+    if branch == "main" and name == "[Mainframe pipeline] BE - Deploy":
         if action == "requested":
             message += f"\nCommit: \"{wf_run.get('display_title', branch)}\"\n"
         if conclusion == "success":
