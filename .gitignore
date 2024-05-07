@@ -139,5 +139,5 @@ dmypy.json
 .env__
 /mainframe.json
 
-newrelic.ini
+deploy/newrelic.ini
 /src/mainframe/.env
