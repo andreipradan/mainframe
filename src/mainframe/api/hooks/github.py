@@ -60,7 +60,7 @@ def mainframe(request):
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
     payload = json.loads(request.body)
 
-    if event != "workflow_run":
+    if event not in ["workflow_run", "workflow_job"]:
         compare = payload.get("compare", "")
         new_changes_link = (
             f"<a target='_blank' href='{compare}'>new changes</a>" if compare else ""
@@ -76,7 +76,7 @@ def mainframe(request):
         return HttpResponse("pong")
 
     action = " ".join(payload["action"].split("_"))
-    wf_run = payload["workflow_run"]
+    wf_run = payload.get("workflow_run", payload["workflow_job"])
     name = wf_run["name"]
     conclusion = wf_run.get("conclusion", "")
     branch = wf_run["head_branch"]
