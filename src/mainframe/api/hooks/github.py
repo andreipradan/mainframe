@@ -73,7 +73,7 @@ def mainframe(request):  # noqa: C901, PLR0911
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
     payload = json.loads(request.body)
 
-    if event not in ["workflow_run", "workflow_job"]:
+    if event != "workflow_job":
         compare = payload.get("compare", "")
         new_changes_link = (
             f"<a target='_blank' href='{compare}'>new changes</a>" if compare else ""
@@ -83,16 +83,14 @@ def mainframe(request):  # noqa: C901, PLR0911
 
         pusher = payload.get("pusher", {}).get("name", "")
         send_telegram_message(
-            text=(f"<b>{pusher}</b> {event}ed {new_changes_link} " f"{branch_message}"),
+            text=f"<b>{pusher}</b> {event}ed {new_changes_link} " f"{branch_message}",
             parse_mode=telegram.ParseMode.HTML,
         )
         return HttpResponse("pong")
 
     action = " ".join(payload["action"].split("_"))
     wf_run = payload.get(event)
-    name = wf_run["name"]
-    if event == "workflow_job":
-        name = f"[{wf_run['workflow_name']}] {name}"
+    name = f"[{wf_run['workflow_name']}] {wf_run['name']}"
     conclusion = wf_run.get("conclusion", "")
     branch = wf_run["head_branch"]
     message = (
