@@ -12,7 +12,7 @@ from tests.factories.watchers import WatcherFactory
 class TestWatcherViews:
     def test_create(self, _, __, client, staff_session):
         response = client.post(
-            "/api/watchers/",
+            "/watchers/",
             data={
                 "name": "foo",
                 "selector": ".foo-selector",

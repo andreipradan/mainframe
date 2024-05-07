@@ -13,7 +13,7 @@ class TestUserViewSet:
     def test_delete_as_staff(self, client, staff_session):
         user = UserFactory(is_active=False)
         response = client.delete(
-            f"/api/users/{user.id}",
+            f"/users/{user.id}",
             HTTP_AUTHORIZATION=staff_session.token,
             content_type="application/json",
         )
@@ -24,14 +24,14 @@ class TestUserViewSet:
     def test_delete_forbidden(self, client, session):
         user = UserFactory(is_active=False)
         response = client.delete(
-            f"/api/users/{user.id}",
+            f"/users/{user.id}",
             HTTP_AUTHORIZATION=session.token,
             content_type="application/json",
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN, response.data
 
     def test_detail_as_staff(self, client, staff_session):
-        url = f"/api/users/{staff_session.user_id}"
+        url = f"/users/{staff_session.user_id}"
         response = client.get(url, HTTP_AUTHORIZATION=staff_session.token)
         assert response.status_code == status.HTTP_200_OK, response.data
         assert response.json() == {
@@ -45,13 +45,13 @@ class TestUserViewSet:
         }
 
     def test_detail_forbidden(self, client, session):
-        url = f"/api/users/{session.user_id}"
+        url = f"/users/{session.user_id}"
         response = client.get(url, HTTP_AUTHORIZATION=session.token)
         assert response.status_code == status.HTTP_403_FORBIDDEN, response.data
 
     def test_edit_as_staff(self, client, staff_session):
         user = UserFactory(is_active=False)
-        url = f"/api/users/{user.id}"
+        url = f"/users/{user.id}"
         response = client.patch(
             url,
             data=json.dumps({"is_active": True}),
@@ -63,7 +63,7 @@ class TestUserViewSet:
 
     def test_edit_forbidden(self, client, session):
         user = UserFactory(is_active=False)
-        url = f"/api/users/{user.id}"
+        url = f"/users/{user.id}"
         response = client.patch(
             url,
             data=json.dumps({"is_active": True}),
@@ -74,7 +74,7 @@ class TestUserViewSet:
 
     def test_list_as_staff(self, client, staff_session):
         user = UserFactory(is_active=False)
-        response = client.get("/api/users/", HTTP_AUTHORIZATION=staff_session.token)
+        response = client.get("/users/", HTTP_AUTHORIZATION=staff_session.token)
         assert response.status_code == status.HTTP_200_OK, response.data
         assert response.json() == {
             "count": 2,
@@ -104,5 +104,5 @@ class TestUserViewSet:
 
     def test_list_forbidden(self, client, session):
         UserFactory(is_active=False)
-        response = client.get("/api/users/", HTTP_AUTHORIZATION=session.token)
+        response = client.get("/users/", HTTP_AUTHORIZATION=session.token)
         assert response.status_code == status.HTTP_403_FORBIDDEN, response.data
