@@ -3,6 +3,7 @@ import hmac
 import json
 from ipaddress import ip_address, ip_network
 
+import environ
 import requests
 import telegram
 from django.conf import settings
@@ -11,13 +12,14 @@ from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from mainframe.clients.chat import send_telegram_message
 from mainframe.core.tasks import schedule_deploy
+from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 
 PREFIX = "[GitHub]"
 
 
 @csrf_exempt
-def mainframe(request):
+def mainframe(request):  # noqa: C901, PLR0911
     if not request.method == "POST":
         raise MethodNotAllowed(request.method)
 
@@ -25,9 +27,20 @@ def mainframe(request):
     client_ip_address = ip_address(
         request.META.get("HTTP_X_FORWARDED_FOR").split(", ")[0]
     )
-    whitelist = requests.get("https://api.github.com/meta", timeout=30).json()["hooks"]
+    env = environ.Env()
+    response = requests.get(
+        "https://api.github.com/meta",
+        headers={"Authorization": f"Bearer {env('GITHUB_ACCESS_TOKEN')}"},
+        timeout=30,
+    )
+    if response.status_code != status.HTTP_200_OK:
+        send_telegram_message(
+            f"{PREFIX} Warning, {client_ip_address} tried "
+            f"to call mainframe github webhook URL"
+        )
+        return HttpResponseForbidden("Unexpected status: %d" % response.status_code)
 
-    for valid_ip in whitelist:
+    for valid_ip in response.json()["hooks"]:
         if client_ip_address in ip_network(valid_ip):
             break
     else:
