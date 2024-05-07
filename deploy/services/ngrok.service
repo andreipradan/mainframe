@@ -4,7 +4,7 @@ Description=Ngrok public URL service
 
 [Service]
 User=rpi
-WorkingDirectory=/home/rpi/projects/mainframe/backend
+WorkingDirectory=/home/rpi/projects/mainframe/src
 ExecStart=/usr/local/bin/ngrok start --all
 ExecStartPost=/usr/bin/timeout 60 sh -c \
     'while ! ss -H -t -l -n sport = :7777 | grep -q "^LISTEN.*:7777"; \

@@ -9,7 +9,7 @@ ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python clients/chat.py [[backend]] down
 Restart=on-success
 TimeoutSec=900
-WorkingDirectory=/home/rpi/projects/mainframe/backend
+WorkingDirectory=/home/rpi/projects/mainframe/src
 
 [Install]
 WantedBy=multi-user.target
