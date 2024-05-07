@@ -28,7 +28,7 @@ def set_github_hook(ngrok_url):
     hook_config = {
         "name": "web",
         "config": {
-            "url": f"{ngrok_url}/api/hooks/github/",
+            "url": f"{ngrok_url}/hooks/github/",
             "content_type": "json",
             "secret": settings.SECRET_KEY,
         },
@@ -57,7 +57,7 @@ class Command(BaseCommand):
         set_github_hook(ngrok_url)
         logger.info("[Hooks][GitHub] Done")
         for bot in Bot.objects.filter(is_active=True):
-            url = f"{ngrok_url}/api/telegram/bots/{bot.id}/webhook/"
+            url = f"{ngrok_url}/telegram/bots/{bot.id}/webhook/"
             try:
                 response = bot.telegram_bot.set_webhook(url)
                 logger.info(

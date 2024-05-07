@@ -25,7 +25,7 @@ def mainframe(request):
     client_ip_address = ip_address(
         request.META.get("HTTP_X_FORWARDED_FOR").split(", ")[0]
     )
-    whitelist = requests.get("https://api.github.com/meta").json()["hooks"]
+    whitelist = requests.get("https://api.github.com/meta", timeout=30).json()["hooks"]
 
     for valid_ip in whitelist:
         if client_ip_address in ip_network(valid_ip):
