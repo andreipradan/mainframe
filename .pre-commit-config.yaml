@@ -20,6 +20,6 @@ repos:
       - id: migrations-check
         language: system
         name: check for uncreated migrations
-        entry: sh -c "rye run python src/manage.py makemigrations --check --dry-run"
+        entry: sh -c "python src/manage.py makemigrations --check --dry-run"
         files: "models\\.py$"
         stages: [commit]
