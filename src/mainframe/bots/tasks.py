@@ -1,3 +1,4 @@
+import random
 from collections import deque
 
 import requests
@@ -74,3 +75,32 @@ def who_s_next_reminder():
         config["posted"] = False
     bot.save()
     bot.send_message(chat_id=config["chat_id"], text=text)
+
+
+@db_periodic_task(crontab(minute=0, hour=19))
+@HUEY.lock_task("word-of-the-day-lock")
+def word_of_the_day():
+    if settings.ENV != "prod":
+        return
+
+    dex_url = "https://dexonline.ro/definitie/{}/json"
+    min_len = 5
+    data_path = settings.BASE_DIR / "bots" / "management" / "commands" / "data"
+    with open(data_path / "ro-words.txt", "r") as file:
+        while len(word := random.choice(file.readlines())) < min_len:  # noqa: S311
+            ...
+
+    word = word.strip()
+    response = requests.get(dex_url.format(word), timeout=10)
+    response.raise_for_status()
+    response = response.json()
+    definition = BeautifulSoup(response["definitions"][0]["htmlRep"], "html.parser")
+    for tag_name in ["abbr", "span", "sup"]:
+        for tag in definition.find_all(tag_name):
+            tag.replace_with(tag.text)
+    bot = Bot.objects.get(additional_data__whos_next__isnull=False)
+
+    bot.send_message(
+        chat_id=bot.additional_data["whos_next"]["chat_id"],
+        text=f"📖 Cuvântu' de azi: <b>{word}</b> 📖\n\n{definition}",
+    )

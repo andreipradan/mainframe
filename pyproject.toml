@@ -40,7 +40,7 @@ dependencies = [
     "sqlparse>=0.5.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
 
 [build-system]
 requires = ["hatchling"]

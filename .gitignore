@@ -116,6 +116,7 @@ ENV/
 env/
 env.bak/
 src/.env
+src/mainframe/.env
 venv/
 venv.bak/
 

@@ -1,6 +1,12 @@
 ## [mainframe](https://pradan.dev/) - `Django - React`
 ![healthchecks.io](https://healthchecks.io/badge/5a1d5302-e570-47ef-bbbf-50c73b283092/-O8jpQTp.svg)
 
+### initial setup
+```shell
+rye sync
+rye run dev
+```
+
 ### db backup
 #### Individual app data
 
