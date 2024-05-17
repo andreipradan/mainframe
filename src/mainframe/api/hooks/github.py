@@ -73,7 +73,7 @@ def mainframe(request):  # noqa: C901, PLR0911
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
     payload = json.loads(request.body)
 
-    if event not in ["workflow_job", "workflow_run"]:
+    if event != "workflow_job":
         compare = payload.get("compare", "")
         new_changes_link = (
             f"<a target='_blank' href='{compare}'>new changes</a>" if compare else ""
@@ -88,25 +88,21 @@ def mainframe(request):  # noqa: C901, PLR0911
         )
         return HttpResponse("pong")
 
-    action = " ".join(payload["action"].split("_"))
-    if event == "workflow_job" and action in ["queued", "in progress"]:
+    wf_data = payload.get(event)
+    name = f"[{wf_data['workflow_name']}] {wf_data['name']}"
+    if wf_data["head_branch"] != "main" or name != "[Mainframe pipeline] BE - Deploy":
         return HttpResponse(status=204)
 
-    wf_data = payload.get(event)
-    prefix = wf_data.get("workflow_name", "")
-    name = f"[{prefix}] {wf_data['name']}"
-    conclusion = wf_data.get("conclusion", "")
-    branch = wf_data["head_branch"]
+    action = " ".join(payload["action"].split("_"))
+    if action != "completed" or (conclusion := wf_data.get("conclusion")) != "success":
+        return HttpResponse(status=204)
+
     message = (
         f"<a href='{wf_data['html_url']}'><b>{name}</b></a> {action}"
         f" {f'({conclusion.title()})' if conclusion else ''} "
     )
-    if branch == "main" and name == "[Mainframe pipeline] BE - Deploy":
-        if action == "requested":
-            message += f"\nCommit: \"{wf_data.get('display_title', branch)}\"\n"
-        if conclusion == "success":
-            schedule_deploy()
-            message += "🎉\n🍓 Deployment scheduled 🚀"
+    schedule_deploy()
+    message += "🎉\n🍓 Deployment scheduled 🚀"
 
     send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
