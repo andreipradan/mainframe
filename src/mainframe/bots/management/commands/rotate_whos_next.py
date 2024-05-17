@@ -72,6 +72,7 @@ def whos_next(config):
 
     msg = f"{previous_msg}<b>{current}</b>"
     theme = config.get("theme")
+
     if theme:
         msg += f"\nCuvântu' e: {theme}"
         if posted:
