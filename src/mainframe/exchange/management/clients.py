@@ -24,7 +24,7 @@ class BaseExchange:
         except requests.exceptions.HTTPError as e:
             self.logger.exception(e)
             raise FetchExchangeRatesException("Error fetching exchange rates") from e
-        return BeautifulSoup(resp.content, features="xml")
+        return BeautifulSoup(resp.content, features="lxml")
 
     def fetch(self, full):
         urls = self.fetch_available_urls() if full else [self.url]
@@ -69,13 +69,13 @@ class BNR(BaseExchange):
         ]
 
     def parse(self, soup: BeautifulSoup) -> list[ExchangeRate]:
-        orig_currency = soup.find("OrigCurrency").text
-        source = soup.find("Publisher").text
+        orig_currency = soup.find("origcurrency").text
+        source = soup.find("publisher").text
 
         rates = []
-        for cube in soup.find_all("Cube"):
+        for cube in soup.find_all("cube"):
             date = cube.attrs["date"]
-            for tag in cube.find_all("Rate"):
+            for tag in cube.find_all("rate"):
                 currency = tag.attrs["currency"]
                 try:
                     value = Decimal(tag.text)
@@ -113,9 +113,9 @@ class ECB(BaseExchange):
         source = soup.find("gesmes:name").text
 
         rates = []
-        for cube in [x for x in soup.Cube.find_all("Cube") if x.attrs.get("time")]:
+        for cube in [x for x in soup.cube.find_all("cube") if x.attrs.get("time")]:
             date = cube.attrs["time"]
-            for tag in cube.find_all("Cube"):
+            for tag in cube.find_all("cube"):
                 currency = tag.attrs["currency"]
                 try:
                     value = Decimal(tag.attrs["rate"])

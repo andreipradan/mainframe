@@ -9,4 +9,4 @@ RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir -r  /temp_requirements/
 WORKDIR /app
 COPY src gunicorn.config.py ./
 
-CMD exec newrelic-admin run-program gunicorn -c gunicorn.config.py --bind 0.0.0.0:$PORT
+CMD exec gunicorn -c gunicorn.config.py --bind 0.0.0.0:$PORT

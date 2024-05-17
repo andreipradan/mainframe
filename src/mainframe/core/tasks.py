@@ -64,7 +64,7 @@ def schedule_deploy():
 
     cmd_params = []
     msg_extra = []
-    if "requirements.txt" in output.strip():
+    if "requirements.lock" in output.strip():
         cmd_params.append("requirements")
         msg_extra.append("requirements")
     else:
