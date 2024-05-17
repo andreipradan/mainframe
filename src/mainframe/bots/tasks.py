@@ -79,7 +79,7 @@ def who_s_next_reminder():
     bot.send_message(chat_id=config["chat_id"], text=text)
 
 
-@db_periodic_task(crontab(minute=0, hour=18))
+@db_periodic_task(crontab(minute=10, hour=18))
 @HUEY.lock_task("word-of-the-day-lock")
 def word_of_the_day():
     if settings.ENV != "prod":
