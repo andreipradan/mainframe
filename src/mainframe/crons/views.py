@@ -35,7 +35,6 @@ class CronViewSet(viewsets.ModelViewSet):
             instance.run()
         except ValidationError as e:
             return JsonResponse(
-                data={"detail": str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
+                data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )
         return JsonResponse(data={"detail": "ok"}, status=status.HTTP_204_NO_CONTENT)
