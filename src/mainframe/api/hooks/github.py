@@ -73,7 +73,7 @@ def mainframe(request):  # noqa: C901, PLR0911
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
     payload = json.loads(request.body)
 
-    if event != "workflow_job":
+    if event not in ["workflow_job", "workflow_run"]:
         compare = payload.get("compare", "")
         new_changes_link = (
             f"<a target='_blank' href='{compare}'>new changes</a>" if compare else ""
@@ -89,6 +89,9 @@ def mainframe(request):  # noqa: C901, PLR0911
         return HttpResponse("pong")
 
     action = " ".join(payload["action"].split("_"))
+    if event == "workflow_job" and action not in ["queued", "in progress"]:
+        return HttpResponse(status=204)
+
     wf_run = payload.get(event)
     name = f"[{wf_run['workflow_name']}] {wf_run['name']}"
     conclusion = wf_run.get("conclusion", "")
@@ -102,7 +105,7 @@ def mainframe(request):  # noqa: C901, PLR0911
             message += f"\nCommit: \"{wf_run.get('display_title', branch)}\"\n"
         if conclusion == "success":
             schedule_deploy()
-            message += "🎉\nDeployment scheduled 🚀"
+            message += "🎉\n🍓 Deployment scheduled 🚀"
 
     send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
     return HttpResponse(status=204)
