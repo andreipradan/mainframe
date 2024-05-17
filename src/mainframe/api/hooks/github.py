@@ -92,17 +92,18 @@ def mainframe(request):  # noqa: C901, PLR0911
     if event == "workflow_job" and action in ["queued", "in progress"]:
         return HttpResponse(status=204)
 
-    wf_run = payload.get(event)
-    name = f"[{wf_run['workflow_name']}] {wf_run['name']}"
-    conclusion = wf_run.get("conclusion", "")
-    branch = wf_run["head_branch"]
+    wf_data = payload.get(event)
+    prefix = wf_data.get("workflow_name", "")
+    name = f"[{prefix}] {wf_data['name']}"
+    conclusion = wf_data.get("conclusion", "")
+    branch = wf_data["head_branch"]
     message = (
-        f"<a href='{wf_run['html_url']}'><b>{name}</b></a> {action}"
+        f"<a href='{wf_data['html_url']}'><b>{name}</b></a> {action}"
         f" {f'({conclusion.title()})' if conclusion else ''} "
     )
     if branch == "main" and name == "[Mainframe pipeline] BE - Deploy":
         if action == "requested":
-            message += f"\nCommit: \"{wf_run.get('display_title', branch)}\"\n"
+            message += f"\nCommit: \"{wf_data.get('display_title', branch)}\"\n"
         if conclusion == "success":
             schedule_deploy()
             message += "🎉\n🍓 Deployment scheduled 🚀"
