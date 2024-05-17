@@ -23,6 +23,7 @@ jobs:
           disable_web_page_preview: true
           format: markdown
           message: |
+            [Mainframe pipeline](${{ github.event.workflow_job.html_url }}): started
             New changes: [${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/commit/${{github.sha}})
             Author: ${{ github.actor }}
             Repo: ${{ github.repository }}
@@ -110,7 +111,9 @@ jobs:
           disable_notification: true
           disable_web_page_preview: true
           format: markdown
-          message: Starting BE deployment
+          message: |
+            [Mainframe](${{ github.event.workflow_job.html_url }})
+            Starting BE deployment
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
@@ -149,7 +152,9 @@ jobs:
           disable_notification: true
           disable_web_page_preview: true
           format: markdown
-          message: Successful BE deployment 🚀
+          message: |
+            [Mainframe](${{ github.event.workflow_job.html_url }})
+            BE deployed successfully 🚀
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
 
@@ -166,7 +171,9 @@ jobs:
           disable_notification: true
           disable_web_page_preview: true
           format: markdown
-          message: Starting FE deployment
+          message: |
+            [Mainframe](${{ github.event.workflow_job.html_url }})
+            Starting FE deployment
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
@@ -255,6 +262,8 @@ jobs:
           disable_notification: true
           disable_web_page_preview: true
           format: html
-          message: Successful FE deployment 🚀
+          message: |
+            [Mainframe](${{ github.event.workflow_job.html_url }})
+            FE deployed successfully 🚀
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
