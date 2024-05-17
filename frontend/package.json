@@ -19,7 +19,7 @@
     "compass-mixins": "^0.12.10",
     "i18next": "^19.9.2",
     "i18next-browser-languagedetector": "^4.3.1",
-    "js-cookie": "^3.0.1",
+    "js-cookie": "^3.0.5",
     "prettier": "^3.2.5",
     "nouislider-react": "^3.4.2",
     "react": "^16.14.0",
