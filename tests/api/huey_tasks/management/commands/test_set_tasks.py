@@ -37,8 +37,6 @@ class TestCommand:
         assert send_mock.call_args_list == [mock.call(text="[[huey]] up")]
         assert logging_mock.getLogger.return_value.info.call_args_list == [
             mock.call("[Set tasks] Setting tasks for all crons and watchers"),
-            mock.call("[Set tasks] Cron set: %s", cron.command),
-            mock.call("[Set tasks] Watcher set: %s", watcher.name),
             mock.call("[Set tasks] Done"),
         ]
         assert len(calls := schedule_task_mock.call_args_list) == 2

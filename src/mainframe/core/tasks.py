@@ -97,11 +97,11 @@ def schedule_deploy():
 
 @task()
 def schedule_task(instance, **kwargs):
-    if (class_name := instance.__class__.__qualname__) == "cron":
+    if (class_name := instance.__class__.__qualname__) == "Cron":
         display_name = instance.command
         expression = instance.expression
         task_name = f"crons.models.{display_name}"
-    elif class_name == "watcher":
+    elif class_name == "Watcher":
         display_name = instance.name
         expression = instance.cron
         task_name = f"watchers.models.{display_name}"

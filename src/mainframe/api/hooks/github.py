@@ -15,7 +15,7 @@ from mainframe.core.tasks import schedule_deploy
 from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 
-PREFIX = "[GitHub]"
+PREFIX = "[[GitHub]]"
 
 
 @csrf_exempt
