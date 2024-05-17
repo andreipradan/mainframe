@@ -6,7 +6,7 @@ from django.urls import reverse
 from tests.factories.watchers import WatcherFactory
 
 
-@mock.patch("mainframe.watchers.models.schedule_watcher", return_value="{}")
+@mock.patch("mainframe.watchers.models.schedule_task", return_value="{}")
 @mock.patch("mainframe.watchers.serializers.get_redis_client", return_value={})
 @pytest.mark.django_db
 class TestWatcherViews:
@@ -46,10 +46,10 @@ class TestWatcherViews:
         assert response.json() == {
             "chat_id": None,
             "created_at": mock.ANY,
-            "cron": "",
+            "cron": "0 0 31 2 0",
             "id": watcher.id,
             "latest": {},
-            "name": "",
+            "name": mock.ANY,
             "redis": {},
             "request": {},
             "selector": ".foo-selector",
@@ -73,10 +73,10 @@ class TestWatcherViews:
                 {
                     "chat_id": None,
                     "created_at": mock.ANY,
-                    "cron": "",
+                    "cron": "0 0 31 2 0",
                     "id": watcher.id,
                     "latest": {},
-                    "name": "",
+                    "name": mock.ANY,
                     "redis": {},
                     "request": {},
                     "selector": ".foo-selector",

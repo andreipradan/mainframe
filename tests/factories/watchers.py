@@ -7,7 +7,7 @@ class BaseWatcherFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Watcher
 
-    cron = "0 0 0 0 0"
+    cron = "0 0 31 2 0"
     name = factory.Sequence(lambda n: f"name {n}")
     selector = ".foo-selector"
 

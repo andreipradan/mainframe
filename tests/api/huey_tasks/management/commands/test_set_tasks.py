@@ -23,7 +23,7 @@ class TestCommand:
             mock.call(text="[[huey]] up"),
         ]
         assert logging_mock.getLogger.return_value.info.call_args_list == [
-            mock.call("[Set tasks] Setting tasks for all watchers with crons"),
+            mock.call("[Set tasks] Setting tasks for all crons and watchers"),
             mock.call("[Set tasks] Done"),
         ]
 
@@ -47,10 +47,10 @@ class TestCommand:
         assert len(args := calls[0].args) == 1
         assert isinstance((instance := args[0]), Cron)
         assert instance.command == cron.command
-        assert instance.expression == "0 0 0 0 0"
+        assert instance.expression == "0 0 31 2 0"
 
         # watcher
         assert len(args := calls[1].args) == 1
         assert isinstance((instance := args[0]), Watcher)
         assert instance.name == watcher.name
-        assert instance.cron == "0 0 0 0 0"
+        assert instance.cron == "0 0 31 2 0"
