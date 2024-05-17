@@ -36,6 +36,8 @@ def backup_bots():
 @periodic_task(crontab(minute="*/5"))
 @HUEY.lock_task("healthcheck-lock")
 def healthcheck():
+    if settings.ENV != "prod":
+        return
     healthchecks.ping()
 
 
@@ -77,7 +79,7 @@ def who_s_next_reminder():
     bot.send_message(chat_id=config["chat_id"], text=text)
 
 
-@db_periodic_task(crontab(minute=0, hour=19))
+@db_periodic_task(crontab(minute=0, hour=18))
 @HUEY.lock_task("word-of-the-day-lock")
 def word_of_the_day():
     if settings.ENV != "prod":
