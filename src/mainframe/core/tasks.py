@@ -100,10 +100,12 @@ def schedule_task(instance, **kwargs):
     if (class_name := instance.__class__.__qualname__) == "Cron":
         display_name = instance.command
         expression = instance.expression
+        is_active = instance.is_active
         task_name = f"crons.models.{display_name}"
     elif class_name == "Watcher":
         display_name = instance.name
         expression = instance.cron
+        is_active = bool(expression)
         task_name = f"watchers.models.{display_name}"
     else:
         logger.error("Unknown task class: %s", class_name)
@@ -124,7 +126,7 @@ def schedule_task(instance, **kwargs):
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
         logger.info("Unregistered task: %s", display_name)
-    if expression:
+    if expression and is_active:
         schedule = crontab(*expression.split())
         periodic_task(schedule, name=display_name)(wrapper)
         logger.info("Scheduled task: %s", display_name)

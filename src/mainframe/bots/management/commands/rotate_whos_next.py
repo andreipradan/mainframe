@@ -104,7 +104,8 @@ class Command(BaseCommand):
             )
         elif not config["posted"]:
             text = (
-                f"Ei ceapa ta <b>{post_order[0]} 😒</b>\nMâine tot tu tre sa bagi\n"
+                f"Ei ceapa ta <b>{post_order[0]} 😒</b>\n"
+                "Tot tu tre sa bagi, dar alt cuvânt\n"
                 f"Cuvântu' e: {config['theme']}"
             )
         else:
