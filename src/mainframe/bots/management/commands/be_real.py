@@ -53,7 +53,6 @@ class Command(BaseCommand):
                     command="be_real",
                     expression=expression,
                     is_active=True,
-                    is_management=True,
                 )
             ]
         )

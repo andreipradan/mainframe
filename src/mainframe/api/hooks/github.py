@@ -89,7 +89,7 @@ def mainframe(request):  # noqa: C901, PLR0911
         return HttpResponse("pong")
 
     action = " ".join(payload["action"].split("_"))
-    if event == "workflow_job" and action not in ["queued", "in progress"]:
+    if event == "workflow_job" and action in ["queued", "in progress"]:
         return HttpResponse(status=204)
 
     wf_run = payload.get(event)

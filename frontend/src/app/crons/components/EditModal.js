@@ -22,14 +22,12 @@ const EditModal = () => {
   const [command, setCommand] = useState("");
   const [expression, setExpression] = useState("");
   const [isActive, setIsActive] = useState(false);
-  const [isManagement, setIsManagement] = useState(false);
 
   useEffect(() => {
     if (cron) {
       setCommand(cron.command || "")
       setExpression(cron.expression)
       setIsActive(cron.is_active)
-      setIsManagement(cron.is_management)
     }
   }, [cron]);
 
@@ -37,7 +35,6 @@ const EditModal = () => {
     setCommand("")
     setExpression("")
     setIsActive(false)
-    setIsManagement(false)
   }
 
   const closeModal = () => {
@@ -124,14 +121,12 @@ const EditModal = () => {
                     command: command,
                     expression: expression,
                     is_active: isActive,
-                    is_management: isManagement,
                   }
               ))
               else dispatch(CronsApi.create(token, {
                     command: command,
                     expression: expression,
                     is_active: isActive,
-                    is_management: isManagement,
                   }))
               clearModal()
           }}
