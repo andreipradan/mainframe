@@ -71,9 +71,7 @@ def whos_next(config):
         previous_msg = f"A fost: <b>{prev}</b>\nUrmează: "
 
     msg = f"{previous_msg}<b>{current}</b>"
-    theme = config.get("theme")
-
-    if theme:
+    if theme := config.get("theme"):
         msg += f"\nCuvântu' e: {theme}"
         if posted:
             msg += "\nNoua tema se anunta la 9 PM"
