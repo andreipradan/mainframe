@@ -1,8 +1,7 @@
 import logging
 
 import psutil
-from django.core.exceptions import ImproperlyConfigured
-from django.core.management import CommandError, call_command
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from mainframe.clients.logs import MainframeHandler
 from mainframe.crons.models import Cron
@@ -32,12 +31,9 @@ class CronViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["put"])
     def run(self, request, **kwargs):
         instance: Cron = self.get_object()
-        command, *args = instance.command.split()
-        args = {arg.split("=")[0].replace("--", ""): arg.split("=")[1] for arg in args}
         try:
-            call_command(command, **args)
-        except (CommandError, ImproperlyConfigured, KeyError, TypeError) as e:
-            logger.exception(e)
+            instance.run()
+        except ValidationError as e:
             return JsonResponse(
                 data={"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,

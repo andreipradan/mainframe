@@ -8,7 +8,6 @@ import environ
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.cron import set_crons
 from mainframe.clients.logs import ManagementCommandsHandler
 from mainframe.crons.models import Cron
 
@@ -46,16 +45,10 @@ class Command(BaseCommand):
             f"{tomorrow_run.minute} {tomorrow_run.hour} "
             f"{tomorrow_run.day} {tomorrow_run.month} *"
         )
-        Cron.objects.filter(command__contains="be_real").update(expression=expression)
-        set_crons(
-            [
-                Cron(
-                    command="be_real",
-                    expression=expression,
-                    is_active=True,
-                )
-            ]
+        Cron.objects.update_or_create(
+            command="be_real", defaults={"expression": expression}
         )
+
         logger.info(
             "Set next run and cron to %s", tomorrow_run.strftime("%H:%M %d.%m.%Y")
         )

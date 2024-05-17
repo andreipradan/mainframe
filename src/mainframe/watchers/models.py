@@ -8,12 +8,10 @@ from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
 from django.utils import timezone
-from huey import crontab
-from huey.contrib.djhuey import HUEY, periodic_task, task
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import MainframeHandler
 from mainframe.core.models import TimeStampedModel
-from mainframe.core.tasks import log_status
+from mainframe.core.tasks import log_status, schedule_task
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -78,31 +76,12 @@ class Watcher(TimeStampedModel):
         return False
 
 
-@task()
-def schedule_watcher(watcher: Watcher, **kwargs):
-    if kwargs:
-        logger.info("[%s] schedule_watcher got kwargs: %s", watcher.name, kwargs)
-
-    def wrapper():
-        watcher.run()
-
-    task_name = f"watchers.models.{watcher.name}"
-    if task_name in HUEY._registry._registry:
-        task_class = HUEY._registry.string_to_task(task_name)
-        HUEY._registry.unregister(task_class)
-        logger.info("Unregistered task: %s", watcher.name)
-    if watcher.cron:
-        schedule = crontab(*watcher.cron.split())
-        periodic_task(schedule, name=watcher.name)(wrapper)
-        logger.info("Scheduled task: %s", watcher.name)
-
-
 @receiver(signals.post_delete, sender=Watcher)
 def post_delete(sender, instance, **kwargs):
     instance.cron = ""
-    schedule_watcher(instance)
+    schedule_task(instance)
 
 
 @receiver(signals.post_save, sender=Watcher)
 def post_save(sender, instance, **kwargs):
-    schedule_watcher(instance)
+    schedule_task(instance)

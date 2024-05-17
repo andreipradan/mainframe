@@ -1,13 +1,13 @@
 import logging
 
-from django.core.management import call_command
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management import CommandError, call_command
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
-from huey import crontab
-from huey.contrib.djhuey import HUEY, periodic_task, task
 from mainframe.clients.logs import MainframeHandler
 from mainframe.core.models import TimeStampedModel
+from mainframe.core.tasks import schedule_task
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MainframeHandler())
@@ -25,36 +25,21 @@ class Cron(TimeStampedModel):
     def __repr__(self):
         return f"{self.command} - {self.expression}"
 
-
-@task()
-def schedule_cron(cron: Cron, **kwargs):
-    if kwargs:
-        logger.info("[%s] schedule_cron got kwargs: %s", cron.command, kwargs)
-
-    def wrapper():
-        command, *args = cron.command.split()
-        call_command(
-            command,
-            **{arg.split("=")[0].replace("--", ""): arg.split("=")[1] for arg in args},
-        )
-
-    task_name = f"crons.models.{cron.command}"
-    if task_name in HUEY._registry._registry:
-        task_class = HUEY._registry.string_to_task(task_name)
-        HUEY._registry.unregister(task_class)
-        logger.info("Unregistered task: %s", cron.command)
-    if cron.expression:
-        schedule = crontab(*cron.expression.split())
-        periodic_task(schedule, name=cron.command)(wrapper)
-        logger.info("Scheduled task: %s", cron.command)
+    def run(self):
+        command, *args = self.command.split()
+        args = {arg.split("=")[0].replace("--", ""): arg.split("=")[1] for arg in args}
+        try:
+            call_command(command, **args)
+        except (CommandError, ImproperlyConfigured, KeyError, TypeError) as e:
+            logger.exception(e)
 
 
 @receiver(signals.post_delete, sender=Cron)
-def post_delete(sender, instance, **kwargs):
+def post_delete(sender, instance: Cron, **kwargs):
     instance.expression = ""
-    schedule_cron(instance)
+    schedule_task(instance)
 
 
 @receiver(signals.post_save, sender=Cron)
 def post_save(sender, instance, **kwargs):
-    schedule_cron(instance)
+    schedule_task(instance)

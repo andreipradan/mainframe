@@ -3,11 +3,14 @@ import logging
 
 from django.conf import settings
 from django.utils import timezone
-from huey.contrib.djhuey import HUEY, task
-from mainframe.clients import cron
+from huey import crontab
+from huey.contrib.djhuey import HUEY, periodic_task, task
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import MainframeHandler
 from mainframe.clients.system import run_cmd
+
+logger = logging.getLogger(__name__)
+logger.addHandler(MainframeHandler())
 
 
 def get_redis_client():
@@ -47,6 +50,8 @@ def signal_handler(signal, task, exc=None):
 
 @task(expires=10)
 def schedule_deploy():
+    from mainframe.clients import cron
+
     logger = logging.getLogger(__name__)
     logger.addHandler(MainframeHandler())
 
@@ -88,3 +93,38 @@ def schedule_deploy():
     command = f"{mkdir} && {deploy_cmd} >> {output}"
     cron.delay(command)
     return msg
+
+
+@task()
+def schedule_task(instance, **kwargs):
+    if (class_name := instance.__class__.__qualname__) == "cron":
+        display_name = instance.command
+        expression = instance.expression
+        task_name = f"crons.models.{display_name}"
+    elif class_name == "watcher":
+        display_name = instance.name
+        expression = instance.cron
+        task_name = f"watchers.models.{display_name}"
+    else:
+        logger.error("Unknown task class: %s", class_name)
+        return
+
+    if kwargs:
+        logger.info(
+            "[%s][%s] schedule_task got kwargs: %s",
+            instance.__class__.__qualname__,
+            display_name,
+            kwargs,
+        )
+
+    def wrapper():
+        instance.run()
+
+    if task_name in HUEY._registry._registry:
+        task_class = HUEY._registry.string_to_task(task_name)
+        HUEY._registry.unregister(task_class)
+        logger.info("Unregistered task: %s", display_name)
+    if expression:
+        schedule = crontab(*expression.split())
+        periodic_task(schedule, name=display_name)(wrapper)
+        logger.info("Scheduled task: %s", display_name)
