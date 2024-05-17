@@ -4,7 +4,7 @@ import random
 import telegram
 from django.conf import settings
 from django.core.management import CommandError
-from mainframe.bots.management.commands.check_whos_next import whos_next
+from mainframe.bots.management.commands.rotate_whos_next import whos_next
 from mainframe.bots.management.commands.set_hooks import get_ngrok_url
 from mainframe.bots.models import Bot, Message
 from mainframe.bots.webhooks.inlines.bus import BusInline
