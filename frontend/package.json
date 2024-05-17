@@ -9,7 +9,7 @@
     "@fullcalendar/core": "^6.1.8",
     "@fullcalendar/daygrid": "^6.1.8",
     "@fullcalendar/react": "^6.1.8",
-    "@mdi/font": "^4.2.95",
+    "@mdi/font": "^4.9.95",
     "@reduxjs/toolkit": "^1.9.7",
     "axios": "^1.6.4",
     "bootstrap": "^4.6.2",
