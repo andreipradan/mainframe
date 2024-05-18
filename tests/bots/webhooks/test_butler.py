@@ -607,7 +607,7 @@ class TestWhoSNext:
         assert update.message.reply_text.call_args_list == [
             mock.call(
                 "A fost: <b>1</b>\nUrmează: <b>2</b>\n"
-                "Cuvântu' e: theme foo\nNoua tema se anunta la 9 PM",
+                "Tema a fost: theme foo\n\nNoua tema se anunta la 9 PM",
                 **DEFAULT_REPLY_KWARGS,
             )
         ]

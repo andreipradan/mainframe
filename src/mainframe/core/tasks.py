@@ -127,7 +127,5 @@ def schedule_task(instance, **kwargs):
         logger.info("Unregistered task: %s", display_name)
     if expression and is_active:
         schedule = crontab(*expression.split())
-        # this registers as mainframe.core.tasks.rotate_whos_next?!
-        # also sentry doesn't work
         periodic_task(schedule, name=display_name)(wrapper)
         logger.info("Scheduled task: %s", display_name)

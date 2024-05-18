@@ -72,9 +72,9 @@ def whos_next(config):
 
     msg = f"{previous_msg}<b>{current}</b>"
     if theme := config.get("theme"):
-        msg += f"\nCuvântu' e: {theme}"
+        msg += f"\nTema {'a fost' if posted else 'e'}: {theme}"
         if posted:
-            msg += "\nNoua tema se anunta la 9 PM"
+            msg += "\n\nNoua tema se anunta la 9 PM"
     if url := config.get("url"):
         msg += f"\nMai multe <a href='{url}'>aici</a>"
     return msg
@@ -100,18 +100,18 @@ class Command(BaseCommand):
             text = (
                 f"Pfuui no bun.\n"
                 f"Incepe: <b>{post_order[0]}</b> 🥳\n"
-                f"Cuvântu' e: {config['theme']}"
+                f"Tema e: {config['theme']}"
             )
         elif not config["posted"]:
             text = (
                 f"Ei ceapa ta <b>{post_order[0]} 😒</b>\n"
                 "Tot tu tre sa bagi, dar alt cuvânt\n"
-                f"Cuvântu' e: {config['theme']}"
+                f"Tema e: {config['theme']}"
             )
         else:
             text = (
                 f"Bravo <b>{post_order[0]}</b>!👏\nUrmează: <b>{post_order[1]}</b>\n"
-                f"Cuvântu' e: {config['theme']}"
+                f"Tema e: {config['theme']}"
             )
 
             post_order = deque(post_order)
