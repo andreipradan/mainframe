@@ -73,10 +73,10 @@ def whos_next(config):
     msg = f"{previous_msg}<b>{current}</b>"
     if theme := config.get("theme"):
         msg += f"\nTema {'a fost' if posted else 'e'}: {theme}"
+        if url := config.get("url"):
+            msg += f"\nMai multe <a href='{url}'>aici</a>"
         if posted:
             msg += "\n\nNoua tema se anunta la 9 PM"
-    if url := config.get("url"):
-        msg += f"\nMai multe <a href='{url}'>aici</a>"
     return msg
 
 
