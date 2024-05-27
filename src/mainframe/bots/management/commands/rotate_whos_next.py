@@ -47,7 +47,9 @@ class Sources:
         for tag_name in ["abbr", "span", "sup"]:
             for tag in definition.find_all(tag_name):
                 tag.replace_with(tag.text)
-        return definition.text.split(",")[0], definition
+        if "," in definition.text:
+            return definition.text.split(",")[0], definition
+        return definition.text.split()[0], definition
 
 
 def whos_next(config):
