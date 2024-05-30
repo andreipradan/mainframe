@@ -1,15 +1,13 @@
-import logging
 import math
 
 from mainframe.bots.webhooks.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.clients.meals import MealsClient
 from mainframe.meals.models import Meal
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 def parse_meal(item: Meal):
@@ -40,7 +38,9 @@ class MealsInline(BaseInlines):
         if bottom_level:
             buttons[0].insert(
                 0,
-                InlineKeyboardButton("👆", callback_data=f"meal fetch_day {day} {page}"),
+                InlineKeyboardButton(
+                    "👆", callback_data=f"meal fetch_day {day} {page}"
+                ),
             )
             return InlineKeyboardMarkup(buttons)
 

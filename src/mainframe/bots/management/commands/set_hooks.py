@@ -1,5 +1,3 @@
-import logging
-
 import environ
 import github
 import requests
@@ -8,10 +6,9 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.bots.models import Bot
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 
-logger = logging.getLogger(__name__)
-logger.addHandler(ManagementCommandsHandler())
+logger = get_default_logger(__name__, management=True)
 
 
 def get_ngrok_url(name="mainframe"):

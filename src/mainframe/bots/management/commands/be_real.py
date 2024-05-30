@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 from datetime import datetime, timedelta
 from random import randrange
@@ -8,7 +7,7 @@ import environ
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.crons.models import Cron
 
 
@@ -21,8 +20,7 @@ def get_tomorrow_run() -> datetime:
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         config = environ.Env()
         logger.info("It's time to take a picture...")

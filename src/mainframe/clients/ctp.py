@@ -1,18 +1,16 @@
 import asyncio
 import csv
-import logging
 import re
 from datetime import datetime
 from typing import List, Optional
 
 import aiohttp
 from mainframe.clients import scraper
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.transit_lines.models import Schedule, TransitLine
 from rest_framework import status
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 class FetchTransitLinesException(Exception):

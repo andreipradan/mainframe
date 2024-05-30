@@ -1,15 +1,14 @@
 import json
-import logging
 
 from django.http import JsonResponse
 from mainframe.clients.lights import LightsClient, LightsException
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
+
 
 IP_REGEX = (
     r"(?P<ip>(?:(?:0|1[\d]{0,2}|2(?:[0-4]\d?|5[0-5]?|[6-9])?|[3-9]\d?)\.){3}"

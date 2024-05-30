@@ -1,17 +1,16 @@
-import logging
 from datetime import datetime
 
 import pytz
 import requests
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 from requests import Response
 
 
 class Command(BaseEarthquakeCommand):
-    logger = logging.getLogger(__name__)
-    logger.addHandler(ManagementCommandsHandler())
+    logger = get_default_logger(__name__, management=True)
+
     source = Earthquake.SOURCE_INFP
     url = "https://web.infp.ro/quakes"
 

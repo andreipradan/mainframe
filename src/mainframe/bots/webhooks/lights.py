@@ -1,15 +1,13 @@
-import logging
 from datetime import datetime
 
 import pytz
 import telegram
 from mainframe.bots.webhooks.shared import BaseInlines
 from mainframe.clients.lights import LightsClient, LightsException
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 class Inlines(BaseInlines):

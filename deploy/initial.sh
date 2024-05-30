@@ -6,6 +6,7 @@ PROJECT_DIR=${HOME}/projects/mainframe
 if [ "$1" == "--continue" ]; then
 
   cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "$HOME/.config/ngrok/ngrok.yml"
+  echo "WARNING: If you have a custom domain - fill it in the ~/.config/ngrok.yml"
 
 #  REDIS_DIR=/etc/redis
 #  echo "[redis] Installing redis server"

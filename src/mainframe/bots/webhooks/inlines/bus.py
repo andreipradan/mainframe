@@ -1,4 +1,3 @@
-import logging
 import math
 from datetime import datetime
 from typing import List
@@ -7,13 +6,12 @@ import pytz
 from mainframe.bots.webhooks.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.transit_lines.models import Schedule, TransitLine
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 def get_next_time(times: List[str], now):

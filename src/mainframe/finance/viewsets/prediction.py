@@ -1,5 +1,4 @@
 import json
-import logging
 
 import redis
 from django.http import Http404, JsonResponse
@@ -12,7 +11,7 @@ from huey.signals import (
     SIGNAL_LOCKED,
     SIGNAL_REVOKED,
 )
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.core.tasks import get_redis_client, log_status
 from mainframe.finance.models import Category, Transaction
 from mainframe.finance.tasks import predict, train
@@ -20,8 +19,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 FINAL_STATUSES = [
     SIGNAL_CANCELED,

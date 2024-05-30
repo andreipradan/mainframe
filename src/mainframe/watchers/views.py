@@ -1,9 +1,7 @@
-import logging
-
 import requests
 from bs4 import BeautifulSoup
 from django.http import JsonResponse
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.watchers.models import Watcher
 from mainframe.watchers.serializers import WatcherSerializer
 from rest_framework import viewsets
@@ -11,8 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAdminUser
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 class WatcherViewSet(viewsets.ModelViewSet):

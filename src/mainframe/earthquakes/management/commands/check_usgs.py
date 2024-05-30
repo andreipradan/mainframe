@@ -1,16 +1,15 @@
-import logging
 from datetime import datetime, timedelta
 
 import pytz
 import requests
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand):
-    logger = logging.getLogger(__name__)
-    logger.addHandler(ManagementCommandsHandler())
+    logger = get_default_logger(__name__, management=True)
+
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 

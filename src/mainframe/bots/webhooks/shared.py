@@ -1,11 +1,8 @@
-import logging
-
 import six
 import telegram
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 class BaseInlines:

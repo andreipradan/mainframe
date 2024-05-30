@@ -1,10 +1,8 @@
-import logging
-
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.ctp import CTPClient, FetchTransitLinesException
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.transit_lines.models import Schedule, TransitLine
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -12,8 +10,7 @@ DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         logger.info("Importing transit lines")
         healthchecks.ping("transit")

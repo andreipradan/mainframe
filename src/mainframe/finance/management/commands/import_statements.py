@@ -1,5 +1,4 @@
 import csv
-import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from mainframe.bots.webhooks.shared import chunks
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Account, Transaction
 from mainframe.finance.tasks import backup_finance_model
 
@@ -226,8 +225,7 @@ class Command(BaseCommand):
         parser.add_argument("--bank", type=str, required=True)
 
     def handle(self, *_, **options):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         bank = options["bank"]
         if bank == "raiffeisen":

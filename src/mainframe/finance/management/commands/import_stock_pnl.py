@@ -1,5 +1,4 @@
 import csv
-import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -8,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models.stocks import PnL
 from mainframe.finance.tasks import backup_finance_model
 
@@ -31,8 +30,7 @@ def parse_pnl(file_name):
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         logger.info("Importing stock PnL")
         now = datetime.now()

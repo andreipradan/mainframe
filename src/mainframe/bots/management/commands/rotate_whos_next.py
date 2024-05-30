@@ -1,4 +1,3 @@
-import logging
 import random
 from collections import deque
 
@@ -7,7 +6,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.bots.models import Bot
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 
 
 class Sources:
@@ -84,8 +83,8 @@ def whos_next(config):
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
+
         logger.info("Checking who's next")
 
         bot = Bot.objects.get(additional_data__whos_next__isnull=False)

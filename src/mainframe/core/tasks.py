@@ -1,16 +1,14 @@
 import json
-import logging
 
 from django.conf import settings
 from django.utils import timezone
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task, task
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.clients.system import run_cmd
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 def get_redis_client():
@@ -51,9 +49,6 @@ def signal_handler(signal, task, exc=None):
 @task(expires=10)
 def schedule_deploy():
     from mainframe.clients import cron
-
-    logger = logging.getLogger(__name__)
-    logger.addHandler(MainframeHandler())
 
     prefix = "[Deploy]"
     if not (output := run_cmd("git pull origin main", logger=logger)):

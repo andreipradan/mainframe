@@ -3,6 +3,7 @@ import logging
 from functools import cached_property
 
 import environ
+import logfire
 from django.conf import settings
 
 FORMAT = "%(asctime)s - %(levelname)s - %(module)s.%(name)s - %(msg)s"
@@ -55,7 +56,12 @@ class MainframeHandler(AxiomHandler):
         super().__init__("mainframe")
 
 
-def get_default_logger(name):
+def get_default_logger(name, management=False):
     logger = logging.getLogger(name)
-    logger.addHandler(MainframeHandler())
+    if settings.ENV == "prod":
+        logger.addHandler(logfire.LogfireLoggingHandler())
+    elif management:
+        logger.addHandler(ManagementCommandsHandler())
+    else:
+        logger.addHandler(MainframeHandler())
     return logger

@@ -1,19 +1,17 @@
 import itertools
-import logging
 import operator
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management import CommandError, call_command, get_commands
 from django.http import JsonResponse
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.crons.models import Cron
 from mainframe.crons.serializers import CronSerializer
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 class CommandsViewSet(viewsets.GenericViewSet):

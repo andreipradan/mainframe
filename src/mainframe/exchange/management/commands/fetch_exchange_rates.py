@@ -1,8 +1,7 @@
-import logging
-
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.exchange.management.clients import BNR, ECB, FetchExchangeRatesException
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}
@@ -23,18 +22,17 @@ class Command(BaseCommand):
         )
 
     def handle(self, *_, **options):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         source = options["source"]
-        logger.info("Fetching %s exchange rates", source.upper())
-        healthchecks.ping(f"{source}-fx")
+        logger.info("[%s] Fetching exchange rates", source.upper())
+        if settings.ENV == "prod":
+            healthchecks.ping(f"{source}-fx")
 
         try:
             count = CLIENTS[source](logger).fetch(full=options["full"])
         except FetchExchangeRatesException as e:
             raise CommandError(e) from e
 
-        msg = f"Fetched {count} {source.upper()} exchange rates"
-        logger.info(msg)
+        logger.info("[%s] Fetched {%s} exchange rates", source.upper(), count)
         self.stdout.write(self.style.SUCCESS("Done."))

@@ -1,4 +1,3 @@
-import logging
 import shutil
 from datetime import datetime
 from operator import itemgetter
@@ -8,7 +7,7 @@ import environ
 from django.conf import settings
 from django.http import JsonResponse
 from google.cloud import storage
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.clients.system import get_folder_contents
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -16,8 +15,7 @@ from rest_framework.permissions import IsAdminUser
 
 config = environ.Env()
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 def download_blob(blob_name, destination_path):

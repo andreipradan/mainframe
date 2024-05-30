@@ -1,15 +1,12 @@
-import logging
-
 from django.http import JsonResponse
 from mainframe.bots.models import Bot, Message
 from mainframe.bots.serializers import BotSerializer, MessageSerializer
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 class BotViewSet(viewsets.ModelViewSet):

@@ -1,12 +1,10 @@
-import logging
-
 import telegram
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import upload_blob_from_file
 from mainframe.clients.system import run_cmd
 
@@ -17,8 +15,7 @@ class Command(BaseCommand):
         parser.add_argument("--model", type=str, default="")
 
     def handle(self, *_, **options):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         app = options["app"]
         healthchecks.ping(f"{app.upper()}_BACKUP", logger=logger)

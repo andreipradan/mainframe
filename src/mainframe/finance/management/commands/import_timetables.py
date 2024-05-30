@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -8,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import ManagementCommandsHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Account, Credit, Timetable
 from mainframe.finance.tasks import backup_finance_model
 from PyPDF2 import PdfReader
@@ -165,8 +164,7 @@ def extract_first_page(first_page, logger):
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = logging.getLogger(__name__)
-        logger.addHandler(ManagementCommandsHandler())
+        logger = get_default_logger(__name__, management=True)
 
         logger.info("Importing timetable")
         now = datetime.now()

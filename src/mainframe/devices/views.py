@@ -1,7 +1,5 @@
-import logging
-
 from django.http import JsonResponse
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.clients.system import run_cmd
 from mainframe.devices.models import Device
 from mainframe.devices.serializers import DeviceSerializer
@@ -9,8 +7,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 def add_zeros_to_mac(mac):

@@ -1,4 +1,3 @@
-import logging
 import random
 
 import telegram
@@ -11,14 +10,13 @@ from mainframe.bots.webhooks.inlines.bus import BusInline
 from mainframe.bots.webhooks.inlines.meals import MealsInline
 from mainframe.bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from mainframe.bots.webhooks.shared import reply
-from mainframe.clients.logs import MainframeHandler
+from mainframe.clients.logs import get_default_logger
 from mainframe.clients.translate import translate_text
 from mainframe.earthquakes.management.commands.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 from mainframe.finance.tasks import finance_import
 
-logger = logging.getLogger(__name__)
-logger.addHandler(MainframeHandler())
+logger = get_default_logger(__name__)
 
 
 def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
