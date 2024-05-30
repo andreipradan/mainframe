@@ -140,6 +140,8 @@ openpyxl==3.1.2
 opentelemetry-api==1.24.0
     # via opentelemetry-exporter-otlp-proto-http
     # via opentelemetry-instrumentation
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-wsgi
     # via opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-common==1.24.0
     # via opentelemetry-exporter-otlp-proto-http
@@ -147,6 +149,12 @@ opentelemetry-exporter-otlp-proto-http==1.24.0
     # via logfire
 opentelemetry-instrumentation==0.45b0
     # via logfire
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-wsgi
+opentelemetry-instrumentation-django==0.45b0
+    # via logfire
+opentelemetry-instrumentation-wsgi==0.45b0
+    # via opentelemetry-instrumentation-django
 opentelemetry-proto==1.24.0
     # via opentelemetry-exporter-otlp-proto-common
     # via opentelemetry-exporter-otlp-proto-http
@@ -154,7 +162,12 @@ opentelemetry-sdk==1.24.0
     # via logfire
     # via opentelemetry-exporter-otlp-proto-http
 opentelemetry-semantic-conventions==0.45b0
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-wsgi
     # via opentelemetry-sdk
+opentelemetry-util-http==0.45b0
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-wsgi
 packaging==24.0
     # via black
     # via gunicorn
