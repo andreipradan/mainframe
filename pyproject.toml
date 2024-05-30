@@ -17,7 +17,7 @@ dependencies = [
     "google-cloud-storage==2.9.0",
     "gunicorn==22.0.0",
     "huey==2.5.0",
-    "logfire[django]>=0.37.0",
+    "logfire[django,system-metrics]>=0.37.0",
     "lxml>=5.2.2",
     "openpyxl==3.1.2",
     "pillow==10.0.1",
