@@ -9,8 +9,4 @@ RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir -r  /temp_requirements/
 WORKDIR /app
 COPY src gunicorn.config.py ./
 
-COPY --from=datadog/serverless-init:1 /datadog-init /app/datadog-init
-RUN pip install --target /dd_tracer/python/ ddtrace
-ENTRYPOINT ["/app/datadog-init"]
-
-CMD exec /dd_tracer/python/bin/ddtrace-run gunicorn -c gunicorn.config.py --bind 0.0.0.0:$PORT
+CMD exec gunicorn -c gunicorn.config.py --bind 0.0.0.0:$PORT
