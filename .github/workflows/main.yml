@@ -137,7 +137,7 @@ jobs:
         run: |-
           gcloud builds submit \
             --quiet \
-            --tag="eu.gcr.io/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
+            --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
             --gcs-log-dir="gs://build-backend-logs"
 
       # Deploy image to Cloud Run
@@ -146,7 +146,7 @@ jobs:
           gcloud run deploy "$BACKEND_SERVICE" \
             --quiet \
             --region "$RUN_REGION" \
-            --image "eu.gcr.io/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
+            --image "$RUN_REGION-docker.pkg.dev/$PROJECT_ID/$BACKEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
             --allow-unauthenticated
       - name: Notify
@@ -246,7 +246,7 @@ jobs:
         run: |-
           gcloud builds submit \
             --quiet \
-            --tag="eu.gcr.io/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
+            --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --gcs-log-dir="gs://build-frontend-logs"
         working-directory: frontend/.docker
 
@@ -256,7 +256,7 @@ jobs:
           gcloud run deploy "$FRONTEND_SERVICE" \
             --quiet \
             --region "$RUN_REGION" \
-            --image "eu.gcr.io/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
+            --image "$RUN_REGION-docker.pkg.dev/$PROJECT_ID/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
             --allow-unauthenticated
       - name: Notify
