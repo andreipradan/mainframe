@@ -38,9 +38,7 @@ class MealsInline(BaseInlines):
         if bottom_level:
             buttons[0].insert(
                 0,
-                InlineKeyboardButton(
-                    "👆", callback_data=f"meal fetch_day {day} {page}"
-                ),
+                InlineKeyboardButton("👆", callback_data=f"meal fetch_day {day} {page}"),
             )
             return InlineKeyboardMarkup(buttons)
 
