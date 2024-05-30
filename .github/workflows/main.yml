@@ -32,6 +32,7 @@ jobs:
   changes:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
+      dockerfile: ${{ steps.filter.outputs.dockerfile }}
       frontend: ${{ steps.filter.outputs.frontend }}
       tests: ${{ steps.filter.outputs.tests }}
     runs-on: ubuntu-latest
@@ -44,6 +45,8 @@ jobs:
           filters: |
             backend:
               - 'src/**'
+            dockerfile:
+              - 'Dockerfile'
             frontend:
               - 'frontend/**'
             tests:
@@ -103,7 +106,7 @@ jobs:
       - black
       - tests
       - changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile) || (needs.changes.outputs.tests) }}
     steps:
       - name: Notify BE start deployment
         uses: appleboy/telegram-action@master
