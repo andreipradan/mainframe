@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 import environ
+import logfire
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -228,6 +229,8 @@ if (ENV := env("ENV", default=None)) in ["local", "prod"]:
         }
     }
     if ENV == "prod":
+        logfire.configure(send_to_logfire="if-token-present")
+        logfire.instrument_django()
         LOGGING["loggers"]["django"]["handlers"].append("mainframe")
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
