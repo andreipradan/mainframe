@@ -248,7 +248,7 @@ elif ENV in ["ci", "test"]:
             "USER": "test_user",
             "PASSWORD": "test_pass",
             "HOST": "localhost",
-            "PORT": 5433 if ENV == "test" else 5432,
+            "PORT": 5432,
         }
     }
 else:

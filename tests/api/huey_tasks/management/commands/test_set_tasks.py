@@ -15,27 +15,27 @@ class TestCommand:
 
     @mock.patch("mainframe.crons.models.schedule_task")
     @mock.patch(f"{path}.send_telegram_message")
-    @mock.patch(f"{path}.logging")
+    @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
     def test_nothing_set(self, _, logging_mock, send_mock, __):
         call_command("set_tasks")
         assert send_mock.call_args_list == [
             mock.call(text="[[huey]] up"),
         ]
-        assert logging_mock.getLogger.return_value.info.call_args_list == [
+        assert logging_mock.return_value.info.call_args_list == [
             mock.call("[Set tasks] Setting tasks for all crons and watchers"),
             mock.call("[Set tasks] Done"),
         ]
 
     @mock.patch(f"{path}.schedule_task")
     @mock.patch(f"{path}.send_telegram_message")
-    @mock.patch(f"{path}.logging")
+    @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
     def test_crons_and_watchers(self, _, logging_mock, send_mock, schedule_task_mock):
         cron, watcher = CronFactory(is_active=True), WatcherFactory()
         call_command("set_tasks")
         assert send_mock.call_args_list == [mock.call(text="[[huey]] up")]
-        assert logging_mock.getLogger.return_value.info.call_args_list == [
+        assert logging_mock.return_value.info.call_args_list == [
             mock.call("[Set tasks] Setting tasks for all crons and watchers"),
             mock.call("[Set tasks] Done"),
         ]

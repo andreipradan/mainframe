@@ -9,7 +9,7 @@ from mainframe.crons.models import Cron
 class TestCommand:
     @mock.patch("mainframe.crons.models.schedule_task")
     @mock.patch("mainframe.bots.management.commands.be_real.send_telegram_message")
-    @mock.patch("mainframe.bots.management.commands.be_real.logging")
+    @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
     def test_be_real(self, _, __, send_mock, schedule_cron_mock):
         call_command("be_real")
