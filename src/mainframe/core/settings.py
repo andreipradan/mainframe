@@ -167,8 +167,14 @@ REST_FRAMEWORK = {
 #  CORS
 # ##################################################################### #
 
-CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+] + env("CORS_ALLOWED_ORIGINS")
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+] + env("CSRF_TRUSTED_ORIGINS")
 # ##################################################################### #
 #  TESTING
 # ##################################################################### #
@@ -186,10 +192,7 @@ LOGGING = {
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
-        "mainframe": {
-            "class": "mainframe.clients.logs.MainframeHandler",
-            "formatter": "verbose",
-        },
+        "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
     },
     "loggers": {
         "django": {
@@ -231,7 +234,7 @@ if (ENV := env("ENV", default=None)) in ["local", "prod"]:
     if ENV == "prod":
         logfire.configure(send_to_logfire="if-token-present")
         logfire.instrument_django()
-        LOGGING["loggers"]["django"]["handlers"].append("mainframe")
+        LOGGING["loggers"]["django"]["handlers"].append("logfire")
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
             integrations=[DjangoIntegration()],
