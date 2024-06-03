@@ -3,7 +3,7 @@ import requests
 from mainframe.clients.logs import get_default_logger
 
 
-def ping(service_name="URL", logger=None):
+def ping(logger, service_name="URL"):
     config = environ.Env()
     var_name = f"HEALTHCHECKS_{service_name.replace('-', '_').upper()}"
     url = config(var_name, default=None)

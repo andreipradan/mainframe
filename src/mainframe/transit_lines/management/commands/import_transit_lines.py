@@ -13,7 +13,7 @@ class Command(BaseCommand):
         logger = get_default_logger(__name__, management=True)
 
         logger.info("Importing transit lines")
-        healthchecks.ping("transit")
+        healthchecks.ping(logger, "transit")
 
         lines = []
         for line_type in [c[0] for c in TransitLine.LINE_TYPE_CHOICES]:

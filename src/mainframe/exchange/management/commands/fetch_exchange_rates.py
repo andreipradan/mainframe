@@ -27,7 +27,7 @@ class Command(BaseCommand):
         source = options["source"]
         logger.info("[%s] Fetching exchange rates", source.upper())
         if settings.ENV == "prod":
-            healthchecks.ping(f"{source}-fx")
+            healthchecks.ping(logger, f"{source}-fx")
 
         try:
             count = CLIENTS[source](logger).fetch(full=options["full"])
