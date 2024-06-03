@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
-from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.meals import FetchMealsException, MealsClient
 
@@ -16,7 +15,5 @@ class Command(BaseCommand):
         except FetchMealsException as e:
             raise CommandError(e) from e
 
-        msg = f"Fetched {len(meals)} meals"
-        logger.info(msg)
-        send_telegram_message(text=msg)
+        logger.info("Fetched %d meals", len(meals))
         self.stdout.write(self.style.SUCCESS("Done."))

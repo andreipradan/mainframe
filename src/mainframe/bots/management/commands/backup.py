@@ -1,9 +1,8 @@
-import telegram
+import logfire
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from mainframe.clients import healthchecks
-from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import upload_blob_from_file
 from mainframe.clients.system import run_cmd
@@ -14,6 +13,7 @@ class Command(BaseCommand):
         parser.add_argument("--app", type=str, required=True)
         parser.add_argument("--model", type=str, default="")
 
+    @logfire.instrument("backup --app={options[app]} --model={options[model]}")
     def handle(self, *_, **options):
         logger = get_default_logger(__name__, management=True)
 
@@ -24,15 +24,14 @@ class Command(BaseCommand):
 
         model = options["model"]
         source = app if not model else f"{app}.{model.title()}"
-        logger.info("Dumping '%s%s' data", source, f".{model}" if model else "")
-
-        call_command("dumpdata", source, output=file_name, verbosity=2)
+        with logfire.span(f"Dumping {source}", output=file_name):
+            call_command("dumpdata", source, output=file_name, verbosity=2)
 
         destination = f"{app}/{f'{model.lower()}/' if model else ''}{file_name}"
-
-        upload_blob_from_file(file_name, destination, logger)
+        with logfire.span(
+            "Uploading to gcs", file_name=file_name, destination=destination
+        ):
+            upload_blob_from_file(file_name, destination, logger)
         run_cmd(f"rm {file_name}")
-        msg = f"[{app.title()}] Backup complete: {destination}"
-        send_telegram_message(text=msg, parse_mode=telegram.ParseMode.HTML)
-        logger.info(msg)
-        self.stdout.write(self.style.SUCCESS(msg))
+        logger.info("Done")
+        self.stdout.write(self.style.SUCCESS("Done"))
