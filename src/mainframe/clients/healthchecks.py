@@ -5,7 +5,11 @@ from mainframe.clients.logs import get_default_logger
 
 def ping(service_name="URL", logger=None):
     config = environ.Env()
-    url = config(f"HEALTHCHECKS_{service_name.replace('-', '_').upper()}")
+    var_name = f"HEALTHCHECKS_{service_name.replace('-', '_').upper()}"
+    url = config(var_name, default=None)
+    if url is None:
+        logger.warning("%s not set on env, skipping healthcheck", var_name)
+        return
     try:
         requests.post(url=url, timeout=20)
     except requests.exceptions.HTTPError as e:

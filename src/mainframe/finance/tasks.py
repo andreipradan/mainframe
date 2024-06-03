@@ -1,7 +1,6 @@
 # import pandas as pd
 from django.core.management import call_command
-from huey import crontab
-from huey.contrib.djhuey import HUEY, db_periodic_task, db_task
+from huey.contrib.djhuey import db_task
 from huey.signals import SIGNAL_ERROR
 
 # from clients.prediction import SKLearn
@@ -12,12 +11,6 @@ from mainframe.finance.models import Category, Transaction
 @db_task(expires=30)
 def backup_finance_model(model):
     call_command("backup", app="finance", model=model)
-
-
-@db_periodic_task(crontab(minute=59, hour=23, day=1))
-@HUEY.lock_task("backup-finance-lock")
-def backup_finance():
-    call_command("backup", app="finance")
 
 
 @db_task(expires=30)
