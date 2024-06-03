@@ -21,7 +21,7 @@ class WatcherViewSet(viewsets.ModelViewSet):
     def run(self, request, pk=None):
         obj = self.get_object()
         try:
-            obj = obj.run()
+            obj.run()
         except ValueError as e:
             raise ValidationError(str(e)) from ValueError
         return JsonResponse(self.serializer_class(obj).data if obj else obj, safe=False)

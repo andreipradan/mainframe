@@ -1,5 +1,6 @@
 from urllib.parse import urljoin
 
+import logfire
 import requests
 import telegram
 from bs4 import BeautifulSoup
@@ -10,7 +11,7 @@ from django.utils import timezone
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 from mainframe.core.models import TimeStampedModel
-from mainframe.core.tasks import log_status, schedule_task
+from mainframe.core.tasks import schedule_task
 
 logger = get_default_logger(__name__)
 
@@ -28,18 +29,26 @@ class Watcher(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    @logfire.instrument("[{self}] - Running watcher")
     def run(self):
-        logger.info("[%s] Running", self.name)
-        response = requests.get(self.url, timeout=10, **self.request)
-        response.raise_for_status()
+        with logfire.span(f"Requesting {self.url}", **self.request):
+            response = requests.get(self.url, timeout=10, **self.request)
+        with logfire.span("Validating status", response=response):
+            response.raise_for_status()
+            logger.info("Status: %s", response.status_code)
 
-        soup = BeautifulSoup(response.text, "html.parser")
-        elements = soup.select(self.selector)
-        if not elements:
-            raise ValueError(f"[{self.name}] Watcher did not found any elements")
+        with logfire.span("Checking for element", selector=self.selector):
+            soup = BeautifulSoup(response.text, "html.parser")
+            elements = soup.select(self.selector)
+            if not elements:
+                raise ValueError(f"[{self.name}] Watcher did not found any elements")
+            logger.info("Found it!")
 
-        found = elements[0 if self.top else -1]
-        if self.latest.get("title") != (title := found.text.strip()):
+        with logfire.span("Checking if the element is new"):
+            found = elements[0 if self.top else -1]
+            if self.latest.get("title") == (title := found.text.strip()):
+                logger.info("No new items")
+                return
             url = (
                 urljoin(self.url, found.attrs["href"])
                 if not found.attrs["href"].startswith("http")
@@ -52,9 +61,7 @@ class Watcher(TimeStampedModel):
             }
             self.save()
 
-            message = "Found new item!"
-            logger.info("[%s] Done - %s", self.name, message)
-            log_status(self.name, msg=message)
+            logger.info("Found new item!")
             text = (
                 f"<a href='{url}'>{title}</a>\n"
                 f"All items <a href='{self.url}'>here</a>"
@@ -65,13 +72,7 @@ class Watcher(TimeStampedModel):
             else:
                 text = f"📣 <b>New <i>{self.name}</i> item!</b> 📣\n{text}"
             send_telegram_message(text, **kwargs)
-
-            return self
-
-        message = "No new items found"
-        log_status(self.name, msg=message)
-        logger.info("[%s] Done - %s", self.name, message)
-        return False
+            logger.info("Done")
 
 
 @receiver(signals.post_delete, sender=Watcher)

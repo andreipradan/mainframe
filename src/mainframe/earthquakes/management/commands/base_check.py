@@ -110,6 +110,7 @@ class BaseEarthquakeCommand(BaseCommand):
             )
 
         self.set_last_check(instance)
+        self.logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done."))
 
     def fetch(self, **options):
