@@ -9,7 +9,8 @@ NULLABLE_KWARGS = {"blank": True, "null": True}
 
 
 def get_default_credit():
-    code = settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE
+    if not (code := settings.DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE):
+        raise ValidationError("DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE is not set")
     return Credit.objects.select_related("account", "currency").get(
         account__client_code=code
     )

@@ -10,7 +10,7 @@ const Errors = props => {
       {
         props.errors?.detail
           ? <p className="text-danger">{props.errors.detail}</p>
-          : props.errors?.length
+          : props.errors?.constructor === Array
             ? <ul className="text-danger">
               {props.errors?.map((err, i) => <li key={i}>{err}</li>)}
               </ul>
@@ -18,9 +18,9 @@ const Errors = props => {
               ? <ul>
                 {
                   Object.keys(props.errors)?.map((k, i) =>
-                    props.errors?.[k]?.length
+                    props.errors?.[k]?.constructor === Array
                       ? <ul key={i}>{props.errors?.[k]?.map((e, i) => <li key={i}>{k}: {e}</li> )}</ul>
-                      : props.errors?.[k]
+                      : <li>{props.errors?.[k]}</li>
                   )
                 }
                 </ul>
