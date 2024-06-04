@@ -4,6 +4,7 @@ import jwt
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
+from jwt import InvalidSignatureError
 from mainframe.api.authentication.models import ActiveSession
 from mainframe.api.user.models import User
 from mainframe.api.user.serializers import UserSerializer
@@ -46,7 +47,7 @@ class LoginSerializer(serializers.Serializer):
                 raise ValueError
 
             jwt.decode(session.token, settings.SECRET_KEY, algorithms=["HS256"])
-        except ActiveSession.MultipleObjectsReturned:
+        except (ActiveSession.MultipleObjectsReturned, InvalidSignatureError):
             ActiveSession.objects.filter(user=user).delete()
             session = ActiveSession.objects.create(
                 user=user, token=_generate_jwt_token(user)

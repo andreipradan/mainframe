@@ -286,7 +286,7 @@ const Credit = () => {
     <Errors errors={overview.errors}/>
     <Errors errors={payment.errors}/>
 
-    {/* Top Cards */}
+    {/* Top Cards - Summary, Remaining, Paid */}
     <div className="row">
       <div className="col-sm-12 col-lg-4 grid-margin">
         <div className="card">
@@ -369,7 +369,7 @@ const Credit = () => {
       </div>
     </div>
 
-    {/* Upcoming */}
+    {/* Marquee - Next payment */}
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">
@@ -432,16 +432,16 @@ const Credit = () => {
       </div>
     </div>
 
-    {/* Last payment */}
+    {/* Marquee - Last payment */}
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>Last Payment {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h6>
+            <h6>Last Payment <sup><small>{selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</small></sup></h6>
             {
               payment.loading
-                ? <Circles />
-                : payment.results?.length
+                  ? <Circles/>
+                  : payment.results?.length
                   ? <Marquee duration={10000} pauseOnHover={true} >
                     <ListItem label={"Total"} value={getAmountInCurrency(payment.results[0].total)} textType={"primary"} className="mr-3" />
                     <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"} className="mr-3" />
@@ -457,13 +457,13 @@ const Credit = () => {
       </div>
     </div>
 
-    {/* Latest payments */}
+    {/* Bar chart - Payments */}
     <div className="row">
       <div className="col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">
-              Latest payments {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
+            <h6 className="card-title">
+              Payments <sup><small>{selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</small></sup>
               <button
                   type="button"
                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
@@ -474,15 +474,15 @@ const Credit = () => {
               <div className="mb-0 text-muted">
                 <small>Total: {payment.count}</small>
                 {
-                  payment.count !== barChartPrincipal?.length && <>
-                    <br />
-                    <small>Filtered: {barChartPrincipal?.length}</small>
-                  </>
+                    payment.count !== barChartPrincipal?.length && <>
+                      <br/>
+                      <small>Filtered: {barChartPrincipal?.length}</small>
+                    </>
                 }
               </div>
-            </h4>
+            </h6>
             <div className="form-check" onClick={onExcludePrepaymentsChange}>
-              <label htmlFor="" className="form-check-label">
+            <label htmlFor="" className="form-check-label">
                 <input
                     className="checkbox"
                     type="checkbox"
@@ -501,25 +501,26 @@ const Credit = () => {
       </div>
     </div>
 
-    {/* Pie charts */}
+    {/* Pie charts - paid, remaining */}
     <div className="row">
       <div className="col-sm-12 col-md-6 col-lg-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">
-              Paid: {paidTotal} {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
+            <h6 className="card-title">
+              Paid: {paidTotal}
+              <sup><small>{selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</small></sup>
               <button
-                type="button"
-                className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getCreditPayments(token))}
+                  type="button"
+                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                  onClick={() => dispatch(FinanceApi.getCreditPayments(token))}
               >
-                <i className="mdi mdi-refresh" />
+                <i className="mdi mdi-refresh"/>
               </button>
-            </h4>
+            </h6>
             {
               payment.loading
-                ? <Circles />
-                : payment.results ? <Doughnut data={paidData} options={doughnutPieOptions} /> : "-"
+                  ? <Circles/>
+                  : payment.results ? <Doughnut data={paidData} options={doughnutPieOptions} /> : "-"
             }
           </div>
         </div>
@@ -527,11 +528,13 @@ const Credit = () => {
       <div className="col-sm-12 col-md-6 col-lg-6 grid-margin stretch-card">
         <div className="card">
           <div className="card-body">
-            <h4 className="card-title">Remaining: {remainingTotal} {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</h4>
+            <h6 className="card-title">Remaining: {remainingTotal}
+              <sup><small>{selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}</small></sup>
+            </h6>
             {
               overview.loading
-                ? <Circles/>
-                : overview.credit
+                  ? <Circles/>
+                  : overview.credit
                   ? <Doughnut data={remainingData} options={doughnutPieOptions}/>
                   : "-"
             }
