@@ -38,6 +38,7 @@ cryptography==42.0.5
     # via pyjwt
 dacite==1.8.1
     # via axiom-py
+defusedxml==0.7.1
 deprecated==1.2.14
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-http

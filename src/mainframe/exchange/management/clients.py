@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import requests
 from bs4 import BeautifulSoup
+from defusedxml import ElementTree
 from mainframe.exchange.models import ExchangeRate
 
 
@@ -17,14 +18,14 @@ class BaseExchange:
     def __init__(self, logger):
         self.logger = logger
 
-    def do_request(self, url) -> BeautifulSoup:
+    def do_request(self, url):
         resp = requests.get(url, timeout=20)
         try:
             resp.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self.logger.exception(e)
             raise FetchExchangeRatesException("Error fetching exchange rates") from e
-        return BeautifulSoup(resp.content, features="lxml")
+        return resp.content
 
     def fetch(self, full):
         urls = self.fetch_available_urls() if full else [self.url]
@@ -32,8 +33,7 @@ class BaseExchange:
         rates = []
         for url in urls[:2]:
             self.logger.info("Fetching %s", url)
-            soup = self.do_request(url)
-            rates += self.parse(soup)
+            rates += self.parse(self.do_request(url))
 
         self.logger.info("Saving %d in batches of 5000", len(rates))
         rates = ExchangeRate.objects.bulk_create(
@@ -50,7 +50,7 @@ class BaseExchange:
     def fetch_available_urls(self) -> list[str]:
         raise NotImplementedError
 
-    def parse(self, soup: BeautifulSoup) -> list[ExchangeRate]:
+    def parse(self, content) -> list[ExchangeRate]:
         raise NotImplementedError
 
 
@@ -60,7 +60,7 @@ class BNR(BaseExchange):
 
     def fetch_available_urls(self):
         url = f"{self.base}/Cursurile-pietei-valutare-in-format-XML-3424-Mobile.aspx"
-        soup = self.do_request(url)
+        soup = BeautifulSoup(self.do_request(url), "html.parser")
 
         return [
             f"{self.base}{x.attrs['href']}"
@@ -68,15 +68,18 @@ class BNR(BaseExchange):
             if "/years/" in x.attrs["href"]
         ]
 
-    def parse(self, soup: BeautifulSoup) -> list[ExchangeRate]:
-        orig_currency = soup.find("origcurrency").text
-        source = soup.find("publisher").text
+    def parse(self, content) -> list[ExchangeRate]:
+        root = ElementTree.fromstring(content)
+        namespaces = {"ns": "http://www.bnr.ro/xsd"}
+
+        orig_currency = root.find("ns:Body/ns:OrigCurrency", namespaces).text
+        source = root.find("ns:Header/ns:Publisher", namespaces).text
 
         rates = []
-        for cube in soup.find_all("cube"):
-            date = cube.attrs["date"]
-            for tag in cube.find_all("rate"):
-                currency = tag.attrs["currency"]
+        for cube in root.findall(".//ns:Cube[@date]", namespaces):
+            date = cube.attrib["date"]
+            for tag in cube.findall(".//ns:Rate", namespaces):
+                currency = tag.attrib["currency"]
                 try:
                     value = Decimal(tag.text)
                 except decimal.InvalidOperation:
@@ -89,7 +92,7 @@ class BNR(BaseExchange):
                         tag.text,
                     )
                     continue
-                if multiplier := tag.attrs.get("multiplier"):
+                if multiplier := tag.attrib.get("multiplier"):
                     value /= Decimal(multiplier)
                 rates.append(
                     ExchangeRate(
@@ -109,16 +112,22 @@ class ECB(BaseExchange):
     def fetch_available_urls(self):
         return [f"{self.base}/stats/eurofxref/eurofxref-hist.xml"]
 
-    def parse(self, soup):
-        source = soup.find("gesmes:name").text
+    def parse(self, content):
+        root = ElementTree.fromstring(content)
+        namespaces = {
+            "gesmes": "http://www.gesmes.org/xml/2002-08-01",
+            "": "http://www.ecb.int/vocabulary/2002-08-01/eurofxref",
+        }
+
+        source = root.find("gesmes:Sender/gesmes:name", namespaces).text
 
         rates = []
-        for cube in [x for x in soup.cube.find_all("cube") if x.attrs.get("time")]:
-            date = cube.attrs["time"]
-            for tag in cube.find_all("cube"):
-                currency = tag.attrs["currency"]
+        for cube in root.findall(".//Cube[@time]", namespaces):
+            date = cube.attrib["time"]
+            for tag in cube.findall(".//Cube[@currency]", namespaces):
+                currency = tag.attrib["currency"]
                 try:
-                    value = Decimal(tag.attrs["rate"])
+                    value = Decimal(tag.attrib["rate"])
                 except decimal.InvalidOperation:
                     self.logger.error(
                         "Invalid rate found for %s-EUR on %s from %s: %s",
@@ -128,7 +137,7 @@ class ECB(BaseExchange):
                         tag.text,
                     )
                     continue
-                if multiplier := tag.attrs.get("multiplier"):
+                if multiplier := tag.attrib.get("multiplier"):
                     value /= Decimal(multiplier)
                 rates.append(
                     ExchangeRate(

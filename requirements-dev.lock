@@ -49,6 +49,7 @@ dacite==1.8.1
     # via axiom-py
 decorator==5.1.1
     # via ipython
+defusedxml==0.7.1
 deprecated==1.2.14
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-http

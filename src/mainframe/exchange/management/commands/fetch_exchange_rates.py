@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
 from mainframe.clients.logs import get_default_logger
@@ -26,8 +25,7 @@ class Command(BaseCommand):
 
         source = options["source"]
         logger.info("[%s] Fetching exchange rates", source.upper())
-        if settings.ENV == "prod":
-            healthchecks.ping(logger, f"{source}-fx")
+        healthchecks.ping(logger, f"{source}-fx")
 
         try:
             count = CLIENTS[source](logger).fetch(full=options["full"])

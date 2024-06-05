@@ -20,3 +20,6 @@ class ExchangeRate(TimeStampedModel):
     class Meta:
         ordering = ("-date", "symbol")
         unique_together = "date", "source", "symbol"
+
+    def __str__(self):
+        return f"{self.date} - {self.symbol} - {self.value}"
