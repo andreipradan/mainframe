@@ -89,7 +89,11 @@ virtual = true
 
 [tool.rye.scripts]
 dev = "python src/manage.py runserver"
-migrate = "python src/manage.py migrate"
+huey = "python src/manage.py run_huey"
+migrate = { chain = [
+    "python src/manage.py makemigrations",
+    "python src/manage.py migrate"
+]}
 shell = "python src/manage.py shell_plus"
 
 [tool.ruff]

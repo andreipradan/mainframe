@@ -71,6 +71,7 @@ class BaseEarthquakeCommand(BaseCommand):
             events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
+            self.logger.info("Done")
             return
 
         Earthquake.objects.bulk_create(
@@ -102,7 +103,7 @@ class BaseEarthquakeCommand(BaseCommand):
 
         if len(events):
             self.logger.info(
-                "Got %s events with magnitude >= %s", len(events), min_magnitude
+                "Got %s events (with mag >= %s)", len(events), min_magnitude
             )
             send_telegram_message(
                 text="\n\n".join(parse_event(event) for event in events),
@@ -110,7 +111,8 @@ class BaseEarthquakeCommand(BaseCommand):
             )
 
         self.set_last_check(instance)
-        self.stdout.write(self.style.SUCCESS("Done."))
+        self.logger.info("Done")
+        self.stdout.write(self.style.SUCCESS("Done"))
 
     def fetch(self, **options):
         raise NotImplementedError

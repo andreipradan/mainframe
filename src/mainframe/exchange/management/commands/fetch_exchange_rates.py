@@ -24,7 +24,7 @@ class Command(BaseCommand):
         logger = get_default_logger(__name__, management=True)
 
         source = options["source"]
-        logger.info("[%s] Fetching exchange rates", source.upper())
+        logger.info("Fetching %s exchange rates", source.upper())
         healthchecks.ping(logger, f"{source}-fx")
 
         try:
@@ -32,5 +32,5 @@ class Command(BaseCommand):
         except FetchExchangeRatesException as e:
             raise CommandError(e) from e
 
-        logger.info("[%s] Fetched {%s} exchange rates", source.upper(), count)
+        logger.info("Fetched %s %s exchange rates", source.upper(), count)
         self.stdout.write(self.style.SUCCESS("Done."))

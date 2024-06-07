@@ -12,6 +12,7 @@ class FetchExchangeRatesException(Exception):
 
 
 class BaseExchange:
+    batch_size = 5000
     base = NotImplemented
     url = NotImplemented
 
@@ -35,7 +36,11 @@ class BaseExchange:
             self.logger.info("Fetching %s", url)
             rates += self.parse(self.do_request(url))
 
-        self.logger.info("Saving %d in batches of 5000", len(rates))
+        self.logger.info(
+            "Saving %d%s",
+            len(rates),
+            " in batches of 5000" if len(rates) > self.batch_size else "",
+        )
         rates = ExchangeRate.objects.bulk_create(
             rates,
             update_conflicts=True,
@@ -43,7 +48,7 @@ class BaseExchange:
                 "value",
             ],
             unique_fields=list(*ExchangeRate._meta.unique_together),
-            batch_size=5000,
+            batch_size=self.batch_size,
         )
         return len(rates)
 

@@ -22,10 +22,7 @@ class TestCommand:
         assert send_mock.call_args_list == [
             mock.call(text="[[huey]] up"),
         ]
-        assert logging_mock.return_value.info.call_args_list == [
-            mock.call("[Set tasks] Setting tasks for all crons and watchers"),
-            mock.call("[Set tasks] Done"),
-        ]
+        assert logging_mock.return_value.info.call_args_list == []
 
     @mock.patch(f"{path}.schedule_task")
     @mock.patch(f"{path}.send_telegram_message")
@@ -35,10 +32,7 @@ class TestCommand:
         cron, watcher = CronFactory(is_active=True), WatcherFactory()
         call_command("set_tasks")
         assert send_mock.call_args_list == [mock.call(text="[[huey]] up")]
-        assert logging_mock.return_value.info.call_args_list == [
-            mock.call("[Set tasks] Setting tasks for all crons and watchers"),
-            mock.call("[Set tasks] Done"),
-        ]
+        assert logging_mock.return_value.info.call_args_list == []
         assert len(calls := schedule_task_mock.call_args_list) == 2
 
         # cron

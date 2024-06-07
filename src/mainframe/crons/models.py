@@ -1,6 +1,5 @@
 import logfire
-from django.core.exceptions import ImproperlyConfigured
-from django.core.management import CommandError, call_command
+from django.core.management import call_command
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -16,24 +15,23 @@ class Cron(TimeStampedModel):
     command = models.CharField(max_length=512)
     expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
+    kwargs = models.JSONField(default=dict)
 
     class Meta:
-        unique_together = ("command", "expression")
+        unique_together = ("command", "args", "kwargs", "expression")
 
     def __str__(self):
-        return f"{self.command} - {self.expression}"
+        display = f"[{self.command}] "
+        if self.args:
+            display += f" args={self.args}"
+        if self.kwargs:
+            display += f" kwargs={self.kwargs}"
+        display += f" {self.expression}"
+        return display
 
-    @logfire.instrument("[{self}] - Running cron")
+    @logfire.instrument("{self}")
     def run(self):
-        command, *args = self.command.split()
-        args = {arg.split("=")[0].replace("--", ""): arg.split("=")[1] for arg in args}
-        with logfire.span(f"Calling {command}", args=args):
-            try:
-                call_command(command, **args)
-            except (CommandError, ImproperlyConfigured, KeyError, TypeError) as e:
-                logger.exception(e)
-            else:
-                logger.info("Done")
+        call_command(self.command, *self.args, **self.kwargs)
 
 
 @receiver(signals.post_delete, sender=Cron)

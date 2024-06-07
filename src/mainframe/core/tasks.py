@@ -123,4 +123,4 @@ def schedule_task(instance, **kwargs):
     if expression and is_active:
         schedule = crontab(*expression.split())
         periodic_task(schedule, name=display_name)(wrapper)
-        logger.info("Scheduled task: %s", display_name)
+        logger.info("Scheduled task: %s with cron: %s", display_name, expression)

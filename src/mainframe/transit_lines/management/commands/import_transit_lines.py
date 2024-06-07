@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
-from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.ctp import CTPClient, FetchTransitLinesException
 from mainframe.clients.logs import get_default_logger
 from mainframe.transit_lines.models import Schedule, TransitLine
@@ -16,9 +15,10 @@ class Command(BaseCommand):
         healthchecks.ping(logger, "transit")
 
         lines = []
+        client = CTPClient(logger=logger)
         for line_type in [c[0] for c in TransitLine.LINE_TYPE_CHOICES]:
             try:
-                lines.extend(CTPClient.fetch_lines(line_type, commit=False))
+                lines.extend(client.fetch_lines(line_type, commit=False))
             except FetchTransitLinesException as e:
                 raise CommandError(e) from e
         TransitLine.objects.bulk_create(
@@ -28,7 +28,7 @@ class Command(BaseCommand):
             unique_fields=["name"],
         )
 
-        schedules = list(CTPClient.fetch_schedules(commit=False))
+        schedules = list(client.fetch_schedules(commit=False))
         Schedule.objects.bulk_create(
             schedules,
             update_conflicts=True,
@@ -41,5 +41,5 @@ class Command(BaseCommand):
         )
 
         msg = f"Synced {len(lines)} transit lines and {len(schedules)} schedules"
-        send_telegram_message(text=msg)
+        logger.info(msg)
         self.stdout.write(self.style.SUCCESS(msg))

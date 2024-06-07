@@ -46,6 +46,16 @@ class AxiomHandler(logging.Handler):
             self.client.ingest_events(self.dataset, [parse_record(record)])
 
 
+class LogfireMainframeHandler(logfire.LogfireLoggingHandler):
+    def __init__(self, prefix):
+        self.prefix = prefix
+        super().__init__()
+
+    def emit(self, record: logging.LogRecord) -> None:
+        record.msg = f"[{self.prefix}] {record.msg}"
+        return super().emit(record)
+
+
 class ManagementCommandsHandler(AxiomHandler):
     def __init__(self):
         super().__init__("management")
@@ -58,8 +68,8 @@ class MainframeHandler(AxiomHandler):
 
 def get_default_logger(name, management=False):
     logger = logging.getLogger(name)
-    if settings.ENV == "prod":
-        logger.addHandler(logfire.LogfireLoggingHandler())
+    if settings.ENV != "prod":
+        logger.addHandler(LogfireMainframeHandler(name.split(".")[-1]))
     elif management:
         logger.addHandler(ManagementCommandsHandler())
     else:
