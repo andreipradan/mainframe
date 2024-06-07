@@ -68,7 +68,7 @@ class MainframeHandler(AxiomHandler):
 
 def get_default_logger(name, management=False):
     logger = logging.getLogger(name)
-    if settings.ENV != "prod":
+    if settings.ENV == "prod":
         logger.addHandler(LogfireMainframeHandler(name.split(".")[-1]))
     elif management:
         logger.addHandler(ManagementCommandsHandler())
