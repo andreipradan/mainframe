@@ -26,7 +26,7 @@ class Command(BaseCommand):
         with logfire.span(f"[backup] Dumping {source}", output=file_name):
             call_command("dumpdata", source, output=file_name, verbosity=2)
 
-        destination = f"{app}/{f'{model.lower()}/' if model else ''}{file_name}"
+        destination = f"{app}_{f'{model.lower()}_' if model else ''}{file_name}"
         with logfire.span(
             "[backup] Uploading to gcs", file_name=file_name, destination=destination
         ):
