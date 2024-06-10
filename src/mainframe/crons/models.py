@@ -16,6 +16,7 @@ class Cron(TimeStampedModel):
     expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
     kwargs = models.JSONField(default=dict)
+    name = models.CharField(max_length=255, unique=True)
 
     class Meta:
         unique_together = ("command", "args", "kwargs", "expression")
@@ -29,7 +30,7 @@ class Cron(TimeStampedModel):
         display += f" {self.expression}"
         return display
 
-    @logfire.instrument("{self}")
+    @logfire.instrument("{self.name}")
     def run(self):
         call_command(self.command, *self.args, **self.kwargs)
 

@@ -59,7 +59,7 @@ const Crons = () =>  {
                   <thead>
                     <tr>
                       <th> # </th>
-                      <th> Command </th>
+                      <th> Cron </th>
                       <th> Expression </th>
                       <th> Is Active? </th>
                       <th> Actions </th>
@@ -73,7 +73,9 @@ const Crons = () =>  {
                             (cron, i) => !loadingCrons?.includes(cron.id)
                               ? <tr key={i}>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{i + 1}</td>
-                                <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{cron.command}</td>
+                                <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
+                                  {cron.name}
+                                </td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{cron.expression}</td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
                                   <i className={`mdi mdi-${cron.is_active ? "check text-success" : "alert text-danger"}`} />

@@ -89,6 +89,7 @@ virtual = true
 
 [tool.rye.scripts]
 dev = "python src/manage.py runserver"
+frontend = "npm start --prefix=frontend"
 huey = "python src/manage.py run_huey"
 migrate = { chain = [
     "python src/manage.py makemigrations",

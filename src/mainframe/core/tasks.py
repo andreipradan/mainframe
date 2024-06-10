@@ -93,11 +93,9 @@ def schedule_deploy():
 @task()
 def schedule_task(instance, **kwargs):
     if (class_name := instance.__class__.__qualname__) == "Cron":
-        display_name = instance.command
         expression = instance.expression
         is_active = instance.is_active
     elif class_name == "Watcher":
-        display_name = instance.name
         expression = instance.cron
         is_active = bool(expression)
     else:
@@ -108,19 +106,19 @@ def schedule_task(instance, **kwargs):
         logger.info(
             "[%s][%s] schedule_task got kwargs: %s",
             instance.__class__.__qualname__,
-            display_name,
+            instance.name,
             kwargs,
         )
 
     def wrapper():
         instance.run()
 
-    task_name = f"mainframe.core.tasks.{display_name}"
+    task_name = f"mainframe.core.tasks.{instance.name}"
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
-        logger.info("Unregistered task: %s", display_name)
+        logger.info("Unregistered task: %s", instance)
     if expression and is_active:
         schedule = crontab(*expression.split())
-        periodic_task(schedule, name=display_name)(wrapper)
-        logger.info("Scheduled task: %s with cron: %s", display_name, expression)
+        periodic_task(schedule, name=instance.name)(wrapper)
+        logger.info("[%s] Scheduled: %s (%s)", class_name, instance.name, expression)
