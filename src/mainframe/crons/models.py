@@ -30,7 +30,7 @@ class Cron(TimeStampedModel):
         display += f" {self.expression}"
         return display
 
-    @logfire.instrument("{self.name}")
+    @logfire.instrument("{self}")
     def run(self):
         call_command(self.command, *self.args, **self.kwargs)
 
