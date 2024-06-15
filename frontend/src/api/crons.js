@@ -45,7 +45,7 @@ class CronsApi {
       .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
       .then(() => dispatch(setErrors([`Process ${cronCommand} killed`])))
       .catch((err) => {
-        if (err.response.status === 404)
+        if (err.response?.status === 404)
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
         return handleErrors(err, dispatch, setErrors)
       });
@@ -59,7 +59,7 @@ class CronsApi {
         dispatch(setLoading(false))
       })
       .catch((err) => {
-        if (err.response.status === 404)
+        if (err.response?.status === 404)
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
         return handleErrors(err, dispatch, setErrors)
       });
