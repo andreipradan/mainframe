@@ -1,4 +1,4 @@
-import axios from "./index";
+import {lightsAxios as axios} from "./index";
 import {
   set,
   setBrightness,
