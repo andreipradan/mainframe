@@ -252,7 +252,8 @@ jobs:
             --region "$RUN_REGION" \
             --image "$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --set-env-vars "REACT_APP_LIGHTS_URL=$REACT_APP_LIGHTS_URL"
       - name: Notify
         uses: appleboy/telegram-action@master
         with:
