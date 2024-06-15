@@ -10,6 +10,7 @@ env:
   FRONTEND_SERVICE: ${{ secrets.FRONTEND_SERVICE }}
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   RUN_REGION: ${{ secrets.REGION }}
+  REACT_APP_LIGHTS_URL: ${{ secrets.REACT_APP_LIGHTS_URL }}
 
 jobs:
   notify-telegram:
