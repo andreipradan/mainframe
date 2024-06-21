@@ -1,4 +1,4 @@
-import axios from "./index";
+import { axios, ngrokAxios } from "./index";
 import {
   create,
   deleteCron,
@@ -41,7 +41,7 @@ class CronsApi {
   };
   static kill = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));
-    axios
+    ngrokAxios
       .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
       .then(() => dispatch(setErrors([`Process ${cronCommand} killed`])))
       .catch((err) => {
@@ -52,7 +52,7 @@ class CronsApi {
   };
   static run = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));
-    axios
+    ngrokAxios
       .put(`${base}/${cronId}/run/`, {}, { headers: { Authorization: token } })
       .then(() => {
         toast.success(`"${cronCommand}" executed successfully!`, toastParams)

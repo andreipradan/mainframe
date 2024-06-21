@@ -1,4 +1,4 @@
-import {lightsAxios as axios} from "./index";
+import {ngrokAxios as axios} from "./index";
 import {
   set,
   setBrightness,

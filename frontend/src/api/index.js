@@ -7,13 +7,11 @@ export const axios = Axios.create({
 });
 
 
-const LIGHTS_URL = process.env.REACT_APP_LIGHTS_URL || API_SERVER
-
-export const lightsAxios = Axios.create({
-  baseURL: LIGHTS_URL,
+export const ngrokAxios = Axios.create({
+  baseURL: process.env.REACT_APP_NGROK_URL,
   headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": LIGHTS_URL !== API_SERVER
+    "ngrok-skip-browser-warning": true
   },
 })
 
@@ -35,5 +33,5 @@ const setupAxiosInstance = instance => {
 }
 
 setupAxiosInstance(axios)
-setupAxiosInstance(lightsAxios)
+setupAxiosInstance(ngrokAxios)
 export default axios
