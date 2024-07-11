@@ -3,7 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
-import {select, setModalOpen} from "../../../redux/cronsSlice";
+import {select, setModalOpen} from "../../../../redux/cronsSlice";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
 
@@ -11,8 +11,8 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import {ColorRing} from "react-loader-spinner";
-import CronsApi from "../../../api/crons";
-import Errors from "../../shared/Errors";
+import CronsApi from "../../../../api/crons";
+import Errors from "../../../shared/Errors";
 import AceEditor from "react-ace";
 
 const EditModal = () => {

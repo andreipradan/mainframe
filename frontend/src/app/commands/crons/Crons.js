@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import CronsApi from "../../api/crons";
 import {Audio, ColorRing} from "react-loader-spinner";
-import {select, setModalOpen} from "../../redux/cronsSlice";
-import EditModal from "../crons/components/EditModal";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import Errors from "../shared/Errors";
+
+import {select, setModalOpen} from "../../../redux/cronsSlice";
+import CronsApi from "../../../api/crons";
+import EditModal from "./components/EditModal";
+import Errors from "../../shared/Errors";
 
 
 const Crons = () =>  {

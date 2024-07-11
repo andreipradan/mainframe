@@ -9,7 +9,8 @@ export const handleErrors = (err, dispatch, setErrors) => {
       return dispatch(setErrors([error]));
     }
     if (err.response.data) {
-      if (err.response.data?.msg === "User is not logged on.") {
+      const isNgrok = err.request.responseURL.startsWith(process.env.REACT_APP_NGROK_URL)
+      if (!isNgrok && err.response.data?.msg === "User is not logged on.") {
         Cookie.remove('expires_at');
         Cookie.remove('token');
         Cookie.remove('user');

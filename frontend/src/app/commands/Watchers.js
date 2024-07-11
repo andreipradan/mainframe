@@ -8,11 +8,11 @@ import Modal from "react-bootstrap/Modal";
 import { Audio, ColorRing } from "react-loader-spinner";
 import { Collapse } from "react-bootstrap";
 
-import EditModal from "../crons/components/EditModal";
+import EditModal from "./crons/components/EditModal";
 import Errors from "../shared/Errors";
 import WatchersApi from "../../api/watchers";
 import { capitalize } from "../finances/Accounts/AccountDetails/AccountDetails";
-import { parseStatus } from "../tasks/Tasks";
+import { parseStatus } from "./Tasks";
 import { selectItem, setModalOpen } from "../../redux/watchersSlice";
 
 
