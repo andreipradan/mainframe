@@ -59,10 +59,10 @@ const Crons = () =>  {
                   <thead>
                     <tr>
                       <th> # </th>
-                      <th> Cron </th>
+                      <th> Name </th>
                       <th> Expression </th>
                       <th> Is Active? </th>
-                      <th> Actions </th>
+                      <th> Run </th>
                     </tr>
                   </thead>
                   <tbody>

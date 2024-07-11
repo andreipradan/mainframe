@@ -1,7 +1,7 @@
 import json
 from importlib import import_module
+from typing import Literal
 
-from django.core.exceptions import BadRequest
 from django.http import JsonResponse
 from django.utils.module_loading import autodiscover_modules
 from huey.contrib.djhuey import HUEY
@@ -51,9 +51,9 @@ class TasksViewSet(viewsets.ViewSet):
                 "results": sorted(
                     [
                         {
-                            "app": t.split(".")[0],
+                            "app": t.split(".")[1],
                             "name": t.split(".")[-1],
-                            "id": f"{t.split('.')[0]}.{t.split('.')[-1]}",
+                            "id": f"{t.split('.')[1]}.{t.split('.')[-1]}",
                             "is_periodic": t in periodic_tasks,
                             "is_revoked": is_revoked(t),
                             **json.loads(
@@ -74,7 +74,7 @@ class TasksViewSet(viewsets.ViewSet):
         autodiscover_modules("tasks")
         periodic_tasks = [str(t).split()[0][:-1] for t in HUEY._registry.periodic_tasks]
         for t in HUEY._registry._registry:
-            app, task_name = t.split(".")[0], t.split(".")[-1]
+            app, task_name = t.split(".")[1], t.split(".")[-1]
             if task_name == name:
                 return JsonResponse(
                     data={
@@ -94,8 +94,10 @@ class TasksViewSet(viewsets.ViewSet):
         task = kwargs["pk"]
         try:
             app = request.data["app"]
-            method = request.data["method"]
-            getattr(getattr(import_module(f"{app}.tasks"), task), method)()
+            method: Literal["revoke", "restore"] = request.data["method"]
+            getattr(getattr(import_module(f"mainframe.{app}.tasks"), task), method)()
         except (AttributeError, ModuleNotFoundError, ValueError) as e:
-            raise BadRequest(str(e)) from e
+            return JsonResponse(
+                status=status.HTTP_400_BAD_REQUEST, data={"detail": str(e)}
+            )
         return self.list(request)

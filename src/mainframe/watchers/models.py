@@ -73,6 +73,7 @@ class Watcher(TimeStampedModel):
                 text = f"📣 <b>New <i>{self.name}</i> item!</b> 📣\n{text}"
             send_telegram_message(text, **kwargs)
             logger.info("Done")
+            return True
 
 
 @receiver(signals.post_delete, sender=Watcher)

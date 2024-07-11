@@ -30,6 +30,7 @@ const Sidebar = () => {
   const [authMenuOpen, setAuthMenuOpen] = useState(false)
   const [basicUiMenuOpen, setBasicUiMenuOpen] = useState(false)
   const [creditMenuOpen, setCreditMenuOpen] = useState(false)
+  const [commandsMenuOpen, setCommandsMenuOpen] = useState(false)
   const [documentationMenuOpen, setDocumentationMenuOpen] = useState(false)
   const [expensesMenuOpen, setExpensesMenuOpen] = useState(false)
   const [financesMenuOpen, setFinancesMenuOpen] = useState(false)
@@ -68,6 +69,7 @@ const Sidebar = () => {
     setAuthMenuOpen(false)
     setBasicUiMenuOpen(false)
     setCreditMenuOpen(false)
+    setCommandsMenuOpen(false)
     setExpensesMenuOpen(false)
     setFinancesMenuOpen(false)
     setFormElementsMenuOpen(false)
@@ -87,6 +89,7 @@ const Sidebar = () => {
       {path:'/auth', setState: setAuthMenuOpen},
       {path:'/basic-ui', setState: setBasicUiMenuOpen},
       {path:'/credit', setState: setCreditMenuOpen},
+      {path:'/commands', setState: setCommandsMenuOpen},
       {path:'/expenses', setState: setExpensesMenuOpen},
       {path:'/finances', setState: setFinancesMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
@@ -236,40 +239,41 @@ const Sidebar = () => {
           user?.is_staff
             ? <>
               <li className="nav-item nav-category"><span className="nav-link">Admin</span></li>
-              <li className={ location.pathname === "/" ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+              <li className={location.pathname === '/' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/">
                   <span className="menu-icon"><i className="mdi mdi-speedometer"></i></span>
                   <span className="menu-title"><Trans>Dashboard</Trans></span>
                 </Link>
               </li>
-              <li className={ isPathActive('/apps') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <div className={ appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setAppsMenuOpen(!appsMenuOpen) } data-toggle="collapse">
+              <li className={isPathActive('/apps') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                     onClick={() => setAppsMenuOpen(!appsMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
                     <i className="mdi mdi-apps"></i>
                   </span>
                   <span className="menu-title"><Trans>Apps</Trans></span>
                   <i className="menu-arrow"></i>
                 </div>
-                <Collapse in={ appsMenuOpen }>
+                <Collapse in={appsMenuOpen}>
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
-                        <Link className={ isPathActive('/apps/camera') ? 'nav-link active' : 'nav-link' } to="/apps/camera">
+                        <Link className={isPathActive('/apps/camera') ? 'nav-link active' : 'nav-link'} to="/apps/camera">
                           Camera
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/devices') ? 'nav-link active' : 'nav-link' } to="/devices">
+                        <Link className={isPathActive('/devices') ? 'nav-link active' : 'nav-link'} to="/devices">
                           Devices
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/apps/logs') ? 'nav-link active' : 'nav-link' } to="/apps/logs">
+                        <Link className={isPathActive('/apps/logs') ? 'nav-link active' : 'nav-link'} to="/apps/logs">
                           <span className="menu-title">Logs</span>
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/apps/todo') ? 'nav-link active' : 'nav-link' } to="/apps/todo">
+                        <Link className={isPathActive('/apps/todo') ? 'nav-link active' : 'nav-link'} to="/apps/todo">
                           To do List
                         </Link>
                       </li>
@@ -277,8 +281,8 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
-              <li className={ isPathActive('/auth') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <div className={ authMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setAuthMenuOpen(!authMenuOpen) } data-toggle="collapse">
+              <li className={isPathActive('/auth') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div className={authMenuOpen ? 'nav-link menu-expanded' : 'nav-link'} onClick={() => setAuthMenuOpen(!authMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
                     <i className="mdi mdi-account-multiple"></i>
                   </span>
@@ -286,16 +290,16 @@ const Sidebar = () => {
                   <i className="menu-arrow"></i>
                 </div>
 
-                <Collapse in={ authMenuOpen }>
+                <Collapse in={authMenuOpen}>
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
-                        <Link className={ isPathActive('/auth/groups') ? 'nav-link active' : 'nav-link' } to="/auth/groups">
+                        <Link className={isPathActive('/auth/groups') ? 'nav-link active' : 'nav-link'} to="/auth/groups">
                           Groups
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/auth/users') ? 'nav-link active' : 'nav-link' } to="/auth/users">
+                        <Link className={isPathActive('/auth/users') ? 'nav-link active' : 'nav-link'} to="/auth/users">
                           Users
                         </Link>
                       </li>
@@ -303,61 +307,91 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
-              <li className={ isPathActive('/bots') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+              <li className={isPathActive('/bots') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/bots">
                   <span className="menu-icon"><i className="mdi mdi-speedometer"></i></span>
                   <span className="menu-title">Bots</span>
                 </Link>
               </li>
-              <li className={ isPathActive('/commands') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <Link className="nav-link" to="/commands">
-                  <span className="menu-icon"><i className="mdi mdi-bash"></i></span>
+              <li className={isPathActive('/commands') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div
+                  className={commandsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                  onClick={() => setCommandsMenuOpen(!commandsMenuOpen)}
+                  data-toggle="collapse"
+                >
+                  <span className="menu-icon">
+                    <i className="mdi mdi-bash"></i>
+                  </span>
                   <span className="menu-title">Commands</span>
-                </Link>
+                  <i className="menu-arrow"></i>
+                </div>
+                <Collapse in={commandsMenuOpen}>
+                  <div>
+                    <ul className="nav flex-column sub-menu">
+                      <li className="nav-item">
+                        <Link
+                          className={isPathActive('/commands/crons') ? 'nav-link active' : 'nav-link'}
+                          to="/commands/crons"
+                        >
+                          <i className="mdi mdi-timer"></i>&nbsp;Crons
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          className={isPathActive('/commands/management') ? 'nav-link active' : 'nav-link'}
+                          to="/commands/management"
+                        >
+                          <i className="mdi mdi-account"></i>&nbsp;Management
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          className={isPathActive('/commands/tasks') ? 'nav-link active' : 'nav-link'}
+                          to="/commands/tasks"
+                        >
+                          <i className="mdi mdi-view-list" />&nbsp;Tasks
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          className={isPathActive('/commands/watchers') ? 'nav-link active' : 'nav-link'}
+                          to="/commands/watchers"
+                        >
+                          <i className="mdi mdi-eye-plus" />&nbsp;Watchers
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </Collapse>
               </li>
-              <li className={ isPathActive('/crons') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <Link className="nav-link" to="/crons">
-                  <span className="menu-icon"><i className="mdi mdi-timer"></i></span>
-                  <span className="menu-title">Crons</span>
-                </Link>
-              </li>
-              <li className={ isPathActive('/messages') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+              <li className={isPathActive('/messages') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/messages">
                   <span className="menu-icon"><i className="mdi mdi-message" /></span>
                   <span className="menu-title">Messages</span>
                 </Link>
               </li>
-              <li className={ isPathActive('/tasks') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <Link className="nav-link" to="/tasks">
-                  <span className="menu-icon"><i className="mdi mdi-view-list" /></span>
-                  <span className="menu-title">Tasks</span>
-                </Link>
-              </li>
-              <li className={ isPathActive('/watchers') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <Link className="nav-link" to="/watchers">
-                  <span className="menu-icon"><i className="mdi mdi-eye-plus" /></span>
-                  <span className="menu-title">Watchers</span>
-                </Link>
-              </li>
-              <li className="nav-item nav-category"><span className="nav-link">Finances</span></li>
-              <li className={ isPathActive('/finances') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <div className={ appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setFinancesMenuOpen(!financesMenuOpen) } data-toggle="collapse">
+              <li className="nav-item nav-category"><span className="nav-link">Finance</span></li>
+              <li className={isPathActive('/finances') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                     onClick={() => setFinancesMenuOpen(!financesMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
                     <i className="mdi mdi-credit-card-outline"></i>
                   </span>
                   <span className="menu-title">Accounts</span>
                   <i className="menu-arrow"></i>
                 </div>
-                <Collapse in={ financesMenuOpen }>
+                <Collapse in={financesMenuOpen}>
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
-                        <Link className={ isPathActive('/finances/accounts') ? 'nav-link active' : 'nav-link' } to="/finances/accounts">
+                        <Link className={isPathActive('/finances/accounts') ? 'nav-link active' : 'nav-link'}
+                              to="/finances/accounts">
                           Accounts
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/finances/categorize') ? 'nav-link active' : 'nav-link' } to="/finances/categorize">
+                        <Link className={isPathActive('/finances/categorize') ? 'nav-link active' : 'nav-link'}
+                              to="/finances/categorize">
                           Categorize
                         </Link>
                       </li>
@@ -366,34 +400,39 @@ const Sidebar = () => {
                 </Collapse>
               </li>
 
-              <li className={ isPathActive('/credit') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-                <div className={ creditMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setCreditMenuOpen(!creditMenuOpen) } data-toggle="collapse">
+              <li className={isPathActive('/credit') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div className={creditMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                     onClick={() => setCreditMenuOpen(!creditMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
                     <i className="mdi mdi-cash-multiple"></i>
                   </span>
                   <span className="menu-title">Credit</span>
                   <i className="menu-arrow"></i>
                 </div>
-                <Collapse in={ creditMenuOpen }>
+                <Collapse in={creditMenuOpen}>
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
-                        <Link className={ isPathActive('/credit/details') ? 'nav-link active' : 'nav-link' } to="/credit/details">
+                        <Link className={isPathActive('/credit/details') ? 'nav-link active' : 'nav-link'}
+                              to="/credit/details">
                           Details
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/credit/calculator') ? 'nav-link active' : 'nav-link' } to="/credit/calculator">
+                        <Link className={isPathActive('/credit/calculator') ? 'nav-link active' : 'nav-link'}
+                              to="/credit/calculator">
                           Calculator
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/credit/payments') ? 'nav-link active' : 'nav-link' } to="/credit/payments">
+                        <Link className={isPathActive('/credit/payments') ? 'nav-link active' : 'nav-link'}
+                              to="/credit/payments">
                           Payments
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={ isPathActive('/credit/timetables') ? 'nav-link active' : 'nav-link' } to="/credit/timetables">
+                        <Link className={isPathActive('/credit/timetables') ? 'nav-link active' : 'nav-link'}
+                              to="/credit/timetables">
                           Timetables
                         </Link>
                       </li>
@@ -401,7 +440,7 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
-              <li className={ isPathActive('/stocks') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+              <li className={isPathActive('/stocks') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/stocks">
                   <span className="menu-icon"><i className="mdi mdi-chart-bar"></i></span>
                   <span className="menu-title">Stocks</span>
@@ -411,22 +450,24 @@ const Sidebar = () => {
             : null
         }
         <li className="nav-item nav-category"><span className="nav-link">Expenses & Rates</span></li>
-        <li className={ isPathActive('/expenses') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
-          <div className={ expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setExpensesMenuOpen(!expensesMenuOpen) } data-toggle="collapse">
+        <li className={isPathActive('/expenses') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+          <div className={expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+               onClick={() => setExpensesMenuOpen(!expensesMenuOpen)} data-toggle="collapse">
             <span className="menu-icon"><i className="mdi mdi-cash"></i></span>
             <span className="menu-title">Expenses</span>
             <i className="menu-arrow"></i>
           </div>
-          <Collapse in={ expensesMenuOpen }>
+          <Collapse in={expensesMenuOpen}>
             <div>
               <ul className="nav flex-column sub-menu">
                 <li className="nav-item">
-                  <Link className={ isPathExact('/expenses') ? 'nav-link active' : 'nav-link' } to="/expenses">
+                  <Link className={isPathExact('/expenses') ? 'nav-link active' : 'nav-link'} to="/expenses">
                     My expenses
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className={ isPathActive('/expenses/groups') ? 'nav-link active' : 'nav-link' } to="/expenses/groups">
+                  <Link className={isPathActive('/expenses/groups') ? 'nav-link active' : 'nav-link'}
+                        to="/expenses/groups">
                     <span>My groups</span>
                   </Link>
                 </li>
@@ -434,14 +475,14 @@ const Sidebar = () => {
             </div>
           </Collapse>
         </li>
-        <li className={ location.pathname === "/exchange-rates" ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+        <li className={location.pathname === '/exchange-rates' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <Link className="nav-link" to="/exchange-rates">
             <span className="menu-icon"><i className="mdi mdi-chart-bar"></i></span>
             <span className="menu-title">Exchange Rates</span>
           </Link>
         </li>
         <li className="nav-item nav-category"><span className="nav-link">Other</span></li>
-        <li className={ isPathActive('/earthquakes') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
+        <li className={isPathActive('/earthquakes') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <Link className="nav-link" to="/earthquakes">
             <span className="menu-icon"><i className="mdi mdi-earth"></i></span>
             <span className="menu-title">Earthquakes</span>

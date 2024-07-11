@@ -73,6 +73,10 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/auth/groups" component={ UserGroups } />}
         {user?.is_staff && <Route exact path="/auth/users" component={ Users } />}
         {user?.is_staff && <Route exact path="/bots" component={ Bots } />}
+        {user?.is_staff && <Route exact path="/commands/crons" component={ Crons } />}
+        {user?.is_staff && <Route exact path="/commands/management" component={ Commands } />}
+        {user?.is_staff && <Route exact path="/commands/tasks" component={ Tasks } />}
+        {user?.is_staff && <Route exact path="/commands/watchers" component={ Watchers } />}
         {user?.is_staff && <Route exact path="/credit/calculator" component={ FinancesCalculator } />}
         {user?.is_staff && <Route exact path="/credit/details" component={ FinancesCredit } />}
         {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
@@ -80,13 +84,9 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/finances/accounts" component={ FinancesAccounts } />}
         {user?.is_staff && <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />}
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
-        {user?.is_staff && <Route exact path="/commands" component={ Commands } />}
-        {user?.is_staff && <Route exact path="/crons" component={ Crons } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
         {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
-        {user?.is_staff && <Route exact path="/tasks" component={ Tasks } />}
-        {user?.is_staff && <Route exact path="/watchers" component={ Watchers } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
         <Route path="/basic-ui/dropdowns" component={ Dropdowns } />
