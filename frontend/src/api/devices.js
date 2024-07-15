@@ -23,8 +23,7 @@ class DevicesApi {
   static getList = (token, search = null) => (dispatch) => {
     dispatch(setLoading(true));
     let url = `${base}/`
-    if (searchTerm)
-      url += `?search=${search}`
+    if (search) url += `?search=${search}`
     axios
       .get(url, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
