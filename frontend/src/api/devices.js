@@ -20,10 +20,13 @@ class DevicesApi {
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static getList = (token, page = null) => (dispatch) => {
+  static getList = (token, search = null) => (dispatch) => {
     dispatch(setLoading(true));
+    let url = `${base}/`
+    if (searchTerm)
+      url += `?search=${search}`
     axios
-      .get(`${base}/?page=${page || 1}`, { headers: { Authorization: token } })
+      .get(url, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };

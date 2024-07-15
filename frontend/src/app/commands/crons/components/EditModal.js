@@ -1,19 +1,20 @@
 import React, {useEffect, useState} from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { useDispatch, useSelector } from "react-redux";
-import {select, setModalOpen} from "../../../../redux/cronsSlice";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
-import {ColorRing} from "react-loader-spinner";
+import AceEditor from "react-ace";
+import { ColorRing } from "react-loader-spinner";
+
+
+import { select, setModalOpen } from "../../../../redux/cronsSlice";
 import CronsApi from "../../../../api/crons";
 import Errors from "../../../shared/Errors";
-import AceEditor from "react-ace";
 
 const EditModal = () => {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ const EditModal = () => {
   const [expression, setExpression] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [kwargs, setKwargs] = useState(null);
+  const [redis, setRedis] = useState(null);
   const [name, setName] = useState("");
 
   useEffect(() => {
@@ -35,6 +37,7 @@ const EditModal = () => {
       setExpression(cron.expression)
       setIsActive(cron.is_active)
       setKwargs(JSON.stringify(cron.kwargs, null, "\t"))
+      setRedis(JSON.stringify(cron.redis, null, "\t"))
       setName(cron.name)
     }
   }, [cron]);
@@ -45,6 +48,7 @@ const EditModal = () => {
     setExpression("")
     setIsActive(false)
     setKwargs(null)
+    setRedis(null)
     setName("")
   }
 
@@ -152,6 +156,30 @@ const EditModal = () => {
             showGutter={true}
             highlightActiveLine={true}
             value={kwargs}
+            setOptions={{
+              enableBasicAutocompletion: false,
+              enableLiveAutocompletion: false,
+              enableSnippets: false,
+              showLineNumbers: true,
+              tabSize: 2,
+            }}
+            width="100%"
+            height="150px"
+          />
+
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Redis</Form.Label>
+          <AceEditor
+            placeholder="Redis"
+            mode="python"
+            readOnly={true}
+            theme="monokai"
+            fontSize={12}
+            showPrintMargin={true}
+            showGutter={true}
+            highlightActiveLine={true}
+            value={redis}
             setOptions={{
               enableBasicAutocompletion: false,
               enableLiveAutocompletion: false,

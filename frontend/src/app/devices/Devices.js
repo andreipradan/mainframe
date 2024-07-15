@@ -1,21 +1,27 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import DevicesApi from "../../api/devices";
 import {Audio, ColorRing} from "react-loader-spinner";
 import {select} from "../../redux/devicesSlice";
 import EditModal from "../devices/components/EditModal";
 import Errors from "../shared/Errors";
+import { Collapse } from 'react-bootstrap';
 
 
 const Devices = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results: devices, errors, loading, loadingDevices } = useSelector(state => state.devices)
+  const {results, errors, loading, loadingDevices } = useSelector(state => state.devices)
+
+  const [devices, setDevices] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    !devices && dispatch(DevicesApi.getList(token));
+    !devices && dispatch(DevicesApi.getList(token))
   }, []);
 
+  useEffect(() => setDevices(results), [results])
   return (
     <div>
       <div className="page-header">
@@ -33,24 +39,57 @@ const Devices = () =>  {
             <div className="card-body">
               <h4 className="card-title">
                 Available devices
-                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(DevicesApi.getList(token))}>
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                        onClick={() => dispatch(DevicesApi.getList(token))}>
                   <i className="mdi mdi-refresh"></i>
                 </button>
-                <button type="button" className="btn btn-outline-primary btn-sm p-0 border-0 bg-transparent" onClick={() => dispatch(DevicesApi.sync(token))}>
+                <button type="button" className="btn btn-outline-primary btn-sm p-0 border-0 bg-transparent"
+                        onClick={() => dispatch(DevicesApi.sync(token))}>
                   <i className="mdi mdi-sync-alert"></i>
                 </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm border-0 bg-transparent"
+                  onClick={() => setSearchOpen(!searchOpen)}
+                >
+                  <i className="mdi mdi-magnify" />
+                </button>
               </h4>
-              <Errors errors={errors}/>
+              <Errors errors={errors} />
+              <Collapse in={ searchOpen }>
+                <ul className="navbar-nav w-100 rounded">
+                  <li className="nav-item w-100">
+                    <form
+                      className="nav-link mt-2 mt-md-0 d-lg-flex search"
+                      onSubmit={e => {e.preventDefault()}}
+                    >
+                      <input
+                        value={searchTerm}
+                        type="search"
+                        className="form-control"
+                        placeholder="Search transactions"
+                        onChange={e => {
+                          setSearchTerm(e.target.value)
+                          setDevices(results.filter(d =>
+                            ["ip", "mac", "name"].some(key => d[key].toLowerCase().includes(e.target.value.toLowerCase()))
+                          ));
+                        }
+                        }
+                      />
+                    </form>
+                  </li>
+                </ul>
+              </Collapse>
               <div className="table-responsive">
                 <table className="table">
                   <thead>
-                    <tr>
-                      <th> # </th>
-                      <th> Name </th>
-                      <th> Is Active? </th>
-                      <th> IP</th>
-                      <th> Mac Address </th>
-                    </tr>
+                  <tr>
+                    <th> #</th>
+                    <th> Name</th>
+                    <th> Is Active?</th>
+                    <th> IP</th>
+                    <th> Mac Address</th>
+                  </tr>
                   </thead>
                   <tbody>
                     {

@@ -8,6 +8,8 @@ import {select, setModalOpen} from "../../../redux/cronsSlice";
 import CronsApi from "../../../api/crons";
 import EditModal from "./components/EditModal";
 import Errors from "../../shared/Errors";
+import { selectItem } from '../../../redux/watchersSlice';
+import { capitalize } from '../../finances/Accounts/AccountDetails/AccountDetails';
 
 
 const Crons = () =>  {
@@ -63,6 +65,8 @@ const Crons = () =>  {
                       <th> Name </th>
                       <th> Expression </th>
                       <th> Is Active? </th>
+                      <th> Last run </th>
+                      <th> Status </th>
                       <th> Run </th>
                     </tr>
                   </thead>
@@ -79,50 +83,72 @@ const Crons = () =>  {
                                 </td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{cron.expression}</td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
-                                  <i className={`mdi mdi-${cron.is_active ? "check text-success" : "alert text-danger"}`} />
+                                  <i className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`} />
+                                </td>
+                                <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
+                                  {
+                                    cron.redis?.history?.[0]?.timestamp
+                                      ? new Date(cron.redis.history[0].timestamp).toUTCString()
+                                      : '-'
+                                  }
+                                </td>
+                                <td
+                                  className={
+                                    `text-${
+                                      cron.redis.history?.[0]?.status === 'complete'
+                                        ? 'success'
+                                        : cron.redis.history?.[0]?.status === 'executing'
+                                          ? 'warning' : 'danger'
+                                    }`
+                                  }
+                                  onClick={() => dispatch(selectItem(cron.id))}
+                                >
+                                  {cron.redis.history?.[0]?.status ? capitalize(cron.redis.history[0].status) : '-'}
                                 </td>
                                 <td>
                                   <div className="btn-group btn-group-sm" role="group">
                                     <button
-                                        type="button"
-                                        className="btn btn-outline-primary border-0"
-                                        onClick={() => {
-                                          setSelectedAction("run")
-                                          setSelectedActionCron(cron)
-                                        }}
+                                      type="button"
+                                      className="btn btn-outline-primary border-0"
+                                      onClick={() => {
+                                        setSelectedAction('run');
+                                        setSelectedActionCron(cron);
+                                      }}
                                     >
                                       <i className="mdi mdi-play"></i>
                                     </button>
                                     <button
-                                        type="button"
-                                        className="btn btn-outline-danger border-0"
-                                        onClick={() => {
-                                          setSelectedAction("kill")
-                                          setSelectedActionCron(cron)
-                                        }}
+                                      type="button"
+                                      className="btn btn-outline-danger border-0"
+                                      onClick={() => {
+                                        setSelectedAction('kill');
+                                        setSelectedActionCron(cron);
+                                      }}
                                     >
                                       <i className="mdi mdi-skull-crossbones"></i>
                                     </button>
                                   </div>
                                 </td>
                               </tr>
-                          : <tr key={i}>
-                            <td colSpan={6}>
-                              <ColorRing
-                                  width = "100%"
-                                  height = "50"
-                                  wrapperStyle={{width: "100%"}}
-                                />
-                            </td>
+                              : <tr key={i}>
+                                <td colSpan={6}>
+                                  <ColorRing
+                                    width="100%"
+                                    height="50"
+                                    wrapperStyle={{ width: '100%' }}
+                                  />
+                                </td>
+                              </tr>
+                          )
+                          : <tr>
+                            <td colSpan={6}>No crons available</td>
                           </tr>
-                            )
-                          : <tr><td colSpan={6}>No crons available</td></tr>
                         : <tr>
                           <td colSpan={6}>
                             <Audio
-                                width = "100%"
-                                radius = "9"
-                                color = 'green'
+                              width="100%"
+                              radius="9"
+                              color="green"
                                 wrapperStyle={{width: "100%"}}
                               />
                             </td>

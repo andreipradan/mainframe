@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.system import run_cmd
@@ -18,6 +19,15 @@ class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.order_by("-is_active", "name", "ip")
     serializer_class = DeviceSerializer
     permission_classes = (IsAdminUser,)
+
+    def get_queryset(self):  # noqa: C901
+        queryset = super().get_queryset()
+        params = self.request.query_params
+        if search_term := params.get("search"):
+            queryset = queryset.annotate(
+                search=SearchVector("ip", "mac", "name"),
+            ).filter(search__icontains=search_term)
+        return queryset
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
