@@ -87,7 +87,7 @@ class Payment(TimeStampedModel):
     total = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
-        ordering = ("-date", "-created_at")
+        ordering = ("-date", "-remaining")
         constraints = (
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_credit_date_"
