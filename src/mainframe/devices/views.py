@@ -12,8 +12,7 @@ logger = get_default_logger(__name__)
 
 
 def add_zeros_to_mac(mac):
-    components = [f"0{m}" if len(m) < 2 else m for m in mac.split(":")]  # noqa: PLR2004
-    return ":".join(components)
+    return ":".join([m.zfill(2) for m in mac.split(":")])  # noqa: PLR2004
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
