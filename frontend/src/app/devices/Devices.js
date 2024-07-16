@@ -9,6 +9,7 @@ import { Collapse } from 'react-bootstrap';
 
 
 const Devices = () =>  {
+
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {results, errors, loading, loadingDevices } = useSelector(state => state.devices)
