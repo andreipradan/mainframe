@@ -10,3 +10,7 @@ class Device(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name}{' ' if self.name else ''}{self.ip}"
+
+    def save(self, **kwargs):
+        self.mac = self.mac.lower()
+        return super().save(**kwargs)
