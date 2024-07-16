@@ -3,7 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
-import {select} from "../../../redux/devicesSlice";
+import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
 
@@ -15,25 +15,45 @@ import DevicesApi from "../../../api/devices";
 
 const EditModal = () => {
   const dispatch = useDispatch();
-  const device = useSelector(state => state.devices.selectedDevice)
+  const { selectedItem: device, modalOpen, loadingItems: loadingDevices } = useSelector(state => state.devices)
   const token = useSelector((state) => state.auth.token)
-  const loadingDevices = useSelector(state => state.devices.loadingDevices)
 
+  const [ip, setIp] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [mac, setMac] = useState("");
   const [name, setName] = useState("");
 
+  const clearModal = () => {
+    setIp("")
+    setIsActive(false)
+    setMac("")
+    setName("")
+  }
+
+  const closeModal = () => {
+    dispatch(selectItem())
+    dispatch(setModalOpen(false))
+    clearModal()
+  }
+
   useEffect(() => {
-    if (device) {setName(device.name || "")}
+    if (device) {
+      setIp(device.ip || "")
+      setIsActive(device.is_active || false)
+      setMac(device.mac || "")
+      setName(device.name || "")
+    }
   }, [device]);
 
-  return <Modal centered show={!!device} onHide={() => dispatch(select())}>
+  return <Modal centered show={!!device || modalOpen} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
-            Edit {device?.name || device?.ip }
+            {device ? 'Edit' : 'Add new device'} {device?.name || device?.ip }
           </div>
         </div>
-        <p className="text-muted mb-0">{device?.mac}</p>
+        {device ? <p className="text-muted mb-0">{device?.mac}</p> : null}
       </Modal.Title>
     </Modal.Header>
     {
@@ -44,37 +64,66 @@ const EditModal = () => {
           wrapperStyle={{width: "100%"}}
         />
       : <Modal.Body>
-      <Form onSubmit={
-        (e) => {
-          e.preventDefault()
-          dispatch(DevicesApi.updateDevice(token, device.id, {name: name}))
-          dispatch(select())
-        }
-      }>
+      <Form onSubmit={(e) => e.preventDefault()}>
         <Form.Group className="mb-3">
           <Form.Label>Name</Form.Label>
           <Form.Control
             type="text"
-            
             value={name}
             onChange={e => setName(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Is Active?</Form.Label>
+          <Form.Check
+            checked={isActive}
+            type="switch"
+            id="checkbox"
+            label=""
+            onChange={() => {setIsActive(!isActive)}}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>IP</Form.Label>
+          <Form.Control
+            type="text"
+            value={ip}
+            required
+            onChange={e => setIp(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Mac</Form.Label>
+          <Form.Control
+            type="text"
+            value={mac}
+            required
+            readOnly={!!device}
+            onChange={e => setMac(e.target.value)}
           />
         </Form.Group>
       </Form>
     </Modal.Body>
     }
     <Modal.Footer>
-      <Button variant="danger" className="float-left" onClick={() => dispatch(DevicesApi.delete(token, device.id))}>
-        Delete
-      </Button>
-      <Button variant="secondary" onClick={() => dispatch(select())}>
+      {
+        !!device && <Button variant="danger" className="float-left" onClick={() => dispatch(DevicesApi.delete(token, device.id))}>
+          Delete
+        </Button>
+      }
+
+      <Button variant="secondary" onClick={closeModal}>
         Close
       </Button>
       <Button variant="primary" onClick={() => {
-        dispatch(DevicesApi.updateDevice(token, device.id, {name: name}))
-        dispatch(select())
+        if (device) {
+          dispatch(DevicesApi.updateDevice(token, device.id, { ip:ip, is_active: isActive, name: name }));
+        } else {
+          dispatch(DevicesApi.create(token, {ip: ip, is_active: isActive, mac: mac, name: name}))
+        }
+        closeModal()
       }}>
-        Save Changes
+        {!!device ? "Update" : "Add"}
       </Button>
     </Modal.Footer>
   </Modal>

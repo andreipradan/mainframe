@@ -1,23 +1,29 @@
 import { axios, ngrokAxios } from "./index";
 import {
-  deleteDevice,
+  create,
+  deleteItem,
   set,
   setErrors,
   setLoading,
-  setLoadingDevice,
+  setLoadingItems,
   update,
 } from "../redux/devicesSlice";
 import {handleErrors} from "./errors";
 
 
 class DevicesApi {
-  static delete = (token, deviceId) => dispatch => {
-    dispatch(setLoadingDevice(deviceId));
+  static create = (token, data) => dispatch => {
+    dispatch(setLoading(true))
     axios
-      .delete(`${base}${deviceId}/`, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(deleteDevice(deviceId));
-      })
+      .post(`${base}/`, data, { headers: { Authorization: token}})
+      .then(response => dispatch(create(response.data)))
+      .catch(err => handleErrors(err, dispatch, setErrors))
+  };
+  static delete = (token, deviceId) => dispatch => {
+    dispatch(setLoadingItems(deviceId));
+    axios
+      .delete(`${base}/${deviceId}/`, { headers: { Authorization: token } })
+      .then(() => dispatch(deleteItem(deviceId)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static getList = (token, search = null) => (dispatch) => {
@@ -32,13 +38,13 @@ class DevicesApi {
   };
   static sync = token => dispatch => {
     dispatch(setLoading(true));
-    ngrokAxios
+    axios
       .put(`${base}/sync/`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static updateDevice = (token, deviceId, data) => dispatch => {
-    dispatch(setLoadingDevice(deviceId));
+    dispatch(setLoadingItems(deviceId));
     axios
       .patch(`${base}/${deviceId}/`, data, { headers: { Authorization: token } })
       .then((response) => {

@@ -1,24 +1,26 @@
 from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
-from mainframe.clients.system import run_cmd
+from mainframe.clients.system import fetch_network_devices, run_cmd
 from mainframe.devices.models import Device
 from mainframe.devices.serializers import DeviceSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
 
 logger = get_default_logger(__name__)
 
 
-def add_zeros_to_mac(mac):
-    return ":".join([m.zfill(2) for m in mac.split(":")])  # noqa: PLR2004
+class DevicePagination(PageNumberPagination):
+    page_size = 300
 
 
 class DeviceViewSet(viewsets.ModelViewSet):
+    pagination_class = DevicePagination
+    permission_classes = (IsAdminUser,)
     queryset = Device.objects.order_by("-is_active", "name", "ip")
     serializer_class = DeviceSerializer
-    permission_classes = (IsAdminUser,)
 
     def get_queryset(self):  # noqa: C901
         queryset = super().get_queryset()
@@ -27,32 +29,15 @@ class DeviceViewSet(viewsets.ModelViewSet):
             queryset = queryset.annotate(
                 search=SearchVector("ip", "mac", "name"),
             ).filter(search__icontains=search_term)
-        return queryset
+        return queryset.order_by("-is_active", "name", "mac")
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
-        output = run_cmd("arp -a")
-        items = []
-        for item in output.split("\n"):
-            if not item.strip():
-                continue
-            _, ip, __, mac, *___ = item.split()
-            items.append(
-                Device(
-                    ip=ip[1:-1],
-                    mac=(
-                        add_zeros_to_mac(mac)
-                        if "incomplete" not in mac
-                        else f"E: {ip[1:-1]}"
-                    ),
-                    is_active=True,
-                )
-            )
-        if items:
+        if devices := fetch_network_devices():
             Device.objects.update(is_active=False)
-            logger.info("Creating %d", len(items))
+            logger.info("Creating %d", len(devices))
             Device.objects.bulk_create(
-                items,
+                [Device(**d) for d in devices],
                 update_conflicts=True,
                 update_fields=["is_active", "ip"],
                 unique_fields=["mac"],

@@ -19,7 +19,7 @@ import Errors from "../../../shared/Errors";
 const EditModal = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {selectedCron: cron, loadingCrons, errors, modalOpen} = useSelector(state => state.crons)
+  const { selectedCron: cron, loadingCrons, errors, modalOpen } = useSelector(state => state.crons)
 
   const [annotations, setAnnotations] = useState(null);
   const [args, setArgs] = useState("");

@@ -5,6 +5,28 @@ from pathlib import Path
 from mainframe.clients.logs import get_default_logger
 
 
+def fetch_network_devices():
+    def add_zeros_to_mac(address):
+        return ":".join([m.zfill(2) for m in address.split(":")])  # noqa: PLR2004
+
+    output = run_cmd("arp -a")
+    devices = []
+    for item in output.split("\n"):
+        if not item.strip():
+            continue
+        _, ip, __, mac, *___ = item.split()
+        mac = add_zeros_to_mac(mac) if "incomplete" not in mac else f"E: {ip[1:-1]}"
+        if mac not in [device["mac"] for device in devices]:
+            devices.append(
+                {
+                    "ip": ip[1:-1],
+                    "mac": mac,
+                    "is_active": True,
+                }
+            )
+    return devices
+
+
 def get_folder_contents(folder):
     return sorted(
         [
