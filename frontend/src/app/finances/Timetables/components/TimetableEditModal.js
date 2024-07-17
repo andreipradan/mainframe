@@ -9,12 +9,12 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import { ColorRing } from "react-loader-spinner";
-import { FinanceApi } from "../../../../api/finance";
+import { TimetableApi } from '../../../../api/finance';
 import { selectItem as selectTimetable } from "../../../../redux/timetableSlice";
 
 const TimetableEditModal = () => {
   const dispatch = useDispatch();
-  const loadingTimetables = useSelector(state => state.timetable.loadingTimetables)
+  const loadingTimetables = useSelector(state => state.timetable.loadingItems)
   const timetable = useSelector(state => state.timetable.selectedItem)
   const token = useSelector((state) => state.auth.token)
 
@@ -29,7 +29,7 @@ const TimetableEditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card mb-1">
             Amortization Table
-            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getTimetable(token, timetable?.id))}>
+            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(TimetableApi.get(token, timetable?.id))}>
               <i className="mdi mdi-refresh"></i>
             </button>
           </div>
@@ -76,6 +76,9 @@ const TimetableEditModal = () => {
       </div>
     </Modal.Body>
     <Modal.Footer>
+      <Button variant="danger" onClick={() => dispatch(TimetableApi.deleteTimetable(token, timetable.id))}>
+        Delete
+      </Button>
       <Button variant="secondary" onClick={() => dispatch(selectTimetable())}>
         Close
       </Button>

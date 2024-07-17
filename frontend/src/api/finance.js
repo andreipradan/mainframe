@@ -36,10 +36,13 @@ import {
   setLoading as setStocksLoading,
 } from "../redux/stocksSlice";
 import {
+  create as createTimetable,
   deleteItem as deleteTimetable,
   set as setTimetables,
   setErrors as setTimetableErrors,
-  setLoading as setTimetableLoading,
+  setItem as setTimetable,
+  setLoading as setTimetablesLoading,
+  setLoadingItems as setTimetableLoading
 } from "../redux/timetableSlice";
 import {
   set as setTransactions,
@@ -56,6 +59,8 @@ import {
   setTask,
 } from "../redux/predictionSlice"
 import {handleErrors} from "./errors";
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
 
 export const createSearchParams = params => {
   if (params === null) return ""
@@ -145,6 +150,20 @@ export class FinanceApi {
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
+  static importPayments = (token, data) => dispatch => {
+    dispatch(setLoading(true))
+    axios.post(
+      `${base}/payments/`,
+      data,
+      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
+    )
+    .then((response) => {
+      dispatch(setPayments(response.data));
+      toast.success("Payments uploaded successfully!", toastParams)
+
+    })
+    .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
+  }
   static updateAccount = (token, id, data) => dispatch => {
     dispatch(setLoadingAccounts(id))
     axios
@@ -232,13 +251,21 @@ export class StocksApi {
 
 export class TimetableApi {
   static deleteTimetable = (token, timetableId) => (dispatch) => {
+    dispatch(setTimetableLoading(true));
     axios
       .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
       .then(() => {dispatch(deleteTimetable(timetableId))})
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
+  static get = (token, id) => dispatch => {
+    dispatch(setTimetableLoading(id));
+    axios
+      .get(`${base}/timetables/${id}/`, { headers: { Authorization: token } })
+      .then(response => dispatch(setTimetable(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  };
   static getTimetables = (token, page = null) => (dispatch) => {
-    dispatch(setTimetableLoading(true));
+    dispatch(setTimetablesLoading(true));
     axios
       .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => {
@@ -246,6 +273,19 @@ export class TimetableApi {
       })
       .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
   };
+  static upload = (token, data) => dispatch => {
+    dispatch(setTimetablesLoading(true))
+    axios.post(
+      `${base}/timetables/`,
+      data,
+      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
+    )
+    .then((response) => {
+      dispatch(createTimetable(response.data))
+      toast.success("Timetable uploaded successfully!", toastParams)
+    })
+    .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  }
 }
 
 let base = "finance";

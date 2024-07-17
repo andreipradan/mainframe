@@ -152,10 +152,11 @@ const Calculator = () => {
           timetable.selectedItem
             ? <small className="text-muted">
                 Timetable: {timetable.selectedItem.id === timetable.results[0].id ? `${timetable.selectedItem.date} (latest)` : timetable.selectedItem.date}<br/>
-                Interest: {timetable.selectedItem.interest}%<br/>
-                IRCC: {timetable.selectedItem.ircc}%<br/>
-                Remaining amount: {currency ? currency : null} {calculateSum(latestTimetable, "principal")}<br />
-                Remaining months: {latestTimetable.length}
+                Interest: {timetable.selectedItem.interest}%&nbsp;
+                (ircc: {timetable.selectedItem.ircc}%)<br/>
+                Remaining: {calculateSum(latestTimetable, "principal")} {currency ? currency : null}<br />
+                Months: {latestTimetable.length}<br/>
+                Next payment: {latestTimetable[0].total} (p: {latestTimetable[0].principal}, i: {latestTimetable[0].interest})
               </small>
             : null
         }

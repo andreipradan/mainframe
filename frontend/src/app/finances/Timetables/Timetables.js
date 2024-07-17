@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import {useHistory} from "react-router-dom";
 import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
+import Form from 'react-bootstrap/Form';
 
 import { TimetableApi } from "../../../api/finance";
 import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
 import TimetableEditModal from "./components/TimetableEditModal";
-import {useHistory} from "react-router-dom";
 import Errors from "../../shared/Errors";
+import { Collapse } from 'react-bootstrap';
 
 const Timetables = () => {
   const history = useHistory()
@@ -16,13 +18,41 @@ const Timetables = () => {
   const token = useSelector((state) => state.auth.token)
   const timetable = useSelector(state => state.timetable)
 
+  const [fileError, setFileError] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [uploadOpen, setUploadOpen] = useState(false)
+
+  const handleFileChange = e => {
+    if (!e.target.files[0].name.endsWith(".pdf"))
+      setFileError("File must be pdf!")
+    else {
+      setSelectedFile(e.target.files[0]);
+      setFileError(null)
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    dispatch(TimetableApi.upload(token, formData))
+    setUploadOpen(false)
+    setSelectedFile(null)
+  };
+
+  useEffect(() => setUploadOpen(!!timetable.errors), [timetable.errors]);
+
   useEffect(() => {!timetable.results && dispatch(TimetableApi.getTimetables(token))}, []);
 
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
         Timetables
-        <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(TimetableApi.getTimetables(token))}>
+        <button
+          type="button"
+          className="btn btn-outline-success btn-sm border-0 bg-transparent"
+          onClick={() => dispatch(TimetableApi.getTimetables(token))}
+        >
           <i className="mdi mdi-refresh" />
         </button>
       </h3>
@@ -42,13 +72,50 @@ const Timetables = () => {
       <div className="col-12 grid-margin">
         <div className="card">
           <div className="card-body">
+            <h4 className="card-title">
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm border-0 bg-transparent float-right"
+                onClick={() => setUploadOpen(!uploadOpen)}
+              >
+                <i className="mdi mdi-upload" />
+              </button>
+              <Collapse in={uploadOpen}>
+                <Form onSubmit={handleSubmit} className="form-inline">
+                  <Form.Group>
+                    {fileError ? <Errors errors={[fileError]} /> : null}
+
+                    <div className="custom-file">
+                      <Form.Control
+                        type="file"
+                        className="form-control visibility-hidden"
+                        id="customFileLang"
+                        lang="es"
+                        onChange={handleFileChange}
+                      />
+                      <label className="custom-file-label" htmlFor="customFileLang">
+                        {selectedFile ? selectedFile.name : 'Select a file'}
+                      </label>
+                    </div>
+                  </Form.Group>
+                  <button
+                    disabled={!selectedFile}
+                    type="submit"
+                    className="btn btn-outline-warning ml-3 btn-sm"
+                  >
+                    <i className="mdi mdi-upload"></i> Upload
+                  </button>
+                </Form>
+              </Collapse>
+
+            </h4>
             <div className="table-responsive">
-              <Errors errors={timetable.errors}/>
+              <Errors errors={timetable.errors} />
               <div className="mb-0 text-muted">Total: {timetable.count}</div>
               <table className="table table-hover">
                 <thead>
-                  <tr>
-                    <th> Date </th>
+                <tr>
+                <th> Date </th>
                     <th> Interest </th>
                     <th> Margin </th>
                     <th> IRCC </th>
