@@ -1,4 +1,4 @@
-import axios from "./index";
+import { ngrokAxios } from "./index";
 import {
   completed,
   setErrors,
@@ -11,14 +11,14 @@ import {logout} from "../redux/authSlice";
 class RpiApi {
   static clearBuild = token => dispatch => {
     dispatch(setLoading(true))
-    axios
+    ngrokAxios
       .put(`${base}/clear-build/`, {}, {headers: {Authorization: token}})
       .then(() => dispatch(completed("Build cleared, after copying the static files, please restart backend")))
       .catch(err => handleErrors(err, dispatch, setErrors))
   }
   static reboot = token => dispatch => {
     dispatch(setLoading(true));
-    axios
+    ngrokAxios
       .put(`${base}/reboot/`, {}, { headers: { Authorization: token } })
       .then(() => {
         dispatch(completed("Rebooting"))
@@ -28,7 +28,7 @@ class RpiApi {
   };
   static restartBackend = token => dispatch => {
     dispatch(setLoading(true));
-    axios
+    ngrokAxios
       .put(`${base}/restart-backend/`, {}, { headers: { Authorization: token } })
       .then(() => {
         dispatch(completed("Restarted backend, please refresh this page after a couple of moments"))
