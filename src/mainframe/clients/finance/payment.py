@@ -9,7 +9,7 @@ from mainframe.finance.tasks import backup_finance_model
 from PyPDF2 import PdfReader
 
 
-class PaymentsImportError(Exception):
+class PaymentImportError(Exception):
     ...
 
 
@@ -97,12 +97,12 @@ class PaymentsImporter:
         try:
             payments = self.extract_payments(reader.pages)
         except (IndexError, ValueError) as e:
-            raise PaymentsImportError("Could not extract payments") from e
+            raise PaymentImportError("Could not extract payments") from e
         try:
             Payment.objects.bulk_create(payments, ignore_conflicts=True)
         except (IntegrityError, ValidationError) as e:
             self.logger.error(str(e))
-            raise TimeoutError from e
+            raise PaymentImportError from e
         else:
             backup_finance_model(model="Payment")
 
@@ -163,7 +163,7 @@ class PaymentsImporter:
 
 def validate_starts_with(row, payment_type, expected_field, line_no):
     if not row.startswith(f"{expected_field}: "):
-        raise PaymentsImportError(
+        raise PaymentImportError(
             f"Expected <{payment_type}> line #{line_no} to be <{expected_field}...>."
             f" Found <{row}> instead"
         )

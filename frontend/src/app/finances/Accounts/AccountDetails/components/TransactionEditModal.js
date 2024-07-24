@@ -15,7 +15,7 @@ import Modal from "react-bootstrap/Modal";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 
-import { FinanceApi } from "../../../../../api/finance";
+import { FinanceApi, TransactionApi } from '../../../../../api/finance';
 import { capitalize } from "../AccountDetails";
 import { createOption, selectStyles } from "../../../Categorize/EditModal";
 import { selectItem as selectTransaction } from "../../../../../redux/transactionsSlice";
@@ -63,7 +63,7 @@ const TransactionEditModal = () => {
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
               onClick={() => {
                 dispatch(FinanceApi.getCategories(token))
-                dispatch(FinanceApi.getTransaction(token, transactions.selectedItem.id))
+                dispatch(TransactionApi.get(token, transactions.selectedItem.id))
               }}
             >
               <i className="mdi mdi-refresh" />

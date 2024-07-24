@@ -1,4 +1,4 @@
-from mainframe.clients.finance.payment import PaymentsImporter, PaymentsImportError
+from mainframe.clients.finance.payment import PaymentImportError, PaymentsImporter
 from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Payment
 from mainframe.finance.serializers import PaymentSerializer
@@ -24,7 +24,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         logger = get_default_logger(__name__)
         try:
             PaymentsImporter(file, logger).run()
-        except PaymentsImportError as e:
+        except PaymentImportError as e:
             logger.error("Could not process file: %s - error: %s", file, e)
             return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
         return self.list(request, *args, **kwargs)

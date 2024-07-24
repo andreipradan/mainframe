@@ -5,19 +5,22 @@ import { useHistory, useParams } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import { Collapse, Dropdown } from "react-bootstrap";
+import Button from 'react-bootstrap/Button';
 import DatePicker from "react-datepicker";
+import Form from 'react-bootstrap/Form';
 import Marquee from "react-fast-marquee";
+import Modal from 'react-bootstrap/Modal';
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
+import AccountEditModal from "./components/AccountEditModal";
+import Errors from "../../../shared/Errors";
 import TransactionEditModal from "./components/TransactionEditModal";
 import ListItem from "../../../shared/ListItem";
-import { FinanceApi } from "../../../../api/finance";
+import { FinanceApi, TransactionApi } from '../../../../api/finance';
 import { getTypeLabel } from "../../Categorize/EditModal";
 import { setModalOpen, setSelectedAccount } from "../../../../redux/accountsSlice";
 import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
-import Errors from "../../../shared/Errors";
-import AccountEditModal from "./components/AccountEditModal";
 
 export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`
 
@@ -42,26 +45,31 @@ const AccountDetails = () => {
   const { id } = useParams();
 
   const accounts = useSelector(state => state.accounts)
+  const transactions = useSelector(state => state.transactions)
+
+  const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
+  const lastPage = Math.ceil(transactions.count / 25)
+
+  const [fileError, setFileError] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [transactionToRemove, setTransactionToRemove] = useState(null)
+  const [uploadOpen, setUploadOpen] = useState(false)
+
   useEffect(() => {
     !accounts.selectedAccount &&
     dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]
   )
-
-  const transactions = useSelector(state => state.transactions)
   useEffect(() => {
     if (accounts.selectedAccount && selectedDate) {
       dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
-      dispatch(FinanceApi.getTransactions(token, {
+      dispatch(TransactionApi.getList(token, {
         account_id: accounts.selectedAccount.id,
         year: selectedDate.getFullYear(),
       }))
     }
   }, [accounts.selectedAccount])
-  const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
-  const lastPage = Math.ceil(transactions.count / 25)
-
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
 
   const paymentsData = {
     labels: accounts.analytics?.per_month.map(p => p.month),
@@ -115,7 +123,7 @@ const AccountDetails = () => {
   useEffect(() => {
     if (accounts.selectedAccount && selectedDate) {
       dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
-      dispatch(FinanceApi.getTransactions(token, {
+      dispatch(TransactionApi.getList(token, {
           account_id: accounts.selectedAccount.id,
           year: selectedDate.getFullYear()
         })
@@ -123,19 +131,43 @@ const AccountDetails = () => {
     }},
     [selectedDate]
   )
+
+  const handleFileChange = e => {
+    const file = e.target.files[0]
+    if (! ["csv", "xlsx"].includes(file.name.split(".").pop()))
+      setFileError("File extension must be one of: csv, xlsx!")
+    else {
+      setSelectedFile(e.target.files[0]);
+      setFileError(null)
+    }
+  };
+
   const handleGetElementAtEvent = element => {
     if (!element.length) return
     setSearchTerm("")
     setSearchOpen(false)
     const month = element[0]._model.label
     const category = element[0]._model.datasetLabel
-    dispatch(FinanceApi.getTransactions(token, {
+    dispatch(TransactionApi.getList(token, {
       account_id: accounts.selectedAccount.id,
       month: new Date(`${month} ${selectedDate.getFullYear()}`).getMonth() + 1,
       category: category.toLowerCase().replace(" ", "-"),
       year: selectedDate.getFullYear(),
     }))
   }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    dispatch(TransactionApi.uploadTransactions(token, formData,{
+          account_id: accounts.selectedAccount.id,
+          year: selectedDate.getFullYear()
+        }))
+    setUploadOpen(false)
+    setSelectedFile(null)
+  };
+
   return <div>
     <div className="page-header">
       <h3 className="page-title">
@@ -239,7 +271,7 @@ const AccountDetails = () => {
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() =>
-                  dispatch(FinanceApi.getTransactions(token, {
+                  dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                   }))
               }
@@ -274,12 +306,19 @@ const AccountDetails = () => {
           <div className="card-body">
             <h4 className="card-title">
               Expenses
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))}>
+              <button
+                type="button"
+                className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                onClick={() => dispatch(FinanceApi.getAnalytics(
+                  token,
+                  accounts.selectedAccount.id,
+                  selectedDate.getFullYear()))}
+              >
                 <i className="mdi mdi-refresh" />
               </button>
               {
                 accounts.analytics
-                ? <>
+                  ? <>
                     {
                       accounts.analytics.years.find(y => y === selectedDate.getFullYear() - 1) &&
                       <button
@@ -312,7 +351,7 @@ const AccountDetails = () => {
                       </button>
                     }
                   </>
-                : <Circles />
+                  : <Circles />
               }
             </h4>
             {
@@ -330,6 +369,8 @@ const AccountDetails = () => {
             </div>
           </div>
       </div>
+    </div>
+    <div className="row">
       <div className="col-12 grid-margin">
         <div className="card">
           <div className="card-body">
@@ -339,16 +380,51 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => {
-                  dispatch(FinanceApi.getTransactions(token, {
+                  dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
                   }))
                 }
-              }>
+                }>
                 <i className="mdi mdi-refresh" />
               </button>
+
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm border-0 bg-transparent float-right"
+                onClick={() => setUploadOpen(!uploadOpen)}
+              >
+                <i className="mdi mdi-upload" />
+              </button>
+              <Collapse in={uploadOpen}>
+                <Form onSubmit={handleSubmit} className="form-inline">
+                  <Form.Group>
+                    {fileError ? <Errors errors={[fileError]} /> : null}
+                    <div className="custom-file">
+                      <Form.Control
+                        type="file"
+                        className="form-control visibility-hidden"
+                        id="customFileLang"
+                        lang="es"
+                        onChange={handleFileChange}
+                      />
+                      <label className="custom-file-label" htmlFor="customFileLang">
+                        {selectedFile ? selectedFile.name : 'Select a file'}
+                      </label>
+                    </div>
+                  </Form.Group>
+                  <button
+                    disabled={!selectedFile}
+                    type="submit"
+                    className="btn btn-outline-warning ml-3 btn-sm"
+                  >
+                    <i className="mdi mdi-upload"></i> Upload
+                  </button>
+                </Form>
+              </Collapse>
+
               <div className="mb-0 text-muted">
                 <small>Total: {transactions.count}</small>
                 <button
@@ -360,24 +436,24 @@ const AccountDetails = () => {
                 </button>
               </div>
             </h4>
-           <Errors errors={transactions.errors}/>
-            <Collapse in={ searchOpen }>
+            <Errors errors={transactions.errors} />
+            <Collapse in={searchOpen}>
               <ul className="navbar-nav w-100 rounded">
                 <li className="nav-item w-100">
                   <form
                     className="nav-link mt-2 mt-md-0 d-lg-flex search"
                     onSubmit={e => {
-                      e.preventDefault()
+                      e.preventDefault();
                       dispatch(
-                        FinanceApi.getTransactions(
+                        TransactionApi.getList(
                           token,
                           {
                             account_id: accounts.selectedAccount.id,
                             search_term: searchTerm,
                             year: selectedDate.getFullYear(),
-                          }
-                        )
-                      )
+                          },
+                        ),
+                      );
                     }}
                   >
                     <input
@@ -394,37 +470,45 @@ const AccountDetails = () => {
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
-                  <tr>
-                    <th> Started </th>
-                    <th> Amount </th>
-                    <th> Description </th>
-                    <th> Type </th>
-                    <th> Category </th>
-                    <th> Completed </th>
+                <tr>
+                  <th>Started</th>
+                  <th>Amount</th>
+                  <th>Description </th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Completed</th>
                   </tr>
                 </thead>
                 <tbody>
                 {
                   transactions.loading
-                    ? <Circles
+                    ? <tr><td colSpan={3}><Circles
                       visible={true}
                       width="100%"
                       ariaLabel="ball-triangle-loading"
                       wrapperStyle={{float: "right"}}
                       color='orange'
-                    />
+                    /></td></tr>
                     : transactions.results?.length
-                        ? transactions.results.map((t, i) => <tr key={i} onClick={() => dispatch(selectTransaction(t.id))}>
-                          <td> {new Date(t.started_at).toLocaleDateString()}<br />
+                      ? transactions.results.map((t, i) =>
+                        <tr key={i}>
+                          <td onClick={() => dispatch(selectTransaction(t.id))}> {new Date(t.started_at).toLocaleDateString()}<br />
                             <small>{new Date(t.started_at).toLocaleTimeString()}</small>
                           </td>
-                          <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
-                          <td> {t.description} </td>
-                          <td> {getTypeLabel(t.type)} </td>
-                          <td className={t.category === "Unidentified" ? "text-danger" : ""}> {capitalize(t.category).replace("-", " ")} </td>
-                          <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
+                          <td onClick={() => dispatch(selectTransaction(t.id))}> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
+                          <td onClick={() => dispatch(selectTransaction(t.id))}> {t.description} </td>
+                          <td onClick={() => dispatch(selectTransaction(t.id))}> {getTypeLabel(t.type)} </td>
+                          <td onClick={() => dispatch(selectTransaction(t.id))} className={t.category === "Unidentified" ? "text-danger" : ""}> {capitalize(t.category).replace("-", " ")} </td>
+                          <td onClick={() => dispatch(selectTransaction(t.id))}> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
+                          <td style={{ cursor: 'pointer' }} onClick={() => setTransactionToRemove(t)}>
+                            <i
+                              className="mdi mdi-trash-can-outline text-danger"
+                            />
+                          </td>
                         </tr>)
-                      : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
+                      : <tr>
+                        <td colSpan={6}><span>No transactions found</span></td>
+                      </tr>
                 }
                 </tbody>
               </table>
@@ -434,7 +518,7 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-default"
                 disabled={!transactions.previous}
-                onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                onClick={() => dispatch(TransactionApi.getList(token, {
                   account_id: accounts.selectedAccount.id,
                   year: selectedDate.getFullYear(),
                 }))}
@@ -445,7 +529,7 @@ const AccountDetails = () => {
                 currentPage - 5 > 0 && <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: 2,
                     search_term: searchTerm,
@@ -461,7 +545,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage - 3,
                     search_term: searchTerm,
@@ -476,7 +560,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage - 2,
                     search_term: searchTerm,
@@ -491,7 +575,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage - 1,
                     search_term: searchTerm,
@@ -507,7 +591,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage + 1,
                     search_term: searchTerm,
@@ -522,7 +606,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage + 2,
                     search_term: searchTerm,
@@ -537,7 +621,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: currentPage + 3,
                     search_term: searchTerm,
@@ -553,7 +637,7 @@ const AccountDetails = () => {
                 <button
                   type="button"
                   className="btn btn-default"
-                  onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                  onClick={() => dispatch(TransactionApi.getList(token, {
                     account_id: accounts.selectedAccount.id,
                     page: lastPage - 1,
                     search_term: searchTerm,
@@ -567,7 +651,7 @@ const AccountDetails = () => {
                 type="button"
                 className="btn btn-default"
                 disabled={!transactions.next}
-                onClick={() => dispatch(FinanceApi.getTransactions(token, {
+                onClick={() => dispatch(TransactionApi.getList(token, {
                   account_id: accounts.selectedAccount.id,
                   page: lastPage,
                   search_term: searchTerm,
@@ -583,7 +667,59 @@ const AccountDetails = () => {
     </div>
     <AccountEditModal />
     <TransactionEditModal />
-
+    <Modal centered show={!!transactionToRemove} onHide={() => setTransactionToRemove(null)}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <div className="row">
+            <div className="col-lg-12 grid-margin stretch-card mb-1">
+              Are you sure you want to delete this transaction?
+            </div>
+          </div>
+          <p className="text-muted mb-0">
+            <ul>
+              <li>
+                Started: {new Date(transactionToRemove?.started_at).toLocaleDateString()}&nbsp;
+                <small>{new Date(transactionToRemove?.started_at).toLocaleTimeString()}</small>
+              </li>
+              <li>
+                Amount: {transactionToRemove?.amount} {parseFloat(transactionToRemove?.fee) ? `(Fee: ${transactionToRemove?.fee})` : ''}
+              </li>
+              <li>Description: {transactionToRemove?.description}</li>
+              <li>Type: {getTypeLabel(transactionToRemove?.type)}</li>
+              <li>
+                Completed:&nbsp;
+                {
+                  transactionToRemove?.completed_at
+                    ? <span>
+                      {new Date(transactionToRemove?.completed_at).toLocaleDateString()}&nbsp;
+                      <small>{new Date(transactionToRemove?.completed_at).toLocaleTimeString()}</small>
+                    </span>
+                    : "-"
+                }
+              </li>
+            </ul>
+          </p>
+        </Modal.Title>
+      </Modal.Header>
+      {
+        (transactions.errors?.detail || transactions.errors?.length) && transactionToRemove
+          ? <Errors errors={transactions().errors} />
+          : null
+      }
+      <Modal.Body>Delete transaction?</Modal.Body>
+      <Modal.Footer>
+        <Button variant="success" onClick={() => setTransactionToRemove(null)}>No, go back</Button>
+        <Button
+          variant="danger"
+          onClick={() => {
+            dispatch(TransactionApi.delete(token, transactionToRemove?.id))
+            setTransactionToRemove(null)
+          }}
+        >
+          Yes, delete!
+        </Button>
+      </Modal.Footer>
+    </Modal>
   </div>
 }
 

@@ -45,6 +45,7 @@ import {
   setLoadingItems as setTimetableLoading
 } from "../redux/timetableSlice";
 import {
+  deleteItem as deleteTransaction,
   set as setTransactions,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
@@ -74,15 +75,6 @@ export const createSearchParams = params => {
 }
 
 export class FinanceApi {
-  static bulkUpdateTransactions = (token, data, kwargs) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    axios
-      .put(`${base}/transactions/bulk-update/?${createSearchParams(kwargs)}`,
-        data,
-        { headers: { Authorization: token } })
-      .then((response) => dispatch(setTransactions(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
-  }
   static createAccount = (token, data) => dispatch => {
     dispatch(setLoadingAccounts(true));
     axios
@@ -134,21 +126,6 @@ export class FinanceApi {
       .get(`${base}/payments/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setPayments(response.data)))
       .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
-  };
-  static getTransaction = (token, transactionId) => dispatch => {
-    dispatch(setLoadingTransactions(transactionId));
-    axios
-      .get(`${base}/transactions/${transactionId}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(updateTransaction(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
-  };
-  static getTransactions = (token, kwargs = null) => (dispatch) => {
-    dispatch(setTransactionsLoading(true));
-    kwargs = kwargs || {};
-    axios
-      .get(`${base}/transactions/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTransactions(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   };
   static importPayments = (token, data) => dispatch => {
     dispatch(setLoading(true))
@@ -285,6 +262,55 @@ export class TimetableApi {
       toast.success("Timetable uploaded successfully!", toastParams)
     })
     .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+  }
+}
+
+export class TransactionApi {
+  static bulkUpdateTransactions = (token, data, kwargs) => dispatch => {
+    dispatch(setTransactionsLoading(true))
+    axios
+      .put(`${base}/transactions/bulk-update/?${createSearchParams(kwargs)}`,
+        data,
+        { headers: { Authorization: token } })
+      .then((response) => dispatch(setTransactions(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
+  }
+  static delete = (token, id) => dispatch => {
+    dispatch(setLoadingTransactions(id));
+    axios
+      .delete(`${base}/transactions/${id}/`, { headers: { Authorization: token } })
+      .then(() => dispatch(deleteTransaction(id)))
+      .catch(err => handleErrors(err, dispatch, setErrors));
+  };
+  static get = (token, transactionId) => dispatch => {
+    dispatch(setLoadingTransactions(transactionId));
+    axios
+      .get(`${base}/transactions/${transactionId}/`, { headers: { Authorization: token } })
+      .then((response) => dispatch(updateTransaction(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
+  };
+  static getList = (token, kwargs = null) => (dispatch) => {
+    dispatch(setTransactionsLoading(true));
+    kwargs = kwargs || {};
+    axios
+      .get(`${base}/transactions/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
+      .then((response) => dispatch(setTransactions(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
+  };
+  static uploadTransactions = (token, data, kwargs) => dispatch => {
+    dispatch(setLoading(true))
+    kwargs = kwargs || {};
+    axios.post(
+      `${base}/transactions/upload/?${createSearchParams(kwargs)}`,
+      data,
+      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
+    )
+    .then((response) => {
+      dispatch(setTransactions(response.data));
+      toast.success("Payments uploaded successfully!", toastParams)
+
+    })
+    .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   }
 }
 

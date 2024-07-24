@@ -14,5 +14,5 @@ export const transactionsSlice = createSlice(getBaseSliceOptions(
     })
 )
 
-export const {selectItem, set, setErrors, setKwargs, setLoading, setLoadingItems, update} = transactionsSlice.actions;
+export const {deleteItem, selectItem, set, setErrors, setKwargs, setLoading, setLoadingItems, update} = transactionsSlice.actions;
 export default transactionsSlice.reducer;

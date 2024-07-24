@@ -8,7 +8,7 @@ import { useHistory } from "react-router-dom";
 import Marquee from "react-fast-marquee";
 
 import ListItem from "../../shared/ListItem";
-import { FinanceApi } from "../../../api/finance";
+import { FinanceApi, TransactionApi } from '../../../api/finance';
 import {
   setModalOpen,
   setSelectedAccount
@@ -45,7 +45,7 @@ const Accounts = () => {
   useEffect(() => {
     accounts.selectedAccount && dispatch(setSelectedAccount())
     !accounts.results?.length && dispatch(FinanceApi.getAccounts(token))
-    dispatch(FinanceApi.getTransactions(token))
+    dispatch(TransactionApi.getList(token))
     return () => dispatch(setSelectedAccount())
   }, []);
 

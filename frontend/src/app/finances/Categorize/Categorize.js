@@ -13,7 +13,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
 import BottomPagination from "../../shared/BottomPagination";
-import { FinanceApi, PredictionApi } from "../../../api/finance";
+import { PredictionApi, TransactionApi } from '../../../api/finance';
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { selectItem as selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
 import { setLoadingTask } from "../../../redux/predictionSlice";
@@ -141,7 +141,7 @@ const Categorize = () => {
       clearInterval(predictTimerIdRef.current);
       dispatch(setLoadingTask({type: "predict", loading: false}))
       if (prediction.predict?.status === "complete")
-        dispatch(FinanceApi.getTransactions(token, kwargs))
+        dispatch(TransactionApi.getList(token, kwargs))
     };
 
     if (["executing", "initial", "progress"].includes(prediction.predict?.status)) startPolling()
@@ -228,9 +228,9 @@ const Categorize = () => {
                     {
                       prediction.train
                         ? <>
-                            <td>{new Date(prediction.train.timestamp).toLocaleString()}</td>
+                            <td>{new Date(prediction.train.history[0].timestamp).toLocaleString()}</td>
                             <td>
-                              {prediction.train.status.toUpperCase()}
+                              {prediction.train.history[0].status}
                               {trainPollingCount
                                   ? <Circles
                                       height={12}
@@ -417,7 +417,7 @@ const Categorize = () => {
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => {
-                      dispatch(FinanceApi.getTransactions(token, kwargs))
+                      dispatch(TransactionApi.getList(token, kwargs))
                       dispatch(PredictionApi.getTasks(token))
                     }}
                   >
@@ -605,7 +605,7 @@ const Categorize = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={transactions} fetchMethod={FinanceApi.getTransactions} setKwargs={setKwargs}/>
+            <BottomPagination items={transactions} fetchMethod={TransactionApi.getList} setKwargs={setKwargs}/>
           </div>
         </div>
       </div>
@@ -615,7 +615,7 @@ const Categorize = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault()
-              dispatch(FinanceApi.getTransactions(token, kwargs))
+              dispatch(TransactionApi.getList(token, kwargs))
             }}>
               <Form.Group>
                 <Form.Label>Confirmed by</Form.Label>&nbsp;
@@ -652,7 +652,7 @@ const Categorize = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   isMulti
-                  onMenuClose={() => dispatch(FinanceApi.getTransactions(token, kwargs))}
+                  onMenuClose={() => dispatch(TransactionApi.getList(token, kwargs))}
                   onChange={onTypeChange}
                   options={transactions.types?.map(t => ({label: getTypeLabel(t), value: t}))}
                   styles={selectStyles}
@@ -738,7 +738,7 @@ const Categorize = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(FinanceApi.bulkUpdateTransactions(token, checkedCategories, kwargs))
+            dispatch(TransactionApi.bulkUpdateTransactions(token, checkedCategories, kwargs))
             setSpecificCategoriesModalOpen(false)
           }}
         >

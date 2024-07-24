@@ -1,8 +1,10 @@
 from django.contrib.postgres.search import SearchVector
 from django.db.models import F
+from mainframe.clients.finance.statement import StatementImportError, import_statement
+from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Account, Category, Transaction
 from mainframe.finance.serializers import TransactionSerializer
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -27,6 +29,17 @@ class TransactionViewSet(viewsets.ModelViewSet):
             "message": f"Successfully updated {total} transaction categories"
         }
         return response
+
+    @action(methods=["post"], detail=False, url_path="upload")
+    def upload(self, request, *args, **kwargs):
+        file = request.FILES["file"]
+        logger = get_default_logger(__name__)
+        try:
+            import_statement(file, logger)
+        except StatementImportError as e:
+            logger.error("Could not process file: %s - error: %s", file, e)
+            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):  # noqa: C901
         queryset = super().get_queryset()
