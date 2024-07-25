@@ -80,21 +80,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
     if message.document:
         file_name = message.document.file_name
         extension = file_name.split(".")[-1].lower()
-        bank = None
-        if extension == "csv" and file_name.startswith("account-statement"):
-            bank = "revolut"
-            doc_type = "statements"
-        elif extension == "xlsx" and file_name.startswith("Extras_de_cont"):
-            bank = "raiffeisen"
-            doc_type = "statements"
-        elif extension == "pdf":
-            if file_name.startswith("Tranzactii"):
-                doc_type = "payments"
-            elif file_name.startswith("Scadentar"):
-                doc_type = "timetables"
-            else:
-                return logger.error("Unhandled pdf type")
-        elif (stock_type := message.caption.lower().replace(" ", "_")) in [
+        if (stock_type := message.caption.lower().replace(" ", "_")) in [
             "stock_pnl",
             "stock_transactions",
         ]:
@@ -109,8 +95,6 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         logger.info("Saved %s: %s", doc_type, file_name)
 
         import_kwargs = {"doc_type": doc_type}
-        if bank:
-            import_kwargs["bank"] = bank
         finance_import(**import_kwargs)
 
         return reply(update, f"Saved {doc_type}: {file_name}")

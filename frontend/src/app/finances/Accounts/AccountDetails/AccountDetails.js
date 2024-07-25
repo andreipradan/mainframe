@@ -134,7 +134,7 @@ const AccountDetails = () => {
 
   const handleFileChange = e => {
     const file = e.target.files[0]
-    if (! ["csv", "xlsx"].includes(file.name.split(".").pop()))
+    if (! ["csv", "xlsx"].includes(file.name.split(".").pop().toLowerCase()))
       setFileError("File extension must be one of: csv, xlsx!")
     else {
       setSelectedFile(e.target.files[0]);
@@ -675,30 +675,32 @@ const AccountDetails = () => {
               Are you sure you want to delete this transaction?
             </div>
           </div>
-          <p className="text-muted mb-0">
-            <ul>
-              <li>
-                Started: {new Date(transactionToRemove?.started_at).toLocaleDateString()}&nbsp;
-                <small>{new Date(transactionToRemove?.started_at).toLocaleTimeString()}</small>
-              </li>
-              <li>
-                Amount: {transactionToRemove?.amount} {parseFloat(transactionToRemove?.fee) ? `(Fee: ${transactionToRemove?.fee})` : ''}
-              </li>
-              <li>Description: {transactionToRemove?.description}</li>
-              <li>Type: {getTypeLabel(transactionToRemove?.type)}</li>
-              <li>
-                Completed:&nbsp;
-                {
-                  transactionToRemove?.completed_at
-                    ? <span>
-                      {new Date(transactionToRemove?.completed_at).toLocaleDateString()}&nbsp;
-                      <small>{new Date(transactionToRemove?.completed_at).toLocaleTimeString()}</small>
-                    </span>
-                    : "-"
-                }
-              </li>
-            </ul>
-          </p>
+          <ul className="text-muted mb-0">
+            <li>
+              Created: {new Date(transactionToRemove?.created_at).toLocaleDateString()}&nbsp;
+              <small>{new Date(transactionToRemove?.created_at).toLocaleTimeString()}</small>
+            </li>
+            <li>
+              Started: {new Date(transactionToRemove?.started_at).toLocaleDateString()}&nbsp;
+              <small>{new Date(transactionToRemove?.started_at).toLocaleTimeString()}</small>
+            </li>
+            <li>
+              Amount: {transactionToRemove?.amount} {parseFloat(transactionToRemove?.fee) ? `(Fee: ${transactionToRemove?.fee})` : ''}
+            </li>
+            <li>Description: {transactionToRemove?.description}</li>
+            <li>Type: {getTypeLabel(transactionToRemove?.type)}</li>
+            <li>
+              Completed:&nbsp;
+              {
+                transactionToRemove?.completed_at
+                  ? <span>
+                    {new Date(transactionToRemove?.completed_at).toLocaleDateString()}&nbsp;
+                    <small>{new Date(transactionToRemove?.completed_at).toLocaleTimeString()}</small>
+                  </span>
+                  : "-"
+              }
+            </li>
+          </ul>
         </Modal.Title>
       </Modal.Header>
       {

@@ -244,7 +244,7 @@ class RevolutParser(StatementParser):
 def import_statement(file: str | InMemoryUploadedFile, logger):
     extension = (
         file.split(".")[-1] if isinstance(file, str) else file.name.split(".")[-1]
-    )
+    ).lower()
     if extension == "xlsx":
         parser = RaiffeisenParser(file, logger)
     elif extension == "csv":
