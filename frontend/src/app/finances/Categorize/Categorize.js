@@ -2,22 +2,22 @@ import React, {useEffect, useRef, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
 
 import Alert from "react-bootstrap/Alert";
-import Form from "react-bootstrap/Form";
-import Select from "react-select";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
+import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 import { Collapse } from "react-bootstrap";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
+import Errors from "../../shared/Errors";
 import BottomPagination from "../../shared/BottomPagination";
 import { PredictionApi, TransactionApi } from '../../../api/finance';
 import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
 import { selectItem as selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
 import { setLoadingTask } from "../../../redux/predictionSlice";
-import Errors from "../../shared/Errors";
 
 const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.replace("-", " ")) : ""
 
@@ -313,9 +313,9 @@ const Categorize = () => {
                     {
                       prediction.predict
                         ? <>
-                            <td>{new Date(prediction.predict.timestamp).toLocaleString()}</td>
+                            <td>{new Date(prediction.predict.history[0].timestamp).toLocaleString()}</td>
                             <td>
-                              {prediction.predict.status.toUpperCase()}
+                              {prediction.predict.history[0].status.toUpperCase()}
                               {predictPollingCount
                                   ? <Circles
                                       height={12}

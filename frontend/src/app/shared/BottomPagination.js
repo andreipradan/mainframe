@@ -12,7 +12,6 @@ const BottomPagination = props => {
   const lastPage = Math.ceil(props.items.count / perPage)
   const token = useSelector((state) => state.auth.token)
   useEffect(() => dispatch(props.fetchMethod(token, kwargs)), [kwargs]);
-  console.log(props.items.count, perPage)
   return props.items.count > perPage
     ? <Pagination>
       <Pagination.First

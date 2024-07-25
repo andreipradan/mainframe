@@ -1,9 +1,6 @@
-# import pandas as pd
 from django.core.management import call_command
 from huey.contrib.djhuey import db_task
 from huey.signals import SIGNAL_ERROR
-
-# from clients.prediction import SKLearn
 from mainframe.core.tasks import log_status
 from mainframe.finance.models import Category, Transaction
 
@@ -20,10 +17,10 @@ def finance_import(doc_type, **kwargs):
 
 @db_task()
 def predict(queryset, logger):
+    import pandas as pd
+    from mainframe.clients.prediction import SKLearn
+
     total = queryset.count()
-    logger.info("Predicting %d distinct descriptions", total)
-    log_status("predict", operation=None, progress=100, error="Pandas not installed")
-    return []
 
     predictions = SKLearn.predict(pd.DataFrame(queryset))  # noqa: F821
     transactions = []
@@ -51,9 +48,9 @@ def predict(queryset, logger):
 
 @db_task(expires=10)
 def train(logger):
-    log_status("train", operation=None, progress=100, error="Pandas not installed")
-    logger.info("Pandas not installed to be able to train model")
-    return 0
+    import pandas as pd
+    from mainframe.clients.prediction import SKLearn
+
     qs = (
         Transaction.objects.filter(
             amount__lt=0, confirmed_by=Transaction.CONFIRMED_BY_ML
@@ -67,5 +64,4 @@ def train(logger):
         raise ValueError("No trained data")
     log_status("train", count=count)
     logger.info("Training on %d confirmed transactions...", count)
-    df = pd.DataFrame(qs)  # noqa: F821
-    return SKLearn.train(df, logger)  # noqa: F821
+    return SKLearn.train(pd.DataFrame(qs), logger)  # noqa: F821

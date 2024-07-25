@@ -4,10 +4,6 @@ import django.db.models
 from django.conf import settings
 from django.utils import timezone
 from huey.signals import SIGNAL_ERROR
-
-# from sklearn.feature_extraction.text import TfidfVectorizer
-# from sklearn.linear_model import LogisticRegression
-# from sklearn.model_selection import train_test_split
 from mainframe.camera.views import download_blob_into_memory
 from mainframe.clients.storage import upload_blob_from_string
 from mainframe.core.tasks import log_status
@@ -44,6 +40,10 @@ class SKLearn:
 
     @classmethod
     def train(cls, df, logger):
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.model_selection import train_test_split
+
         X_train, X_test, y_train, y_test = train_test_split(  # noqa: F821
             df["description"],  # .apply(clean_text),
             df["category"],
