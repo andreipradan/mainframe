@@ -21,6 +21,7 @@ const AccountEditModal = () => {
 
   const [bank, setBank] = useState("");
   const [clientCode, setClientCode] = useState("");
+  const [currency, setCurrency] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [number, setNumber] = useState("");
@@ -39,11 +40,12 @@ const AccountEditModal = () => {
       last_name: lastName,
       number: number,
       type: type,
+      currency: currency,
     }
-    if (accounts.selectedItem)
-      dispatch(FinanceApi.updateAccount(token, accounts.selectedItem.id, data, accounts.modalOpen))
+    if (accounts.modalOpen === "new")
+      dispatch(FinanceApi.createAccount(token, data, "new"))
     else
-      dispatch(FinanceApi.createAccount(token, data, accounts.modalOpen))
+      dispatch(FinanceApi.updateAccount(token, accounts.selectedItem.id, data, true))
     dispatch(setModalOpen(false))
   }
 
@@ -54,6 +56,7 @@ const AccountEditModal = () => {
     setLastName("")
     setNumber("")
     setType("")
+    setCurrency("")
   }
 
   const closeModal = () => dispatch(setModalOpen(false))
@@ -66,6 +69,7 @@ const AccountEditModal = () => {
       setLastName(accounts.selectedItem.last_name || "")
       setNumber(accounts.selectedItem.number || "")
       setType(accounts.selectedItem.type || "")
+      setCurrency(accounts.selectedItem.currency || "")
     }
   }
 
@@ -152,13 +156,25 @@ const AccountEditModal = () => {
                 onChange={e => setType(e.target.value)}
               />
             </Form.Group>
+            {
+              accounts.modalOpen === "new" &&
+              <Form.Group className="mb-3">
+                <Form.Label>Currency</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={currency}
+                  onChange={e => setCurrency(e.target.value)}
+                />
+              </Form.Group>
+
+            }
           </Form>
       }
     </Modal.Body>
     <Modal.Footer>
       <Button variant="secondary" onClick={closeModal}>Close</Button>
       <Button variant="primary" onClick={submitForm} >
-        Update account
+        {accounts.modalOpen === "new" ? "Add" : "Update"} account
       </Button>
     </Modal.Footer>
   </Modal>

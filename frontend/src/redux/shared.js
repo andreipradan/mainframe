@@ -24,7 +24,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
             a.name > b.name ? 1 : -1
         )
         : [action.payload]
-      state.selectedItem = null
+      state.selectedItem = action.payload.dontClearSelectedItem === true ? state.selectedItem : null
     },
     deleteItem: (state, action) => {
       state.count -= 1

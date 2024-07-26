@@ -81,7 +81,7 @@ export class FinanceApi {
     axios
       .post(`${base}/accounts/`, data, { headers: { Authorization: token } })
       .then((response) => {
-        dispatch(createAccount(response.data));
+        dispatch(createAccount({ dontClearSelectedItem: true, ...response.data }));
         toast.success("Account created successfully!", toastParams)
       })
       .catch((err) => {

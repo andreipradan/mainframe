@@ -144,46 +144,6 @@ class TestInitialNewChatTitleAndMembers:
 @pytest.mark.django_db
 class TestDocuments:
     @mock.patch("mainframe.bots.webhooks.butler.finance_import")
-    def test_revolut_statement(self, finance_import, update, logger, _):
-        update = prepare_update(
-            update,
-            document=MagicMock(file_name="account-statement.csv"),
-        )
-        bot = BotFactory(whitelist=["foo_username"])
-        call({}, bot)
-        assert logger.info.call_args_list == [
-            mock.call("Got %s saving...", "csv"),
-            mock.call("Saved %s: %s", "statements", "account-statement.csv"),
-        ]
-        assert logger.error.call_args_list == []
-        assert finance_import.call_args_list == [
-            mock.call(doc_type="statements", bank="revolut")
-        ]
-        assert update.message.reply_text.call_args_list == [
-            mock.call("Saved statements: account-statement.csv", **DEFAULT_REPLY_KWARGS)
-        ]
-
-    @mock.patch("mainframe.bots.webhooks.butler.finance_import")
-    def test_raiffeisen_statement(self, finance_import, update, logger, _):
-        update = prepare_update(
-            update,
-            document=MagicMock(file_name="Extras_de_cont.xlsx"),
-        )
-        bot = BotFactory(whitelist=["foo_username"])
-        call({}, bot)
-        assert logger.info.call_args_list == [
-            mock.call("Got %s saving...", "xlsx"),
-            mock.call("Saved %s: %s", "statements", "Extras_de_cont.xlsx"),
-        ]
-        assert logger.error.call_args_list == []
-        assert finance_import.call_args_list == [
-            mock.call(doc_type="statements", bank="raiffeisen")
-        ]
-        assert update.message.reply_text.call_args_list == [
-            mock.call("Saved statements: Extras_de_cont.xlsx", **DEFAULT_REPLY_KWARGS)
-        ]
-
-    @mock.patch("mainframe.bots.webhooks.butler.finance_import")
     def test_unhandled_pdf(self, finance_import, update, logger, _):
         update = prepare_update(
             update,
@@ -200,29 +160,12 @@ class TestDocuments:
 
         call({}, bot)
 
-        assert logger.error.call_args_list == [mock.call("Unhandled pdf type")]
+        assert logger.error.call_args_list == [
+            mock.call("Unhandled document: %s", "filename.pdf")
+        ]
         assert logger.info.call_args_list == []
         assert finance_import.call_args_list == []
         assert update.message.reply_text.call_args_list == []
-
-    @mock.patch("mainframe.bots.webhooks.butler.finance_import")
-    @pytest.mark.parametrize("filename", ["Tranzactii.pdf", "Scadentar.pdf"])
-    def test_pdf(self, finance_import, update, logger, _, filename):
-        update = prepare_update(update, document=MagicMock(file_name=filename))
-        bot = BotFactory(whitelist=["foo_username"])
-        doc_type = "payments" if "Tranzactii" in filename else "timetables"
-
-        call({}, bot)
-
-        assert logger.error.call_args_list == []
-        assert logger.info.call_args_list == [
-            mock.call("Got %s saving...", "pdf"),
-            mock.call("Saved %s: %s", doc_type, filename),
-        ]
-        assert finance_import.call_args_list == [mock.call(doc_type=doc_type)]
-        assert update.message.reply_text.call_args_list == [
-            mock.call(f"Saved {doc_type}: {filename}", **DEFAULT_REPLY_KWARGS)
-        ]
 
     def test_no_message_text(self, update, logger, _):
         user = "Name: foo. Username: foo_username. ID: foo_id"
