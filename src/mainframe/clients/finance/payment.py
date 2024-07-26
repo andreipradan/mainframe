@@ -9,8 +9,7 @@ from mainframe.finance.tasks import backup_finance_model
 from PyPDF2 import PdfReader
 
 
-class PaymentImportError(Exception):
-    ...
+class PaymentImportError(Exception): ...
 
 
 def normalize_amount(amount):
