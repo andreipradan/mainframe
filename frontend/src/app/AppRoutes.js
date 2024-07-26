@@ -14,7 +14,6 @@ const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const Expenses = lazy(() => import('./expenses/Expenses'));
 const ExpenseGroups = lazy(() => import("./expenses/ExpenseGroups"));
-const FinancesAccounts = lazy(() => import ("./finances/Accounts/Accounts"));
 const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
 const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
 const FinancesCredit = lazy(() => import ("./finances/Credit"));
@@ -81,8 +80,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/credit/details" component={ FinancesCredit } />}
         {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/credit/timetables" component={ FinancesTimetables } />}
-        {user?.is_staff && <Route exact path="/finances/accounts" component={ FinancesAccounts } />}
-        {user?.is_staff && <Route exact path="/finances/accounts/:id" component={ FinancesAccountDetails } />}
+        {user?.is_staff && <Route exact path="/finances/accounts/:id?" component={ FinancesAccountDetails } />}
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/messages" component={ Messages } />}

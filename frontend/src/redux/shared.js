@@ -81,7 +81,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.loadingItems = state.loadingItems?.filter((id) => id !== action.payload.id);
       state.results = state.results.map((item) =>
         (item.id === action.payload.id ? action.payload : item))
-      state.selectedItem = null
+      state.selectedItem = action.payload.dontClearSelectedItem === true ? state.selectedItem : null
     },
     ...extraReducers,
   },

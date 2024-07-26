@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory, useParams } from "react-router-dom";
 
 import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
@@ -19,10 +18,16 @@ import TransactionEditModal from "./components/TransactionEditModal";
 import ListItem from "../../../shared/ListItem";
 import { FinanceApi, TransactionApi } from '../../../../api/finance';
 import { getTypeLabel } from "../../Categorize/EditModal";
-import { setModalOpen, setSelectedAccount } from "../../../../redux/accountsSlice";
+import { selectItem, setModalOpen } from "../../../../redux/accountsSlice";
 import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
 
 export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`
+
+
+const random_rgba = () => {
+    const o = Math.round, r = Math.random, s = 255;
+    return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+}
 
 const getColor = (type, border = false) => {
   switch (type) {
@@ -34,15 +39,14 @@ const getColor = (type, border = false) => {
     case "transport": return `rgba(75,192,126,${border ? 1 : 0.2})`
     case "travel": return `rgba(54,162,235, ${border ? 1 : 0.2})`
     case "utilities": return `rgba(255,159,64,${border ? 1 : 0.2})`
-    default: return `rgba(255,255,255,${border ? 0.2 : 0.1})`
+    case "Unidentified": return `rgba(255,255,255,${border ? 0.2 : 0.1})`
+    default: return random_rgba()
   }
 }
 
 const AccountDetails = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
   const token = useSelector((state) => state.auth.token)
-  const { id } = useParams();
 
   const accounts = useSelector(state => state.accounts)
   const transactions = useSelector(state => state.transactions)
@@ -57,19 +61,16 @@ const AccountDetails = () => {
   const [transactionToRemove, setTransactionToRemove] = useState(null)
   const [uploadOpen, setUploadOpen] = useState(false)
 
+  useEffect(() => {dispatch(FinanceApi.getAccounts(token, true))}, [])
   useEffect(() => {
-    !accounts.selectedAccount &&
-    dispatch(FinanceApi.getAccount(token, id))}, [accounts.selectedAccount]
-  )
-  useEffect(() => {
-    if (accounts.selectedAccount && selectedDate) {
-      dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
+    if (accounts.selectedItem && selectedDate) {
+      dispatch(FinanceApi.getAnalytics(token, accounts.selectedItem.id, selectedDate.getFullYear()))
       dispatch(TransactionApi.getList(token, {
-        account_id: accounts.selectedAccount.id,
+        account_id: accounts.selectedItem.id,
         year: selectedDate.getFullYear(),
       }))
     }
-  }, [accounts.selectedAccount])
+  }, [accounts.selectedItem])
 
   const paymentsData = {
     labels: accounts.analytics?.per_month.map(p => p.month),
@@ -121,10 +122,10 @@ const AccountDetails = () => {
   };
   const [selectedDate, setSelectedDate] = useState(new Date())
   useEffect(() => {
-    if (accounts.selectedAccount && selectedDate) {
-      dispatch(FinanceApi.getAnalytics(token, accounts.selectedAccount.id, selectedDate.getFullYear()))
+    if (accounts.selectedItem && selectedDate) {
+      dispatch(FinanceApi.getAnalytics(token, accounts.selectedItem.id, selectedDate.getFullYear()))
       dispatch(TransactionApi.getList(token, {
-          account_id: accounts.selectedAccount.id,
+          account_id: accounts.selectedItem.id,
           year: selectedDate.getFullYear()
         })
       )
@@ -149,7 +150,7 @@ const AccountDetails = () => {
     const month = element[0]._model.label
     const category = element[0]._model.datasetLabel
     dispatch(TransactionApi.getList(token, {
-      account_id: accounts.selectedAccount.id,
+      account_id: accounts.selectedItem.id,
       month: new Date(`${month} ${selectedDate.getFullYear()}`).getMonth() + 1,
       category: category.toLowerCase().replace(" ", "-"),
       year: selectedDate.getFullYear(),
@@ -161,7 +162,7 @@ const AccountDetails = () => {
     const formData = new FormData();
     formData.append('file', selectedFile);
     dispatch(TransactionApi.uploadTransactions(token, formData,{
-          account_id: accounts.selectedAccount.id,
+          account_id: accounts.selectedItem.id,
           year: selectedDate.getFullYear()
         }))
     setUploadOpen(false)
@@ -172,31 +173,31 @@ const AccountDetails = () => {
     <div className="page-header">
       <h3 className="page-title">
         {
-          !accounts.selectedAccount
+          !accounts.selectedItem
             ? <Circles height={30}/>
             : <>
               <Dropdown className="btn btn-outline-primary">
                 <Dropdown.Toggle as="a" className="cursor-pointer">
-                  {accounts.selectedAccount.bank} ({accounts.selectedAccount.type})
+                  {accounts.selectedItem.bank} ({accounts.selectedItem.type})
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   {
                     accounts.results?.map((acc, i) =>
                       <Dropdown.Item key={i} href="!#" onClick={evt => {
-                        evt.preventDefault()
-                        dispatch(setSelectedAccount(accounts.results.find(a => a.id === acc.id)))
-                        history.push(`/finances/accounts/${acc.id}`)
-                      }} className="preview-item" active={acc.id === accounts.selectedAccount.id}>
+                        evt.preventDefault();
+                        dispatch(selectItem(acc.id));
+                      }} className="preview-item" active={acc.id === accounts.selectedItem.id}>
                         <div className="preview-item-content">
                           <p className="preview-subject mb-1">{acc.bank} ({acc.type})</p>
                         </div>
-                      </Dropdown.Item>
+                      </Dropdown.Item>,
                     )
                   }
                 </Dropdown.Menu>
               </Dropdown>
-              <div className="btn cursor-pointer" onClick={() => dispatch(setModalOpen(true))}>
-                <i className="mdi mdi-pencil" />
+              <div className="btn">
+                <i className="mdi mdi-pencil cursor-pointer" onClick={() => dispatch(setModalOpen(true))}/>
+                <i className="mdi mdi-plus cursor-pointer" onClick={() => dispatch(setModalOpen("new"))} />
               </div>
             </>
         }
@@ -204,18 +205,12 @@ const AccountDetails = () => {
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
           <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
-          <li className="breadcrumb-item"><a href="" onClick={e => {
-            e.preventDefault()
-            dispatch(setSelectedAccount())
-            transactions.selectedTransaction && dispatch(selectTransaction())
-            history.push("/finances/accounts")
-          }}>Accounts</a></li>
-          <li className="breadcrumb-item active" aria-current="page">{accounts.selectedAccount?.number}</li>
+          <li className="breadcrumb-item active" aria-current="page">Accounts</li>
         </ol>
       </nav>
     </div>
 
-    <Errors errors={accounts.errors}/>
+    {!accounts.modalOpen && <Errors errors={accounts.errors} />}
     <div className="row">
       <div className="col-sm-12 col-lg-6 grid-margin">
         <div className="card">
@@ -224,7 +219,7 @@ const AccountDetails = () => {
               Summary
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getAccount(token, accounts.selectedAccount.id))}
+                onClick={() => dispatch(FinanceApi.getAccount(token, accounts.selectedItem.id))}
               >
                 <i className="mdi mdi-refresh"></i>
               </button>
@@ -232,11 +227,11 @@ const AccountDetails = () => {
             {
               accounts.loading
                 ? <Circles />
-                : accounts.selectedAccount
+                : accounts.selectedItem
                   ? <>
-                    <ListItem label={"Bank"} value={accounts.selectedAccount.bank} textType={"primary"}/>
-                    <ListItem label={"Type"} value={accounts.selectedAccount.type} />
-                    <ListItem label={"Number"} value={accounts.selectedAccount.number} />
+                    <ListItem label={"Bank"} value={accounts.selectedItem.bank} textType={"primary"}/>
+                    <ListItem label={"Type"} value={accounts.selectedItem.type} />
+                    <ListItem label={"Number"} value={accounts.selectedItem.number} />
                   </>
                   : "-"
             }
@@ -250,11 +245,11 @@ const AccountDetails = () => {
             {
               accounts.loading
                 ? <Circles />
-                : accounts.selectedAccount
+                : accounts.selectedItem
                   ? <>
-                    <ListItem label={"First Name"} value={accounts.selectedAccount.first_name} />
-                    <ListItem label={"Last Name"} value={accounts.selectedAccount.last_name} />
-                    <ListItem label={"Client Code"} value={accounts.selectedAccount.client_code} />
+                    <ListItem label={"First Name"} value={accounts.selectedItem.first_name} />
+                    <ListItem label={"Last Name"} value={accounts.selectedItem.last_name} />
+                    <ListItem label={"Client Code"} value={accounts.selectedItem.client_code} />
                   </>
                   : "-"
             }
@@ -272,7 +267,7 @@ const AccountDetails = () => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() =>
                   dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                   }))
               }
               >
@@ -311,7 +306,7 @@ const AccountDetails = () => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => dispatch(FinanceApi.getAnalytics(
                   token,
-                  accounts.selectedAccount.id,
+                  accounts.selectedItem.id,
                   selectedDate.getFullYear()))}
               >
                 <i className="mdi mdi-refresh" />
@@ -381,7 +376,7 @@ const AccountDetails = () => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => {
                   dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -448,7 +443,7 @@ const AccountDetails = () => {
                         TransactionApi.getList(
                           token,
                           {
-                            account_id: accounts.selectedAccount.id,
+                            account_id: accounts.selectedItem.id,
                             search_term: searchTerm,
                             year: selectedDate.getFullYear(),
                           },
@@ -519,7 +514,7 @@ const AccountDetails = () => {
                 className="btn btn-default"
                 disabled={!transactions.previous}
                 onClick={() => dispatch(TransactionApi.getList(token, {
-                  account_id: accounts.selectedAccount.id,
+                  account_id: accounts.selectedItem.id,
                   year: selectedDate.getFullYear(),
                 }))}
               >
@@ -530,7 +525,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: 2,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -546,7 +541,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage - 3,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -561,7 +556,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage - 2,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -576,7 +571,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage - 1,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -592,7 +587,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage + 1,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -607,7 +602,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage + 2,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -622,7 +617,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: currentPage + 3,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -638,7 +633,7 @@ const AccountDetails = () => {
                   type="button"
                   className="btn btn-default"
                   onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedAccount.id,
+                    account_id: accounts.selectedItem.id,
                     page: lastPage - 1,
                     search_term: searchTerm,
                     year: selectedDate.getFullYear(),
@@ -652,7 +647,7 @@ const AccountDetails = () => {
                 className="btn btn-default"
                 disabled={!transactions.next}
                 onClick={() => dispatch(TransactionApi.getList(token, {
-                  account_id: accounts.selectedAccount.id,
+                  account_id: accounts.selectedItem.id,
                   page: lastPage,
                   search_term: searchTerm,
                   year: selectedDate.getFullYear(),

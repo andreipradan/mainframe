@@ -10,9 +10,10 @@ import {
   setAnalytics,
   setErrors as setAccountsErrors,
   setLoading as setAccountsLoading,
-  setLoadingAccounts,
+  selectItem as selectAccount,
+  setModalOpen,
   update as updateAccount,
-} from "../redux/accountsSlice";
+} from '../redux/accountsSlice';
 import {
   set as setCategories,
   setErrors as setCategoriesErrors,
@@ -75,12 +76,18 @@ export const createSearchParams = params => {
 }
 
 export class FinanceApi {
-  static createAccount = (token, data) => dispatch => {
-    dispatch(setLoadingAccounts(true));
+  static createAccount = (token, data, modalOpen) => dispatch => {
+    dispatch(setAccountsLoading(true));
     axios
       .post(`${base}/accounts/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(createAccount(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
+      .then((response) => {
+        dispatch(createAccount(response.data));
+        toast.success("Account created successfully!", toastParams)
+      })
+      .catch((err) => {
+        handleErrors(err, dispatch, setAccountsErrors);
+        dispatch(setModalOpen(modalOpen))
+      });
   }
   static getAccount = (token, accountId) => (dispatch) => {
     dispatch(setAccountsLoading(true));
@@ -89,11 +96,14 @@ export class FinanceApi {
       .then(response => dispatch(setAccounts({accountId: parseInt(accountId), ...response.data})))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
-  static getAccounts = token => (dispatch) => {
+  static getAccounts = (token, initial = false) => (dispatch) => {
     dispatch(setAccountsLoading(true));
     axios
       .get(`${base}/accounts/`, { headers: { Authorization: token } })
-      .then(response => dispatch(setAccounts(response.data)))
+      .then(response => {
+        dispatch(setAccounts(response.data));
+        if (initial) dispatch(selectAccount(response.data.results[0].id))
+      })
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
   static getAnalytics = (token, accountId, year = null) => dispatch => {
@@ -141,12 +151,20 @@ export class FinanceApi {
     })
     .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
   }
-  static updateAccount = (token, id, data) => dispatch => {
-    dispatch(setLoadingAccounts(id))
+  static updateAccount = (token, id, data, modalOpen) => dispatch => {
+    dispatch(setAccountsLoading(true))
     axios
       .patch(`${base}/accounts/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(updateAccount(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors))
+      .then((response) => {
+        dispatch(updateAccount(
+          { dontClearSelectedItem: true, ...response.data },
+        ));
+        toast.success("Account updated successfully!", toastParams)
+      })
+      .catch((err) => {
+        dispatch(setModalOpen(modalOpen))
+        handleErrors(err, dispatch, setAccountsErrors);
+      })
   }
   static updateCreditPayment = (token, id, data) => dispatch => {
     dispatch(setLoadingPayments(id))
