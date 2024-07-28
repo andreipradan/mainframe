@@ -8,10 +8,12 @@ import { TransactionsApi } from '../../../../../api/finance/transactions';
 import { Circles } from 'react-loader-spinner';
 import Errors from '../../../../shared/Errors';
 import { setsAreEqual } from '../../../utils';
+import { FinanceApi } from '../../../../../api/finance';
 
 const TransactionsBulkUpdateModal = props => {
   const dispatch = useDispatch()
   const token = useSelector((state) => state.auth.token)
+  const accounts = useSelector(state => state.accounts)
   const transactions = useSelector(state => state.transactions)
 
   useEffect(() => {
@@ -74,6 +76,7 @@ const TransactionsBulkUpdateModal = props => {
         onClick={() => {
           dispatch(TransactionsApi.bulkUpdateTransactions(token, props.checkedCategories, transactions.kwargs));
           props.setSpecificCategoriesModalOpen(false);
+          dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, props.year))
         }}
       >
         Yes, bulk update!

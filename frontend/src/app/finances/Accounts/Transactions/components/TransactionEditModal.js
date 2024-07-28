@@ -21,12 +21,18 @@ import { capitalize } from "../../../../utils";
 import { createOption, selectStyles } from "../../Categorize/EditModal";
 import { selectItem as selectCategory } from "../../../../../redux/categoriesSlice";
 import { selectItem as selectTransaction } from "../../../../../redux/transactionsSlice";
+import { FinanceApi } from '../../../../../api/finance';
 
-const TransactionEditModal = () => {
+const TransactionEditModal = props => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
+  const accounts = useSelector(state => state.accounts)
   const categories = useSelector(state => state.categories)
+  const transactionsKwargs = useSelector(state => state.transactions.kwargs)
   const { errors, loadingItems, selectedItem } = useSelector(state => state.transactions)
+
+  const [additionalData, setAdditionalData] = useState(null)
+  const [additionalDataAnnotations, setAdditionalDataAnnotations] = useState(null)
 
   const closeModal = () => dispatch(selectTransaction())
 
@@ -35,8 +41,25 @@ const TransactionEditModal = () => {
   }, [])
 
   useEffect(() => {
-    !!selectedItem && dispatch(selectCategory(selectedItem.category))
+    if(!!selectedItem) {
+      dispatch(selectCategory(selectedItem.category))
+      setAdditionalData(JSON.stringify(selectedItem.additional_data, null, "\t"));
+    } else {
+      setAdditionalData(null)
+    }
   }, [selectedItem])
+
+  const onAdditionalDataChange = (e, i) => {
+    setAdditionalData(e)
+    try {
+      JSON.parse(e);
+      setAdditionalDataAnnotations(null);
+    }
+    catch (error) {
+      const annotation = {...i.end, text: error.message, type: 'error'}
+      setAdditionalDataAnnotations(!additionalDataAnnotations ? [annotation] : [...additionalDataAnnotations, annotation])
+    }
+  }
 
   return <Modal centered show={!!selectedItem} onHide={closeModal}>
     <Modal.Header closeButton>
@@ -98,15 +121,27 @@ const TransactionEditModal = () => {
               {
                 selectedItem?.additional_data
                   ? <AceEditor
-                      placeholder="Additional Data"
-                      mode="python"
-                      theme="monokai"
-                      readOnly={true}
+                      annotations={additionalDataAnnotations}
+                      className={(additionalDataAnnotations) ? "form-control is-invalid" : ""}
                       fontSize={12}
-                      showGutter={false}
-                      value={JSON.stringify(selectedItem.additional_data, null, "\t")}
+                      height="100px"
+                      highlightActiveLine={true}
+                      mode="json"
+                      onChange={onAdditionalDataChange}
+                      placeholder="Additional Data"
+                      setOptions={{
+                        enableBasicAutocompletion: false,
+                        enableLiveAutocompletion: false,
+                        enableSnippets: false,
+                        showLineNumbers: true,
+                        tabSize: 2,
+                        wrap: true
+                      }}
+                      showGutter={true}
+                      showPrintMargin={true}
+                      theme="monokai"
+                      value={additionalData}
                       width="100%"
-                      height="50px"
                     />
                   : "-"
               }
@@ -117,11 +152,15 @@ const TransactionEditModal = () => {
     <Modal.Footer>
       <Button variant="secondary" onClick={closeModal}>Close</Button>
       <Button
-        disabled={categories.selectedItem?.id === selectedItem?.category}
         variant="primary"
         onClick={() => {
-          dispatch(TransactionsApi.update(token, selectedItem?.id, {category: categories.selectedItem?.id, confirmed_by: 1}))
-          dispatch(selectTransaction())
+          dispatch(TransactionsApi.update(
+            token,
+            selectedItem?.id,
+            {category: categories.selectedItem?.id, additional_data: JSON.parse(additionalData || "{}"), confirmed_by: 1}
+          ))
+          dispatch(TransactionsApi.getList(token, transactionsKwargs))
+          dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, props.year))
         }}
       >
         Save Changes

@@ -108,7 +108,10 @@ const Transactions = () => {
           const moneyOut = data.datasets.filter(d => parseFloat(d.data[item.index]) < 0).map(d => d.data[item.index]).reduce(
             (partialSum, p) => partialSum + parseFloat(p), 0
           )
-          return `Balance: ${(all).toFixed(2)}\n(${moneyIn.toFixed(2)}${moneyOut.toFixed(2)})`
+          let result = `Total: ${all.toFixed(2)}`
+          if (moneyIn.toFixed(2) > 0)
+            result += `\n(${moneyIn.toFixed(2)}${moneyOut.toFixed(2)})`
+          return result
         }
       }
     }
@@ -169,6 +172,7 @@ const Transactions = () => {
       account_id: accounts.selectedItem.id,
       category: category === "Unidentified" ? "Unidentified" : category.toLowerCase().replace(" ", "-"),
       month: month,
+      only_expenses: true,
       page: 1,
       year: selectedDate.getFullYear(),
     }))
@@ -470,7 +474,7 @@ const Transactions = () => {
               </Collapse>
 
               <div className="mb-0 text-muted">
-                <small>Total: {transactions.count}</small>
+                <small>Total: {transactions.count} | Amount: {transactions.page_amount}</small>
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm border-0 bg-transparent"
@@ -634,7 +638,16 @@ const Transactions = () => {
                               </a>
                             }
                           </td>
-                          <td>{t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state}</td>
+                          <td>
+                            {
+                              t.completed_at
+                                ? <span>
+                                    {new Date(t.completed_at).toLocaleDateString()}<br/>
+                                    <small>{new Date(t.completed_at).toLocaleTimeString()}</small>
+                                  </span>
+                                : t.state
+                            }
+                          </td>
                           <td className={'text-center'}>
                             <i
                               className="mdi mdi-pencil-outline text-warning ml-1"
@@ -718,7 +731,7 @@ const Transactions = () => {
       </div>
     </div>
     <AccountEditModal />
-    <TransactionEditModal />
+    <TransactionEditModal year={selectedDate.getFullYear()}/>
     <Modal centered show={!!transactionToRemove} onHide={() => setTransactionToRemove(null)}>
       <Modal.Header closeButton>
         <Modal.Title>
@@ -778,6 +791,7 @@ const Transactions = () => {
       checkedCategories={checkedCategories}
       setSpecificCategoriesModalOpen={setSpecificCategoriesModalOpen}
       specificCategoriesModalOpen={specificCategoriesModalOpen}
+      year={selectedDate.getFullYear()}
     />
   </div>
 }
