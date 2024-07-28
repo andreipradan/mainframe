@@ -21,7 +21,13 @@ class TestAccounts:
                 reverse("finance:accounts-list"), HTTP_AUTHORIZATION=staff_session.token
             )
         assert response.status_code == 200
-        assert set(response.json().keys()) == {"count", "next", "previous", "results"}
+        assert set(response.json().keys()) == {
+            "count",
+            "next",
+            "page_size",
+            "previous",
+            "results",
+        }
         assert [
             (x["id"], x["transaction_count"]) for x in response.json()["results"]
         ] == [(account1.id, 2), (account2.id, 1), (account3.id, 0)]
@@ -40,10 +46,9 @@ class TestAccounts:
         TransactionFactory(account=account, amount=-13, category=c1, started_at=d1)
         TransactionFactory(account=account, amount=-20, category=c1, started_at=d2)
         TransactionFactory(account=account, amount=-20, category=c2, started_at=d3)
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(6):
             response = client.get(
-                reverse("finance:accounts-analytics", args=(account.id,))
-                + "?year=2021",
+                reverse("finance:accounts-expenses", args=(account.id,)) + "?year=2021",
                 HTTP_AUTHORIZATION=staff_session.token,
             )
         assert response.status_code == 200
@@ -53,6 +58,7 @@ class TestAccounts:
                 {"bar": "0", "baz": "0", "foo": "-33.00", "month": "February"},
                 {"bar": "-20.00", "baz": "0", "foo": "0", "month": "May"},
             ],
+            "total": 4,
             "years": [2021],
         }
 

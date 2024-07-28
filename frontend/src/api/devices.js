@@ -47,9 +47,7 @@ class DevicesApi {
     dispatch(setLoadingItems(deviceId));
     axios
       .patch(`${base}/${deviceId}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update(response.data));
-      })
+      .then(response => dispatch(update(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }

@@ -68,6 +68,7 @@ class TestWatcherViews:
         assert response.json() == {
             "count": 1,
             "next": None,
+            "page_size": 25,
             "previous": None,
             "results": [
                 {

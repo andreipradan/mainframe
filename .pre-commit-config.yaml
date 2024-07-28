@@ -23,3 +23,10 @@ repos:
         entry: sh -c "python src/manage.py makemigrations --check --dry-run"
         files: "models\\.py$"
         stages: [commit]
+-   repo: local
+    hooks:
+      - id: pytest
+        language: system
+        name: pytest
+        entry: sh -c "pytest tests"
+        stages: [commit]

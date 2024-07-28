@@ -50,8 +50,8 @@ export class AccountsApi {
     dispatch(setLoading(true))
     axios
       .patch(`${base}/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update({ dontClearSelectedItem: true, ...response.data }));
+      .then(response => {
+        dispatch(setItem(response.data));
         toast.success("Account updated successfully!", toastParams)
       })
       .catch((err) => {

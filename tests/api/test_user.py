@@ -79,6 +79,7 @@ class TestUserViewSet:
         assert response.json() == {
             "count": 2,
             "next": None,
+            "page_size": 25,
             "previous": None,
             "results": [
                 {

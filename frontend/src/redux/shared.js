@@ -83,8 +83,8 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.loadingItems = state.loadingItems
         ? state.loadingItems.filter(i => i !== action.payload.id)
         : null
-      state.selectedItem = action.payload
       state.results = state.results.map(r => r.id !== action.payload.id ? r : action.payload)
+      state.selectedItem = action.payload
     },
     setLoading: (state, action) => {state.loading = action.payload},
     setLoadingItems: (state, action) => {
@@ -94,12 +94,16 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
     },
     setModalOpen: (state, action) => {state.modalOpen = action.payload},
     update: (state, action) => {
-      state.errors = null;
+      state.errors = null
       state.loading = false
-      state.loadingItems = state.loadingItems?.filter((id) => id !== action.payload.id);
-      state.results = state.results.map((item) =>
-        (item.id === action.payload.id ? action.payload : item))
-      state.selectedItem = action.payload.dontClearSelectedItem === true ? state.selectedItem : null
+      state.loadingItems = state.loadingItems?.filter(id => id !== action.payload.id);
+      state.results = state.results.map(item => item.id === action.payload.id ? action.payload : item)
+      state.selectedItem =
+        action.payload.dontClearSelectedItem === true
+          ? state.selectedItem
+          : action.payload.setSelected === true
+            ? state.results.find(item => item.id === action.payload.id)
+            : null
     },
     ...extraReducers,
   },

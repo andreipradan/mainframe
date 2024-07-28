@@ -7,6 +7,7 @@ import { createSearchParams } from '../finance';
 import {
   deleteItem as deleteTransaction,
   set,
+  setItem,
   setErrors,
   setExtra,
   setLoading,
@@ -49,7 +50,7 @@ export class TransactionsApi {
     dispatch(setLoadingItems(transactionId));
     axios
       .get(`${base}/${transactionId}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(update(response.data)))
+      .then((response) => dispatch(setItem(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static getList = (token, kwargs = null) => (dispatch) => {
