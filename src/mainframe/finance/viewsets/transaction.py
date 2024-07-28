@@ -83,7 +83,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(confirmed_by=confirmed_by)
         if description := params.get("description"):
             queryset = queryset.filter(description=description)
-        if params.get("expense") == "true":
+        if params.get("only_expenses") == "true":
             queryset = queryset.expenses()
         if month := params.get("month"):
             queryset = queryset.filter(started_at__month=month)
@@ -95,12 +95,10 @@ class TransactionViewSet(viewsets.ModelViewSet):
             ).filter(search=search_term)
         if types := params.getlist("type"):
             queryset = queryset.filter(type__in=types)
-        if params.get("unique") == "true":
-            queryset = queryset.distinct("started_at", "description").order_by(
-                "-started_at", "description"
-            )
         if year := params.get("year"):
             queryset = queryset.filter(started_at__year=year)
+        if params.get("unique") == "true":
+            queryset = queryset.distinct("description").order_by("description")
 
         return queryset.select_related("account")
 
@@ -154,9 +152,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         response.data["accounts"] = Account.objects.values("id", "bank", "type")
         response.data["unidentified_count"] = (
             Transaction.objects.expenses()
-            .filter(
-                category=Category.UNIDENTIFIED,
-            )
+            .filter(category=Category.UNIDENTIFIED)
             .count()
         )
         return response

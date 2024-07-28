@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { ColorRing } from "react-loader-spinner";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
@@ -9,8 +10,7 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 
-import { ColorRing } from "react-loader-spinner";
-import { FinanceApi } from "../../../../../api/finance";
+import { PaymentsApi } from '../../../../../api/finance/payments';
 import { selectItem as selectPayment } from "../../../../../redux/paymentSlice";
 import Errors from "../../../../shared/Errors";
 
@@ -49,7 +49,7 @@ const PaymentEditModal = () => {
         : <Form
             onSubmit={event => {
               event.preventDefault()
-              dispatch(FinanceApi.updateCreditPayment(token, selectedPayment.id, {saved: saved}))
+              dispatch(PaymentsApi.update(token, selectedPayment.id, {saved: saved}))
             }}
           >
             <Form.Group className="mb-3">
@@ -69,7 +69,7 @@ const PaymentEditModal = () => {
         Close
       </Button>
       <Button variant="primary" onClick={() => {
-        dispatch(FinanceApi.updateCreditPayment(token, selectedPayment.id, {
+        dispatch(PaymentsApi.update(token, selectedPayment.id, {
           saved: saved,
         }))
       }}>

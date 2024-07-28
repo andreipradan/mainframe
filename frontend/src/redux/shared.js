@@ -22,10 +22,17 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.modalOpen = false
       state.results = state.results
         ? [...state.results, action.payload].sort((a, b) =>
-            a.name > b.name ? 1 : -1
+            a.name > b.name
+              ? 1
+              : a.id > b.id ? 1 : -1
         )
         : [action.payload]
-      state.selectedItem = action.payload.dontClearSelectedItem === true ? state.selectedItem : null
+      state.selectedItem =
+        action.payload.dontClearSelectedItem === true
+          ? state.selectedItem
+          : action.payload.setSelected === true
+            ? state.results.find(item => item.id === action.payload.id)
+            : null
     },
     deleteItem: (state, action) => {
       state.count -= 1
@@ -65,7 +72,11 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       for (const key of Object.keys(action.payload))
         state[key] = action.payload[key]
     },
-    setKwargs: (state, action) => {state.kwargs = action.payload},
+    setKwargs: (state, action) => {
+      state.kwargs = state.kwargs
+        ? {...state.kwargs, ...action.payload}
+        : action.payload
+    },
     setItem: (state, action) => {
       state.errors = null
       state.loading = false

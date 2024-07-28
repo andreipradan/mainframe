@@ -16,6 +16,7 @@ export const {
   create,
   selectItem,
   set,
+  setItem,
   setAnalytics,
   setErrors,
   setLoading,

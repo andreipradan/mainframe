@@ -14,7 +14,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
 import Errors from "../../../shared/Errors";
 import BottomPagination from "../../../shared/BottomPagination";
-import { PredictionApi, TransactionApi } from '../../../../api/finance';
+import { PredictionApi } from '../../../../api/finance';
+import { TransactionsApi } from '../../../../api/finance/transactions';
 import { capitalize, getCategoryVerbose } from '../../../utils';
 import { selectItem as selectTransaction, setKwargs } from "../../../../redux/transactionsSlice";
 import { setLoadingTask } from "../../../../redux/predictionSlice";
@@ -44,11 +45,11 @@ const Categorize = () => {
 
   const onAccountChange = newValue => {
     const newAccount = newValue ? newValue.value : ""
-    dispatch(setKwargs({...(kwargs || {}), account_id: newAccount, page: 1}))
+    dispatch(setKwargs({account_id: newAccount, page: 1}))
   }
   const onCategoryChange = newValue => {
     const newCategory = newValue ? newValue.value : ""
-    dispatch(setKwargs({...(kwargs || {}), category: newCategory, page: 1}))
+    dispatch(setKwargs({category: newCategory, page: 1}))
   }
 
   const onCheckedCategoryChange = (newValue, description) => {
@@ -71,11 +72,11 @@ const Categorize = () => {
   }
   const onTypeChange = newValue => {
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(kwargs || {}), type: newTypes, page: 1}))
+    dispatch(setKwargs({type: newTypes, page: 1}))
   }
   const onConfirmedByChange = newValue => {
     const newConfirmedBy = !newValue ? 0 : newValue.value
-    dispatch(setKwargs({...(kwargs || {}), confirmed_by: newConfirmedBy, page: 1}))
+    dispatch(setKwargs({confirmed_by: newConfirmedBy, page: 1}))
   }
 
   useEffect(() => {setMessageAlertOpen(!!transactions.msg)}, [transactions.msg])
@@ -138,7 +139,7 @@ const Categorize = () => {
       clearInterval(predictTimerIdRef.current);
       dispatch(setLoadingTask({type: "predict", loading: false}))
       if (prediction.predict?.status === "complete")
-        dispatch(TransactionApi.getList(token, kwargs))
+        dispatch(TransactionsApi.getList(token, kwargs))
     };
 
     if (["executing", "initial", "progress"].includes(prediction.predict?.status)) startPolling()
@@ -406,26 +407,26 @@ const Categorize = () => {
                     height={20}
                     width={20}
                     wrapperClass="btn"
-                    wrapperStyle={{display: "default"}}
+                    wrapperStyle={{ display: 'default' }}
                     ariaLabel="ball-triangle-loading"
-                    color='green'
+                    color="green"
                   />
                   : <button
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => {
-                      dispatch(TransactionApi.getList(token, kwargs))
-                      dispatch(PredictionApi.getTasks(token))
+                      dispatch(TransactionsApi.getList(token, kwargs));
+                      dispatch(PredictionApi.getTasks(token));
                     }}
                   >
-                      <i className="mdi mdi-refresh"></i>
-                    </button>
+                    <i className="mdi mdi-refresh"></i>
+                  </button>
               }
               <div className="float-right">
                 {
                   unpredictedCategories?.length
                     ? <Button
-                      className={"btn btn-sm btn-secondary mr-1"}
+                      className={'btn btn-sm btn-secondary mr-1'}
                       onClick={() => dispatch(PredictionApi.predict(token, unpredictedCategories, kwargs))}
                     >
                       Predict latest {unpredictedCategories.length}
@@ -433,12 +434,12 @@ const Categorize = () => {
                     : null
                 }
                 {
-                  transactions.results?.find(t => t.category === "Unidentified") &&
+                  transactions.results?.find(t => t.category === 'Unidentified') &&
                   <Button
-                    className={"btn btn-sm btn-primary mr-1"}
+                    className={'btn btn-sm btn-primary mr-1'}
                     onClick={() => setPredictModalOpen(true)}
                   >
-                    Predict {checkedCategories?.length || "all"}
+                    Predict {checkedCategories?.length || 'all'}
                   </Button>
                 }
               </div>
@@ -453,7 +454,7 @@ const Categorize = () => {
                   : null
               }
               <div className="mb-0 text-muted">
-                <small>Unique: {transactions.count} | Total: {transactions.unidentified_count}</small>
+                <small>Total: {transactions.count} | Unidentified: {transactions.unidentified_count}</small>
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm border-0 bg-transparent"
@@ -465,7 +466,7 @@ const Categorize = () => {
               {
                 messageAlertOpen &&
                 <Alert
-                  variant={transactions.msg?.level || "primary"}
+                  variant={transactions.msg?.level || 'primary'}
                   dismissible
                   onClose={() => setMessageAlertOpen(false)}
                 >
@@ -473,16 +474,16 @@ const Categorize = () => {
                 </Alert>
               }
             </h4>
-            <Errors errors={transactions.errors}/>
+            <Errors errors={transactions.errors} />
 
-            <Collapse in={ searchOpen }>
+            <Collapse in={searchOpen}>
               <ul className="navbar-nav w-100 rounded">
                 <li className="nav-item w-100">
                   <form
                     className="nav-link mt-2 mt-md-0 d-lg-flex search"
                     onSubmit={e => {
-                      e.preventDefault()
-                      dispatch(setKwargs({...kwargs, page: 1}))
+                      e.preventDefault();
+                      dispatch(setKwargs({ page: 1 }));
                     }}
                   >
                     <input
@@ -490,51 +491,71 @@ const Categorize = () => {
                       type="search"
                       className="form-control"
                       placeholder="Search transactions"
-                      onChange={e => dispatch(setKwargs({...kwargs, search_term: e.target.value}))}
+                      onChange={e => dispatch(setKwargs({ search_term: e.target.value }))}
                     />
                   </form>
                 </li>
               </ul>
             </Collapse>
+            <div className="form-check">
+              <label className="form-check-label">
+                <input
+                  className="checkbox"
+                  type="checkbox"
+                  checked={transactions.kwargs?.only_expenses || false}
+                  onChange={() => dispatch(setKwargs({ only_expenses: !(transactions.kwargs?.only_expenses || false) }))}
+                />Expenses only <i className="input-helper" />
+              </label>
+            </div>
+            <div className="form-check">
+              <label className="form-check-label">
+                <input
+                  className="checkbox"
+                  type="checkbox"
+                  checked={transactions.kwargs?.unique || false}
+                  onChange={() => dispatch(setKwargs({ unique: !(transactions.kwargs?.unique || false) }))}
+                />Unique <i className="input-helper" />
+              </label>
+            </div>
             <div className="table-responsive">
               <table className="table">
                 <thead>
-                  <tr>
-                    <th>
-                      <div className="form-check form-check-muted m-0">
-                        <label className="form-check-label">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={allChecked}
-                            disabled={transactions.loading}
-                            onChange={() => setAllChecked(!allChecked)}
-                          />
-                          <i className="input-helper"></i>
-                        </label>
-                      </div>
-                    </th>
-                    <th> Account </th>
-                    <th> Started </th>
-                    <th> Amount </th>
-                    <th> Description </th>
-                    <th> Type </th>
-                    <th> Category </th>
-                    <th> Completed </th>
-                    <th><i className="mdi mdi-pencil" /></th>
-                  </tr>
+                <tr>
+                  <th>
+                    <div className="form-check form-check-muted m-0">
+                      <label className="form-check-label">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={allChecked}
+                          disabled={transactions.loading}
+                          onChange={() => setAllChecked(!allChecked)}
+                        />
+                        <i className="input-helper"></i>
+                      </label>
+                    </div>
+                  </th>
+                  <th> Account</th>
+                  <th> Started</th>
+                  <th> Amount</th>
+                  <th> Description</th>
+                  <th> Type</th>
+                  <th> Category</th>
+                  <th> Completed</th>
+                  <th><i className="mdi mdi-pencil" /></th>
+                </tr>
                 </thead>
                 <tbody>
                 {
                   transactions.results?.length
                     ? transactions.results.map((t, i) =>
                       <tr
-                        style={{cursor: `${t.category_suggestion ? 'default': 'not-allowed'}`}}
+                        style={{ cursor: `${t.category_suggestion ? 'default' : 'not-allowed'}` }}
                         key={i}
-                        className={getSpecificCategory(t.description) ? "text-warning": ""}
+                        className={getSpecificCategory(t.description) ? 'text-warning' : ''}
                         onClick={
                           () => onCheckedCategoryChange({
-                            value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
+                            value: getSpecificCategory(t.description) ? 'Unidentified' : t.category_suggestion,
                           }, t.description)}
                       >
                         <td>
@@ -548,10 +569,10 @@ const Categorize = () => {
                                 onChange={() =>
                                   onCheckedCategoryChange({
                                     value: getSpecificCategory(t.description)
-                                      ? "Unidentified"
-                                      : t.category_suggestion
+                                      ? 'Unidentified'
+                                      : t.category_suggestion,
                                   }, t.description)
-                              }
+                                }
                               />
                               <i className="input-helper"></i>
                             </label>
@@ -561,50 +582,54 @@ const Categorize = () => {
                         <td> {new Date(t.started_at).toLocaleDateString()}<br />
                           <small>{new Date(t.started_at).toLocaleTimeString()}</small>
                         </td>
-                        <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
+                        <td> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ''} </td>
                         <td> {t.description} </td>
                         <td> {getTypeLabel(t.type)} </td>
-                        <td onClick={e => e.stopPropagation()} style={{minWidth: "180px"}}>
+                        <td onClick={e => e.stopPropagation()} style={{ minWidth: '180px' }}>
                           <Select
                             onChange={newValue => onCheckedCategoryChange(newValue, t.description)}
-                            options={transactions.categories?.map(c => ({label: getCategoryVerbose(c), value: c}))}
+                            options={transactions.categories?.map(c => ({ label: getCategoryVerbose(c), value: c }))}
                             styles={selectStyles}
                             value={{
-                              label: capitalize(getSpecificCategory(t.description) || t.category).replace("-", " "),
-                              value: getSpecificCategory(t.description) || t.category}}
+                              label: capitalize(getSpecificCategory(t.description) || t.category).replace('-', ' '),
+                              value: getSpecificCategory(t.description) || t.category,
+                            }}
                           />
-                          <p className={"text-warning ml-2"}>{t.category_suggestion ? capitalize(t.category_suggestion).replace("-", " "): null}</p>
+                          <p
+                            className={'text-warning ml-2'}>{t.category_suggestion ? capitalize(t.category_suggestion).replace('-', ' ') : null}</p>
                           {
                             getSpecificCategory(t.description) &&
-                            <a href={"!#"} onClick={e => {
-                              const currentCategory = getSpecificCategory(t.description)
-                              e.preventDefault()
+                            <a href={'!#'} onClick={e => {
+                              const currentCategory = getSpecificCategory(t.description);
+                              e.preventDefault();
                               setCheckedCategories(transactions.results.map(t =>
-                                ({description: t.description, category: currentCategory})
-                              ))
+                                ({ description: t.description, category: currentCategory }),
+                              ));
                             }}>
-                              Set {capitalize(getSpecificCategory(t.description)).replace("-", " ")} to all
+                              Set {capitalize(getSpecificCategory(t.description)).replace('-', ' ')} to all
                             </a>
-                        }
+                          }
                         </td>
                         <td> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
                         <td>
                           <i
                             className="mdi mdi-pencil text-primary"
                             onClick={e => {
-                              e.stopPropagation()
-                              dispatch(selectTransaction(t.id))
+                              e.stopPropagation();
+                              dispatch(selectTransaction(t.id));
                             }}
-                            style={{cursor: "pointer"}}
+                            style={{ cursor: 'pointer' }}
                           />
                         </td>
                       </tr>)
-                    : <tr><td colSpan={6}><span>No transactions found</span></td></tr>
+                    : <tr>
+                      <td colSpan={6}><span>No transactions found</span></td>
+                    </tr>
                 }
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={transactions} fetchMethod={TransactionApi.getList} setKwargs={setKwargs}/>
+            <BottomPagination items={transactions} fetchMethod={TransactionsApi.getList} setKwargs={setKwargs} />
           </div>
         </div>
       </div>
@@ -613,8 +638,8 @@ const Categorize = () => {
           <div className="card-body">
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
-              e.preventDefault()
-              dispatch(TransactionApi.getList(token, kwargs))
+              e.preventDefault();
+              dispatch(TransactionsApi.getList(token, kwargs));
             }}>
               <Form.Group>
                 <Form.Label>Confirmed by</Form.Label>&nbsp;
@@ -623,11 +648,12 @@ const Categorize = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   onChange={onConfirmedByChange}
-                  options={transactions.confirmed_by_choices?.map(c => ({label: c[1], value: c[0]}))}
+                  options={transactions.confirmed_by_choices?.map(c => ({ label: c[1], value: c[0] }))}
                   styles={selectStyles}
                   value={{
                     label: transactions.confirmed_by_choices?.find(c => c[0] === kwargs.confirmed_by)?.[1],
-                    value: kwargs.confirmed_by}}
+                    value: kwargs.confirmed_by,
+                  }}
                 />
               </Form.Group>
               <Form.Group>
@@ -651,7 +677,7 @@ const Categorize = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   isMulti
-                  onMenuClose={() => dispatch(TransactionApi.getList(token, kwargs))}
+                  onMenuClose={() => dispatch(TransactionsApi.getList(token, kwargs))}
                   onChange={onTypeChange}
                   options={transactions.types?.map(t => ({label: getTypeLabel(t), value: t}))}
                   styles={selectStyles}
@@ -737,7 +763,7 @@ const Categorize = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(TransactionApi.bulkUpdateTransactions(token, checkedCategories, kwargs))
+            dispatch(TransactionsApi.bulkUpdateTransactions(token, checkedCategories, kwargs))
             setSpecificCategoriesModalOpen(false)
           }}
         >

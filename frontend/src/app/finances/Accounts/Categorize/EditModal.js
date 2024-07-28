@@ -14,11 +14,12 @@ import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
 import ListItem from "../../../shared/ListItem";
-import { FinanceApi } from "../../../../api/finance";
 import { capitalize } from "../../../utils";
 import { create as createCategory } from "../../../../redux/categoriesSlice"
 import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
 import Errors from "../../../shared/Errors";
+import { CategoriesApi } from '../../../../api/finance/categories';
+import { TransactionsApi } from '../../../../api/finance/transactions';
 
 export const createOption = label => ({label: getTypeLabel(label), value: label})
 
@@ -55,7 +56,7 @@ const EditModal = () => {
   const [showSaveAllModal, setShowSaveAllModal] = useState(false)
   const [type, setType] = useState("")
 
-  useEffect(() => {!categories.results && dispatch(FinanceApi.getCategories(token))}, [])
+  useEffect(() => {!categories.results && dispatch(CategoriesApi.getList(token))}, [])
   useEffect(() => {
     setCategory(transaction?.category)
     setType(transaction?.type)
@@ -105,7 +106,7 @@ const EditModal = () => {
 
       <Form onSubmit={e => {
         e.preventDefault()
-        dispatch(FinanceApi.updateTransaction(
+        dispatch(TransactionsApi.update(
           token, transaction.id, {type, category}
         ))
       }}>
@@ -119,7 +120,7 @@ const EditModal = () => {
             options={categories.results?.map(c => createOption(c.id))}
             onChange={newValue => setCategory(newValue?.value ? newValue.value : "Unidentified")}
             onCreateOption={id => {
-              dispatch(FinanceApi.updateTransaction(token, transaction.id, {category: id}))
+              dispatch(TransactionsApi.update(token, transaction.id, {category: id}))
               dispatch(createCategory({id: id, value: capitalize(id).replace("-", " ")}))
             }}
             styles={selectStyles}
@@ -162,7 +163,7 @@ const EditModal = () => {
       }
         variant="primary"
         onClick={() => {
-          dispatch(FinanceApi.updateTransaction(token, transaction.id, {category}))
+          dispatch(TransactionsApi.update(token, transaction.id, {category}))
           dispatch(selectTransaction())
         }}
       >
@@ -192,7 +193,7 @@ const EditModal = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(FinanceApi.updateTransactions(token, {category, description: transaction.description}, kwargs))
+            dispatch(TransactionsApi.updateAll(token, {category, description: transaction.description}, kwargs))
             dispatch(selectTransaction())
             setShowSaveAllModal(false)
           }}

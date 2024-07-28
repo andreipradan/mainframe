@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { capitalize } from '../../../../utils';
-import { TransactionApi } from '../../../../../api/finance';
+import { TransactionsApi } from '../../../../../api/finance/transactions';
 import { Circles } from 'react-loader-spinner';
 import Errors from '../../../../shared/Errors';
 import { setsAreEqual } from '../../../utils';
@@ -18,7 +18,7 @@ const TransactionsBulkUpdateModal = props => {
     if (props.specificCategoriesModalOpen && !!props.checkedCategories) {
       const checked = new Set(props.checkedCategories.map(c => c.description))
       const extra = new Set(transactions.extra?.results?.map(t => t.description))
-      !setsAreEqual(checked, extra) && dispatch(TransactionApi.bulkUpdateTransactionsPreview(token, props.checkedCategories));
+      !setsAreEqual(checked, extra) && dispatch(TransactionsApi.bulkUpdateTransactionsPreview(token, props.checkedCategories));
     }
   }, [props.specificCategoriesModalOpen]);
 
@@ -34,7 +34,7 @@ const TransactionsBulkUpdateModal = props => {
               : <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(TransactionApi.bulkUpdateTransactionsPreview(token, props.checkedCategories))}
+                onClick={() => dispatch(TransactionsApi.bulkUpdateTransactionsPreview(token, props.checkedCategories))}
               >
                 <i className="mdi mdi-refresh"></i>
               </button>
@@ -47,7 +47,7 @@ const TransactionsBulkUpdateModal = props => {
     </Modal.Header>
     <Modal.Body>
       <Errors errors={transactions.errors} />
-      <p className="mb-0">This will update all the transactions</p>
+      <p className="mb-0">This will update all <b>Unidentified</b> transactions</p>
       <p>with the descriptions below as follows:</p>
       <ul>
         {
@@ -58,7 +58,7 @@ const TransactionsBulkUpdateModal = props => {
               {
                 transactions.extra?.loading
                   ? <Circles height={15} width={15} wrapperStyle={{display: "default"}} wrapperClass="btn" color={"orange"}/>
-                  : ` [${transactions.extra?.results?.find(t => t.description === c.description)?.count}]`
+                  : ` [${transactions.extra?.results?.find(t => t.description === c.description)?.count || 0}]`
               }
             </span>
         </li>)
@@ -69,9 +69,10 @@ const TransactionsBulkUpdateModal = props => {
     <Modal.Footer>
       <Button variant="success" onClick={() => props.setSpecificCategoriesModalOpen(false)}>No, go back</Button>
       <Button
+        disabled={transactions.extra?.loading || !transactions.extra?.results?.length || transactions.extra?.results.map(t => t.count).reduce((partialSum, a) => partialSum + a, 0) <= 0}
         variant="danger"
         onClick={() => {
-          dispatch(TransactionApi.bulkUpdateTransactions(token, props.checkedCategories, transactions.kwargs));
+          dispatch(TransactionsApi.bulkUpdateTransactions(token, props.checkedCategories, transactions.kwargs));
           props.setSpecificCategoriesModalOpen(false);
         }}
       >

@@ -5,7 +5,7 @@ import { Collapse } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import "nouislider/distribute/nouislider.css";
 
-import { FinanceApi } from '../../../../api/finance';
+import { PaymentsApi } from '../../../../api/finance/payments';
 import { selectItem as selectPayment, setKwargs } from "../../../../redux/paymentSlice";
 import { useHistory } from "react-router-dom";
 import BottomPagination from "../../../shared/BottomPagination";
@@ -36,7 +36,7 @@ const Payments = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedFile);
-    dispatch(FinanceApi.importPayments(token, formData))
+    dispatch(PaymentsApi.upload(token, formData))
     setUploadOpen(false)
     setSelectedFile(null)
   };
@@ -49,7 +49,7 @@ const Payments = () => {
         Payments
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(FinanceApi.getCreditPayments(token))}
+          onClick={() => dispatch(PaymentsApi.getList(token))}
         >
           <i className="mdi mdi-refresh"></i>
         </button>
@@ -156,7 +156,7 @@ const Payments = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={payment} fetchMethod={FinanceApi.getCreditPayments} setKwargs={setKwargs} />
+            <BottomPagination items={payment} fetchMethod={PaymentsApi.getList} setKwargs={setKwargs} />
 
           </div>
         </div>

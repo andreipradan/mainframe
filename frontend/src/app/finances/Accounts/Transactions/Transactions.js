@@ -14,7 +14,9 @@ import Select from 'react-select';
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { FinanceApi, TransactionApi } from '../../../../api/finance';
+import { AccountsApi } from '../../../../api/finance/accounts';
+import { FinanceApi } from '../../../../api/finance';
+import { TransactionsApi } from '../../../../api/finance/transactions';
 import { capitalize, getCategoryVerbose } from '../../../utils';
 import { getTypeLabel, selectStyles } from '../Categorize/EditModal';
 import { selectItem, setModalOpen } from "../../../../redux/accountsSlice";
@@ -130,22 +132,21 @@ const Transactions = () => {
       setAllChecked(false)
     }}, [transactions.loading])
   useEffect(() => {
-    dispatch(FinanceApi.getAccounts(token, true))
+    dispatch(AccountsApi.getList(token, true))
     setSpecificCategoriesModalOpen(false)
   }, [])
   useEffect(() => {
     if (accounts.selectedItem && selectedDate) {
       dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, selectedDate.getFullYear()))
-      dispatch(setKwargs({...(transactions.kwargs || {}), account_id: accounts.selectedItem.id, year: selectedDate.getFullYear()}))
+      dispatch(setKwargs({account_id: accounts.selectedItem.id, year: selectedDate.getFullYear()}))
     }
   }, [accounts.selectedItem])
 
   useEffect(() => {
     if (accounts.selectedItem && selectedDate && selectedDate.getFullYear() !== transactions.kwargs.year) {
       dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, selectedDate.getFullYear()))
-      dispatch(setKwargs({...(transactions.kwargs || {}), account_id: accounts.selectedItem.id, year: selectedDate.getFullYear()}))
-    }},
-    [selectedDate]
+      dispatch(setKwargs({account_id: accounts.selectedItem.id, year: selectedDate.getFullYear()}))
+    }}, [selectedDate]
   )
 
   const handleFileChange = e => {
@@ -162,12 +163,13 @@ const Transactions = () => {
     if (!element.length) return
     setSearchTerm("")
     setSearchOpen(false)
-    const month = element[0]._model.label
+    const month = new Date(Date.parse(`${element[0]._model.label} 1, ${selectedDate.getFullYear()}`)).getMonth() + 1
     const category = element[0]._model.datasetLabel
-    dispatch(TransactionApi.getList(token, {
+    dispatch(setKwargs({
       account_id: accounts.selectedItem.id,
-      month: new Date(`${month} ${selectedDate.getFullYear()}`).getMonth() + 1,
-      category: category.toLowerCase().replace(" ", "-"),
+      category: category === "Unidentified" ? "Unidentified" : category.toLowerCase().replace(" ", "-"),
+      month: month,
+      page: 1,
       year: selectedDate.getFullYear(),
     }))
   }
@@ -176,7 +178,7 @@ const Transactions = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedFile);
-    dispatch(TransactionApi.uploadTransactions(token, formData,{
+    dispatch(TransactionsApi.uploadTransactions(token, formData,{
           account_id: accounts.selectedItem.id,
           year: selectedDate.getFullYear()
         }))
@@ -186,7 +188,7 @@ const Transactions = () => {
 
   const onCategoryChange = newValue => {
     const newCategory = newValue ? newValue.value : ""
-    dispatch(setKwargs({...(transactions.kwargs || {}), category: newCategory, page: 1}))
+    dispatch(setKwargs({category: newCategory, page: 1}))
   }
   const onCheckedCategoryChange = (newValue, description) => {
     if (!newValue.value) return
@@ -207,12 +209,12 @@ const Transactions = () => {
     )
   }
   const onConfirmedByChange = newValue => {
-    const newConfirmedBy = !newValue ? 0 : newValue.value
-    dispatch(setKwargs({...(transactions.kwargs || {}), confirmed_by: newConfirmedBy, page: 1}))
+    const newConfirmedBy = !newValue ? "" : newValue.value
+    dispatch(setKwargs({confirmed_by: newConfirmedBy, page: 1}))
   }
   const onTypeChange = newValue => {
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(transactions.kwargs || {}), type: newTypes, page: 1}))
+    dispatch(setKwargs({type: newTypes, page: 1}))
   }
 
   return <div>
@@ -265,7 +267,7 @@ const Transactions = () => {
               Summary
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getAccount(token, accounts.selectedItem.id))}
+                onClick={() => dispatch(AccountsApi.get(token, accounts.selectedItem.id))}
               >
                 <i className="mdi mdi-refresh"></i>
               </button>
@@ -307,19 +309,7 @@ const Transactions = () => {
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>
-              Latest Transaction
-              <button type="button"
-                className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() =>
-                  dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                  }))
-              }
-              >
-                <i className="mdi mdi-refresh"></i>
-              </button>
-            </h6>
+            <h6>Latest Transaction</h6>
             {
               transactions.loading
                 ? <Circles />
@@ -423,22 +413,15 @@ const Transactions = () => {
                     height={20}
                     width={20}
                     wrapperClass="btn"
-                    wrapperStyle={{display: "default"}}
+                    wrapperStyle={{ display: 'default' }}
                     ariaLabel="ball-triangle-loading"
-                    color='green'
+                    color="green"
                   />
                   : <button
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => {
-                      dispatch(TransactionApi.getList(token, {
-                        account_id: accounts.selectedItem.id,
-                        page: currentPage,
-                        search_term: searchTerm,
-                        year: selectedDate.getFullYear(),
-                      }))
-                    }
-                    }>
+                    onClick={() => dispatch(setKwargs({only_expenses: false, page: 1, unique: false}))}
+                  >
                     <i className="mdi mdi-refresh" />
                   </button>
               }
@@ -496,6 +479,35 @@ const Transactions = () => {
                   <i className="mdi mdi-magnify" />
                 </button>
               </div>
+              <div className="form-check">
+                <label className="form-check-label">
+                  <input
+                    className="checkbox"
+                    type="checkbox"
+                    checked={transactions.kwargs?.only_expenses || false}
+                    onChange={() => dispatch(setKwargs({
+                      only_expenses: !(transactions.kwargs?.only_expenses || false),
+                      page: 1
+                    }))}
+                  />
+                  Expenses only
+                  <i className="input-helper" />
+                </label>
+              </div>
+              <div className="form-check">
+                <label className="form-check-label">
+                  <input
+                    className="checkbox"
+                    type="checkbox"
+                    checked={transactions.kwargs?.unique || false}
+                    onChange={() => dispatch(setKwargs({
+                      unique: !(transactions.kwargs?.unique || false),
+                      page: 1
+                    }))}
+                  />Unique <i className="input-helper" />
+                </label>
+              </div>
+
             </h4>
             {!specificCategoriesModalOpen && <Errors errors={transactions.errors} />}
             <Collapse in={searchOpen}>
@@ -505,16 +517,7 @@ const Transactions = () => {
                     className="nav-link mt-2 mt-md-0 d-lg-flex search"
                     onSubmit={e => {
                       e.preventDefault();
-                      dispatch(
-                        TransactionApi.getList(
-                          token,
-                          {
-                            account_id: accounts.selectedItem.id,
-                            search_term: searchTerm,
-                            year: selectedDate.getFullYear(),
-                          },
-                        ),
-                      );
+                      dispatch(setKwargs({search_term: searchTerm, page: 1}));
                     }}
                   >
                     <input
@@ -607,6 +610,7 @@ const Transactions = () => {
                           <td>{getTypeLabel(t.type)}</td>
                           <td onClick={e => e.stopPropagation()} style={{ minWidth: '180px' }}>
                             <Select
+                              isDisabled={t.category !== "Unidentified"}
                               onChange={newValue => onCheckedCategoryChange(newValue, t.description)}
                               options={transactions.categories?.map(c => ({ label: getCategoryVerbose(c), value: c }))}
                               styles={selectStyles}
@@ -633,11 +637,6 @@ const Transactions = () => {
                           <td>{t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state}</td>
                           <td className={'text-center'}>
                             <i
-                              className="mdi mdi-tag-multiple-outline text-primary"
-                              onClick={() => dispatch(selectTransaction(t.id))}
-                              style={{ cursor: 'pointer' }}
-                            />
-                            <i
                               className="mdi mdi-pencil-outline text-warning ml-1"
                               onClick={() => dispatch(selectTransaction(t.id))}
                               style={{ cursor: 'pointer' }}
@@ -656,7 +655,7 @@ const Transactions = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={transactions} fetchMethod={TransactionApi.getList} setKwargs={setKwargs}/>
+            <BottomPagination items={transactions} fetchMethod={TransactionsApi.getList} setKwargs={setKwargs}/>
           </div>
         </div>
       </div>
@@ -666,7 +665,7 @@ const Transactions = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault()
-              dispatch(TransactionApi.getList(token, transactions.kwargs))
+              dispatch(TransactionsApi.getList(token, transactions.kwargs))
             }}>
               <Form.Group>
                 <Form.Label>Confirmed by</Form.Label>&nbsp;
@@ -678,7 +677,7 @@ const Transactions = () => {
                   options={transactions.confirmed_by_choices?.map(c => ({ label: c[1], value: c[0] }))}
                   styles={selectStyles}
                   value={{
-                    label: transactions.confirmed_by_choices?.find(c => c[0] === transactions.kwargs.confirmed_by)?.[1],
+                    label: transactions.confirmed_by_choices?.find(c => c[0] === transactions.kwargs.confirmed_by)?.[1] || "All",
                     value: transactions.kwargs.confirmed_by
                   }}
                 />
@@ -693,7 +692,7 @@ const Transactions = () => {
                   options={transactions.categories?.map(c => ({ label: getCategoryVerbose(c), value: c }))}
                   styles={selectStyles}
                   value={{
-                    label: getCategoryVerbose(transactions.kwargs.category),
+                    label: getCategoryVerbose(transactions.kwargs.category) || "All",
                     value: transactions.kwargs.category
                   }}
                 />
@@ -705,10 +704,11 @@ const Transactions = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   isMulti
-                  onMenuClose={() => dispatch(TransactionApi.getList(token, transactions.kwargs))}
+                  onMenuClose={() => dispatch(TransactionsApi.getList(token, transactions.kwargs))}
                   onChange={onTypeChange}
                   options={transactions.types?.map(t => ({ label: getTypeLabel(t), value: t }))}
                   styles={selectStyles}
+                  placeholder={"All"}
                   value={transactions.kwargs.types?.map(t => ({ label: getTypeLabel(t), value: t }))}
                 />
               </Form.Group>
@@ -766,7 +766,7 @@ const Transactions = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(TransactionApi.delete(token, transactionToRemove?.id))
+            dispatch(TransactionsApi.delete(token, transactionToRemove?.id))
             setTransactionToRemove(null)
           }}
         >

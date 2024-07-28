@@ -1,18 +1,18 @@
 import React, {useEffect, useState} from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import { ColorRing } from "react-loader-spinner";
 import { useDispatch, useSelector } from "react-redux";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
-import { ColorRing } from "react-loader-spinner";
-import { FinanceApi } from "../../../../../api/finance";
-import Form from "react-bootstrap/Form";
+
+import { AccountsApi } from '../../../../../api/finance/accounts';
 import { setModalOpen } from "../../../../../redux/accountsSlice";
 import Errors from "../../../../shared/Errors";
+import Form from "react-bootstrap/Form";
 
 const AccountEditModal = () => {
   const dispatch = useDispatch();
@@ -43,9 +43,9 @@ const AccountEditModal = () => {
       currency: currency,
     }
     if (accounts.modalOpen === "new")
-      dispatch(FinanceApi.createAccount(token, data, "new"))
+      dispatch(AccountsApi.create(token, data, "new"))
     else
-      dispatch(FinanceApi.updateAccount(token, accounts.selectedItem.id, data, true))
+      dispatch(AccountsApi.update(token, accounts.selectedItem.id, data, true))
     dispatch(setModalOpen(false))
   }
 
@@ -88,7 +88,7 @@ const AccountEditModal = () => {
               <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getAccount(token, accounts.selectedItem?.id))}>
+                onClick={() => dispatch(AccountsApi.get(token, accounts.selectedItem?.id))}>
                 <i className="mdi mdi-refresh"></i>
               </button>
             }

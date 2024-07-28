@@ -19,12 +19,12 @@ const Messages = () =>  {
 
   const onAuthorChange = newValue => {
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(messages.kwargs || {}), author: newTypes, page: 1}))
+    dispatch(setKwargs({author: newTypes, page: 1}))
   }
 
   const onChatIdChange = newValue => {
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(messages.kwargs || {}), chat_id: newTypes, page: 1}))
+    dispatch(setKwargs({chat_id: newTypes, page: 1}))
   }
 
   return (

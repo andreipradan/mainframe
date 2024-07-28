@@ -36,7 +36,7 @@ const Stocks = () => {
 
   const onTypeChange = newValue => {
     const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({...(stocks.kwargs || {}), type: newTypes, page: 1}))
+    dispatch(setKwargs({type: newTypes, page: 1}))
   }
 
   return <div>

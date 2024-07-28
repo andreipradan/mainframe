@@ -9,6 +9,7 @@ import Select from "react-select";
 import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi, TimetableApi } from '../../../api/finance';
+import { PaymentsApi } from '../../../api/finance/payments';
 import { calculateSum, getPercentage } from "../utils";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import ListItem from "../../shared/ListItem";
@@ -39,7 +40,7 @@ const Details = () => {
 
   useEffect(() => {
     {
-      !payment.results && dispatch(FinanceApi.getCreditPayments(token));
+      !payment.results && dispatch(PaymentsApi.getList(token));
       !timetable.results && dispatch(TimetableApi.getTimetables(token))
     }}, []);
   useEffect(() => {
@@ -388,7 +389,7 @@ const Details = () => {
               <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getCreditPayments(token))}
+                onClick={() => dispatch(PaymentsApi.getList(token))}
               >
                 <i className="mdi mdi-refresh"/>
               </button>
@@ -510,7 +511,7 @@ const Details = () => {
               <button
                   type="button"
                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                  onClick={() => dispatch(FinanceApi.getCreditPayments(token))}
+                  onClick={() => dispatch(PaymentsApi.getList(token))}
               >
                 <i className="mdi mdi-refresh"/>
               </button>
@@ -584,7 +585,7 @@ const Details = () => {
               <button
                   type="button"
                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                  onClick={() => dispatch(FinanceApi.getCreditPayments(token))}
+                  onClick={() => dispatch(PaymentsApi.getList(token))}
               >
                 <i className="mdi mdi-refresh"/>
               </button>

@@ -5,27 +5,10 @@ import {
   setLoading,
 } from "../redux/creditSlice";
 import {
-  create as createAccount,
-  set as setAccounts,
   setAnalytics,
   setErrors as setAccountsErrors,
   setLoading as setAccountsLoading,
-  selectItem as selectAccount,
-  setModalOpen,
-  update as updateAccount,
 } from '../redux/accountsSlice';
-import {
-  set as setCategories,
-  setErrors as setCategoriesErrors,
-  setLoading as setCategoriesLoading,
-} from "../redux/categoriesSlice";
-import {
-  set as setPayments,
-  setErrors as setPaymentErrors,
-  setLoading as setPaymentLoading,
-  setLoadingItems as setLoadingPayments,
-  update,
-} from "../redux/paymentSlice";
 import {
   set as setPnl,
   setErrors as setPnlErrors,
@@ -45,15 +28,6 @@ import {
   setLoading as setTimetablesLoading,
   setLoadingItems as setTimetableLoading
 } from "../redux/timetableSlice";
-import {
-  deleteItem as deleteTransaction,
-  set as setTransactions,
-  setExtra as setTransactionExtra,
-  setErrors as setTransactionsErrors,
-  setLoading as setTransactionsLoading,
-  setLoadingItems as setLoadingTransactions,
-  update as updateTransaction,
-} from "../redux/transactionsSlice";
 import {
   set as setPredictionResults,
   setErrors as setPredictionErrors,
@@ -77,36 +51,6 @@ export const createSearchParams = params => {
 }
 
 export class FinanceApi {
-  static createAccount = (token, data, modalOpen) => dispatch => {
-    dispatch(setAccountsLoading(true));
-    axios
-      .post(`${base}/accounts/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(createAccount({ dontClearSelectedItem: true, ...response.data }));
-        toast.success("Account created successfully!", toastParams)
-      })
-      .catch((err) => {
-        handleErrors(err, dispatch, setAccountsErrors);
-        dispatch(setModalOpen(modalOpen))
-      });
-  }
-  static getAccount = (token, accountId) => (dispatch) => {
-    dispatch(setAccountsLoading(true));
-    axios
-      .get(`${base}/accounts/`, { headers: { Authorization: token } })
-      .then(response => dispatch(setAccounts({accountId: parseInt(accountId), ...response.data})))
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
-  };
-  static getAccounts = (token, initial = false) => (dispatch) => {
-    dispatch(setAccountsLoading(true));
-    axios
-      .get(`${base}/accounts/`, { headers: { Authorization: token } })
-      .then(response => {
-        dispatch(setAccounts(response.data));
-        if (initial) dispatch(selectAccount(response.data.results[0].id))
-      })
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
-  };
   static getExpenses = (token, accountId, year) => dispatch => {
     dispatch(setAccountsLoading(true));
     let url = `${base}/accounts/${accountId}/expenses/?year=${year}`
@@ -115,13 +59,6 @@ export class FinanceApi {
       .then(response => dispatch(setAnalytics(response.data)))
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
-  static getCategories = token => (dispatch) => {
-    dispatch(setCategoriesLoading(true));
-    axios
-      .get(`${base}/categories/`, { headers: { Authorization: token } })
-      .then(response => dispatch(setCategories(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setCategoriesErrors));
-  };
   static getCredit = token => (dispatch) => {
     dispatch(setLoading(true));
     axios
@@ -129,67 +66,6 @@ export class FinanceApi {
       .then(response => {dispatch(set(response.data))})
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static getCreditPayments = (token, kwargs = null) => (dispatch) => {
-    kwargs = kwargs || {}
-    dispatch(setPaymentLoading(true));
-    axios
-      .get(`${base}/payments/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setPayments(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
-  };
-  static importPayments = (token, data) => dispatch => {
-    dispatch(setLoading(true))
-    axios.post(
-      `${base}/payments/`,
-      data,
-      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
-    )
-    .then((response) => {
-      dispatch(setPayments(response.data));
-      toast.success("Payments uploaded successfully!", toastParams)
-
-    })
-    .catch((err) => handleErrors(err, dispatch, setPaymentErrors));
-  }
-  static updateAccount = (token, id, data, modalOpen) => dispatch => {
-    dispatch(setAccountsLoading(true))
-    axios
-      .patch(`${base}/accounts/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(updateAccount(
-          { dontClearSelectedItem: true, ...response.data },
-        ));
-        toast.success("Account updated successfully!", toastParams)
-      })
-      .catch((err) => {
-        dispatch(setModalOpen(modalOpen))
-        handleErrors(err, dispatch, setAccountsErrors);
-      })
-  }
-  static updateCreditPayment = (token, id, data) => dispatch => {
-    dispatch(setLoadingPayments(id))
-    axios
-      .patch(`${base}/payments/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(update(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setPaymentErrors))
-  };
-  static updateTransaction = (token, id, data) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    data.confirmed_by = data.category === "Unidentified" ? 0 : 1
-    axios
-      .patch(`${base}/transactions/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(updateTransaction(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
-  }
-  static updateTransactions = (token, data, kwargs) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    axios
-      .put(`${base}/transactions/update-all/?${createSearchParams(kwargs)}`,
-        data,
-        { headers: { Authorization: token } })
-      .then((response) => dispatch(setTransactions(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
-  }
 }
 
 export class PredictionApi {
@@ -280,69 +156,6 @@ export class TimetableApi {
       toast.success("Timetable uploaded successfully!", toastParams)
     })
     .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  }
-}
-
-export class TransactionApi {
-  static bulkUpdateTransactions = (token, data, kwargs) => dispatch => {
-    dispatch(setTransactionsLoading(true))
-    axios
-      .put(`${base}/transactions/bulk-update/?${createSearchParams(kwargs)}`,
-        data,
-        { headers: { Authorization: token } })
-      .then((response) => dispatch(setTransactions(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
-  }
-  static bulkUpdateTransactionsPreview = (token, data) => dispatch => {
-    dispatch(setTransactionExtra({ loading: true }))
-    axios
-      .put(`${base}/transactions/bulk-update-preview/`,
-        data,
-        { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(setTransactionExtra({ loading: false, results: response.data }));
-      })
-      .catch((err) => {
-        dispatch(setTransactionExtra({loading: false}))
-        handleErrors(err, dispatch, setTransactionsErrors);
-      })
-  }
-  static delete = (token, id) => dispatch => {
-    dispatch(setLoadingTransactions(id));
-    axios
-      .delete(`${base}/transactions/${id}/`, { headers: { Authorization: token } })
-      .then(() => dispatch(deleteTransaction(id)))
-      .catch(err => handleErrors(err, dispatch, setErrors));
-  };
-  static get = (token, transactionId) => dispatch => {
-    dispatch(setLoadingTransactions(transactionId));
-    axios
-      .get(`${base}/transactions/${transactionId}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(updateTransaction(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
-  };
-  static getList = (token, kwargs = null) => (dispatch) => {
-    dispatch(setTransactionsLoading(true));
-    kwargs = kwargs || {};
-    axios
-      .get(`${base}/transactions/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setTransactions(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
-  };
-  static uploadTransactions = (token, data, kwargs) => dispatch => {
-    dispatch(setLoading(true))
-    kwargs = kwargs || {};
-    axios.post(
-      `${base}/transactions/upload/?${createSearchParams(kwargs)}`,
-      data,
-      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
-    )
-    .then((response) => {
-      dispatch(setTransactions(response.data));
-      toast.success("Payments uploaded successfully!", toastParams)
-
-    })
-    .catch((err) => handleErrors(err, dispatch, setTransactionsErrors));
   }
 }
 
