@@ -1,18 +1,18 @@
 import React, {useEffect, useState} from "react";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
+
 import { ColorRing } from "react-loader-spinner";
-import { FinanceApi } from "../../../../api/finance";
-import { selectItem as selectPayment } from "../../../../redux/paymentSlice";
-import Form from "react-bootstrap/Form";
-import Errors from "../../../shared/Errors";
+import { FinanceApi } from "../../../../../api/finance";
+import { selectItem as selectPayment } from "../../../../../redux/paymentSlice";
+import Errors from "../../../../shared/Errors";
 
 const PaymentEditModal = () => {
   const dispatch = useDispatch();

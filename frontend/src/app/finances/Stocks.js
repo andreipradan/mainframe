@@ -5,11 +5,11 @@ import Marquee from "react-fast-marquee";
 import "nouislider/distribute/nouislider.css";
 
 import { PnlApi, StocksApi } from "../../api/finance";
-import { capitalize } from "./Accounts/AccountDetails/AccountDetails";
+import { capitalize } from "../utils";
 import { calculateSum } from "./utils";
 import { setKwargs as setPnlKwargs } from "../../redux/pnlSlice";
 import { setKwargs } from "../../redux/stocksSlice";
-import { selectStyles } from "./Categorize/EditModal";
+import { selectStyles } from "./Accounts/Categorize/EditModal";
 import BottomPagination from "../shared/BottomPagination";
 import Errors from "../shared/Errors";
 import Form from "react-bootstrap/Form";

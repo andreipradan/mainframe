@@ -1,5 +1,8 @@
+from operator import itemgetter
+
 from django.contrib.postgres.search import SearchVector
-from django.db.models import F
+from django.db.models import Count, F
+from django.http import JsonResponse
 from mainframe.clients.finance.statement import StatementImportError, import_statement
 from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Account, Category, Transaction
@@ -19,7 +22,11 @@ class TransactionViewSet(viewsets.ModelViewSet):
     def bulk_update(self, request, *args, **kwargs):
         total = 0
         for item in self.request.data:
-            total += Transaction.objects.filter(description=item["description"]).update(
+            total += Transaction.objects.filter(
+                description=item["description"],
+                category=Category.UNIDENTIFIED,
+                confirmed_by=Transaction.CONFIRMED_BY_UNCONFIRMED,
+            ).update(
                 category=item["category"],
                 category_suggestion_id=None,
                 confirmed_by=Transaction.CONFIRMED_BY_ML,
@@ -30,6 +37,28 @@ class TransactionViewSet(viewsets.ModelViewSet):
         }
         return response
 
+    @action(methods=["put"], detail=False, url_path="bulk-update-preview")
+    def bulk_update_preview(self, request, *args, **kwargs):
+        if not request.data:
+            return JsonResponse(
+                {"msg": "List of descriptions required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        qs = (
+            Transaction.objects.expenses()
+            .filter(
+                description__in=map(itemgetter("description"), request.data),
+                category=Category.UNIDENTIFIED,
+                confirmed_by=Transaction.CONFIRMED_BY_UNCONFIRMED,
+            )
+            .values("description")
+            .annotate(count=Count("id"))
+        )
+        return JsonResponse(
+            [{"description": t["description"], "count": t["count"]} for t in qs],
+            safe=False,
+        )
+
     @action(methods=["post"], detail=False, url_path="upload")
     def upload(self, request, *args, **kwargs):
         file = request.FILES["file"]
@@ -39,7 +68,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         except StatementImportError as e:
             logger.error("Could not process file: %s - error: %s", file, e)
             return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
-        return self.list(request, *args, **kwargs)
+        response = self.list(request, *args, **kwargs)
+        response.data["msg"] = {"message": "Payments uploaded successfully!"}
+        return response
 
     def get_queryset(self):  # noqa: C901
         queryset = super().get_queryset()
@@ -65,7 +96,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         if types := params.getlist("type"):
             queryset = queryset.filter(type__in=types)
         if params.get("unique") == "true":
-            queryset = queryset.distinct("description").order_by("description")
+            queryset = queryset.distinct("started_at", "description").order_by(
+                "-started_at", "description"
+            )
         if year := params.get("year"):
             queryset = queryset.filter(started_at__year=year)
 
@@ -107,18 +140,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         }
         return response
 
-    def _aggregate_results(self, queryset):
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self._populate_filters(self.get_paginated_response(serializer.data))
-
-        serializer = self.get_serializer(queryset, many=True)
-        return self._populate_filters(Response(serializer.data))
-
     def _populate_filters(self, response):
         response.data["types"] = (
-            Transaction.objects.filter(amount__lt=0)
+            Transaction.objects.expenses()
             .values_list("type", flat=True)
             .distinct("type")
             .order_by("type")

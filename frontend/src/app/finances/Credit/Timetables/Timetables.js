@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import {useHistory} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Circles } from "react-loader-spinner";
-import "nouislider/distribute/nouislider.css";
-import Form from 'react-bootstrap/Form';
-
-import { TimetableApi } from "../../../api/finance";
-import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
-import TimetableEditModal from "./components/TimetableEditModal";
-import Errors from "../../shared/Errors";
 import { Collapse } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
+import "nouislider/distribute/nouislider.css";
+
+import { TimetableApi } from "../../../../api/finance";
+import { selectItem as selectTimetable } from "../../../../redux/timetableSlice";
+import TimetableEditModal from "./components/TimetableEditModal";
+import Errors from "../../../shared/Errors";
 
 const Timetables = () => {
   const history = useHistory()

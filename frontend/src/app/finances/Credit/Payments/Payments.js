@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
+import { Collapse } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
 import "nouislider/distribute/nouislider.css";
 
-import { FinanceApi } from '../../../api/finance';
-import { selectItem as selectPayment, setKwargs } from "../../../redux/paymentSlice";
+import { FinanceApi } from '../../../../api/finance';
+import { selectItem as selectPayment, setKwargs } from "../../../../redux/paymentSlice";
 import { useHistory } from "react-router-dom";
-import BottomPagination from "../../shared/BottomPagination";
-import Errors from "../../shared/Errors";
+import BottomPagination from "../../../shared/BottomPagination";
+import Errors from "../../../shared/Errors";
 import PaymentEditModal from "./components/PaymentEditModal";
-import Form from 'react-bootstrap/Form';
-import { Collapse } from 'react-bootstrap';
 
 const Payments = () => {
   const history = useHistory()

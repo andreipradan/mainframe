@@ -5,7 +5,7 @@ import { ColorRing } from "react-loader-spinner";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
-import { capitalize } from "../finances/Accounts/AccountDetails/AccountDetails";
+import { capitalize } from "../utils";
 import { selectItem } from "../../redux/tasksSlice";
 import Errors from "../shared/Errors";
 import TasksApi from "../../api/tasks";

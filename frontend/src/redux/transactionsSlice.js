@@ -9,10 +9,9 @@ export const transactionsSlice = createSlice(getBaseSliceOptions(
         expense: true,
         unique: true,
         page: 1,
-        pending: null
       }
     })
 )
 
-export const {deleteItem, selectItem, set, setErrors, setKwargs, setLoading, setLoadingItems, update} = transactionsSlice.actions;
+export const {deleteItem, selectItem, set, setExtra, setErrors, setKwargs, setLoading, setLoadingItems, update} = transactionsSlice.actions;
 export default transactionsSlice.reducer;

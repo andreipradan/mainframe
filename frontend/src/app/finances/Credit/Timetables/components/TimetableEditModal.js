@@ -4,13 +4,13 @@ import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
+
 import { ColorRing } from "react-loader-spinner";
-import { TimetableApi } from '../../../../api/finance';
-import { selectItem as selectTimetable } from "../../../../redux/timetableSlice";
+import { TimetableApi } from '../../../../../api/finance';
+import { selectItem as selectTimetable } from "../../../../../redux/timetableSlice";
 
 const TimetableEditModal = () => {
   const dispatch = useDispatch();

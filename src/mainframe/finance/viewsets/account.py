@@ -21,11 +21,10 @@ class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
 
     @action(methods=["get"], detail=True)
-    def analytics(self, request, *args, **kwargs):
-        qs = Transaction.objects.filter(account_id=kwargs["pk"], amount__lte=0)
-        now = timezone.now()
-        year = request.query_params.get("year", now.year)
+    def expenses(self, request, *args, **kwargs):
+        qs = Transaction.objects.expenses().filter(account_id=kwargs["pk"])
         categories = list(Category.objects.values_list("id", flat=True).order_by("id"))
+        year = request.query_params.get("year", timezone.now().year)
         per_month = (
             qs.filter(started_at__year=year)
             .annotate(month=TruncMonth("started_at"))
@@ -60,5 +59,6 @@ class AccountViewSet(viewsets.ModelViewSet):
                 "categories": [
                     cat for cat in categories if sum(map(itemgetter(cat), per_month))
                 ],
+                "total": Transaction.objects.filter(account_id=kwargs["pk"]).count(),
             }
         )

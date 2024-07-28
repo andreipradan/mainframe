@@ -385,18 +385,18 @@ const Sidebar = () => {
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
                         <Link
-                          className={isPathActive('/finances/accounts') ? 'nav-link active' : 'nav-link'}
-                          to="/finances/accounts"
-                        >
-                          Accounts
-                        </Link>
-                      </li>
-                      <li className="nav-item">
-                        <Link
                           className={isPathActive('/finances/categorize') ? 'nav-link active' : 'nav-link'}
                           to="/finances/categorize"
                         >
                           Categorize
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          className={isPathActive('/finances/accounts') ? 'nav-link active' : 'nav-link'}
+                          to="/finances/accounts"
+                        >
+                          Transactions
                         </Link>
                       </li>
                     </ul>

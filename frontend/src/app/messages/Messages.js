@@ -4,7 +4,7 @@ import { Audio, ColorRing } from "react-loader-spinner";
 import Form from "react-bootstrap/Form";
 
 import { selectItem, setKwargs } from "../../redux/messagesSlice";
-import { selectStyles } from "../finances/Categorize/EditModal";
+import { selectStyles } from "../finances/Accounts/Categorize/EditModal";
 import BottomPagination from "../shared/BottomPagination";
 import EditModal from "./components/EditModal";
 import Errors from "../shared/Errors";

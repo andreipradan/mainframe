@@ -52,9 +52,8 @@ def train(logger):
     from mainframe.clients.prediction import SKLearn
 
     qs = (
-        Transaction.objects.filter(
-            amount__lt=0, confirmed_by=Transaction.CONFIRMED_BY_ML
-        )
+        Transaction.objects.expenses()
+        .filter(confirmed_by=Transaction.CONFIRMED_BY_ML)
         .exclude(category=Category.UNIDENTIFIED)
         .values("description", "category")
     )

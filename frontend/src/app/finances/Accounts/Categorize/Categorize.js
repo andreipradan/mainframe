@@ -12,14 +12,12 @@ import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";
-import Errors from "../../shared/Errors";
-import BottomPagination from "../../shared/BottomPagination";
-import { PredictionApi, TransactionApi } from '../../../api/finance';
-import { capitalize } from "../Accounts/AccountDetails/AccountDetails";
-import { selectItem as selectTransaction, setKwargs } from "../../../redux/transactionsSlice";
-import { setLoadingTask } from "../../../redux/predictionSlice";
-
-const getCategoryVerbose = categoryId => categoryId ? capitalize(categoryId.replace("-", " ")) : ""
+import Errors from "../../../shared/Errors";
+import BottomPagination from "../../../shared/BottomPagination";
+import { PredictionApi, TransactionApi } from '../../../../api/finance';
+import { capitalize, getCategoryVerbose } from '../../../utils';
+import { selectItem as selectTransaction, setKwargs } from "../../../../redux/transactionsSlice";
+import { setLoadingTask } from "../../../../redux/predictionSlice";
 
 const Categorize = () => {
   const dispatch = useDispatch();
@@ -94,8 +92,7 @@ const Categorize = () => {
     if(!transactions.loading) {
       setCheckedCategories(null)
       setAllChecked(false)
-    }},
-    [transactions.loading])
+    }}, [transactions.loading])
   useEffect(() => {
     !prediction.predict && !prediction.train && dispatch(PredictionApi.getTasks(token))
     setCheckedCategories(null)
@@ -550,8 +547,10 @@ const Categorize = () => {
                                 checked={getSpecificCategory(t.description)}
                                 onChange={() =>
                                   onCheckedCategoryChange({
-                            value: getSpecificCategory(t.description) ? "Unidentified" : t.category_suggestion
-                          }, t.description)
+                                    value: getSpecificCategory(t.description)
+                                      ? "Unidentified"
+                                      : t.category_suggestion
+                                  }, t.description)
                               }
                               />
                               <i className="input-helper"></i>

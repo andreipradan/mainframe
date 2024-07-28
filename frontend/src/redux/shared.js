@@ -3,6 +3,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
   initialState: {
     count: 0,
     errors: null,
+    extra: null,
     kwargs: {},
     loading: false,
     loadingItems: null,
@@ -35,6 +36,12 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
         : null
       state.results = state.results.filter((t) => t.id !== action.payload)
       state.selectedItem = null
+    },
+    setExtra: (state, action) => {
+      const extra = state.extra || {}
+      for (const key of Object.keys(action.payload))
+        extra[key] = action.payload[key]
+      state.extra = extra
     },
     selectItem: (state, action) => {
       state.selectedItem = action.payload

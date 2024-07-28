@@ -48,6 +48,7 @@ import {
 import {
   deleteItem as deleteTransaction,
   set as setTransactions,
+  setExtra as setTransactionExtra,
   setErrors as setTransactionsErrors,
   setLoading as setTransactionsLoading,
   setLoadingItems as setLoadingTransactions,
@@ -106,10 +107,9 @@ export class FinanceApi {
       })
       .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
   };
-  static getAnalytics = (token, accountId, year = null) => dispatch => {
+  static getExpenses = (token, accountId, year) => dispatch => {
     dispatch(setAccountsLoading(true));
-    let url = `${base}/accounts/${accountId}/analytics/`
-    if (year) url += `?year=${year}`
+    let url = `${base}/accounts/${accountId}/expenses/?year=${year}`
     axios
       .get(url, { headers: { Authorization: token } })
       .then(response => dispatch(setAnalytics(response.data)))
@@ -292,6 +292,20 @@ export class TransactionApi {
         { headers: { Authorization: token } })
       .then((response) => dispatch(setTransactions(response.data)))
       .catch((err) => handleErrors(err, dispatch, setTransactionsErrors))
+  }
+  static bulkUpdateTransactionsPreview = (token, data) => dispatch => {
+    dispatch(setTransactionExtra({ loading: true }))
+    axios
+      .put(`${base}/transactions/bulk-update-preview/`,
+        data,
+        { headers: { Authorization: token } })
+      .then((response) => {
+        dispatch(setTransactionExtra({ loading: false, results: response.data }));
+      })
+      .catch((err) => {
+        dispatch(setTransactionExtra({loading: false}))
+        handleErrors(err, dispatch, setTransactionsErrors);
+      })
   }
   static delete = (token, id) => dispatch => {
     dispatch(setLoadingTransactions(id));

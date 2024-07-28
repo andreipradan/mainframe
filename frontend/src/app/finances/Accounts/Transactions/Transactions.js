@@ -4,25 +4,28 @@ import { useDispatch, useSelector } from "react-redux";
 import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
 import { Collapse, Dropdown } from "react-bootstrap";
+import { toast } from 'react-toastify';
 import Button from 'react-bootstrap/Button';
 import DatePicker from "react-datepicker";
 import Form from 'react-bootstrap/Form';
 import Marquee from "react-fast-marquee";
 import Modal from 'react-bootstrap/Modal';
+import Select from 'react-select';
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import AccountEditModal from "./components/AccountEditModal";
-import Errors from "../../../shared/Errors";
-import TransactionEditModal from "./components/TransactionEditModal";
-import ListItem from "../../../shared/ListItem";
 import { FinanceApi, TransactionApi } from '../../../../api/finance';
-import { getTypeLabel } from "../../Categorize/EditModal";
+import { capitalize, getCategoryVerbose } from '../../../utils';
+import { getTypeLabel, selectStyles } from '../Categorize/EditModal';
 import { selectItem, setModalOpen } from "../../../../redux/accountsSlice";
-import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
-
-export const capitalize = str => `${str[0].toUpperCase()}${str.slice(1, str.length).toLowerCase()}`
-
+import { selectItem as selectTransaction, setKwargs } from '../../../../redux/transactionsSlice';
+import { toastParams } from '../../../../api/auth';
+import AccountEditModal from "./components/AccountEditModal";
+import BottomPagination from '../../../shared/BottomPagination';
+import Errors from "../../../shared/Errors";
+import ListItem from "../../../shared/ListItem";
+import TransactionsBulkUpdateModal from './components/TransactionsBulkUpdateModal';
+import TransactionEditModal from "./components/TransactionEditModal";
 
 const random_rgba = () => {
     const o = Math.round, r = Math.random, s = 255;
@@ -44,7 +47,7 @@ const getColor = (type, border = false) => {
   }
 }
 
-const AccountDetails = () => {
+const Transactions = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
@@ -52,26 +55,19 @@ const AccountDetails = () => {
   const transactions = useSelector(state => state.transactions)
 
   const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
-  const lastPage = Math.ceil(transactions.count / 25)
 
+  const [allChecked, setAllChecked] = useState(false)
+  const [checkedCategories, setCheckedCategories] = useState(null)
   const [fileError, setFileError] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedFile, setSelectedFile] = useState(null)
+  const [specificCategoriesModalOpen, setSpecificCategoriesModalOpen] = useState(false)
   const [transactionToRemove, setTransactionToRemove] = useState(null)
   const [uploadOpen, setUploadOpen] = useState(false)
 
-  useEffect(() => {dispatch(FinanceApi.getAccounts(token, true))}, [])
-  useEffect(() => {
-    if (accounts.selectedItem && selectedDate) {
-      dispatch(FinanceApi.getAnalytics(token, accounts.selectedItem.id, selectedDate.getFullYear()))
-      dispatch(TransactionApi.getList(token, {
-        account_id: accounts.selectedItem.id,
-        year: selectedDate.getFullYear(),
-      }))
-    }
-  }, [accounts.selectedItem])
-
+  const getSpecificCategory = description => checkedCategories?.find(c => c.description === description)?.category
   const paymentsData = {
     labels: accounts.analytics?.per_month.map(p => p.month),
     datasets: accounts.analytics
@@ -86,7 +82,6 @@ const AccountDetails = () => {
         })),
     ] : []
   }
-
   const paymentsOptions = {
     scales: {
       yAxes: [{
@@ -116,19 +111,39 @@ const AccountDetails = () => {
       }
     }
   }
-  const renderYearContent = (year) => {
-    const tooltipText = `Tooltip for year: ${year}`;
-    return <span title={tooltipText}>{year}</span>;
-  };
-  const [selectedDate, setSelectedDate] = useState(new Date())
+
+  useEffect(() => {
+    !!transactions.msg && toast.success(
+      `${transactions.msg.message}`,
+      toastParams)
+  }, [transactions.msg])
+  useEffect(() => {
+    !allChecked
+      ? setCheckedCategories(null)
+      : setCheckedCategories(transactions.results?.filter(t=>
+        !!t.category_suggestion
+      ).map(t => ({description: t.description, category: t.category_suggestion})))
+  }, [allChecked])
+  useEffect(() => {
+    if(!transactions.loading) {
+      setCheckedCategories(null)
+      setAllChecked(false)
+    }}, [transactions.loading])
+  useEffect(() => {
+    dispatch(FinanceApi.getAccounts(token, true))
+    setSpecificCategoriesModalOpen(false)
+  }, [])
   useEffect(() => {
     if (accounts.selectedItem && selectedDate) {
-      dispatch(FinanceApi.getAnalytics(token, accounts.selectedItem.id, selectedDate.getFullYear()))
-      dispatch(TransactionApi.getList(token, {
-          account_id: accounts.selectedItem.id,
-          year: selectedDate.getFullYear()
-        })
-      )
+      dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, selectedDate.getFullYear()))
+      dispatch(setKwargs({...(transactions.kwargs || {}), account_id: accounts.selectedItem.id, year: selectedDate.getFullYear()}))
+    }
+  }, [accounts.selectedItem])
+
+  useEffect(() => {
+    if (accounts.selectedItem && selectedDate && selectedDate.getFullYear() !== transactions.kwargs.year) {
+      dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, selectedDate.getFullYear()))
+      dispatch(setKwargs({...(transactions.kwargs || {}), account_id: accounts.selectedItem.id, year: selectedDate.getFullYear()}))
     }},
     [selectedDate]
   )
@@ -168,6 +183,37 @@ const AccountDetails = () => {
     setUploadOpen(false)
     setSelectedFile(null)
   };
+
+  const onCategoryChange = newValue => {
+    const newCategory = newValue ? newValue.value : ""
+    dispatch(setKwargs({...(transactions.kwargs || {}), category: newCategory, page: 1}))
+  }
+  const onCheckedCategoryChange = (newValue, description) => {
+    if (!newValue.value) return
+    const newCategory = {description: description, category: newValue.value}
+    setCheckedCategories(
+      !checkedCategories?.length
+        ? newCategory.category !== "Unidentified" ? [newCategory] : null
+        : checkedCategories.find(c => c.description === description)
+          ? newCategory.category !== "Unidentified"
+            ? checkedCategories.map(c =>
+              c.description === description
+                ? {...c, category: newValue.value}
+                : c)
+            : checkedCategories.filter(c => c.description !== description)
+          : newCategory.category !== "Unidentified"
+            ? [...checkedCategories, newCategory]
+            : checkedCategories
+    )
+  }
+  const onConfirmedByChange = newValue => {
+    const newConfirmedBy = !newValue ? 0 : newValue.value
+    dispatch(setKwargs({...(transactions.kwargs || {}), confirmed_by: newConfirmedBy, page: 1}))
+  }
+  const onTypeChange = newValue => {
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargs({...(transactions.kwargs || {}), type: newTypes, page: 1}))
+  }
 
   return <div>
     <div className="page-header">
@@ -229,9 +275,9 @@ const AccountDetails = () => {
                 ? <Circles />
                 : accounts.selectedItem
                   ? <>
-                    <ListItem label={"Bank"} value={accounts.selectedItem.bank} textType={"primary"}/>
-                    <ListItem label={"Type"} value={accounts.selectedItem.type} />
+                    <ListItem label={"Account"} value={`${accounts.selectedItem.bank} (${accounts.selectedItem.type})`} textType={"primary"}/>
                     <ListItem label={"Number"} value={accounts.selectedItem.number} />
+                    <ListItem label={"Transactions"} value={accounts.analytics?.total} />
                   </>
                   : "-"
             }
@@ -304,7 +350,7 @@ const AccountDetails = () => {
               <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(FinanceApi.getAnalytics(
+                onClick={() => dispatch(FinanceApi.getExpenses(
                   token,
                   accounts.selectedItem.id,
                   selectedDate.getFullYear()))}
@@ -330,7 +376,6 @@ const AccountDetails = () => {
                       readOnly={accounts.loading}
                       includeDates={accounts.analytics.years.map(y => new Date(y.toString()))}
                       onChange={date => setSelectedDate(date)}
-                      renderMonthContent={renderYearContent}
                       selected={selectedDate}
                       showIcon
                       showYearPicker
@@ -366,26 +411,47 @@ const AccountDetails = () => {
       </div>
     </div>
     <div className="row">
-      <div className="col-12 grid-margin">
+      <div className="col-9 grid-margin">
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
               Transactions
-              <button
-                type="button"
-                className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => {
-                  dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))
-                }
-                }>
-                <i className="mdi mdi-refresh" />
-              </button>
-
+              {
+                transactions.loading
+                  ? <Circles
+                    visible={true}
+                    height={20}
+                    width={20}
+                    wrapperClass="btn"
+                    wrapperStyle={{display: "default"}}
+                    ariaLabel="ball-triangle-loading"
+                    color='green'
+                  />
+                  : <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                    onClick={() => {
+                      dispatch(TransactionApi.getList(token, {
+                        account_id: accounts.selectedItem.id,
+                        page: currentPage,
+                        search_term: searchTerm,
+                        year: selectedDate.getFullYear(),
+                      }))
+                    }
+                    }>
+                    <i className="mdi mdi-refresh" />
+                  </button>
+              }
+              {
+                checkedCategories?.length
+                  ? <Button
+                    className="btn btn-sm btn-outline-warning ml-1"
+                    onClick={() => setSpecificCategoriesModalOpen(true)}
+                  >
+                    Update {checkedCategories.length} categories
+                  </Button>
+                  : null
+              }
               <button
                 type="button"
                 className="btn btn-outline-primary btn-sm border-0 bg-transparent float-right"
@@ -431,7 +497,7 @@ const AccountDetails = () => {
                 </button>
               </div>
             </h4>
-            <Errors errors={transactions.errors} />
+            {!specificCategoriesModalOpen && <Errors errors={transactions.errors} />}
             <Collapse in={searchOpen}>
               <ul className="navbar-nav w-100 rounded">
                 <li className="nav-item w-100">
@@ -463,41 +529,123 @@ const AccountDetails = () => {
               </ul>
             </Collapse>
             <div className="table-responsive">
-              <table className="table table-hover">
+              <table className="table">
                 <thead>
                 <tr>
+                  <th>
+                    <div className="form-check form-check-muted m-0">
+                      <label className="form-check-label">
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={allChecked}
+                          disabled={transactions.loading}
+                          onChange={() => setAllChecked(!allChecked)}
+                        />
+                        <i className="input-helper"></i>
+                      </label>
+                    </div>
+                  </th>
                   <th>Started</th>
                   <th>Amount</th>
-                  <th>Description </th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Completed</th>
-                  </tr>
+                  <th>Description</th>
+                  <th>Type</th>
+                  <th>Category</th>
+                  <th>Completed</th>
+                  <th className={'text-center'}>Actions</th>
+                </tr>
                 </thead>
                 <tbody>
                 {
                   transactions.loading
-                    ? <tr><td colSpan={3}><Circles
-                      visible={true}
-                      width="100%"
-                      ariaLabel="ball-triangle-loading"
-                      wrapperStyle={{float: "right"}}
-                      color='orange'
-                    /></td></tr>
+                    ? <tr>
+                      <td colSpan={3}><Circles
+                        visible={true}
+                        width="100%"
+                        ariaLabel="ball-triangle-loading"
+                        wrapperStyle={{ float: 'right' }}
+                        color="orange"
+                      /></td>
+                    </tr>
                     : transactions.results?.length
                       ? transactions.results.map((t, i) =>
-                        <tr key={i}>
-                          <td onClick={() => dispatch(selectTransaction(t.id))}> {new Date(t.started_at).toLocaleDateString()}<br />
+                        <tr
+                          className={getSpecificCategory(t.description) ? 'text-warning' : ''}
+                          key={i}
+                          onClick={() => onCheckedCategoryChange({
+                            value: getSpecificCategory(t.description)
+                              ? 'Unidentified'
+                              : t.category_suggestion,
+                          }, t.description)}
+                          style={{ cursor: `${t.category_suggestion ? 'default' : 'not-allowed'}` }}
+                        >
+                          <td>
+                            <div className="form-check form-check-muted m-0 bordered">
+                              <label className="form-check-label">
+                                <input
+                                  disabled={!t.category_suggestion || transactions.loading}
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  checked={getSpecificCategory(t.description)}
+                                  onChange={() =>
+                                    onCheckedCategoryChange({
+                                      value: getSpecificCategory(t.description)
+                                        ? 'Unidentified'
+                                        : t.category_suggestion,
+                                    }, t.description)
+                                  }
+                                />
+                                <i className="input-helper"></i>
+                              </label>
+                            </div>
+                          </td>
+                          <td>{new Date(t.started_at).toLocaleDateString()}<br />
                             <small>{new Date(t.started_at).toLocaleTimeString()}</small>
                           </td>
-                          <td onClick={() => dispatch(selectTransaction(t.id))}> {t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ""} </td>
-                          <td onClick={() => dispatch(selectTransaction(t.id))}> {t.description} </td>
-                          <td onClick={() => dispatch(selectTransaction(t.id))}> {getTypeLabel(t.type)} </td>
-                          <td onClick={() => dispatch(selectTransaction(t.id))} className={t.category === "Unidentified" ? "text-danger" : ""}> {capitalize(t.category).replace("-", " ")} </td>
-                          <td onClick={() => dispatch(selectTransaction(t.id))}> {t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state} </td>
-                          <td style={{ cursor: 'pointer' }} onClick={() => setTransactionToRemove(t)}>
+                          <td>{t.amount} {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ''}</td>
+                          <td>{t.description}</td>
+                          <td>{getTypeLabel(t.type)}</td>
+                          <td onClick={e => e.stopPropagation()} style={{ minWidth: '180px' }}>
+                            <Select
+                              onChange={newValue => onCheckedCategoryChange(newValue, t.description)}
+                              options={transactions.categories?.map(c => ({ label: getCategoryVerbose(c), value: c }))}
+                              styles={selectStyles}
+                              value={{
+                                label: capitalize(getSpecificCategory(t.description) || t.category).replace('-', ' '),
+                                value: getSpecificCategory(t.description) || t.category,
+                              }}
+                            />
+                            <p
+                              className={'text-warning ml-2'}>{t.category_suggestion ? capitalize(t.category_suggestion).replace('-', ' ') : null}</p>
+                            {
+                              getSpecificCategory(t.description) &&
+                              <a href={'!#'} onClick={e => {
+                                const currentCategory = getSpecificCategory(t.description);
+                                e.preventDefault();
+                                setCheckedCategories(transactions.results.map(t =>
+                                  ({ description: t.description, category: currentCategory }),
+                                ));
+                              }}>
+                                Set {capitalize(getSpecificCategory(t.description)).replace('-', ' ')} to all
+                              </a>
+                            }
+                          </td>
+                          <td>{t.completed_at ? new Date(t.completed_at).toLocaleDateString() : t.state}</td>
+                          <td className={'text-center'}>
                             <i
-                              className="mdi mdi-trash-can-outline text-danger"
+                              className="mdi mdi-tag-multiple-outline text-primary"
+                              onClick={() => dispatch(selectTransaction(t.id))}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <i
+                              className="mdi mdi-pencil-outline text-warning ml-1"
+                              onClick={() => dispatch(selectTransaction(t.id))}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <i
+                              className="mdi mdi-trash-can-outline text-danger ml-1"
+                              onClick={() => setTransactionToRemove(t)}
+                              style={{ cursor: 'pointer' }}
                             />
                           </td>
                         </tr>)
@@ -508,154 +656,63 @@ const AccountDetails = () => {
                 </tbody>
               </table>
             </div>
-            <div className="align-self-center btn-group mt-4 mr-4" role="group" aria-label="Basic example">
-              <button
-                type="button"
-                className="btn btn-default"
-                disabled={!transactions.previous}
-                onClick={() => dispatch(TransactionApi.getList(token, {
-                  account_id: accounts.selectedItem.id,
-                  year: selectedDate.getFullYear(),
-                }))}
-              >
-                <i className="mdi mdi-skip-backward"/>
-              </button>
-              {
-                currentPage - 5 > 0 && <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: 2,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  2
-                </button>
-              }
-              {currentPage - 4 > 0 && "..."}
-              {
-                currentPage - 3 > 0 &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage - 3,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  {currentPage - 3}
-                </button>
-              }
-              {
-                currentPage - 2 > 0 &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage - 2,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  {currentPage - 2}
-                </button>
-              }
-              {
-                transactions.previous &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage - 1,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  {currentPage - 1}
-                </button>
-              }
-              <button type="button" className="btn btn-primary rounded" disabled={true}>{currentPage}</button>
-              {
-                transactions.next &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage + 1,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                 }))}
-                >
-                  {currentPage + 1}
-                </button>
-              }
-              {
-                currentPage + 2 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage + 2,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  {currentPage + 2}
-                </button>
-              }
-              {
-                currentPage + 3 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: currentPage + 3,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  {currentPage + 3}
-                </button>
-              }
-              {currentPage + 4 < lastPage && "..."}
-              {
-                currentPage + 5 < lastPage &&
-                <button
-                  type="button"
-                  className="btn btn-default"
-                  onClick={() => dispatch(TransactionApi.getList(token, {
-                    account_id: accounts.selectedItem.id,
-                    page: lastPage - 1,
-                    search_term: searchTerm,
-                    year: selectedDate.getFullYear(),
-                  }))}
-                >
-                  {lastPage - 1}
-                </button>
-              }
-              <button
-                type="button"
-                className="btn btn-default"
-                disabled={!transactions.next}
-                onClick={() => dispatch(TransactionApi.getList(token, {
-                  account_id: accounts.selectedItem.id,
-                  page: lastPage,
-                  search_term: searchTerm,
-                  year: selectedDate.getFullYear(),
-                }))}
-              >
-                <i className="mdi mdi-skip-forward"/>
-              </button>
-            </div>
+            <BottomPagination items={transactions} fetchMethod={TransactionApi.getList} setKwargs={setKwargs}/>
+          </div>
+        </div>
+      </div>
+      <div className="col-md-3 grid-margin stretch-card">
+        <div className="card">
+          <div className="card-body">
+            <h4 className="card-title">Filters</h4>
+            <Form onSubmit={e => {
+              e.preventDefault()
+              dispatch(TransactionApi.getList(token, transactions.kwargs))
+            }}>
+              <Form.Group>
+                <Form.Label>Confirmed by</Form.Label>&nbsp;
+                <Select
+                  isClearable
+                  isDisabled={transactions.loading}
+                  isLoading={transactions.loading}
+                  onChange={onConfirmedByChange}
+                  options={transactions.confirmed_by_choices?.map(c => ({ label: c[1], value: c[0] }))}
+                  styles={selectStyles}
+                  value={{
+                    label: transactions.confirmed_by_choices?.find(c => c[0] === transactions.kwargs.confirmed_by)?.[1],
+                    value: transactions.kwargs.confirmed_by
+                  }}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Category</Form.Label>&nbsp;
+                <Select
+                  isClearable
+                  isDisabled={transactions.loading}
+                  isLoading={transactions.loading}
+                  onChange={onCategoryChange}
+                  options={transactions.categories?.map(c => ({ label: getCategoryVerbose(c), value: c }))}
+                  styles={selectStyles}
+                  value={{
+                    label: getCategoryVerbose(transactions.kwargs.category),
+                    value: transactions.kwargs.category
+                  }}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Type</Form.Label>&nbsp;
+                <Select
+                  closeMenuOnSelect={false}
+                  isDisabled={transactions.loading}
+                  isLoading={transactions.loading}
+                  isMulti
+                  onMenuClose={() => dispatch(TransactionApi.getList(token, transactions.kwargs))}
+                  onChange={onTypeChange}
+                  options={transactions.types?.map(t => ({ label: getTypeLabel(t), value: t }))}
+                  styles={selectStyles}
+                  value={transactions.kwargs.types?.map(t => ({ label: getTypeLabel(t), value: t }))}
+                />
+              </Form.Group>
+            </Form>
           </div>
         </div>
       </div>
@@ -717,7 +774,12 @@ const AccountDetails = () => {
         </Button>
       </Modal.Footer>
     </Modal>
+    <TransactionsBulkUpdateModal
+      checkedCategories={checkedCategories}
+      setSpecificCategoriesModalOpen={setSpecificCategoriesModalOpen}
+      specificCategoriesModalOpen={specificCategoriesModalOpen}
+    />
   </div>
 }
 
-export default AccountDetails;
+export default Transactions;

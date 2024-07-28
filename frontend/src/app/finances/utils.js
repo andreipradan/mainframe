@@ -11,3 +11,15 @@ export const calculateSum = (list, field, condition = null) => list
   : 0
 
 export const getPercentage = (x, y) => ( x / y * 100).toFixed(2)
+
+export const setsAreEqual = (setA, setB) => {
+    if (setA.size !== setB.size) {
+        return false;
+    }
+    for (let element of setA) {
+        if (!setB.has(element)) {
+            return false;
+        }
+    }
+    return true;
+}

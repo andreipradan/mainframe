@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { Bar, Doughnut } from "react-chartjs-2";
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { Circles } from "react-loader-spinner";
 import { ProgressBar } from "react-bootstrap";
 import { Tooltip } from "react-tooltip";
@@ -8,29 +8,23 @@ import Marquee from "react-fast-marquee";
 import Select from "react-select";
 import "nouislider/distribute/nouislider.css";
 
-import { FinanceApi } from "../../api/finance";
-import { calculateSum, getPercentage } from "./utils";
-import { selectStyles } from "./Categorize/EditModal";
-import ListItem from "../shared/ListItem";
-import Errors from "../shared/Errors";
+import { FinanceApi, TimetableApi } from '../../../api/finance';
+import { calculateSum, getPercentage } from "../utils";
+import { selectStyles } from "../Accounts/Categorize/EditModal";
+import ListItem from "../../shared/ListItem";
+import Errors from "../../shared/Errors";
 
-const Credit = () => {
+const Details = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
   const overview = useSelector(state => state.credit)
-  useEffect(() => {
-    if (!overview.credit) dispatch(FinanceApi.getCredit(token))
-    else onChangeCurrency()
-    }, [overview.credit]
-  );
   const credit = overview.credit
   const rates = overview.rates
   const latestTimetable = overview.latest_timetable?.amortization_table
+  const timetable = useSelector(state => state.timetable)
 
   const payment = useSelector(state => state.payment)
-  useEffect(() => {!payment.results && dispatch(FinanceApi.getCreditPayments(token))}, []);
-
   const saved = overview.payment_stats?.saved
 
   const [excludePrepayments, setExcludePrepayments] = useState(false)
@@ -38,9 +32,31 @@ const Credit = () => {
   const [barChartInterest, setBarChartInterest] = useState(null)
   const [barChartLabels, setBarChartLabels] = useState(null)
 
+  const [lineChartIRCC, setLineChartIRCC] = useState(null)
+  const [lineChartMargin, setLineChartMargin] = useState(null)
+  const [lineChartInterest, setLineChartInterest] = useState(null)
+  const [lineChartLabels, setLineChartLabels] = useState(null)
+
+  useEffect(() => {
+    {
+      !payment.results && dispatch(FinanceApi.getCreditPayments(token));
+      !timetable.results && dispatch(TimetableApi.getTimetables(token))
+    }}, []);
+  useEffect(() => {
+    if (!overview.credit) dispatch(FinanceApi.getCredit(token))
+    else onChangeCurrency()
+    }, [overview.credit]
+  );
+
   useEffect(() => setBarChartPrincipal(payment.results?.map(p => p.principal).reverse()), [payment.results])
   useEffect(() => setBarChartInterest(payment.results?.map(p => p.interest).reverse()), [payment.results])
   useEffect(() => setBarChartLabels(payment.results?.map(p => p.date).reverse()), [payment.results])
+
+
+  useEffect(() => setLineChartIRCC(timetable.results?.map(p => p.ircc).reverse()), [timetable.results])
+  useEffect(() => setLineChartMargin(timetable.results?.map(p => p.margin).reverse()), [timetable.results])
+  useEffect(() => setLineChartInterest(timetable.results?.map(p => p.interest).reverse()), [timetable.results])
+  useEffect(() => setLineChartLabels(timetable.results?.map(p => p.date).reverse()), [timetable.results])
 
   const doughnutPieOptions = {
     responsive: true,
@@ -59,6 +75,77 @@ const Credit = () => {
       }
     }
   };
+
+  const [selectedCurrency, setSelectedCurrency] = useState(null)
+  const [summaryCredit, setSummaryCredit] = useState(null)
+  const [summarySaved, setSummarySaved] = useState(null)
+  const [summaryTotal, setSummaryTotal] = useState(null)
+  const [summaryInterest, setSummaryInterest] = useState(null)
+
+  const [remainingInterest, setRemainingInterest] = useState(null)
+  const [remainingInsurance, setRemainingInsurance] = useState(null)
+  const [remainingPrincipal, setRemainingPrincipal] = useState(null)
+  const [remainingTotal, setRemainingTotal] = useState(null)
+
+  const [paidTotal, setPaidTotal] = useState(null)
+  const [paidPrepaid, setPaidPrepaid] = useState(null)
+  const [paidPrincipal, setPaidPrincipal] = useState(null)
+  const [paidInterest, setPaidInterest] = useState(null)
+
+  const getAmountInCurrency = (amount, currency = selectedCurrency) => {
+    if (!rates?.length) return amount
+    const rate = currency
+      ? currency.label === credit.currency
+        ? 1
+        : rates.find(r => r.symbol === currency.value).value
+      : 1
+    return parseFloat(amount / rate).toFixed(2)
+  }
+  const onChangeCurrency = newValue => {
+    const currency = !newValue
+      ? {label: credit?.currency, value: `${credit.currency}${credit.currency}`}
+      : newValue
+
+    const totalPaid = parseFloat(overview.payment_stats?.total)
+    const interestPaid = parseFloat(overview.payment_stats?.interest)
+
+    const principalRemaining = calculateSum(latestTimetable, "principal")
+    const interestRemaining = calculateSum(latestTimetable, "interest")
+    const insuranceRemaining = calculateSum(latestTimetable, "insurance")
+    const totalRemaining = principalRemaining + interestRemaining + insuranceRemaining
+
+    setSelectedCurrency(currency)
+    setSummaryCredit(getAmountInCurrency(credit.total, currency))
+    setSummarySaved(getAmountInCurrency(saved, currency))
+    setSummaryTotal(getAmountInCurrency(totalPaid + totalRemaining, currency))
+    setSummaryInterest(getAmountInCurrency(interestPaid + interestRemaining, currency))
+
+    setRemainingInterest(getAmountInCurrency(interestRemaining, currency))
+    setRemainingPrincipal(getAmountInCurrency(principalRemaining, currency))
+    setRemainingInsurance(getAmountInCurrency(insuranceRemaining, currency))
+    setRemainingTotal(getAmountInCurrency(totalRemaining, currency))
+
+    setPaidTotal(getAmountInCurrency(totalPaid, currency))
+    setPaidInterest(getAmountInCurrency(interestPaid, currency))
+    setPaidPrepaid(getAmountInCurrency(overview.payment_stats?.prepaid, currency))
+    setPaidPrincipal(getAmountInCurrency(overview.payment_stats?.principal, currency))
+
+    setBarChartPrincipal(barChartPrincipal?.map(p => getAmountInCurrency(p, currency)))
+    setBarChartInterest(barChartInterest?.map(p => getAmountInCurrency(p, currency)))
+  }
+
+  const onExcludePrepaymentsChange = () => {
+    if (!excludePrepayments) {
+      setBarChartPrincipal(payment.results?.filter(p => !p.is_prepayment).map(p => p.principal).reverse())
+      setBarChartInterest(payment.results?.filter(p => !p.is_prepayment).map(p => p.interest).reverse())
+      setBarChartLabels(payment.results?.filter(p => !p.is_prepayment).map(p => p.date).reverse())
+    } else {
+      setBarChartPrincipal(payment.results?.map(p => p.principal).reverse())
+      setBarChartInterest(payment.results?.map(p => p.interest).reverse())
+      setBarChartLabels(payment.results?.map(p => p.date).reverse())
+    }
+    setExcludePrepayments(!excludePrepayments)
+  }
 
   const paymentsData = {
     labels: barChartLabels,
@@ -96,6 +183,35 @@ const Credit = () => {
     ]
   };
 
+  const interestData = {
+    labels: lineChartLabels,
+    datasets: [
+      {
+        label: 'IRCC',
+        data: lineChartIRCC,
+        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+        borderColor: 'rgb(255,0,0)',
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: 'Interest',
+        data: lineChartInterest,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+        fill: false
+      },
+      {
+        label: 'Margin',
+        data: lineChartMargin,
+        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+        borderColor: 'rgba(255, 206, 86, 1)',
+        borderWidth: 1,
+        fill: false
+      },
+    ]
+  };
   const paymentsOptions = {
     scales: {
       yAxes: [{
@@ -123,80 +239,6 @@ const Credit = () => {
         }
       }
     }
-  }
-
-  const onExcludePrepaymentsChange = () => {
-    if (!excludePrepayments) {
-      setBarChartPrincipal(payment.results?.filter(p => !p.is_prepayment).map(p => p.principal).reverse())
-      setBarChartInterest(payment.results?.filter(p => !p.is_prepayment).map(p => p.interest).reverse())
-      setBarChartLabels(payment.results?.filter(p => !p.is_prepayment).map(p => p.date).reverse())
-    } else {
-      setBarChartPrincipal(payment.results?.map(p => p.principal).reverse())
-      setBarChartInterest(payment.results?.map(p => p.interest).reverse())
-      setBarChartLabels(payment.results?.map(p => p.date).reverse())
-    }
-    setExcludePrepayments(!excludePrepayments)
-  }
-
-  const [selectedCurrency, setSelectedCurrency] = useState(null)
-  const [summaryCredit, setSummaryCredit] = useState(null)
-  const [summarySaved, setSummarySaved] = useState(null)
-  const [summaryTotal, setSummaryTotal] = useState(null)
-  const [summaryInterest, setSummaryInterest] = useState(null)
-
-  const [remainingInterest, setRemainingInterest] = useState(null)
-  const [remainingInsurance, setRemainingInsurance] = useState(null)
-  const [remainingPrincipal, setRemainingPrincipal] = useState(null)
-  const [remainingTotal, setRemainingTotal] = useState(null)
-
-  const [paidTotal, setPaidTotal] = useState(null)
-  const [paidPrepaid, setPaidPrepaid] = useState(null)
-  const [paidPrincipal, setPaidPrincipal] = useState(null)
-  const [paidInterest, setPaidInterest] = useState(null)
-
-  const getAmountInCurrency = (amount, currency = selectedCurrency) => {
-    if (!rates?.length) return amount
-    const rate = currency
-      ? currency.label === credit.currency
-        ? 1
-        : rates.find(r => r.symbol === currency.value).value
-      : 1
-    return parseFloat(amount / rate).toFixed(2)
-  }
-  const onChangeCurrency = newValue => {
-    const currency = !newValue
-      ? {
-          label: credit?.currency,
-          value: `${credit.currency}${credit.currency}`
-        }
-      : newValue
-
-    const totalPaid = parseFloat(overview.payment_stats?.total)
-    const interestPaid = parseFloat(overview.payment_stats?.interest)
-
-    const principalRemaining = calculateSum(latestTimetable, "principal")
-    const interestRemaining = calculateSum(latestTimetable, "interest")
-    const insuranceRemaining = calculateSum(latestTimetable, "insurance")
-    const totalRemaining = principalRemaining + interestRemaining + insuranceRemaining
-
-    setSelectedCurrency(currency)
-    setSummaryCredit(getAmountInCurrency(credit.total, currency))
-    setSummarySaved(getAmountInCurrency(saved, currency))
-    setSummaryTotal(getAmountInCurrency(totalPaid + totalRemaining, currency))
-    setSummaryInterest(getAmountInCurrency(interestPaid + interestRemaining, currency))
-
-    setRemainingInterest(getAmountInCurrency(interestRemaining, currency))
-    setRemainingPrincipal(getAmountInCurrency(principalRemaining, currency))
-    setRemainingInsurance(getAmountInCurrency(insuranceRemaining, currency))
-    setRemainingTotal(getAmountInCurrency(totalRemaining, currency))
-
-    setPaidTotal(getAmountInCurrency(totalPaid, currency))
-    setPaidInterest(getAmountInCurrency(interestPaid, currency))
-    setPaidPrepaid(getAmountInCurrency(overview.payment_stats?.prepaid, currency))
-    setPaidPrincipal(getAmountInCurrency(overview.payment_stats?.principal, currency))
-
-    setBarChartPrincipal(barChartPrincipal?.map(p => getAmountInCurrency(p, currency)))
-    setBarChartInterest(barChartInterest?.map(p => getAmountInCurrency(p, currency)))
   }
   const remainingData = {
     datasets: [{
@@ -228,6 +270,7 @@ const Credit = () => {
     }],
     labels: ['Interest', 'Principal']
   };
+
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
@@ -494,13 +537,42 @@ const Credit = () => {
             {
               payment.loading
                 ? <Circles />
-                : payment.results ? <Bar data={paymentsData} options={paymentsOptions} height={100}/> : "-"
+                : payment.results
+                  ? <Bar data={paymentsData} options={paymentsOptions} height={100}/>
+                  : "-"
             }
           </div>
         </div>
       </div>
     </div>
-
+    <div className="row">
+      <div className="col-sm-12 grid-margin stretch-card">
+        <div className="card">
+          <div className="card-body">
+            <h6 className="card-title">
+              Interest rate
+              <button
+                type={'button'}
+                className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
+                onClick={() => dispatch(TimetableApi.getTimetables(token))}
+              >
+                <i className={'mdi mdi-refresh'} />
+              </button>
+            </h6>
+            <Line data={interestData} options={{
+              scales: {
+                yAxes: [{
+                  ticks: {beginAtZero: true, precision: .1},
+                  gridLines: {color: "rgba(204, 204, 204,0.1)"},
+                }],
+                xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+              },
+              legend: {display: true},
+            }}/>
+          </div>
+        </div>
+      </div>
+    </div>
     {/* Pie charts - paid, remaining */}
     <div className="row">
       <div className="col-sm-12 col-md-6 col-lg-6 grid-margin stretch-card">
@@ -568,4 +640,4 @@ const Credit = () => {
   </div>
 }
 
-export default Credit;
+export default Details;

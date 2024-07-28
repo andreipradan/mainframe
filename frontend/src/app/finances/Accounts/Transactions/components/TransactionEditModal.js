@@ -16,8 +16,8 @@ import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 
 import { FinanceApi, TransactionApi } from '../../../../../api/finance';
-import { capitalize } from "../AccountDetails";
-import { createOption, selectStyles } from "../../../Categorize/EditModal";
+import { capitalize } from "../../../../utils";
+import { createOption, selectStyles } from "../../Categorize/EditModal";
 import { selectItem as selectTransaction } from "../../../../../redux/transactionsSlice";
 import Errors from "../../../../shared/Errors";
 

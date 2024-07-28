@@ -8,8 +8,8 @@ import {select, setModalOpen} from "../../../redux/cronsSlice";
 import CronsApi from "../../../api/crons";
 import EditModal from "./components/EditModal";
 import Errors from "../../shared/Errors";
+import { capitalize } from '../../utils';
 import { selectItem } from '../../../redux/watchersSlice';
-import { capitalize } from '../../finances/Accounts/AccountDetails/AccountDetails';
 
 
 const Crons = () =>  {

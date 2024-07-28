@@ -11,7 +11,7 @@ import { Collapse } from "react-bootstrap";
 import EditModal from "./crons/components/EditModal";
 import Errors from "../shared/Errors";
 import WatchersApi from "../../api/watchers";
-import { capitalize } from "../finances/Accounts/AccountDetails/AccountDetails";
+import { capitalize } from "../utils";
 import { parseStatus } from "./Tasks";
 import { selectItem, setModalOpen } from "../../redux/watchersSlice";
 

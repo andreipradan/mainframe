@@ -14,7 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { ExpensesApi } from "../../api/expenses";
 import {selectItem, setModalOpen} from "../../redux/expensesSlice";
-import {selectStyles} from "../finances/Categorize/EditModal";
+import {selectStyles} from "../finances/Accounts/Categorize/EditModal";
 import Select from "react-select";
 
 const EditModal = () => {

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { Circles } from "react-loader-spinner";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
+import Select from "react-select";
 import "nouislider/distribute/nouislider.css";
 
-import { TimetableApi } from "../../api/finance";
-import { calculateSum } from "./utils";
-import { useHistory } from "react-router-dom";
-import { Circles } from "react-loader-spinner";
-import Select from "react-select";
-import { selectStyles } from "./Categorize/EditModal";
-import { selectItem as selectTimetable } from "../../redux/timetableSlice";
-import Errors from "../shared/Errors";
+import { calculateSum } from "../utils";
+import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
+import { selectStyles } from "../Accounts/Categorize/EditModal";
+import { TimetableApi } from "../../../api/finance";
+import Errors from "../../shared/Errors";
 
 const PMT = (ir, np, pv, fv, type) => {
     let pmt, pvif;

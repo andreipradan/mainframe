@@ -10,7 +10,7 @@ import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { ExchangeApi } from "../../api/exchange";
-import { selectStyles } from "../finances/Categorize/EditModal";
+import { selectStyles } from "../finances/Accounts/Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
 import BottomPagination from "../shared/BottomPagination";
 import Errors from "../shared/Errors";

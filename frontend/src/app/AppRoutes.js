@@ -14,13 +14,13 @@ const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const Expenses = lazy(() => import('./expenses/Expenses'));
 const ExpenseGroups = lazy(() => import("./expenses/ExpenseGroups"));
-const FinancesAccountDetails = lazy(() => import ("./finances/Accounts/AccountDetails/AccountDetails"));
-const FinancesCategorize = lazy(() => import ("./finances/Categorize/Categorize"));
-const FinancesCredit = lazy(() => import ("./finances/Credit"));
-const FinancesCalculator = lazy(() => import ("./finances/Calculator"));
-const FinancesPayments = lazy(() => import ("./finances/Payments/Payments"));
+const FinancesAccountsTransactions = lazy(() => import ("./finances/Accounts/Transactions/Transactions"));
+const FinancesCategorize = lazy(() => import ("./finances/Accounts/Categorize/Categorize"));
+const FinancesCreditDetails = lazy(() => import ("./finances/Credit/Details"));
+const FinancesCalculator = lazy(() => import ("./finances/Credit/Calculator"));
+const FinancesPayments = lazy(() => import ("./finances/Credit/Payments/Payments"));
 const FinancesStocks = lazy(() => import ("./finances/Stocks"));
-const FinancesTimetables = lazy(() => import ("./finances/Timetables/Timetables"));
+const FinancesTimetables = lazy(() => import ("./finances/Credit/Timetables/Timetables"));
 const Logs = lazy(() => import('./apps/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
 const Messages = lazy(() => import('./messages/Messages'));
@@ -77,10 +77,10 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/commands/tasks" component={ Tasks } />}
         {user?.is_staff && <Route exact path="/commands/watchers" component={ Watchers } />}
         {user?.is_staff && <Route exact path="/credit/calculator" component={ FinancesCalculator } />}
-        {user?.is_staff && <Route exact path="/credit/details" component={ FinancesCredit } />}
+        {user?.is_staff && <Route exact path="/credit/details" component={ FinancesCreditDetails } />}
         {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/credit/timetables" component={ FinancesTimetables } />}
-        {user?.is_staff && <Route exact path="/finances/accounts/:id?" component={ FinancesAccountDetails } />}
+        {user?.is_staff && <Route exact path="/finances/accounts/:id?" component={ FinancesAccountsTransactions } />}
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
