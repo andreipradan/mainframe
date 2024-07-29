@@ -137,7 +137,7 @@ const TransactionEditModal = props => {
                         tabSize: 2,
                         wrap: true
                       }}
-                      showGutter={true}
+                      showGutter={false}
                       showPrintMargin={true}
                       theme="monokai"
                       value={additionalData}
