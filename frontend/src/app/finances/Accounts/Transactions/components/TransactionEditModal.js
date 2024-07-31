@@ -21,14 +21,11 @@ import { capitalize } from "../../../../utils";
 import { createOption, selectStyles } from "../../Categorize/EditModal";
 import { selectItem as selectCategory } from "../../../../../redux/categoriesSlice";
 import { selectItem as selectTransaction } from "../../../../../redux/transactionsSlice";
-import { FinanceApi } from '../../../../../api/finance';
 
 const TransactionEditModal = props => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
-  const accounts = useSelector(state => state.accounts)
   const categories = useSelector(state => state.categories)
-  const transactionsKwargs = useSelector(state => state.transactions.kwargs)
   const { errors, loadingItems, selectedItem } = useSelector(state => state.transactions)
 
   const [additionalData, setAdditionalData] = useState(null)
@@ -109,7 +106,7 @@ const TransactionEditModal = props => {
                 isDisabled={categories.loading}
                 isLoading={categories.loading}
                 options={categories.results?.map(c => createOption(c.id))}
-                onChange={newValue => dispatch(selectCategory(newValue.value))}
+                onChange={newValue => dispatch(selectCategory(newValue?.value || "Unidentified"))}
                 onCreateOption={id => dispatch(CategoriesApi.create(token, {id}))}
                 styles={selectStyles}
                 value={createOption(categories.selectedItem?.id)}
@@ -157,10 +154,9 @@ const TransactionEditModal = props => {
           dispatch(TransactionsApi.update(
             token,
             selectedItem?.id,
-            {category: categories.selectedItem?.id, additional_data: JSON.parse(additionalData || "{}"), confirmed_by: 1}
+            {category: categories.selectedItem?.id, additional_data: JSON.parse(additionalData || "{}"), confirmed_by: 1},
+            true,
           ))
-          dispatch(TransactionsApi.getList(token, transactionsKwargs))
-          dispatch(FinanceApi.getExpenses(token, accounts.selectedItem.id, props.year))
         }}
       >
         Save Changes

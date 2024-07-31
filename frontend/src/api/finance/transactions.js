@@ -13,6 +13,7 @@ import {
   setLoading,
   setLoadingItems,
   update,
+  setKwargs,
 } from '../../redux/transactionsSlice';
 
 export class TransactionsApi {
@@ -61,12 +62,16 @@ export class TransactionsApi {
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static update = (token, id, data) => dispatch => {
+  static update = (token, id, data, updateCategory = false) => dispatch => {
     dispatch(setLoading(true))
     data.confirmed_by = data.category === "Unidentified" ? 0 : 1
     axios
       .patch(`${base}/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(update(response.data)))
+      .then((response) => {
+        dispatch(update(response.data));
+        if (updateCategory) dispatch(setKwargs({ category: data.category }))
+        toast.success("Transaction updated successfully!", toastParams)
+      })
       .catch((err) => handleErrors(err, dispatch, setErrors))
   }
   static updateAll = (token, data, kwargs) => dispatch => {

@@ -56,8 +56,6 @@ const Transactions = () => {
   const accounts = useSelector(state => state.accounts)
   const transactions = useSelector(state => state.transactions)
 
-  const currentPage = !transactions.previous ? 1 : (parseInt(new URL(transactions.previous).searchParams.get("page")) || 1) + 1
-
   const [allChecked, setAllChecked] = useState(false)
   const [checkedCategories, setCheckedCategories] = useState(null)
   const [fileError, setFileError] = useState(null)
@@ -191,7 +189,7 @@ const Transactions = () => {
   };
 
   const onCategoryChange = newValue => {
-    const newCategory = newValue ? newValue.value : ""
+    const newCategory = newValue ? newValue.value : "Unidentified"
     dispatch(setKwargs({category: newCategory, page: 1}))
   }
   const onCheckedCategoryChange = (newValue, description) => {
@@ -474,7 +472,7 @@ const Transactions = () => {
               </Collapse>
 
               <div className="mb-0 text-muted">
-                <small>Total: {transactions.count} | Amount: {transactions.page_amount}</small>
+                <small>Total: {transactions.count} {transactions.page_amount ? ` | Amount: ${transactions.page_amount}` : null}</small>
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm border-0 bg-transparent"
