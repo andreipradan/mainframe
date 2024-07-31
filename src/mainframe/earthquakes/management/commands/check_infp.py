@@ -36,7 +36,7 @@ class Command(BaseEarthquakeCommand):
             result.pop("_id")
 
         primary = result["sols"]["primary"]
-        location = primary["region"].pop("name")
+        location = primary.get("region", {}).pop("name", "<Missing region>")
         timestamp = self.get_datetime(primary.pop("time"))
         depth = primary.pop("depth") / 1000
         magnitude = primary["magnitudes"]["primary"].pop("value")

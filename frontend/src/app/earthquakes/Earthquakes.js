@@ -293,7 +293,7 @@ const Earthquakes = () => {
                       data={data}
                       options={options}
                       height={100}
-                      onElementsClick={(e) => e?.[0]?._index && zoomToGeoPoint(earthquakesList[e[0]._index])}
+                      onElementsClick={(e) => e?.[0]?._index && zoomToGeoPoint(earthquakesList?.[e[0]._index])}
                     />
                 }
               </div>
