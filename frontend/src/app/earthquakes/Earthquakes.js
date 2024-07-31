@@ -44,7 +44,7 @@ const Earthquakes = () => {
         label: 'Magnitude',
         data: earthquakesList?.map(e => e.magnitude),
         backgroundColor: context => {
-          if (earthquakesList[context.dataIndex].additional_data?.sols?.primary?.region?.type === "world")
+          if (earthquakesList?.[context.dataIndex].additional_data?.sols?.primary?.region?.type === "world")
             return "rgba(114,167,203,0.25)"
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 200);
@@ -54,7 +54,7 @@ const Earthquakes = () => {
           return gradient;
         },
         borderColor: context => {
-          if (earthquakesList[context.dataIndex].additional_data?.sols?.primary?.region?.type === "world")
+          if (earthquakesList?.[context.dataIndex].additional_data?.sols?.primary?.region?.type === "world")
             return "gray"
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, context.height || 100);
@@ -81,7 +81,7 @@ const Earthquakes = () => {
     tooltips: {
       callbacks: {
         title: tooltipItem =>
-            `${earthquakesList[tooltipItem[0].index].location}\n${tooltipItem[0].label}`,
+            `${earthquakesList?.[tooltipItem[0].index].location}\n${tooltipItem[0].label}`,
       }
     }
   }
