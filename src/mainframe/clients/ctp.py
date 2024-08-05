@@ -180,7 +180,8 @@ class CTPClient:
             elif date_row == ".":
                 schedule_start_date = None
             else:
-                raise
+                self.logger.exception("Unexpected date format %s", date_row)
+                return None
 
         reader = csv.DictReader(rows[5:], fieldnames=["time1", "time2"])
         terminal1_schedule = []
