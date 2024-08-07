@@ -26,12 +26,12 @@ class RpiApi {
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static restartBackend = token => dispatch => {
+  static restartService = (token, service) => dispatch => {
     dispatch(setLoading(true));
     ngrokAxios
-      .put(`${base}/restart-backend/`, {}, { headers: { Authorization: token } })
+      .put(`${base}/restart-service/`, {service}, { headers: { Authorization: token } })
       .then(() => {
-        dispatch(completed("Restarted backend, please refresh this page after a couple of moments"))
+        dispatch(completed(`Restarted ${service}, please refresh this page after a few of moments`))
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };

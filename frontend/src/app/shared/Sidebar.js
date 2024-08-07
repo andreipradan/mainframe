@@ -5,9 +5,11 @@ import { Trans } from 'react-i18next';
 import {useDispatch, useSelector} from "react-redux";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import RpiApi from "../../api/rpi";
 import Alert from "react-bootstrap/Alert";
 import {Circles} from "react-loader-spinner";
+
+import Errors from './Errors';
+import RpiApi from "../../api/rpi";
 import logo from "../../assets/images/logo.svg"
 import logoMini from "../../assets/images/logo-mini.svg"
 
@@ -190,7 +192,7 @@ const Sidebar = () => {
                     }} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-delete text-danger"></i>
+                          <i className="mdi mdi-delete text-warning"></i>
                         </div>
                       </div>
                       <div className="preview-item-content">
@@ -201,15 +203,30 @@ const Sidebar = () => {
                     <Dropdown.Item href="!#" onClick={e => {
                       e.preventDefault()
                       setModalOpen(true)
+                      setCurrentModal("restart huey")
+                    }} className="preview-item">
+                      <div className="preview-thumbnail">
+                        <div className="preview-icon bg-dark rounded-circle">
+                          <i className="mdi mdi-timer text-warning"></i>
+                        </div>
+                      </div>
+                      <div className="preview-item-content">
+                        <p className="preview-subject mb-1">Restart huey</p>
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Divider/>
+                    <Dropdown.Item href="!#" onClick={e => {
+                      e.preventDefault()
+                      setModalOpen(true)
                       setCurrentModal("restart backend")
                     }} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-restart text-danger"></i>
+                          <i className="mdi mdi-server text-warning"></i>
                         </div>
                       </div>
                       <div className="preview-item-content">
-                        <p className="preview-subject mb-1"><Trans>Restart backend</Trans></p>
+                        <p className="preview-subject mb-1">Restart backend</p>
                       </div>
                     </Dropdown.Item>
                     <Dropdown.Divider/>
@@ -232,7 +249,7 @@ const Sidebar = () => {
               </Dropdown.Menu>
             </Dropdown>
           </div>
-          {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}
+          {alertOpen && <Errors errors={errors} />}
           {messageOpen && <Alert variant="primary" dismissible onClose={() => setMessageOpen(false)}>{message}</Alert>}
         </li>
         {
@@ -668,7 +685,8 @@ const Sidebar = () => {
             evt.preventDefault()
             if (currentModal === "reboot") dispatch(RpiApi.reboot(token))
             else if (currentModal === "clear build") dispatch(RpiApi.clearBuild(token))
-            else if (currentModal === "restart backend") dispatch(RpiApi.restartBackend(token))
+            else if (currentModal === "restart backend") dispatch(RpiApi.restartService(token, "backend"))
+            else if (currentModal === "restart huey") dispatch(RpiApi.restartService(token, "huey"))
             setModalOpen(false)
           }}>
             {currentModal.toUpperCase()}

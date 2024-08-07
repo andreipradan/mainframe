@@ -44,14 +44,20 @@ def run_cmd(cmd, prefix=None, logger=None, **kwargs):
     prefix = prefix.upper() if prefix else cmd
     logger = logger or get_default_logger(__name__)
     logger.info("[%s] Starting", prefix)
-    try:
-        output = subprocess.check_output(cmd.split(" "), **kwargs).decode(  # noqa: S603
-            "utf-8"
-        )
-    except subprocess.CalledProcessError as e:
+    p = subprocess.Popen(
+        cmd.split(),  # noqa: S603
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        **kwargs,
+    )
+    output, error = p.communicate()
+    if p.returncode != 0:
         raise RuntimeError(
-            f"command '{e.cmd}' return with error (code {e.returncode}): {e.output}"
-        ) from e
+            f"Command '{cmd}' failed, "
+            f"return code: {p.returncode}, "
+            f"error: '{error}', "
+            f"output: '{output}'"
+        )
     if output:
         logger.info("[%s] Output: %s", prefix, output)
     logger.info("[%s] Done.", prefix)

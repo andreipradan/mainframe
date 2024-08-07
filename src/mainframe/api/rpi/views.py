@@ -16,7 +16,7 @@ class RpiViewSet(viewsets.ViewSet):
         except RuntimeError as e:
             return JsonResponse(status=400, data={"data": str(e)})
 
-        return JsonResponse(status=204, data={"data": output})
+        return JsonResponse(status=204, data={"data": output.decode("utf-8")})
 
     @action(detail=False, methods=["put"], url_path="clear-build")
     def clear_build(self, request, **kwargs):
@@ -26,6 +26,6 @@ class RpiViewSet(viewsets.ViewSet):
     def reboot(self, request, **kwargs):
         return self.run_command("sudo reboot -f")
 
-    @action(detail=False, methods=["put"], url_path="restart-backend")
-    def restart_backend(self, request, **kwargs):
-        return self.run_command("sudo systemctl restart backend")
+    @action(detail=False, methods=["put"], url_path="restart-service")
+    def restart_service(self, request, **kwargs):
+        return self.run_command(f"sudo systemctl restart {request.data['service']}")
