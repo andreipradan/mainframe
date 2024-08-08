@@ -38,7 +38,7 @@ class DevicesApi {
   };
   static sync = token => dispatch => {
     dispatch(setLoading(true));
-    axios
+    ngrokAxios
       .put(`${base}/sync/`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));

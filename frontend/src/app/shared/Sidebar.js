@@ -110,6 +110,20 @@ const Sidebar = () => {
   const isPathActive = path => location.pathname.startsWith(path)
   const isPathExact = path => location.pathname === path
 
+  const handleSetModalAction = e => {
+    e.preventDefault()
+    setModalOpen(true)
+    setCurrentModal(e.target.textContent)
+  }
+  const handleSubmitModal = evt => {
+    evt.preventDefault()
+    if (currentModal === "reboot") dispatch(RpiApi.reboot(token))
+    else if (currentModal === "clear build") dispatch(RpiApi.clearBuild(token))
+    else if (currentModal === "Restart backend") dispatch(RpiApi.restartService(token, "backend"))
+    else if (currentModal === "Restart huey") dispatch(RpiApi.restartService(token, "huey"))
+    setModalOpen(false)
+  }
+
   return (
     <nav className="sidebar sidebar-offcanvas" id="sidebar">
       <div className="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
@@ -200,11 +214,7 @@ const Sidebar = () => {
                       </div>
                     </Dropdown.Item>
                     <Dropdown.Divider/>
-                    <Dropdown.Item href="!#" onClick={e => {
-                      e.preventDefault()
-                      setModalOpen(true)
-                      setCurrentModal("restart huey")
-                    }} className="preview-item">
+                    <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
                           <i className="mdi mdi-timer text-warning"></i>
@@ -215,11 +225,7 @@ const Sidebar = () => {
                       </div>
                     </Dropdown.Item>
                     <Dropdown.Divider/>
-                    <Dropdown.Item href="!#" onClick={e => {
-                      e.preventDefault()
-                      setModalOpen(true)
-                      setCurrentModal("restart backend")
-                    }} className="preview-item">
+                    <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
                           <i className="mdi mdi-server text-warning"></i>
@@ -667,7 +673,7 @@ const Sidebar = () => {
           <Modal.Title>
             <div className="row">
               <div className="col-lg-12 grid-margin stretch-card">
-                Are you sure you want to {currentModal}?
+                Are you sure you want to {currentModal?.toLowerCase()}?
               </div>
             </div>
             <p className="text-muted mb-0">This may take a few moments, please be patient</p>
@@ -681,14 +687,7 @@ const Sidebar = () => {
             e.preventDefault()
             setModalOpen(false)
           }}>Close</Button>
-          <Button variant="danger" className="float-left" onClick={evt => {
-            evt.preventDefault()
-            if (currentModal === "reboot") dispatch(RpiApi.reboot(token))
-            else if (currentModal === "clear build") dispatch(RpiApi.clearBuild(token))
-            else if (currentModal === "restart backend") dispatch(RpiApi.restartService(token, "backend"))
-            else if (currentModal === "restart huey") dispatch(RpiApi.restartService(token, "huey"))
-            setModalOpen(false)
-          }}>
+          <Button variant="danger" className="float-left" onClick={handleSubmitModal}>
             {currentModal.toUpperCase()}
           </Button>
         </Modal.Footer>

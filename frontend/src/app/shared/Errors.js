@@ -20,7 +20,7 @@ const Errors = props => {
                   Object.keys(props.errors)?.map((k, i) =>
                     props.errors?.[k]?.constructor === Array
                       ? <ul key={i}>{props.errors?.[k]?.map((e, i) => <li key={i}>{k}: {e}</li> )}</ul>
-                      : <li>{props.errors?.[k]}</li>
+                      : <li key={i}>{props.errors?.[k]}</li>
                   )
                 }
                 </ul>
