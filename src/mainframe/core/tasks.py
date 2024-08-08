@@ -15,11 +15,11 @@ def get_redis_client():
     return HUEY.storage.redis_client.from_url(settings.HUEY["connection"]["url"])
 
 
-def log_status(key, errors=None, **kwargs):
+def log_status(key, error=None, **kwargs):
     redis_client = get_redis_client()
     key = f"tasks.{key}"
     new_event = {"timestamp": timezone.now().isoformat(), **kwargs}
-    errors = errors or []
+    errors = [error] if error else []
 
     details = json.loads(redis_client.get(key) or "{}")
     if not details:
@@ -35,15 +35,12 @@ def log_status(key, errors=None, **kwargs):
 
 
 @HUEY.signal()
-def signal_handler(signal, task, exc=None):
-    if task.name in ["check usgs", "healthcheck"] and not exc:
+def signal_handler(signal, t, exc=None):
+    if t.name in ["check usgs", "healthcheck"] and not exc:
         return
     now = timezone.now().isoformat()
-    errors = []
-    kwargs = {"id": task.id, "status": signal, "timestamp": now}
-    if exc:
-        errors.append({"timestamp": now, "msg": str(exc)})
-    log_status(task.name, errors, **kwargs)
+    kwargs = {"id": t.id, "status": signal, "timestamp": now}
+    log_status(t.name, {"timestamp": now, "msg": str(exc)} if exc else None, **kwargs)
 
 
 @task(expires=10)

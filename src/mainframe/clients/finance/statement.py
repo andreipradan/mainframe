@@ -265,6 +265,6 @@ def import_statement(file: str | InMemoryUploadedFile, logger):
     except (IntegrityError, ValidationError) as e:
         logger.error(e)
         raise StatementImportError(e) from e
-    else:
-        backup_finance_model(model="Transaction")
-        return transactions
+
+    backup_finance_model(model="Transaction")
+    return transactions

@@ -65,8 +65,7 @@ class BotSerializer(serializers.ModelSerializer):
                         raise serializers.ValidationError(
                             {"Telegram Error": e.message}
                         ) from e
-                    else:
-                        logger.info("Set new webhook '%s': %s", webhook, result)
+                    logger.info("Set new webhook '%s': %s", webhook, result)
                 else:
                     try:
                         result = bot.delete_webhook()
@@ -74,8 +73,7 @@ class BotSerializer(serializers.ModelSerializer):
                         raise serializers.ValidationError(
                             {"Telegram Error": e.message}
                         ) from e
-                    else:
-                        logger.info("Deleted webhook: %s", result)
+                    logger.info("Deleted webhook: %s", result)
         return attrs
 
 

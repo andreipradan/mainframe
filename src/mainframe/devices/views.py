@@ -1,7 +1,6 @@
 from django.contrib.postgres.search import SearchVector
-from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
-from mainframe.clients.system import fetch_network_devices, run_cmd
+from mainframe.clients.system import fetch_network_devices
 from mainframe.devices.models import Device
 from mainframe.devices.serializers import DeviceSerializer
 from rest_framework import viewsets
@@ -43,12 +42,3 @@ class DeviceViewSet(viewsets.ModelViewSet):
                 unique_fields=["mac"],
             )
         return super().list(request, **kwargs)
-
-    @action(detail=False, methods=["put"])
-    def reboot(self, request, **kwargs):
-        try:
-            output = run_cmd("sudo reboot")
-        except RuntimeError as e:
-            return JsonResponse(data={"status": "400", "data": str(e)})
-
-        return JsonResponse(data={"status": "200", "data": output})

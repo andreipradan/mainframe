@@ -180,6 +180,6 @@ def import_timetable(file, logger):
     except (IntegrityError, ValidationError, ValueError) as e:
         logger.error(str(e))
         raise TimetableImportError from e
-    else:
-        backup_finance_model(model="Timetable")
-        return timetable
+
+    backup_finance_model(model="Timetable")
+    return timetable

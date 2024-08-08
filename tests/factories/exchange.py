@@ -7,4 +7,4 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
         model = Currency
 
     name = "cname"
-    symbol = factory.Sequence(lambda i: str(i))
+    symbol = factory.Sequence(str)

@@ -103,8 +103,8 @@ class PaymentsImporter:
         except (IntegrityError, ValidationError) as e:
             self.logger.error(str(e))
             raise PaymentImportError from e
-        else:
-            backup_finance_model(model="Payment")
+
+        backup_finance_model(model="Payment")
 
     def parse_prepayment(self, rows):
         payment_type = "Rambursare anticipata de principal"

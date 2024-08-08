@@ -32,15 +32,17 @@ class Cron(TimeStampedModel):
 
     @logfire.instrument("{self}")
     def run(self):
-        call_command(self.command, *self.args, **self.kwargs)
+        if not isinstance(self.args, list):
+            return call_command(self.command, **self.kwargs)
+        return call_command(self.command, *self.args, **self.kwargs)
 
 
 @receiver(signals.post_delete, sender=Cron)
-def post_delete(sender, instance: Cron, **kwargs):
+def post_delete(sender, instance: Cron, **kwargs):  # noqa: PYL-W0613
     instance.expression = ""
     schedule_task(instance)
 
 
 @receiver(signals.post_save, sender=Cron)
-def post_save(sender, instance, **kwargs):
+def post_save(sender, instance, **kwargs):  # noqa: PYL-W0613
     schedule_task(instance)
