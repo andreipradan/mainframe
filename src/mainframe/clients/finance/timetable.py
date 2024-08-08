@@ -9,8 +9,7 @@ from mainframe.finance.tasks import backup_finance_model
 from PyPDF2 import PdfReader
 
 
-class TimetableImportError(Exception):
-    ...
+class TimetableImportError(Exception): ...
 
 
 def extract_amortization_table(pages):
