@@ -12,8 +12,7 @@ from mainframe.finance.models import Account, Transaction
 from mainframe.finance.tasks import backup_finance_model
 
 
-class StatementImportError(Exception):
-    ...
+class StatementImportError(Exception): ...
 
 
 class StatementParser:
@@ -215,7 +214,9 @@ class RevolutParser(StatementParser):
                 Account.TYPE_DEPOSIT,
                 Account.TYPE_SAVINGS,
             ],
-        ).order_by("type")
+        ).order_by(
+            "type"
+        )
 
     @staticmethod
     def convert_to_utc(date_time):
