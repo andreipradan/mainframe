@@ -215,7 +215,9 @@ class RevolutParser(StatementParser):
                 Account.TYPE_DEPOSIT,
                 Account.TYPE_SAVINGS,
             ],
-        ).order_by("type")
+        ).order_by(
+            "type"
+        )
 
     @staticmethod
     def convert_to_utc(date_time):
