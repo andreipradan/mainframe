@@ -30,6 +30,7 @@ def validate_amortization_table(value):
 
 class Account(TimeStampedModel):
     TYPE_CURRENT = "Current"
+    TYPE_DEPOSIT = "Deposit"
     TYPE_SAVINGS = "Savings"
 
     bank = models.CharField(max_length=32)
@@ -41,6 +42,7 @@ class Account(TimeStampedModel):
     type = models.CharField(
         choices=(
             (TYPE_CURRENT, TYPE_CURRENT),
+            (TYPE_DEPOSIT, TYPE_DEPOSIT),
             (TYPE_SAVINGS, TYPE_SAVINGS),
         ),
         default=TYPE_CURRENT,
@@ -51,7 +53,10 @@ class Account(TimeStampedModel):
         ordering = ("-updated_at",)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.number})"
+        return (
+            f"[{self.bank[:7]} - {self.type}] "
+            f"{self.first_name} {self.last_name} ({self.number})"
+        )
 
 
 class Credit(TimeStampedModel):

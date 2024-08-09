@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 import aiohttp
 import telegram
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 from mainframe.bots.models import Bot
 from mainframe.clients.logs import get_default_logger
@@ -256,4 +257,4 @@ def strip_accents(string):
 
 def to_local(date_time):
     dt = datetime.fromisoformat(date_time.replace("Z", "+00:00"))
-    return dt.astimezone(ZoneInfo("Europe/Bucharest")).strftime("%H:%M")
+    return dt.astimezone(ZoneInfo(settings.TIME_ZONE)).strftime("%H:%M")

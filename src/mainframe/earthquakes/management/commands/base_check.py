@@ -3,6 +3,7 @@ from datetime import datetime
 import pytz
 import requests
 import telegram
+from django.conf import settings
 from django.core.management import BaseCommand
 from django.db import OperationalError
 from mainframe.bots.models import Bot
@@ -125,7 +126,7 @@ class BaseEarthquakeCommand(BaseCommand):
 
     def set_last_check(self, instance):
         earthquake_config = instance.additional_data["earthquake"]
-        now = datetime.now().astimezone(pytz.timezone("Europe/Bucharest"))
+        now = datetime.now().astimezone(pytz.timezone(settings.TIME_ZONE))
         parsed_now = now.strftime(DATETIME_FORMAT)
         earthquake_config["last_check"] = parsed_now
         earthquake_config[self.source]["last_check"] = parsed_now

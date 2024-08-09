@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import pytz
 import requests
+from django.conf import settings
 from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
@@ -18,11 +19,11 @@ class Command(BaseEarthquakeCommand):
 
     def fetch(self, **options):
         since = datetime.now().astimezone(
-            pytz.timezone("Europe/Bucharest")
+            pytz.timezone(settings.TIME_ZONE)
         ) - timedelta(minutes=5)
         if options["minutes"]:
             since = datetime.now().astimezone(
-                pytz.timezone("Europe/Bucharest")
+                pytz.timezone(settings.TIME_ZONE)
             ) - timedelta(minutes=options["minutes"])
         elif (
             latest := Earthquake.objects.filter(source=Earthquake.SOURCE_USGS)

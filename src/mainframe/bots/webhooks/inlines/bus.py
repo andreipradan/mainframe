@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 
 import pytz
+from django.conf import settings
 from mainframe.bots.webhooks.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
@@ -170,7 +171,7 @@ class BusInline(BaseInlines):
     def fetch(  # noqa: PLR0913
         cls, update, line_name, line_type, page, full_details=False
     ):
-        now = datetime.now(pytz.timezone("Europe/Bucharest"))
+        now = datetime.now(pytz.timezone(settings.TIME_ZONE))
         weekday = now.weekday()
         if weekday in range(5):
             day = "lv"

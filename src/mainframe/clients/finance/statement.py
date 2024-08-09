@@ -2,6 +2,8 @@ import csv
 import io
 from datetime import datetime, timezone
 
+import pytz
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
@@ -200,45 +202,55 @@ class RaiffeisenParser(StatementParser):
 
 
 class RevolutParser(StatementParser):
+    def __init__(self, file: InMemoryUploadedFile, logger):
+        super().__init__(file, logger)
+        (
+            self.current_account,
+            self.deposit_account,
+            self.savings_account,
+        ) = Account.objects.filter(
+            bank__icontains="revolut",
+            type__in=[
+                Account.TYPE_CURRENT,
+                Account.TYPE_DEPOSIT,
+                Account.TYPE_SAVINGS,
+            ],
+        ).order_by("type")
+
+    @staticmethod
+    def convert_to_utc(date_time):
+        if not date_time:
+            return None
+        dt = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S")
+        return pytz.timezone(settings.TIME_ZONE).localize(dt).astimezone(pytz.utc)
+
     @staticmethod
     def get_field(header):
         if header.lower() in ["started date", "completed date"]:
             return f"{header.split(' ')[0].lower()}_at"
         return header.lower()
 
-    @staticmethod
-    def normalize(transaction):
+    def normalize(self, transaction):
         transaction["balance"] = transaction["balance"] or None
 
         for time_field in ["started_at", "completed_at"]:
-            transaction[time_field] = (
-                datetime.strptime(transaction[time_field], "%Y-%m-%d %H:%M:%S").replace(
-                    tzinfo=timezone.utc
-                )
-                if transaction[time_field]
-                else None
-            )
+            transaction[time_field] = self.convert_to_utc(transaction[time_field])
+
+        if (product := transaction["product"]) == Account.TYPE_CURRENT:
+            transaction["account"] = self.current_account
+        elif product == Account.TYPE_DEPOSIT:
+            transaction["account"] = self.deposit_account
+        elif product == Account.TYPE_SAVINGS:
+            transaction["account"] = self.savings_account
+        else:
+            raise StatementImportError("Unexpected account type: %s", product)
+
         return transaction
 
     def run(self):
-        current_account, savings_account = Account.objects.filter(
-            bank__icontains="revolut",
-            type__in=[Account.TYPE_CURRENT, Account.TYPE_SAVINGS],
-        )
-
         reader = csv.DictReader(io.StringIO(self.file.read().decode("utf-8")))
         reader.fieldnames = list(map(self.get_field, reader.fieldnames))
-        return [
-            Transaction(
-                account=(
-                    current_account
-                    if transaction_dict["product"] == Account.TYPE_CURRENT
-                    else savings_account
-                ),
-                **self.normalize(transaction_dict),
-            )
-            for transaction_dict in reader
-        ]
+        return [Transaction(**self.normalize(line)) for line in reader]
 
 
 def import_statement(file: str | InMemoryUploadedFile, logger):

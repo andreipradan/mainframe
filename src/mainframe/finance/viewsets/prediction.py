@@ -65,7 +65,7 @@ class PredictionViewSet(viewsets.ViewSet):
             category=Category.UNIDENTIFIED,
             confirmed_by=Transaction.CONFIRMED_BY_UNCONFIRMED,
         )
-        if descriptions := self.request.data:
+        if descriptions := request.data:
             queryset = queryset.filter(description__in=descriptions)
 
         predict(queryset.values("description", "id"), logger)
