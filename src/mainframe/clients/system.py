@@ -40,7 +40,7 @@ def get_folder_contents(folder):
     )
 
 
-def run_cmd(cmd, prefix=None, logger=None, **kwargs):
+def run_cmd(cmd, prefix=None, logger=None, **kwargs) -> str:
     prefix = prefix.upper() if prefix else cmd
     logger = logger or get_default_logger(__name__)
     logger.info("[%s] Starting", prefix)
@@ -61,4 +61,4 @@ def run_cmd(cmd, prefix=None, logger=None, **kwargs):
     if output:
         logger.info("[%s] Output: %s", prefix, output)
     logger.info("[%s] Done.", prefix)
-    return output
+    return output.decode("utf-8") if isinstance(output, bytes) else output

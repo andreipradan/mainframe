@@ -16,7 +16,7 @@ class RpiViewSet(viewsets.ViewSet):
         except RuntimeError as e:
             return JsonResponse(status=400, data={"data": str(e)})
 
-        return JsonResponse(status=204, data={"data": output.decode("utf-8")})
+        return JsonResponse(status=204, data={"data": output})
 
     @action(detail=False, methods=["put"], url_path="clear-build")
     def clear_build(self, request, **kwargs):
