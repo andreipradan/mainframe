@@ -98,6 +98,9 @@ migrate = { chain = [
 shell = "python src/manage.py shell_plus"
 
 [tool.ruff]
+exclude = [
+    "migrations"
+]
 target-version = "py310"
 # https://docs.astral.sh/ruff/rules/
 lint.select = [

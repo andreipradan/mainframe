@@ -92,8 +92,7 @@ jobs:
       id-token: 'write'
     needs:
       - ruff
-      - tests
-      - changes
+      - security
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - name: Notify BE start deployment

@@ -20,12 +20,10 @@ class CommandsViewSet(viewsets.GenericViewSet):
     def list(self, request, *args, **kwargs):
         def filter_out(item):
             _, app = item
-            if (
+            return not (
                 app in ["debug_toolbar", "huey.contrib.djhuey", "rest_frameworkd"]
                 or "django" in app
-            ):
-                return False
-            return True
+            )
 
         commands = sorted(
             filter(filter_out, get_commands().items()), key=operator.itemgetter(1)

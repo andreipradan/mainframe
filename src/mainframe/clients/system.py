@@ -44,7 +44,7 @@ def run_cmd(cmd, prefix=None, logger=None, **kwargs) -> str:
     prefix = prefix.upper() if prefix else cmd
     logger = logger or get_default_logger(__name__)
     logger.info("[%s] Starting", prefix)
-    p = subprocess.Popen(
+    p = subprocess.Popen(  # noqa: S603
         cmd.split(),  # noqa: S603
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
