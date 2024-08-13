@@ -201,7 +201,7 @@ const Devices = () =>  {
                                 <td>{device.alias || device.name || "-"} &nbsp;</td>
                                 <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
                                 <td>{device.ip }</td>
-                                <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac.toUpperCase()}</td>
+                                <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac}</td>
                                 <td>{new Date(device.updated_at).toLocaleString()}</td>
                               </tr>
                           : <tr key={i}>
