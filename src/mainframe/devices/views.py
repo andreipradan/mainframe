@@ -30,7 +30,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
             queryset = queryset.annotate(
                 search=SearchVector("ip", "mac", "name"),
             ).filter(search__icontains=search_term)
-        return queryset.order_by("-is_active", "name", "mac")
+        return queryset.order_by("-is_active", "alias", "name", "mac")
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
