@@ -21,7 +21,7 @@ class CommandsViewSet(viewsets.GenericViewSet):
         def filter_out(item):
             _, app = item
             return not (
-                app in ["debug_toolbar", "huey.contrib.djhuey", "rest_frameworkd"]
+                app in ["debug_toolbar", "huey.contrib.djhuey", "rest_framework"]
                 or "django" in app
             )
 
