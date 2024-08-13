@@ -18,7 +18,7 @@ const Devices = () =>  {
   const [devices, setDevices] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [sorting, setSorting] = useState("")
+  const [sorting, setSorting] = useState(null)
 
   const search = () => {
     return results.filter(d =>
@@ -27,37 +27,54 @@ const Devices = () =>  {
     );
   }
 
+  const getSortingComponent = column => {
+    const sortingClass = `cursor-pointer mdi mdi-sort-alphabetical${
+        sorting?.includes(`${column}-asc`)
+          ? '-ascending'
+          : sorting?.includes(`${column}-desc`)
+            ? '-descending'
+            : ''
+      }`
+    return <>
+      <i
+        className={sortingClass}
+        onClick={() => {
+          const hasSorting = sorting?.find(s => s.startsWith(`${column}-`))
+          setSorting(
+            !hasSorting
+              ? !sorting ? [`${column}-asc`] : [...sorting, `${column}-asc`]
+              : hasSorting === `${column}-asc`
+                ? sorting.map(s => s === `${column}-asc` ? `${column}-desc` : s)
+                : hasSorting === `${column}-desc`
+                  ? sorting.filter(s => s !== `${column}-desc`)
+                  : sorting
+          )
+        }
+      }
+      ></i>
+      {
+        sorting?.find(s => s.startsWith(`${column}-`)) &&
+        <sup>{sorting.findIndex(s => s.startsWith(`${column}-`)) + 1}</sup>
+      }
+    </>
+  }
+
   useEffect(() => {!devices && dispatch(DevicesApi.getList(token))}, []);
-  useEffect(() => {setDevices(results)}, [results])
+  useEffect(() => {if (results) setDevices(results)}, [results])
 
   useEffect(() => {
     if (!devices) return
-    const devicesCopy = devices.slice()
-    setDevices(devicesCopy.sort((a, b) =>
-      !sorting
-        ? a.is_active === b.is_active
-          ? a.updated_at === b.updated_at
-            ? a.name > b.name ? 1 : -1
-            : a.updated_at > b.updated_at ? 1 : -1
-          : b.is_active > a.is_active ? 1 : -1
-        : sorting === "mac-asc"
-          ? a.mac.toLowerCase() > b.mac.toLowerCase() ? 1 : -1
-          : sorting === "mac-desc"
-            ? b.mac.toLowerCase() > a.mac.toLowerCase() ? 1 : -1
-            : sorting === "ip-asc"
-              ? a.ip > b.ip ? 1 : -1
-              : sorting === "ip-desc"
-                ? b.ip > a.ip ? 1 : -1
-                : sorting === "name-asc"
-                  ? a.name > b.name ? 1 : -1
-                  : sorting === "name-desc"
-                    ? b.name > a.name ? 1 : -1
-                    : sorting === "updated-asc"
-                      ? a.updated_at > b.updated_at ? 1 : -1
-                      : sorting === "updated-desc"
-                        ? b.updated_at > a.updated_at ? 1 : -1
-                        : 1
-    ))
+    if (!sorting?.length) return setDevices(results)
+    const devicesCopy = devices.map(d => ({...d, displayName: d.alias || d.name}))
+    setDevices(devicesCopy.sort((a, b) => {
+      for (let i = 0; i < sorting.length; i++) {
+        let [key, order] = sorting[i].split("-")
+        let direction = order === "asc" ? 1 : -1
+        if (a[key] > b[key]) return direction
+        if (a[key] < b[key]) return -direction
+      }
+      return 0
+    }))
   }, [sorting])
 
   useEffect(() => {
@@ -118,7 +135,7 @@ const Devices = () =>  {
                         value={searchTerm}
                         type="search"
                         className="form-control"
-                        placeholder="Search transactions"
+                        placeholder="Search devices"
                         onChange={e => setSearchTerm(e.target.value)}
                       />
                     </form>
@@ -129,61 +146,12 @@ const Devices = () =>  {
                 <table className="table">
                   <thead>
                   <tr>
-                    <th> #</th>
-                    <th> Name
-                      <i
-                        className={
-                          `mdi mdi-sort-alphabetical${
-                            sorting === 'name-asc'
-                              ? '-ascending'
-                              : sorting === 'name-desc'
-                                ? '-descending' : ''
-                          } cursor-pointer`
-                        }
-                        onClick={() => setSorting(!sorting.startsWith('name-') ? 'name-asc' : sorting === 'name-asc' ? 'name-desc' : '')}
-                      ></i>
-                    </th>
-                    <th> Is Active?</th>
-                    <th> IP
-                      <i
-                        className={
-                          `mdi mdi-sort-alphabetical${
-                            sorting === 'ip-asc'
-                              ? '-ascending'
-                              : sorting === 'ip-desc'
-                                ? '-descending' : ''
-                          } cursor-pointer`
-                        }
-                        onClick={() => setSorting(!sorting.startsWith("ip-") ? 'ip-asc' : sorting === 'ip-asc' ? 'ip-desc' : '')}
-                      ></i>
-                    </th>
-                    <th> Mac Address
-                      <i
-                        className={
-                          `mdi mdi-sort-alphabetical${
-                            sorting === 'mac-asc'
-                              ? '-ascending'
-                              : sorting === 'mac-desc'
-                                ? '-descending' : ''
-                          } cursor-pointer`
-                        }
-                        onClick={() => setSorting(!sorting ? 'mac-asc' : sorting === "mac-asc" ? "mac-desc" : "")}
-                      ></i>
-                    </th>
-                    <th>
-                      Last updated
-                      <i
-                        className={
-                          `mdi mdi-sort-alphabetical${
-                            sorting === 'updated-asc'
-                              ? '-ascending'
-                              : sorting === 'updated-desc'
-                                ? '-descending' : ''
-                          } cursor-pointer`
-                        }
-                        onClick={() => setSorting(!sorting ? 'updated-asc' : sorting === 'updated-asc' ? 'updated-desc' : '')}
-                      ></i>
-                    </th>
+                    <th>#</th>
+                    <th>Name {getSortingComponent("displayName")}</th>
+                    <th>Is Active? {getSortingComponent("is_active")}</th>
+                    <th>IP {getSortingComponent("ip")}</th>
+                    <th>Mac Address {getSortingComponent("mac")}</th>
+                    <th>Last updated {getSortingComponent("updated_at")}</th>
                   </tr>
                   </thead>
                   <tbody>
