@@ -1,9 +1,11 @@
 from django.contrib.postgres.search import SearchVector
+from django.http import JsonResponse
+from mainframe.clients.devices import DevicesClient, DevicesException
 from mainframe.clients.logs import get_default_logger
-from mainframe.clients.system import fetch_network_devices
 from mainframe.devices.models import Device
 from mainframe.devices.serializers import DeviceSerializer
-from rest_framework import viewsets
+from mainframe.sources.models import Source
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
@@ -32,7 +34,13 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
-        if devices := fetch_network_devices():
+        try:
+            devices = DevicesClient(Source.objects.default()).run()
+        except DevicesException as ex:
+            logger.exception(ex)
+            return JsonResponse({"error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if devices:
             Device.objects.update(is_active=False)
             logger.info("Creating %d", len(devices))
             Device.objects.bulk_create(
