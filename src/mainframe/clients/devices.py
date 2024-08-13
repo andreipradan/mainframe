@@ -54,12 +54,19 @@ class DevicesClient:
         if len(response["topo"]) != 1:
             raise DevicesException(f"Got multiple routers: {len(response['topo'])}")
 
-        if devices := response["topo"][0]["sta"]:
+        if devices := list(map(parse_device, response["topo"][0]["sta"])):
+            existing_macs = Device.objects.values_list("mac", flat=True)
+            new_macs = [d["mac"] for d in devices if d["mac"] not in existing_macs]
+            self.logger.info(
+                "Got '%d' devices (%d new ones). Storing in db...",
+                len(devices),
+                len(new_macs),
+            )
+
             Device.objects.update(is_active=False)
-            self.logger.info("Got '%d' devices. Storing in db...", len(devices))
             try:
                 Device.objects.bulk_create(
-                    [Device(**parse_device(d)) for d in devices],
+                    [Device(**d) for d in devices],
                     update_conflicts=True,
                     update_fields=["additional_data", "is_active", "ip", "name"],
                     unique_fields=["mac"],
@@ -68,6 +75,7 @@ class DevicesClient:
                 raise DevicesException(
                     "Error while trying to store devices: '%s'", e
                 ) from e
+            return new_macs
         else:
             self.logger.warning("Got no devices.")
 
