@@ -11,7 +11,9 @@ class Command(BaseCommand):
         client = DevicesClient(Source.objects.default(), logger=logger)
         if new_macs := client.run():
             send_telegram_message(
-                f"⚠️ New macs found on the network: {', '.join(new_macs)}", logger=logger
+                f"⚠️ {len(new_macs)} new mac{'s' if len(new_macs) > 1 else ''} "
+                f"found on the network: {', '.join(new_macs)}",
+                logger=logger,
             )
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))
