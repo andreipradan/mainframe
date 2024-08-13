@@ -40,4 +40,4 @@ def run_cmd(cmd, prefix=None, logger=None, **kwargs) -> str:
         logger.info("[%s] Output: %s", prefix, output)
 
     logger.info("[%s] Done.", prefix)
-    return output.decode("utf-8") if isinstance(output, bytes) else output
+    return output.decode() if isinstance(output, bytes) else output

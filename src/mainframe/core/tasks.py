@@ -48,26 +48,27 @@ def schedule_deploy():
     from mainframe.clients import cron
 
     prefix = "[Deploy]"
-    if not (output := run_cmd("git pull origin main", logger=logger)):
+    if not (output := run_cmd("git pull origin main", logger=logger).strip()):
         send_telegram_message(text=f"{prefix} Could not git pull")
         return False
-    if output.strip() == "Already up to date.":
-        send_telegram_message(text=f"[{prefix}] {output.strip()}")
+
+    if output == "Already up to date.":
+        send_telegram_message(text=f"[{prefix}] {output}")
         return False
 
-    if output.strip().startswith("CONFLICT"):
+    if output.startswith("CONFLICT"):
         send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
         return False
 
     cmd_params = []
     msg_extra = []
-    if "requirements.lock" in output.strip():
+    if "requirements.lock" in output:
         cmd_params.append("requirements")
         msg_extra.append("requirements")
     else:
         cmd_params.append("no-requirements")
 
-    if "deploy/" in output.strip():
+    if "deploy/" in output:
         cmd_params.append("restart")
         msg_extra.append("Restart all services")
     else:
