@@ -13,7 +13,7 @@ const Devices = () =>  {
 
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results, errors, loading, loadingDevices } = useSelector(state => state.devices)
+  const {results, errors, loading, loadingDevices, count } = useSelector(state => state.devices)
 
   const [devices, setDevices] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -41,9 +41,9 @@ const Devices = () =>  {
             : a.updated_at > b.updated_at ? 1 : -1
           : b.is_active > a.is_active ? 1 : -1
         : sorting === "mac-asc"
-          ? a.mac > b.mac ? 1 : -1
+          ? a.mac.toLowerCase() > b.mac.toLowerCase() ? 1 : -1
           : sorting === "mac-desc"
-            ? b.mac > a.mac ? 1 : -1
+            ? b.mac.toLowerCase() > a.mac.toLowerCase() ? 1 : -1
             : sorting === "ip-asc"
               ? a.ip > b.ip ? 1 : -1
               : sorting === "ip-desc"
@@ -103,10 +103,12 @@ const Devices = () =>  {
                 >
                   <i className="mdi mdi-plus"></i>
                 </button>
+                <p className="text-small text-muted">Total: {count}</p>
+
               </h4>
               <Errors errors={errors} />
               <Collapse in={searchOpen}>
-                <ul className="navbar-nav w-100 rounded">
+              <ul className="navbar-nav w-100 rounded">
                   <li className="nav-item w-100">
                     <form
                       className="nav-link mt-2 mt-md-0 d-lg-flex search"
@@ -193,12 +195,13 @@ const Devices = () =>  {
                             ? <tr
                               key={i}
                               onClick={() => dispatch(selectItem(device.id))}
+                              className={"cursor-pointer"}
                             >
                             <td>{i + 1}</td>
-                                <td>{device.name || "-"} &nbsp;</td>
+                                <td>{device.alias || device.name || "-"} &nbsp;</td>
                                 <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
                                 <td>{device.ip }</td>
-                                <td>{device.mac}</td>
+                                <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac.toUpperCase()}</td>
                                 <td>{new Date(device.updated_at).toLocaleString()}</td>
                               </tr>
                           : <tr key={i}>

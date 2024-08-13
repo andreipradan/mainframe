@@ -393,6 +393,12 @@ const Sidebar = () => {
                   <span className="menu-title">Messages</span>
                 </Link>
               </li>
+              <li className={isPathActive('/sources') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <Link className="nav-link" to="/sources">
+                  <span className="menu-icon"><i className="mdi mdi-network" /></span>
+                  <span className="menu-title">Sources</span>
+                </Link>
+              </li>
               <li className="nav-item nav-category"><span className="nav-link">Finance</span></li>
               <li className={isPathActive('/finances') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <div className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
@@ -508,7 +514,7 @@ const Sidebar = () => {
             <span className="menu-title">Exchange Rates</span>
           </Link>
         </li>
-        <li className="nav-item nav-category"><span className="nav-link">Other</span></li>
+        <li className="nav-item nav-category"><span className="nav-link">Public</span></li>
         <li className={isPathActive('/earthquakes') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <Link className="nav-link" to="/earthquakes">
             <span className="menu-icon"><i className="mdi mdi-earth"></i></span>

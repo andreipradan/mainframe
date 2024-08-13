@@ -25,6 +25,7 @@ const Logs = lazy(() => import('./apps/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
 const Messages = lazy(() => import('./messages/Messages'));
 const Profile = lazy(() => import ("./profile/Profile"));
+const Sources = lazy(() => import('./sources/Sources'));
 const Tasks = lazy(() => import('./commands/Tasks'));
 const Todo = lazy(() => import('./apps/TodoList'));
 const UserGroups = lazy(() => import("./users/Groups"));
@@ -84,6 +85,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
+        {user?.is_staff && <Route exact path="/sources" component={ Sources } />}
         {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
