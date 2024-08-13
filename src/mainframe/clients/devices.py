@@ -3,6 +3,7 @@ import hmac
 import json
 
 import requests
+from django.db import IntegrityError
 from mainframe.devices.models import Device
 from mainframe.sources.models import Source
 from rest_framework import status
@@ -29,7 +30,9 @@ class DevicesClient:
             timeout=30,
         )
         if resp.status_code != status.HTTP_200_OK:
-            raise DevicesException(f"Unexpected response {resp.status_code}")
+            raise DevicesException(f"Unexpected login response {resp.status_code}")
+        if "errCode" in resp.json():
+            raise DevicesException(f"Unexpected login response {resp.json()}")
         return resp.json()["uuid"]
 
     def run(self):
@@ -54,12 +57,17 @@ class DevicesClient:
         if devices := response["topo"][0]["sta"]:
             Device.objects.update(is_active=False)
             self.logger.info("Got '%d' devices. Storing in db...", len(devices))
-            Device.objects.bulk_create(
-                [Device(**parse_device(d)) for d in devices],
-                update_conflicts=True,
-                update_fields=["is_active", "ip"],
-                unique_fields=["mac"],
-            )
+            try:
+                Device.objects.bulk_create(
+                    [Device(**parse_device(d)) for d in devices],
+                    update_conflicts=True,
+                    update_fields=["is_active", "ip"],
+                    unique_fields=["mac"],
+                )
+            except IntegrityError as e:
+                raise DevicesException(
+                    "Error while trying to store devices: '%s'", e
+                ) from e
         else:
             self.logger.warning("Got no devices.")
 
