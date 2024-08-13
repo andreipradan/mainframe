@@ -286,7 +286,7 @@ const Sidebar = () => {
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={isPathActive('/devices') ? 'nav-link active' : 'nav-link'} to="/devices">
+                        <Link className={isPathActive('/apps/devices') ? 'nav-link active' : 'nav-link'} to="/apps/devices">
                           Devices
                         </Link>
                       </li>

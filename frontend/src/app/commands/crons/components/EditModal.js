@@ -9,20 +9,25 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 import AceEditor from "react-ace";
+import Select from 'react-select';
 import { ColorRing } from "react-loader-spinner";
 
 
-import { select, setModalOpen } from "../../../../redux/cronsSlice";
+import CommandsApi from '../../../../api/commands';
 import CronsApi from "../../../../api/crons";
 import Errors from "../../../shared/Errors";
+import { select, setModalOpen } from "../../../../redux/cronsSlice";
+import { selectStyles } from '../../../finances/Accounts/Categorize/EditModal';
 
 const EditModal = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
+  const commands = useSelector(state => state.commands)
   const { selectedCron: cron, loadingCrons, errors, modalOpen } = useSelector(state => state.crons)
 
   const [annotations, setAnnotations] = useState(null);
   const [args, setArgs] = useState("");
+  const [allCommands, setAllCommands] = useState(null)
   const [command, setCommand] = useState("");
   const [expression, setExpression] = useState("");
   const [isActive, setIsActive] = useState(false);
@@ -31,15 +36,26 @@ const EditModal = () => {
   const [name, setName] = useState("");
 
   useEffect(() => {
+    if (commands.results) {
+      const allCommands = []
+      for (let app of commands.results) {
+        for (let cmd of app.commands)
+          allCommands.push({ label: `${app.app}.${cmd.name}`, value: cmd.name})
+      }
+      setAllCommands(allCommands)
+    }
+  }, [commands.results]);
+  useEffect(() => {
     if (cron) {
       setArgs(cron.args?.length ? cron.args.join("\n") : "")
-      setCommand(cron.command || "")
+      setCommand(allCommands.find(c => c.value === cron.command) || "")
       setExpression(cron.expression)
       setIsActive(cron.is_active)
       setKwargs(JSON.stringify(cron.kwargs, null, "\t"))
       setRedis(JSON.stringify(cron.redis, null, "\t"))
       setName(cron.name)
     }
+    if (!commands.results) dispatch(CommandsApi.getList(token))
   }, [cron]);
 
   const clearModal = () => {
@@ -58,6 +74,9 @@ const EditModal = () => {
     clearModal()
   }
 
+  const onCommandChange = e => {
+    setCommand({ label: allCommands.find(c => c.value === e.value).label, value: e.value })
+  }
   const onKwargsChange = (e, i) => {
     setKwargs(e)
     try {
@@ -68,6 +87,19 @@ const EditModal = () => {
       const annotation = {...i.end, text: error.message, type: 'error'}
       setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
     }
+  }
+  const onSubmit = () => {
+    const data = {
+      command: command.value,
+      expression: expression,
+      is_active: isActive,
+      name: name
+    }
+    if (args) data.args = args.split("\n")
+    if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ""))
+    if (cron) dispatch(CronsApi.updateCron(token, cron.id, data))
+    else dispatch(CronsApi.create(token, data))
+    clearModal()
   }
 
   return <Modal centered show={!!cron || modalOpen} onHide={closeModal}>
@@ -116,11 +148,14 @@ const EditModal = () => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Command</Form.Label>
-          <Form.Control
-            type="text"
+          <Form.Label>Management Command</Form.Label>
+          <Select
+            isDisabled={commands.loading}
+            isLoading={commands.loading}
+            onChange={onCommandChange}
+            options={allCommands}
+            styles={selectStyles}
             value={command}
-            onChange={e => setCommand(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="mb-3">
@@ -129,6 +164,7 @@ const EditModal = () => {
             type="text"
             value={expression}
             onChange={e => setExpression(e.target.value)}
+            required={true}
           />
         </Form.Group>
 
@@ -152,8 +188,7 @@ const EditModal = () => {
             theme="monokai"
             onChange={onKwargsChange}
             fontSize={12}
-            showPrintMargin={true}
-            showGutter={true}
+            showGutter={false}
             highlightActiveLine={true}
             value={kwargs}
             setOptions={{
@@ -177,7 +212,7 @@ const EditModal = () => {
             theme="monokai"
             fontSize={12}
             showPrintMargin={true}
-            showGutter={true}
+            showGutter={false}
             highlightActiveLine={true}
             value={redis}
             setOptions={{
@@ -202,35 +237,7 @@ const EditModal = () => {
         </Button>
       }
       <Button variant="secondary" onClick={closeModal}>Close</Button>
-      <Button
-          variant="primary"
-          onClick={() => {
-            if (cron)
-                dispatch(CronsApi.updateCron(
-                  token,
-                  cron.id,
-                  {
-                    args: args ? args.split("\n") : [],
-                    command: command,
-                    expression: expression,
-                    is_active: isActive,
-                    kwargs: JSON.parse(kwargs.replace(/[\r\n\t]/g, "")),
-                    name: name
-                  }
-              ))
-              else dispatch(CronsApi.create(token, {
-                    args: args ? args.split("\n") : [],
-                    command: command,
-                    expression: expression,
-                    is_active: isActive,
-                    kwargs: JSON.parse(kwargs.replace(/[\r\n\t]/g, "")),
-                    name: name
-                  }))
-              clearModal()
-          }}
-      >
-        Save Changes
-      </Button>
+      <Button variant="primary" onClick={onSubmit}>Save Changes</Button>
     </Modal.Footer>
   </Modal>
 }

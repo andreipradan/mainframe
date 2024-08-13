@@ -15,7 +15,7 @@ import { selectItem } from '../../../redux/watchersSlice';
 const Crons = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results: crons, errors, loading, loadingCrons } = useSelector(state => state.crons)
+  const {selectedCron, results: crons, errors, loading, loadingCrons } = useSelector(state => state.crons)
 
   const [selectedAction, setSelectedAction] = useState("")
   const [selectedActionCron, setSelectedActionCron] = useState(null)
@@ -56,7 +56,9 @@ const Crons = () =>  {
                   <i className="mdi mdi-plus"></i>
                 </button>
               </h4>
-              <Errors errors={errors}/>
+
+              {!selectedCron && <Errors errors={errors}/>}
+
               <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>

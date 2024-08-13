@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Audio, ColorRing } from "react-loader-spinner";
-
-import DevicesApi from "../../api/devices";
-import EditModal from "../devices/components/EditModal";
-import Errors from "../shared/Errors";
 import { Collapse } from 'react-bootstrap';
-import { selectItem, setModalOpen } from '../../redux/devicesSlice';
+
+import DevicesApi from "../../../api/devices";
+import EditModal from "./components/EditModal";
+import Errors from "../../shared/Errors";
+import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
 
 
 const Devices = () =>  {
-
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const {results, errors, loading, loadingDevices, count } = useSelector(state => state.devices)
@@ -65,7 +64,7 @@ const Devices = () =>  {
   useEffect(() => {
     if (!devices) return
     if (!sorting?.length) return setDevices(results)
-    const devicesCopy = devices.map(d => ({...d, displayName: d.alias || d.name}))
+    const devicesCopy = devices.slice()
     setDevices(devicesCopy.sort((a, b) => {
       for (let i = 0; i < sorting.length; i++) {
         let [key, order] = sorting[i].split("-")
@@ -77,9 +76,7 @@ const Devices = () =>  {
     }))
   }, [sorting])
 
-  useEffect(() => {
-    results && setDevices(search())
-  }, [searchTerm]);
+  useEffect(() => {results && setDevices(search())}, [searchTerm]);
 
   return (
     <div>

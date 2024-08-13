@@ -1,6 +1,7 @@
 import axios from "./index";
 import {
   create,
+  deleteItem,
   set,
   setErrors,
   setLoading,
@@ -8,6 +9,8 @@ import {
   update,
 } from '../redux/sourcesSlice';
 import { handleErrors } from "./errors";
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
 
 
 class SourcesApi {
@@ -16,6 +19,17 @@ class SourcesApi {
     axios
       .post(`${base}/`, data, { headers: { Authorization: token} })
       .then(response => dispatch(create(response.data)))
+      .catch(err => handleErrors(err, dispatch, setErrors))
+  }
+  static delete = (token, source) => dispatch => {
+    dispatch(setLoading(true))
+    axios
+      .delete(`${base}/${source.id}/`, { headers: { Authorization: token }})
+      .then(() => {
+        dispatch(deleteItem(source.id));
+        toast.warning(`Source '${source.name} (${source.url})' deleted`, toastParams)
+
+      })
       .catch(err => handleErrors(err, dispatch, setErrors))
   }
   static getList = token => dispatch => {

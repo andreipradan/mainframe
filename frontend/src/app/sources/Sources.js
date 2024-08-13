@@ -280,6 +280,11 @@ const Sources = () =>  {
             </Modal.Body>
         }
         <Modal.Footer>
+          {
+            sources.selectedItem && <Button variant="danger" className="float-left" onClick={() => dispatch(SourcesApi.delete(token, sources.selectedItem))}>
+              Delete
+            </Button>
+          }
           <Button variant="secondary" onClick={closeModal}>Close</Button>
           <Button
             disabled={sources.selectedItem ? false : !name || !url}

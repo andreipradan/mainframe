@@ -4,6 +4,7 @@ import { getBaseSliceOptions } from "./shared";
 export const sourcesSlice = createSlice(getBaseSliceOptions("sources"));
 export const {
   create,
+  deleteItem,
   selectItem,
   set,
   setErrors,

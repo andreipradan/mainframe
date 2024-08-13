@@ -1,18 +1,19 @@
 import React, {useEffect, useState} from "react";
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
-import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
+import AceEditor from 'react-ace';
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
+import {ColorRing} from "react-loader-spinner";
+
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
-import {ColorRing} from "react-loader-spinner";
-import DevicesApi from "../../../api/devices";
-import AceEditor from 'react-ace';
+
+import DevicesApi from "../../../../api/devices";
+import { selectItem, setModalOpen } from '../../../../redux/devicesSlice';
 
 const EditModal = () => {
   const dispatch = useDispatch();
