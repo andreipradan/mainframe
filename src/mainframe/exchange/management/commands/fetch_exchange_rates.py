@@ -5,6 +5,8 @@ from mainframe.exchange.management.clients import BNR, ECB, FetchExchangeRatesEx
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}
 
+logger = get_default_logger(__name__, management=True)
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -21,8 +23,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__, management=True)
-
         source = options["source"]
         logger.info("Fetching %s exchange rates", source.upper())
         healthchecks.ping(logger, f"{source}-fx")
