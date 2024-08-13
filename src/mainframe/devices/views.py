@@ -34,7 +34,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
-        client = DevicesClient(Source.objects.default())
+        client = DevicesClient(Source.objects.default(), logger=logger)
         try:
             client.run()
         except DevicesException as ex:
