@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "mainframe.expenses",
     "mainframe.finance",
     "mainframe.meals",
+    "mainframe.sources",
     "mainframe.transit_lines",
     "mainframe.watchers",
 ]

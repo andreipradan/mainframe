@@ -32,6 +32,10 @@ urlpatterns = [
     path("meals/", include(("mainframe.meals.routers", "api"), namespace="meals")),
     path("rpi/", include(("mainframe.api.rpi.routers", "api"), namespace="rpi")),
     path(
+        "sources/",
+        include(("mainframe.sources.routers", "api"), namespace="sources"),
+    ),
+    path(
         "split/", include(("mainframe.expenses.routers", "api"), namespace="expenses")
     ),
     path(
