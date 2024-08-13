@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { Audio, ColorRing } from "react-loader-spinner";
+
 import DevicesApi from "../../api/devices";
-import {Audio, ColorRing} from "react-loader-spinner";
-import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 import EditModal from "../devices/components/EditModal";
 import Errors from "../shared/Errors";
 import { Collapse } from 'react-bootstrap';
+import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 
 
 const Devices = () =>  {
@@ -26,11 +27,8 @@ const Devices = () =>  {
     );
   }
 
-  useEffect(() => {
-    !devices && dispatch(DevicesApi.getList(token))
-  }, []);
-
-  useEffect(() => setDevices(results), [results])
+  useEffect(() => {!devices && dispatch(DevicesApi.getList(token))}, []);
+  useEffect(() => {setDevices(results)}, [results])
 
   useEffect(() => {
     if (!devices) return
@@ -38,7 +36,9 @@ const Devices = () =>  {
     setDevices(devicesCopy.sort((a, b) =>
       !sorting
         ? a.is_active === b.is_active
-          ? a.name > b.name ? 1 : -1
+          ? a.updated_at === b.updated_at
+            ? a.name > b.name ? 1 : -1
+            : a.updated_at > b.updated_at ? 1 : -1
           : b.is_active > a.is_active ? 1 : -1
         : sorting === "mac-asc"
           ? a.mac > b.mac ? 1 : -1
@@ -52,8 +52,11 @@ const Devices = () =>  {
                   ? a.name > b.name ? 1 : -1
                   : sorting === "name-desc"
                     ? b.name > a.name ? 1 : -1
-                    : 1
-
+                    : sorting === "updated-asc"
+                      ? a.updated_at > b.updated_at ? 1 : -1
+                      : sorting === "updated-desc"
+                        ? b.updated_at > a.updated_at ? 1 : -1
+                        : 1
     ))
   }, [sorting])
 
@@ -165,23 +168,38 @@ const Devices = () =>  {
                         onClick={() => setSorting(!sorting ? 'mac-asc' : sorting === "mac-asc" ? "mac-desc" : "")}
                       ></i>
                     </th>
+                    <th>
+                      Last updated
+                      <i
+                        className={
+                          `mdi mdi-sort-alphabetical${
+                            sorting === 'updated-asc'
+                              ? '-ascending'
+                              : sorting === 'updated-desc'
+                                ? '-descending' : ''
+                          } cursor-pointer`
+                        }
+                        onClick={() => setSorting(!sorting ? 'updated-asc' : sorting === 'updated-asc' ? 'updated-desc' : '')}
+                      ></i>
+                    </th>
                   </tr>
                   </thead>
                   <tbody>
-                    {
-                      !loading
-                        ? devices?.length
-                          ? devices.map(
-                            (device, i) => !loadingDevices?.includes(device.id)
-                              ? <tr
-                                key={i}
-                                onClick={() => dispatch(selectItem(device.id))}
-                              >
-                                <td>{i + 1}</td>
+                  {
+                    !loading
+                      ? devices?.length
+                        ? devices.map(
+                          (device, i) => !loadingDevices?.includes(device.id)
+                            ? <tr
+                              key={i}
+                              onClick={() => dispatch(selectItem(device.id))}
+                            >
+                            <td>{i + 1}</td>
                                 <td>{device.name || "-"} &nbsp;</td>
                                 <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
                                 <td>{device.ip }</td>
                                 <td>{device.mac}</td>
+                                <td>{new Date(device.updated_at).toLocaleString()}</td>
                               </tr>
                           : <tr key={i}>
                             <td colSpan={6}>
