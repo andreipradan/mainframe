@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *_, **options):
         logger = get_default_logger(__name__, management=True)
         client = DevicesClient(Source.objects.default(), logger=logger)
-        if new_macs := client.run(check=True):
+        if new_macs := client.run():
             send_telegram_message(
                 f"⚠️ New macs found on the network: {', '.join(new_macs)}", logger=logger
             )
