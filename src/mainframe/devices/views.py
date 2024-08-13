@@ -34,19 +34,10 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["put"])
     def sync(self, request, **kwargs):
+        client = DevicesClient(Source.objects.default())
         try:
-            devices = DevicesClient(Source.objects.default()).run()
+            client.run()
         except DevicesException as ex:
             logger.exception(ex)
             return JsonResponse({"error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
-
-        if devices:
-            Device.objects.update(is_active=False)
-            logger.info("Creating %d", len(devices))
-            Device.objects.bulk_create(
-                [Device(**d) for d in devices],
-                update_conflicts=True,
-                update_fields=["is_active", "ip"],
-                unique_fields=["mac"],
-            )
         return super().list(request, **kwargs)

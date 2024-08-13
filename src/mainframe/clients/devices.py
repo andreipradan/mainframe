@@ -3,6 +3,7 @@ import hmac
 import json
 
 import requests
+from mainframe.devices.models import Device
 from mainframe.sources.models import Source
 from rest_framework import status
 
@@ -12,7 +13,8 @@ class DevicesException(Exception):
 
 
 class DevicesClient:
-    def __init__(self, source: Source):
+    def __init__(self, source: Source, logger):
+        self.logger = logger
         self.source = source
 
     @staticmethod
@@ -49,7 +51,17 @@ class DevicesClient:
         if len(response["topo"]) != 1:
             raise DevicesException(f"Got multiple routers: {len(response['topo'])}")
 
-        return list(map(parse_device, response["topo"][0]["sta"]))
+        if devices := response["topo"][0]["sta"]:
+            Device.objects.update(is_active=False)
+            self.logger.info("Got '%d' devices. Storing in db...", len(devices))
+            Device.objects.bulk_create(
+                [Device(**parse_device(d)) for d in devices],
+                update_conflicts=True,
+                update_fields=["is_active", "ip"],
+                unique_fields=["mac"],
+            )
+        else:
+            self.logger.warning("Got no devices.")
 
 
 def parse_device(device):
