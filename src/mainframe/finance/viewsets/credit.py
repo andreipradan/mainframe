@@ -12,7 +12,8 @@ from rest_framework.permissions import IsAdminUser
 class CreditViewSet(viewsets.ViewSet):
     permission_classes = (IsAdminUser,)
 
-    def list(self, request, **kwargs):
+    @staticmethod
+    def list(request, **kwargs):
         try:
             credit = get_default_credit()
         except ValidationError as e:

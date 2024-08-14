@@ -86,6 +86,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = "__all__"
 
-    def get_account_name(self, obj):
+    @staticmethod
+    def get_account_name(obj):
         account = AccountSerializer(obj.account).data
         return f"{account['bank']} | {account['type']}"

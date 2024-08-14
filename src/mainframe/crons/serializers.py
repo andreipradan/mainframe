@@ -13,7 +13,8 @@ class CronSerializer(serializers.ModelSerializer):
         model = Cron
         fields = "__all__"
 
-    def validate_expression(self, value):
+    @staticmethod
+    def validate_expression(value):
         if value:
             cron = CronTab().new()
             try:
@@ -22,5 +23,6 @@ class CronSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(e) from e
         return value
 
-    def get_redis(self, obj):
+    @staticmethod
+    def get_redis(obj):
         return json.loads(get_redis_client().get(f"tasks.{obj.name}") or "{}")

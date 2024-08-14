@@ -10,8 +10,10 @@ class MealSerializer(serializers.ModelSerializer):
         model = Meal
         fields = "__all__"
 
-    def get_time(self, obj):
+    @staticmethod
+    def get_time(obj):
         return obj.time
 
-    def get_type_verbose(self, obj):
+    @staticmethod
+    def get_type_verbose(obj):
         return obj.get_type_display()

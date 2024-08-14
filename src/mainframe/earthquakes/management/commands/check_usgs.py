@@ -14,7 +14,8 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 
-    def add_arguments(self, parser):
+    @staticmethod
+    def add_arguments(parser):
         parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
 
     def fetch(self, **options):
@@ -42,10 +43,12 @@ class Command(BaseEarthquakeCommand):
         }
         return requests.get(self.url, params=params, timeout=30)
 
-    def fetch_events(self, response):
+    @staticmethod
+    def fetch_events(response):
         return response.json()["features"]
 
-    def parse_earthquake(self, event) -> Earthquake:
+    @staticmethod
+    def parse_earthquake(event) -> Earthquake:
         props = event["properties"]
         long, lat, depth = event["geometry"]["coordinates"]
         return Earthquake(

@@ -20,7 +20,8 @@ class Command(BaseEarthquakeCommand):
     def fetch(self, **__):
         return requests.get(self.url, timeout=30, verify=False)  # noqa S501
 
-    def fetch_events(self, response: Response):
+    @staticmethod
+    def fetch_events(response: Response):
         magnitude_2 = 2
         return [
             r
@@ -28,7 +29,8 @@ class Command(BaseEarthquakeCommand):
             if r["sols"]["primary"]["magnitudes"]["primary"]["value"] >= magnitude_2
         ]
 
-    def get_datetime(self, string):
+    @staticmethod
+    def get_datetime(string):
         return pytz.utc.localize(datetime.fromisoformat(string))
 
     def parse_earthquake(self, result: dict) -> Earthquake:
