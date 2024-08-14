@@ -52,12 +52,7 @@ export const Camera = () => {
                   </button>
                 </div>
                 <div className="text-small">
-                  <a
-                    href="https://console.cloud.google.com/storage/browser/mainframe-media/2023/12?project=mainframe-pradan-dev"
-                    target="_blank"
-                  >
-                    Storage
-                  </a>
+                  <a href={process.env.REACT_APP_STORAGE_URL} target="_blank" rel="noreferrer">Storage</a>
                 </div>
                 <nav aria-label="breadcrumb" className="mt-1">
                   <ol className="breadcrumb">
