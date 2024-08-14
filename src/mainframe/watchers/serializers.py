@@ -12,5 +12,6 @@ class WatcherSerializer(serializers.ModelSerializer):
         model = Watcher
         fields = "__all__"
 
-    def get_redis(self, obj):
+    @staticmethod
+    def get_redis(obj):
         return json.loads(get_redis_client().get(f"tasks.{obj.name}") or "{}")

@@ -68,7 +68,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "password", "email", "is_active", "date"]
 
-    def validate_email(self, value):
+    @staticmethod
+    def validate_email(value):
         try:
             User.objects.get(email=value)
         except ObjectDoesNotExist:

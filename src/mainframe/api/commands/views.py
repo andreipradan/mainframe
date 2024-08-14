@@ -17,7 +17,8 @@ logger = get_default_logger(__name__)
 class CommandsViewSet(viewsets.GenericViewSet):
     permission_classes = (IsAdminUser,)
 
-    def list(self, request, *args, **kwargs):
+    @staticmethod
+    def list(request, *args, **kwargs):
         def filter_out(item):
             _, app = item
             return not (
