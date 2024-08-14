@@ -136,7 +136,7 @@ const Sidebar = () => {
             <div className="profile-pic">
               <div className="count-indicator">
                 <img className="img-xs rounded-circle " src={require('../../assets/images/faces/face15.jpg')} alt="profile" />
-                <span className="count bg-success"></span>
+                <span className="count bg-success" />
               </div>
               <div className="profile-name">
                 <h5 className="mb-0 font-weight-normal">
@@ -174,7 +174,7 @@ const Sidebar = () => {
                     <p className="preview-subject ellipsis mb-1 text-small">Account settings</p>
                   </div>
                 </a>
-                <div className="dropdown-divider"></div>
+                <div className="dropdown-divider" />
                 <a href="!#" className="dropdown-item preview-item" onClick={evt =>evt.preventDefault()}>
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
@@ -187,7 +187,7 @@ const Sidebar = () => {
                 </a>
                 {
                   user?.is_staff && <>
-                    <div className="dropdown-divider"></div>
+                    <div className="dropdown-divider" />
                     <a href="!#" className="dropdown-item preview-item" onClick={evt =>evt.preventDefault()}>
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">

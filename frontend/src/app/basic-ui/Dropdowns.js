@@ -34,7 +34,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -47,7 +47,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -60,7 +60,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -73,7 +73,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -86,7 +86,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -99,7 +99,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -120,7 +120,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -133,7 +133,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -146,7 +146,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -159,7 +159,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -172,7 +172,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -185,7 +185,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -211,7 +211,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -225,7 +225,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -239,7 +239,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -253,7 +253,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -267,7 +267,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -281,7 +281,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -308,7 +308,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -321,7 +321,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -334,7 +334,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -347,7 +347,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -360,7 +360,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -373,7 +373,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -386,7 +386,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -399,7 +399,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -412,7 +412,7 @@ export class Dropdowns extends Component {
                           <Dropdown.Item>Action</Dropdown.Item>
                           <Dropdown.Item>Another action</Dropdown.Item>
                           <Dropdown.Item>Something else here</Dropdown.Item>
-                          <Dropdown.Divider></Dropdown.Divider>
+                          <Dropdown.Divider />
                           <Dropdown.Item>Separated link</Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
@@ -440,7 +440,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -454,7 +454,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -468,7 +468,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -482,7 +482,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -496,7 +496,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -510,7 +510,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -535,7 +535,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -548,7 +548,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
@@ -561,7 +561,7 @@ export class Dropdowns extends Component {
                       <Dropdown.Item>Action</Dropdown.Item>
                       <Dropdown.Item>Another action</Dropdown.Item>
                       <Dropdown.Item>Something else here</Dropdown.Item>
-                      <Dropdown.Divider></Dropdown.Divider>
+                      <Dropdown.Divider />
                       <Dropdown.Item>Separated link</Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown>
