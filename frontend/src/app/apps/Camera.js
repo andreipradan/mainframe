@@ -15,7 +15,7 @@ export const Camera = () => {
     !results && dispatch(CameraApi.getList(token));
   }, []);
 
-  useEffect(() => {dispatch(setMessagesOpen(!!messages))}, [messages])
+  useEffect(() => {dispatch(setMessagesOpen(Boolean(messages)))}, [messages])
 
   const [currentImage, setCurrentImage] = useState(null)
   const setImage = filename => {
@@ -60,7 +60,7 @@ export const Camera = () => {
                       Home
                     </li>
                     {
-                      path?.split("/").filter(i => !!i).map((folder, i) =>
+                      path?.split("/").filter(i => Boolean(i)).map((folder, i) =>
                         <li
                           key={folder}
                           className="breadcrumb-item cursor-pointer"

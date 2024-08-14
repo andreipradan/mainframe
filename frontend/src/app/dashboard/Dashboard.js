@@ -138,7 +138,7 @@ const Dashboard = () => {
                 </button>
                 <div className="mr-auto text-sm-right pt-2 pt-sm-0">
                   <Form.Check
-                    checked={!!lights?.results?.some(l => l.capabilities.power === "on")}
+                    checked={Boolean(lights?.results?.some(l => l.capabilities.power === "on"))}
                     disabled={lights.loading}
                     type="switch"
                     id="checkbox-toggle"

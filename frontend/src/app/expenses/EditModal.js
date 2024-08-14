@@ -71,7 +71,7 @@ const EditModal = () => {
     setPayer(newPayer ? expenses.users.find(u => u.id === newPayer.value) : user)
   }
 
-  return <Modal centered show={!!expenses.selectedItem || expenses.modalOpen} onHide={closeModal}>
+  return <Modal centered show={Boolean(expenses.selectedItem) || expenses.modalOpen} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">

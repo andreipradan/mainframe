@@ -119,7 +119,7 @@ const Commands = () =>  {
         </div>
       </div>
       <EditModal />
-      <Modal centered show={!!selectedCommand} onHide={clearForm}>
+      <Modal centered show={Boolean(selectedCommand)} onHide={clearForm}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">

@@ -27,7 +27,7 @@ export const usersSlice = createSlice({
     },
     selectUser: (state, action) => {
       state.selectedUser = action.payload ? state.results.find(t => t.id === action.payload) : null
-      state.modalOpen = !!action.payload
+      state.modalOpen = Boolean(action.payload)
     },
     set: (state, action) => {
       state.count = action.payload.count

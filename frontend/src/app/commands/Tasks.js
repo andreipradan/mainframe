@@ -114,7 +114,7 @@ const Tasks = () =>  {
                   </tbody>
                 </table>
               </div>
-              <Modal centered show={!!selectedItem} onHide={() => {
+              <Modal centered show={Boolean(selectedItem)} onHide={() => {
                 dispatch(selectItem(null))
                 setTaskErrorsOpen(false)
                 setTaskHistoryOpen(false)

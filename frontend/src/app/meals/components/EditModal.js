@@ -8,7 +8,7 @@ const EditModal = () => {
   const dispatch = useDispatch();
   const meal = useSelector(state => state.meals.selectedItem)
 
-  return <Modal centered show={!!meal} onHide={() => dispatch(select())}>
+  return <Modal centered show={Boolean(meal)} onHide={() => dispatch(select())}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">

@@ -159,7 +159,7 @@ const Crons = () =>  {
         </div>
       </div>
       <EditModal />
-      <Modal centered show={!!selectedAction} onHide={() => setSelectedAction("")}>
+      <Modal centered show={Boolean(selectedAction)} onHide={() => setSelectedAction("")}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">

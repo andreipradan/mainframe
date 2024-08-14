@@ -107,7 +107,7 @@ const EditModal = () => {
     clearModal()
   }, [args, command, cron, expression, kwargs, name])
 
-  return <Modal centered show={!!cron || modalOpen} onHide={onCloseModal}>
+  return <Modal centered show={Boolean(cron) || modalOpen} onHide={onCloseModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">

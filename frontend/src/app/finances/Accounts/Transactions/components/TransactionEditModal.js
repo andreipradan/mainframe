@@ -58,7 +58,7 @@ const TransactionEditModal = () => {
     }
   }
 
-  return <Modal centered show={!!selectedItem} onHide={closeModal}>
+  return <Modal centered show={Boolean(selectedItem)} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">

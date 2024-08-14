@@ -48,7 +48,7 @@ const EditModal = () => {
       setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
     }
   }
-  return <Modal centered show={!!bot} onHide={() => dispatch(select())}>
+  return <Modal centered show={Boolean(bot)} onHide={() => dispatch(select())}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
@@ -135,7 +135,7 @@ const EditModal = () => {
       <Button variant="secondary" onClick={() => dispatch(select())}>
         Close
       </Button>
-      <Button variant="primary" disabled={!!annotations} onClick={() => {
+      <Button variant="primary" disabled={Boolean(annotations)} onClick={() => {
         dispatch(BotsApi.updateBot(token, bot.id, {
           additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
           is_active: isActive,

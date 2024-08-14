@@ -20,7 +20,7 @@ const TimetableEditModal = () => {
 
   return <Modal
     centered
-    show={!!timetable}
+    show={Boolean(timetable)}
     onHide={() => dispatch(selectTimetable())}
     dialogClassName={"min-vw-75"}
   >

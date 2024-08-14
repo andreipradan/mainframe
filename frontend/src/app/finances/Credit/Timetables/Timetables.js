@@ -40,7 +40,7 @@ const Timetables = () => {
     setSelectedFile(null)
   };
 
-  useEffect(() => setUploadOpen(!!timetable.errors), [timetable.errors]);
+  useEffect(() => setUploadOpen(Boolean(timetable.errors)), [timetable.errors]);
 
   useEffect(() => {!timetable.results && dispatch(TimetableApi.getTimetables(token))}, []);
 

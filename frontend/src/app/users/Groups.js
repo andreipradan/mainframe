@@ -226,7 +226,7 @@ const Groups = () => {
         </Button>
       </Modal.Footer>
     </Modal>
-    <Modal centered show={!!groupToRemove} onHide={() => setGroupToRemove(null)}>
+    <Modal centered show={Boolean(groupToRemove)} onHide={() => setGroupToRemove(null)}>
       <Modal.Header closeButton>
         <Modal.Title>
           <div className="row">

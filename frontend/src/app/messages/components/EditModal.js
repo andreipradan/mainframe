@@ -17,7 +17,7 @@ const EditModal = () => {
   const dispatch = useDispatch();
   const { selectedItem: msg, loadingItems } = useSelector(state => state.messages)
 
-  return <Modal centered show={!!msg} onHide={() => dispatch(selectItem())}>
+  return <Modal centered show={Boolean(msg)} onHide={() => dispatch(selectItem())}>
     <Modal.Header closeButton>
       <Modal.Title>
         Edit&nbsp;<i>{ msg?.chat_title }</i>
