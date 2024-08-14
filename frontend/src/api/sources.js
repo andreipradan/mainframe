@@ -48,6 +48,6 @@ class SourcesApi {
   }
 }
 
-let base = "sources";
+const base = "sources";
 
 export default SourcesApi;

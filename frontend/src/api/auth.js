@@ -43,6 +43,6 @@ class AuthApi {
   };
 }
 
-let base = "users";
+const base = "users";
 
 export default AuthApi;

@@ -39,9 +39,9 @@ const App = () => {
     }
   }
 
-  let navbarComponent = !isFullPageLayout ? <Navbar/> : '';
-  let sidebarComponent = !isFullPageLayout ? <Sidebar/> : '';
-  let footerComponent = !isFullPageLayout ? <Footer/> : '';
+  const navbarComponent = !isFullPageLayout ? <Navbar/> : '';
+  const sidebarComponent = !isFullPageLayout ? <Sidebar/> : '';
+  const footerComponent = !isFullPageLayout ? <Footer/> : '';
   return (
     <div className="container-scroller">
       { sidebarComponent }

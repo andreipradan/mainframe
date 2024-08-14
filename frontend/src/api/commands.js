@@ -55,6 +55,6 @@ class CommandsApi {
   };
 }
 
-let base = "commands";
+const base = "commands";
 
 export default CommandsApi;

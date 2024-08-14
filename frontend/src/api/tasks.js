@@ -65,6 +65,6 @@ class TasksApi {
   };
 }
 
-let base = "tasks";
+const base = "tasks";
 
 export default TasksApi;

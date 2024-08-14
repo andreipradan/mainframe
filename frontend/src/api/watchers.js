@@ -68,6 +68,6 @@ class WatchersApi {
   };
 }
 
-let base = "watchers/";
+const base = "watchers/";
 
 export default WatchersApi;

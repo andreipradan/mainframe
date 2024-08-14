@@ -65,11 +65,11 @@ const Details = () => {
     tooltips: {
       callbacks: {
         label: (tooltipItem, data)=> {
-          let dataset = data.datasets[tooltipItem.datasetIndex];
-          let meta = dataset._meta[Object.keys(dataset._meta)[0]];
-          let total = meta.total;
-          let currentValue = dataset.data[tooltipItem.index];
-          let percentage = parseFloat((currentValue/total*100).toFixed(1));
+          const dataset = data.datasets[tooltipItem.datasetIndex];
+          const meta = dataset._meta[Object.keys(dataset._meta)[0]];
+          const total = meta.total;
+          const currentValue = dataset.data[tooltipItem.index];
+          const percentage = parseFloat((currentValue/total*100).toFixed(1));
           return currentValue + ' (' + percentage + '%)';
         },
         title: (tooltipItem, data) => data.labels[tooltipItem[0].index]

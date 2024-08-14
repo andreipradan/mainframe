@@ -73,6 +73,6 @@ class CronsApi {
   };
 }
 
-let base = "crons";
+const base = "crons";
 
 export default CronsApi;

@@ -59,4 +59,4 @@ export class AccountsApi {
       })
   }
 }
-let base = "finance/accounts";
+const base = "finance/accounts";

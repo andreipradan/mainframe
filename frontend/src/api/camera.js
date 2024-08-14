@@ -48,6 +48,6 @@ class CameraApi {
   };
 }
 
-let base = "camera";
+const base = "camera";
 
 export default CameraApi;

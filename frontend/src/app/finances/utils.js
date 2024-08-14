@@ -16,7 +16,7 @@ export const setsAreEqual = (setA, setB) => {
     if (setA.size !== setB.size) {
         return false;
     }
-    for (let element of setA) {
+    for (const element of setA) {
         if (!setB.has(element)) {
             return false;
         }

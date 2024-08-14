@@ -12,12 +12,11 @@ import { TimetableApi } from "../../../api/finance";
 import Errors from "../../shared/Errors";
 
 const PMT = (ir, np, pv, fv, type) => {
-    let pmt, pvif;
     fv || (fv = 0);
     type || (type = 0);
     if (ir === 0) return -(pv + fv)/np;
-    pvif = Math.pow(1 + ir, np);
-    pmt = - ir * (pv * pvif + fv) / (pvif - 1);
+    const pvif = Math.pow(1 + ir, np);
+    let pmt = - ir * (pv * pvif + fv) / (pvif - 1);
     if (type === 1) pmt /= (1 + ir);
     return pmt;
 }

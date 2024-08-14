@@ -59,6 +59,6 @@ class DevicesApi {
   };
 }
 
-let base = "devices";
+const base = "devices";
 
 export default DevicesApi;

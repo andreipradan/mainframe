@@ -24,6 +24,6 @@ class LogsApi {
   };
 }
 
-let base = "logs/";
+const base = "logs/";
 
 export default LogsApi;

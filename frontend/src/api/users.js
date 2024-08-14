@@ -68,4 +68,4 @@ export class UsersApi {
   }
 }
 
-let base = "users";
+const base = "users";

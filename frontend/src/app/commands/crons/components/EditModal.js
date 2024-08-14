@@ -38,8 +38,8 @@ const EditModal = () => {
   useEffect(() => {
     if (commands.results) {
       const allCommands = []
-      for (let app of commands.results) {
-        for (let cmd of app.commands)
+      for (const app of commands.results) {
+        for (const cmd of app.commands)
           allCommands.push({ label: `${app.app}.${cmd.name}`, value: cmd.name})
       }
       setAllCommands(allCommands)

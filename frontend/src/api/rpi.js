@@ -37,6 +37,6 @@ class RpiApi {
   };
 }
 
-let base = "rpi";
+const base = "rpi";
 
 export default RpiApi;

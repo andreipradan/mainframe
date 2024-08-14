@@ -24,6 +24,6 @@ class MealsApi {
   };
 }
 
-let base = "meals";
+const base = "meals";
 
 export default MealsApi;

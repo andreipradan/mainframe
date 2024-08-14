@@ -43,6 +43,6 @@ class BotsApi {
   };
 }
 
-let base = "telegram/bots";
+const base = "telegram/bots";
 
 export default BotsApi;

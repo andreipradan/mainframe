@@ -83,6 +83,6 @@ class LightsApi {
   };
 }
 
-let base = "lights";
+const base = "lights";
 
 export default LightsApi;

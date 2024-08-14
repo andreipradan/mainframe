@@ -53,7 +53,7 @@ export const createSearchParams = params => {
 export class FinanceApi {
   static getExpenses = (token, accountId, year) => dispatch => {
     dispatch(setAccountsLoading(true));
-    let url = `${base}/accounts/${accountId}/expenses/?year=${year}`
+    const url = `${base}/accounts/${accountId}/expenses/?year=${year}`
     axios
       .get(url, { headers: { Authorization: token } })
       .then(response => dispatch(setAnalytics(response.data)))
@@ -159,4 +159,4 @@ export class TimetableApi {
   }
 }
 
-let base = "finance";
+const base = "finance";
