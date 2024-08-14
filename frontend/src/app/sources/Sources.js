@@ -144,12 +144,12 @@ const Sources = () =>  {
                         ? sources.results?.length
                           ? sources.results.map(
                             (s, i) => !sources.loadingItems?.includes(s.id)
-                              ? <tr key={i} className="cursor-pointer" onClick={() => dispatch(selectItem(s.id))}>
+                              ? <tr key={s.id} className="cursor-pointer" onClick={() => dispatch(selectItem(s.id))}>
                                 <td>{i + 1}</td>
                                 <td>{s.name}</td>
                                 <td>{s.url}</td>
                               </tr>
-                          : <tr key={i}>
+                          : <tr>
                             <td colSpan={6}>
                               <ColorRing
                                   width = "100%"

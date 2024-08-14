@@ -133,9 +133,9 @@ const Timetables = () => {
                         color='orange'
                       />
                     : timetable.results?.length
-                        ? timetable.results.map((timetable, i) =>
+                        ? timetable.results.map(timetable =>
                           <tr
-                            key={i}
+                            key={timetable.id}
                             onClick={() => dispatch(selectTimetable(timetable.id))}
                             style={{cursor: "pointer"}}
                           >

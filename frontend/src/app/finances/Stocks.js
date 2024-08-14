@@ -76,8 +76,8 @@ const Stocks = () => {
               !stocks.loading && stocks.aggregations && <div style={{maxHeight: "22vh", overflowY: "scroll"}}>
                 <ListItem label={"Total"} value={calculateSum(stocks.aggregations.quantities, "value")} textType={"warning"} className="mr-3" />
                 {
-                  stocks.aggregations?.quantities?.map((q, i) =>
-                    <ListItem key={i} label={q.ticker} value={q.value} textType={"warning"} className="mr-3" />
+                  stocks.aggregations?.quantities?.map(q =>
+                    <ListItem key={q.ticker} label={q.ticker} value={q.value} textType={"warning"} className="mr-3" />
 
                   )
                 }
@@ -87,8 +87,8 @@ const Stocks = () => {
         </div>
       </div>
       {
-        stocks.currencies?.map((currency, i) =>
-          <div className="col-sm-4 grid-margin" key={i}>
+        stocks.currencies?.map(currency =>
+          <div className="col-sm-4 grid-margin" key={currency}>
             <div className="card">
               <div className="card-body">
                 <h6>
@@ -101,9 +101,9 @@ const Stocks = () => {
                 </h6>
                 <div style={{maxHeight: "22vh", overflowY: "scroll"}}>
                   {
-                    !stocks.loading && stocks.aggregations && stocks.aggregations?.[currency].totals.map((item, i) =>
+                    !stocks.loading && stocks.aggregations?.[currency].totals.map((item, i) =>
                         <ListItem
-                            key={i}
+                            key={item.type}
                             label={capitalize(item.type.replace("_", " "))}
                             value={item.value ? `${currency === "USD" ? "$" : "€"} ${item.value} (${stocks.aggregations?.[currency].counts[i+1].value})` : "-"}
                             textType={"warning"}
@@ -159,8 +159,8 @@ const Stocks = () => {
                       <div className="mb-0 text-muted">
                         <ul className="list-arrow">
                           {
-                            pnl.currencies.map((c, i) =>
-                              <li key={i} className={pnl.total[c] < 0 ? "text-danger" : pnl.total[c] > 0 ? "text-success" : "text-warning"}>
+                            pnl.currencies.map(c =>
+                              <li key={c} className={pnl.total[c] < 0 ? "text-danger" : pnl.total[c] > 0 ? "text-success" : "text-warning"}>
                                 {pnl.total[c] < 0 ? "-" : null} {c === "USD" ? "$" : c}{pnl.total[c] < 0 ? -pnl.total[c]: pnl.total[c]}
                               </li>
                             )
@@ -232,7 +232,7 @@ const Stocks = () => {
                       color='orange'
                     />
                     : pnl.results?.length
-                        ? pnl.results.map((transaction, i) => <tr key={i}>
+                        ? pnl.results.map(transaction => <tr key={transaction.id}>
                           <td> {new Date(transaction.date_sold).toLocaleDateString()} </td>
                           <td> {new Date(transaction.date_acquired).toLocaleDateString()} </td>
                           <td style={{cursor: "pointer"}} onClick={() => onTickerChange([{value: transaction.ticker}], pnl)}> {transaction.ticker} </td>
@@ -347,7 +347,7 @@ const Stocks = () => {
                       color='orange'
                     />
                     : stocks.results?.length
-                        ? stocks.results.map((transaction, i) => <tr key={i}>
+                        ? stocks.results.map(transaction => <tr key={transaction.id}>
                           <td> {new Date(transaction.date).toLocaleString()} </td>
                           <td style={{cursor: "pointer"}} onClick={() => onTypeChange([{value: stocks.types.find(t => t[1] === transaction.type)[0]}])}> {transaction.type} </td>
                           <td> {transaction.quantity} </td>

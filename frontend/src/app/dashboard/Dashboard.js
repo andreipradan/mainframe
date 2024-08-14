@@ -171,7 +171,7 @@ const Dashboard = () => {
                       />
                       : lights.results?.length
                         ? lights.results.map((light, i) =>
-                          <div key={i}>
+                          <div key={light.ip}>
                             <div className="preview-item border-bottom">
                               <div className="preview-thumbnail">
                                 <p className={`text-${light.capabilities.power === "off" ? "danger" : "success"}`}>
@@ -214,7 +214,6 @@ const Dashboard = () => {
                                     wrapperClass="LineWave-wrapper"
                                     glassColor='#c0efff'
                                     color='#e15b64'
-                                    key={i}
                                   />
                                   : <>
                                   <Nouislider

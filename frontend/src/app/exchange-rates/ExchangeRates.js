@@ -163,8 +163,8 @@ const ExchangeRates = () => {
                         </td>
                       </tr>
                     : exchange.results?.length
-                      ? exchange.results.map((t, i) =>
-                        <tr key={i}>
+                      ? exchange.results.map(t =>
+                        <tr key={t.id}>
                           <td> {new Date(t.date).toLocaleDateString()}</td>
                           <td>{t.symbol}</td>
                           <td> {t.source}</td>

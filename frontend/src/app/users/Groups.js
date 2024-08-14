@@ -110,15 +110,15 @@ const Groups = () => {
                 <tbody>
                 {
                   groups.results?.length
-                    ? groups.results.map((t, i) =>
-                      <tr key={i}>
+                    ? groups.results.map(t =>
+                      <tr key={t.id}>
                         <td> {t.name} </td>
                         {
                           t.users.length
                             ? <td>
                               <ul className="list-arrow">
-                                {t.users.map((user, i) =>
-                                  <li key={i}>
+                                {t.users.map(user =>
+                                  <li key={user.id}>
                                     {
                                       t.created_by === user.id
                                         ? <small><i className="text-warning mdi mdi-star" />&nbsp;</small>
@@ -242,7 +242,7 @@ const Groups = () => {
                 <ul>
                   {
                     groupToRemove?.users?.length
-                      ? groupToRemove?.users?.map((u, i) => <li key={i}>{u.username} ({u.email})</li>)
+                      ? groupToRemove?.users?.map(u => <li key={u.id}>{u.username} ({u.email})</li>)
                       : "No users in this group"
                   }
                 </ul>

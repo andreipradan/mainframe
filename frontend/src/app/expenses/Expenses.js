@@ -82,8 +82,8 @@ const Accounts = () => {
                         </td>
                       </tr>
                     : expenses.results?.length
-                        ? expenses.results.map((p, i) =>
-                          <tr key={i} style={{cursor: "pointer"}} onClick={() => dispatch(selectItem(p.id))}>
+                        ? expenses.results.map(p =>
+                          <tr key={p.id} style={{cursor: "pointer"}} onClick={() => dispatch(selectItem(p.id))}>
                             <td > {p.date} </td>
                             <td >
                               {p.payer.username}
@@ -95,10 +95,8 @@ const Accounts = () => {
                               p.debts?.length
                                 ? <td>
                                   <ul className="list-arrow">
-                                    {p.debts.map((debt, i) =>
-                                      <li key={i}>
-                                        {debt.user} - {debt.amount}
-                                      </li>
+                                    {p.debts.map(debt =>
+                                      <li key={debt.id}>{debt.user} - {debt.amount}</li>
                                     )}
                                   </ul>
                                   </td>

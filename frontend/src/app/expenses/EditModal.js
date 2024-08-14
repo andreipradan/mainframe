@@ -99,7 +99,7 @@ const EditModal = () => {
             ? expenses.errors?.detail
               ? <p className="text-danger">{expenses.errors.detail}</p>
               : expenses.errors?.length
-                ? <ul className="text-danger">{expenses.errors.map((err, i) => <li key={i}>{err}</li>)}</ul>
+                ? <ul className="text-danger">{expenses.errors.map(err => <li key={err}>{err}</li>)}</ul>
                 : null
             : null
         }
@@ -124,7 +124,7 @@ const EditModal = () => {
               />
             </Form.Group>
             <ul className="text-danger">
-              {expenses.errors?.payer_id?.map((err, i) => <li key={i}>{err}</li>)}
+              {expenses.errors?.payer_id?.map(err => <li key={err}>{err}</li>)}
             </ul>
             <Form.Group className="mb-3">
               <Form.Label>Date</Form.Label>
@@ -143,7 +143,7 @@ const EditModal = () => {
               </div>
             </Form.Group>
             <ul className="text-danger">
-              {expenses.errors?.date?.map((err, i) => <li key={i}>{err}</li>)}
+              {expenses.errors?.date?.map(err => <li key={err}>{err}</li>)}
             </ul>
             <Form.Group className="mb-3">
               <Form.Label>Description</Form.Label>
@@ -155,7 +155,7 @@ const EditModal = () => {
               />
             </Form.Group>
             <ul className="text-danger">
-              {expenses.errors?.description?.map((err, i) => <li key={i}>{err}</li>)}
+              {expenses.errors?.description?.map(err => <li key={err}>{err}</li>)}
             </ul>
             <Form.Group className="mb-3">
               <Form.Label>Amount</Form.Label>
@@ -167,7 +167,7 @@ const EditModal = () => {
               />
             </Form.Group>
             <ul className="text-danger">
-              {expenses.errors?.amount?.map((err, i) => <li key={i}>{err}</li>)}
+              {expenses.errors?.amount?.map(err => <li key={err}>{err}</li>)}
             </ul>
             <Form.Group className="mb-3">
               <Form.Label>Currency</Form.Label>
@@ -179,7 +179,7 @@ const EditModal = () => {
               />
             </Form.Group>
             <ul className="text-danger">
-              {expenses.errors?.currency?.map((err, i) => <li key={i}>{err}</li>)}
+              {expenses.errors?.currency?.map(err => <li key={err}>{err}</li>)}
             </ul>
             <button type="submit" hidden />
           </Form>

@@ -131,7 +131,7 @@ const Payments = () => {
                       color='orange'
                     />
                     : payment.results?.length
-                      ? payment.results.map((p, i) => <tr key={i}>
+                      ? payment.results.map(p => <tr key={p.id}>
                         <td> {p.date} </td>
                         <td> {p.total} </td>
                         <td><i

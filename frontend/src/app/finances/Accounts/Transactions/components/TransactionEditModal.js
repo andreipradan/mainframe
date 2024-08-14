@@ -82,8 +82,8 @@ const TransactionEditModal = () => {
           <div className="mt-1">Amount: {selectedItem?.amount} {selectedItem?.currency} </div>
           {parseFloat(selectedItem?.fee) ? `Fee: ${selectedItem?.fee}` : null}
           {
-            ["state", "product", "type"].map((item, i) =>
-              <div key={i}>{capitalize(item)}: {capitalize(selectedItem?.[item] || " ")}</div>
+            ["state", "product", "type"].map(item =>
+              <div key={item}>{capitalize(item)}: {capitalize(selectedItem?.[item] || " ")}</div>
             )
           }
         </p>

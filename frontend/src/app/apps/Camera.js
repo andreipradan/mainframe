@@ -61,7 +61,13 @@ export const Camera = () => {
                     </li>
                     {
                       path?.split("/").filter(i => !!i).map((folder, i) =>
-                        <li style={{cursor: "pointer"}} key={i} className="breadcrumb-item" onClick={() => dispatch(CameraApi.getList(token, path.split("/").slice(0, i + 1).join("/")))}>
+                        <li
+                          key={folder}
+                          className="breadcrumb-item cursor-pointer"
+                          onClick={() =>
+                            dispatch(CameraApi.getList(token, path.split("/").slice(0, i + 1).join("/")))
+                          }
+                        >
                           {folder}
                         </li>
                       )
@@ -93,7 +99,7 @@ export const Camera = () => {
                     }
                     {
                       results?.map((result, i) =>
-                      <li key={i}>
+                      <li key={result.name}>
                         <span
                           style={{cursor: result.is_local ? "pointer": ""}}
                           className={`${result.is_local ? "" : "text-muted"} ${result.name === currentImage?.name ? "text-success" : ""}`}

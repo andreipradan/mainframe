@@ -78,7 +78,7 @@ const Users = () => {
                     />
                     : users.results?.length
                         ? users.results.map((p, i) =>
-                        <tr key={i} style={{cursor: "pointer"}} onClick={() => dispatch(selectUser(p.id))} >
+                        <tr key={p.id} className={"cursor-pointer"} onClick={() => dispatch(selectUser(p.id))} >
                           <td>{i + 1}</td>
                           <td>
                             {p.email}<br/>

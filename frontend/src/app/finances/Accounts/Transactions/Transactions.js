@@ -232,8 +232,8 @@ const Transactions = () => {
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   {
-                    accounts.results?.map((acc, i) =>
-                      <Dropdown.Item key={i} href="!#" onClick={evt => {
+                    accounts.results?.map(acc =>
+                      <Dropdown.Item key={acc.id} href="!#" onClick={evt => {
                         evt.preventDefault();
                         dispatch(selectItem(acc.id));
                       }} className="preview-item" active={acc.id === accounts.selectedItem.id}>
@@ -577,7 +577,7 @@ const Transactions = () => {
                       ? transactions.results.map((t, i) =>
                         <tr
                           className={getSpecificCategory(t.description) ? 'text-warning' : ''}
-                          key={i}
+                          key={t.id}
                           onClick={() => onCheckedCategoryChange({
                             value: getSpecificCategory(t.description)
                               ? 'Unidentified'
