@@ -12,5 +12,4 @@ class BaseCronFactory(factory.django.DjangoModelFactory):
 
 
 @factory.django.mute_signals(signals.post_save, signals.post_delete)
-class CronFactory(BaseCronFactory):
-    ...
+class CronFactory(BaseCronFactory): ...
