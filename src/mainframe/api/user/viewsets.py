@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.db import IntegrityError
 from mainframe.api.authentication.models import ActiveSession
-from mainframe.api.authentication.serializers import LoginSerializer, RegisterSerializer
+from mainframe.api.authentication.serializers import (LoginSerializer,
+                                                      RegisterSerializer)
 from mainframe.api.user.models import User
-from mainframe.api.user.serializers import ChangePasswordSerializer, UserSerializer
+from mainframe.api.user.serializers import (ChangePasswordSerializer,
+                                            UserSerializer)
 from mainframe.clients.chat import send_telegram_message
 from rest_framework import status, viewsets
 from rest_framework.decorators import action

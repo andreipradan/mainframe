@@ -7,7 +7,8 @@ import environ
 import requests
 import telegram
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
+from django.http import (HttpResponse, HttpResponseForbidden,
+                         HttpResponseServerError)
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from mainframe.clients.chat import send_telegram_message

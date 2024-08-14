@@ -1,7 +1,8 @@
 from mainframe.api.user.models import User
 from mainframe.api.user.serializers import UserSerializer
 from mainframe.expenses.models import Expense, ExpenseGroup
-from mainframe.expenses.serializers import ExpenseGroupSerializer, ExpenseSerializer
+from mainframe.expenses.serializers import (ExpenseGroupSerializer,
+                                            ExpenseSerializer)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated

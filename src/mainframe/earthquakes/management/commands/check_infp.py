@@ -3,7 +3,8 @@ from datetime import datetime
 import pytz
 import requests
 from mainframe.clients.logs import get_default_logger
-from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
+from mainframe.earthquakes.management.commands.base_check import \
+    BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 from requests import Response
 

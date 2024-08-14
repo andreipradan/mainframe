@@ -1,6 +1,7 @@
 from django.db.models import Count, Q, Sum
 from mainframe.finance.models import PnL, StockTransaction
-from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
+from mainframe.finance.serializers import (PnLSerializer,
+                                           StockTransactionSerializer)
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 

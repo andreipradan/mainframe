@@ -1,13 +1,5 @@
-from mainframe.finance.models import (
-    Account,
-    Category,
-    Credit,
-    Payment,
-    PnL,
-    StockTransaction,
-    Timetable,
-    Transaction,
-)
+from mainframe.finance.models import (Account, Category, Credit, Payment, PnL,
+                                      StockTransaction, Timetable, Transaction)
 from rest_framework import serializers
 
 

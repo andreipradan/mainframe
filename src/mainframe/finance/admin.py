@@ -1,5 +1,6 @@
 from django.contrib import admin
-from mainframe.finance.models import Account, Category, Credit, Payment, Timetable
+from mainframe.finance.models import (Account, Category, Credit, Payment,
+                                      Timetable)
 
 
 @admin.register(Account)

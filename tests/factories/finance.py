@@ -3,7 +3,8 @@ import random
 import factory
 from django.conf import settings
 from django.utils import timezone
-from mainframe.finance.models import Account, Category, Credit, Payment, Transaction
+from mainframe.finance.models import (Account, Category, Credit, Payment,
+                                      Transaction)
 
 
 class AccountFactory(factory.django.DjangoModelFactory):

@@ -2,15 +2,9 @@ import json
 
 import redis
 from django.http import Http404, JsonResponse
-from huey.signals import (
-    SIGNAL_CANCELED,
-    SIGNAL_COMPLETE,
-    SIGNAL_ERROR,
-    SIGNAL_EXPIRED,
-    SIGNAL_INTERRUPTED,
-    SIGNAL_LOCKED,
-    SIGNAL_REVOKED,
-)
+from huey.signals import (SIGNAL_CANCELED, SIGNAL_COMPLETE, SIGNAL_ERROR,
+                          SIGNAL_EXPIRED, SIGNAL_INTERRUPTED, SIGNAL_LOCKED,
+                          SIGNAL_REVOKED)
 from mainframe.clients.logs import get_default_logger
 from mainframe.core.tasks import get_redis_client, log_status
 from mainframe.finance.models import Category, Transaction

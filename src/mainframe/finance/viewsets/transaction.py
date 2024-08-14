@@ -3,7 +3,8 @@ from operator import itemgetter
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Count, F, Sum
 from django.http import JsonResponse
-from mainframe.clients.finance.statement import StatementImportError, import_statement
+from mainframe.clients.finance.statement import (StatementImportError,
+                                                 import_statement)
 from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Account, Category, Transaction
 from mainframe.finance.serializers import TransactionSerializer

@@ -1,4 +1,5 @@
-from mainframe.clients.finance.timetable import TimetableImportError, import_timetable
+from mainframe.clients.finance.timetable import (TimetableImportError,
+                                                 import_timetable)
 from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import Timetable
 from mainframe.finance.serializers import TimetableSerializer
