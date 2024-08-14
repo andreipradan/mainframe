@@ -13,5 +13,4 @@ class BaseWatcherFactory(factory.django.DjangoModelFactory):
 
 
 @factory.django.mute_signals(signals.post_save, signals.post_delete)
-class WatcherFactory(BaseWatcherFactory):
-    ...
+class WatcherFactory(BaseWatcherFactory): ...
