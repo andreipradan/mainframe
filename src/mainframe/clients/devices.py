@@ -30,9 +30,9 @@ class DevicesClient:
             timeout=30,
         )
         if resp.status_code != status.HTTP_200_OK:
-            raise DevicesException(f"Unexpected login response {resp.status_code}")
+            raise DevicesException(f"Error at login - status: {resp.status_code}")
         if "errCode" in resp.json():
-            raise DevicesException(f"Unexpected login response {resp.json()}")
+            raise DevicesException(f"Error at login - response {resp.json()}")
         return resp.json()["uuid"]
 
     def run(self):
@@ -58,9 +58,9 @@ class DevicesClient:
             existing_macs = Device.objects.values_list("mac", flat=True)
             new_macs = [d["mac"] for d in devices if d["mac"] not in existing_macs]
             self.logger.info(
-                "Got '%d' devices (%d new ones). Storing in db...",
+                "Got %d devices%s",
                 len(devices),
-                len(new_macs),
+                f" ({len(new_macs)} new ones)" if new_macs else "",
             )
 
             Device.objects.update(is_active=False)
@@ -73,13 +73,12 @@ class DevicesClient:
                 )
             except IntegrityError as e:
                 self.logger.exception(
-                    "Error while trying to bulk_create devices: %s\n\n"
-                    "Devices to save: %s",
+                    "Error while trying to store devices: %s\n\nDevices to save: %s",
                     e,
                     devices,
                 )
                 raise DevicesException(
-                    "Error while trying to store devices: '%s'", e
+                    "Error while trying to store devices. Check the logs"
                 ) from e
             return new_macs
         self.logger.warning("Got no devices.")

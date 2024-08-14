@@ -243,7 +243,7 @@ class RevolutParser(StatementParser):
         elif product == Account.TYPE_SAVINGS:
             transaction["account"] = self.savings_account
         else:
-            raise StatementImportError("Unexpected account type: %s", product)
+            raise StatementImportError(f"Unexpected account type: {product}")
 
         return transaction
 
