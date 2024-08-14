@@ -122,7 +122,7 @@ const TransactionEditModal = () => {
                       className={(additionalDataAnnotations) ? "form-control is-invalid" : ""}
                       fontSize={12}
                       height="100px"
-                      highlightActiveLine={true}
+                      highlightActiveLine
                       mode="json"
                       onChange={onAdditionalDataChange}
                       placeholder="Additional Data"
@@ -135,7 +135,7 @@ const TransactionEditModal = () => {
                         wrap: true
                       }}
                       showGutter={false}
-                      showPrintMargin={true}
+                      showPrintMargin
                       theme="monokai"
                       value={additionalData}
                       width="100%"

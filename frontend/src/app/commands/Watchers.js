@@ -382,9 +382,9 @@ const Watchers = () =>  {
                   theme="monokai"
                   onChange={onLatestChange}
                   fontSize={12}
-                  showPrintMargin={true}
-                  showGutter={true}
-                  highlightActiveLine={true}
+                  showPrintMargin
+                  showGutter
+                  highlightActiveLine
                   value={latest}
                   setOptions={{
                     enableBasicAutocompletion: false,
@@ -409,9 +409,9 @@ const Watchers = () =>  {
                   theme="monokai"
                   onChange={onRequestChange}
                   fontSize={12}
-                  showPrintMargin={true}
-                  showGutter={true}
-                  highlightActiveLine={true}
+                  showPrintMargin
+                  showGutter
+                  highlightActiveLine
                   value={request}
                   setOptions={{
                     enableBasicAutocompletion: false,

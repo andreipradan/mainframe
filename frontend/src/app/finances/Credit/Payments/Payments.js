@@ -124,7 +124,7 @@ const Payments = () => {
                 {
                   payment.loading
                     ? <Circles
-                      visible={true}
+                      visible
                       width="100%"
                       ariaLabel="ball-triangle-loading"
                       wrapperStyle={{ float: "right" }}

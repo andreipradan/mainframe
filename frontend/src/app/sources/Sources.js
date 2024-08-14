@@ -234,9 +234,9 @@ const Sources = () =>  {
                     theme="monokai"
                     onChange={onConfigChange}
                     fontSize={12}
-                    showPrintMargin={true}
-                    showGutter={true}
-                    highlightActiveLine={true}
+                    showPrintMargin
+                    showGutter
+                    highlightActiveLine
                     value={config}
                     setOptions={{
                       enableBasicAutocompletion: false,
@@ -260,9 +260,9 @@ const Sources = () =>  {
                     theme="monokai"
                     onChange={onHeadersChange}
                     fontSize={12}
-                    showPrintMargin={true}
-                    showGutter={true}
-                    highlightActiveLine={true}
+                    showPrintMargin
+                    showGutter
+                    highlightActiveLine
                     value={headers}
                     setOptions={{
                       enableBasicAutocompletion: false,

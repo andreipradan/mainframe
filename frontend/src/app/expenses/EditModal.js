@@ -120,7 +120,7 @@ const EditModal = () => {
                 onChange={onChangePayer}
                 options={expenses.users?.map(u => ({label: `${u.username} (${u.email})`, value: u.id}))}
                 styles={selectStyles}
-                closeMenuOnSelect={true}
+                closeMenuOnSelect
               />
             </Form.Group>
             <ul className="text-danger">
@@ -135,10 +135,10 @@ const EditModal = () => {
                   isClearable={false}
                   onChange={date => setDate(date)}
                   readOnly={expenses.loading}
-                  scrollableYearDropdown={true}
+                  scrollableYearDropdown
                   selected={date}
                   showIcon
-                  showYearDropdown={true}
+                  showYearDropdown
                 />
               </div>
             </Form.Group>

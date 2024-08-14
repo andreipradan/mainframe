@@ -124,7 +124,7 @@ const Stocks = () => {
               stocks.loading
                 ? <Circles width = "100%" height = "50" />
                 : stocks.results?.length
-                  ? <Marquee duration={10000} pauseOnHover={true} >
+                  ? <Marquee duration={10000} pauseOnHover >
                     <ListItem label={"Date"} value={new Date(stocks.results[0].date).toLocaleString()} textType={"warning"} className="mr-3" />
                     <ListItem label={"Type"} value={stocks.results[0].type} textType={"warning"} className="mr-3" />
                     {stocks.results[0].quantity && <ListItem label={"Quantity"} value={stocks.results[0].quantity} textType={"warning"} className="mr-3" />}
@@ -225,7 +225,7 @@ const Stocks = () => {
                 {
                   pnl.loading
                     ? <Circles
-                      visible={true}
+                      visible
                       width="100%"
                       ariaLabel="ball-triangle-loading"
                       wrapperStyle={{float: "right"}}
@@ -340,7 +340,7 @@ const Stocks = () => {
                 {
                   stocks.loading
                     ? <Circles
-                      visible={true}
+                      visible
                       width="100%"
                       ariaLabel="ball-triangle-loading"
                       wrapperStyle={{float: "right"}}

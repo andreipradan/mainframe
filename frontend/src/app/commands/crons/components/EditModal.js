@@ -153,7 +153,7 @@ const EditModal = () => {
             type="text"
             value={expression}
             onChange={onExpressionChange}
-            required={true}
+            required
           />
         </Form.Group>
         <Form.Group className="mb-3">
@@ -171,7 +171,7 @@ const EditModal = () => {
             onChange={onKwargsChange}
             fontSize={12}
             showGutter={false}
-            highlightActiveLine={true}
+            highlightActiveLine
             value={kwargs}
             setOptions={{
               enableBasicAutocompletion: false,
@@ -190,12 +190,12 @@ const EditModal = () => {
           <AceEditor
             placeholder="Redis"
             mode="python"
-            readOnly={true}
+            readOnly
             theme="monokai"
             fontSize={12}
-            showPrintMargin={true}
+            showPrintMargin
             showGutter={false}
-            highlightActiveLine={true}
+            highlightActiveLine
             value={redis}
             setOptions={{
               enableBasicAutocompletion: false,

@@ -81,7 +81,7 @@ const ExchangeRates = () => {
         {
           exchange.loading
             ? <Circles
-              visible={true}
+              visible
               height={20}
               width={20}
               wrapperClass="btn"
@@ -149,7 +149,7 @@ const ExchangeRates = () => {
                     ? <tr>
                         <td colSpan={4}>
                           <Circles
-                            visible={true}
+                            visible
                             wrapperStyle={{
                               display: "block",
                               marginLeft: "auto",

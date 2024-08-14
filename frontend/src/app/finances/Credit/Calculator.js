@@ -169,7 +169,7 @@ const Calculator = () => {
             onChange={onChangeTimetable}
             options={timetable.results.map((t, i) => ({label: `${i === 0 ? `${t.date} (latest)` : t.date}`, value: t.id}))}
             styles={selectStyles}
-            closeMenuOnSelect={true}
+            closeMenuOnSelect
           />
         : null
       }

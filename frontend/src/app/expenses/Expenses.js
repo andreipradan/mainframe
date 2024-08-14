@@ -69,7 +69,7 @@ const Accounts = () => {
                     ? <tr>
                         <td colSpan={5}>
                           <Circles
-                            visible={true}
+                            visible
                             ariaLabel="ball-triangle-loading"
                             wrapperStyle={{
                               display: "block",

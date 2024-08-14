@@ -60,7 +60,7 @@ const Meals = () =>  {
                 plugins={[dayGridPlugin]}
                 eventClick={event => dispatch(select(parseInt(event.event.id)))}
                 initialView='dayGridMonth'
-                weekends={true}
+                weekends
                 events={meals?.map(meal => ({
                   id: meal.id,
                   title: meal.name.substring(0, 10) + "...",

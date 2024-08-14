@@ -55,7 +55,7 @@ const BottomPagination = props => {
           </Pagination.Item>)
       }
 
-      <Pagination.Item active={true}>{currentPage}</Pagination.Item>
+      <Pagination.Item active>{currentPage}</Pagination.Item>
 
       {
         Array.from(new Array(5), (x, i) => i + currentPage).filter(i => i < lastPage).map(i =>

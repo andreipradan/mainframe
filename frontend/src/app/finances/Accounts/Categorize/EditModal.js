@@ -79,10 +79,10 @@ const EditModal = () => {
         />
         <ListItem label={"Type"} value={getTypeLabel(transaction.type)} />
         <ListItem label={"Product"} value={transaction.product} />
-        <ListItem label={"Started"} value={transaction.started_at} datetime={true}/>
+        <ListItem label={"Started"} value={transaction.started_at} datetime/>
         {
           transaction.state === "COMPLETED"
-            ? <ListItem label={"Completed"} value={transaction.completed_at} datetime={true} />
+            ? <ListItem label={"Completed"} value={transaction.completed_at} datetime />
             : <ListItem label={"State"} value={transaction.state} />
         }
         <ListItem
@@ -135,7 +135,7 @@ const EditModal = () => {
                   placeholder="Additional Data"
                   mode="python"
                   theme="monokai"
-                  readOnly={true}
+                  readOnly
                   fontSize={12}
                   showGutter={false}
                   value={JSON.stringify(transaction.additional_data, null, "\t")}
