@@ -72,6 +72,12 @@ class DevicesClient:
                     unique_fields=["mac"],
                 )
             except IntegrityError as e:
+                self.logger.exception(
+                    "Error while trying to bulk_create devices: %s\n\n"
+                    "Devices to save: %s",
+                    e,
+                    devices,
+                )
                 raise DevicesException(
                     "Error while trying to store devices: '%s'", e
                 ) from e
