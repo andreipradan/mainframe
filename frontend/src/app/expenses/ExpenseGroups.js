@@ -63,7 +63,7 @@ const ExpenseGroups = () => {
                 dispatch(GroupsApi.getList(token))
               }}
             >
-              <i className="mdi mdi-refresh"></i>
+              <i className="mdi mdi-refresh" />
           </button>
         }
       </h3>
@@ -95,7 +95,7 @@ const ExpenseGroups = () => {
                 className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
                 onClick={() => setAddGroupOpen(true)}
               >
-                <i className="mdi mdi-plus"></i>
+                <i className="mdi mdi-plus" />
               </button>
             </div>
             <div className="mb-0 text-muted">Total: {groups.count}</div>

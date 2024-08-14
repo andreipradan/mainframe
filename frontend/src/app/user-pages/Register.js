@@ -88,7 +88,7 @@ const Register = () => {
                   <div className="form-check">
                     <label className="form-check-label text-muted">
                       <input type="checkbox" className="form-check-input" required/>
-                      <i className="input-helper"></i>
+                      <i className="input-helper" />
                       I agree to all the <Link to="/documentation/terms-and-conditions">Terms & Conditions</Link>
                     </label>
                   </div>

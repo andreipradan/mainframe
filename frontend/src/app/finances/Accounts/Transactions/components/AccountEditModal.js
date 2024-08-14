@@ -89,7 +89,7 @@ const AccountEditModal = () => {
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => dispatch(AccountsApi.get(token, accounts.selectedItem?.id))}>
-                <i className="mdi mdi-refresh"></i>
+                <i className="mdi mdi-refresh" />
               </button>
             }
           </div>

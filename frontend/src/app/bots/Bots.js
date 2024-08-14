@@ -43,7 +43,7 @@ const Bots = () =>  {
               <h4 className="card-title">
                 Available bots
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
               </h4>
               <Errors errors={errors}/>
@@ -71,7 +71,7 @@ const Bots = () =>  {
                                   {bot.full_name} &nbsp;
                                   {
                                     !bot.is_active
-                                      ? <i className="mdi mdi-exclamation"></i>
+                                      ? <i className="mdi mdi-exclamation" />
                                       : ""
                                   }
                                   <br />
@@ -91,14 +91,14 @@ const Bots = () =>  {
                                         className="btn btn-outline-secondary"
                                         onClick={() => dispatch(BotsApi.sync(token, bot.id))}
                                     >
-                                      <i className="mdi mdi-refresh"></i>
+                                      <i className="mdi mdi-refresh" />
                                     </button>
                                     <button
                                       type="button"
                                       className="btn btn-outline-secondary"
                                       onClick={() => dispatch(select(bot.id))}
                                     >
-                                      <i className="mdi mdi-pencil"></i>
+                                      <i className="mdi mdi-pencil" />
                                     </button>
                                   </div>
                                 </td>

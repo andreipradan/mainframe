@@ -54,7 +54,7 @@ const Messages = () =>  {
                             className="btn btn-outline-success btn-sm border-0 bg-transparent"
                             onClick={() => dispatch(MessagesApi.getList(token, messages.kwargs))}
                         >
-                          <i className="mdi mdi-refresh"></i>
+                          <i className="mdi mdi-refresh" />
                         </button>
                         <p className="text-small text-muted">Total: {messages.count}</p>
                       </h4>

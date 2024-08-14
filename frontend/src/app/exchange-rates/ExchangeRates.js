@@ -94,7 +94,7 @@ const ExchangeRates = () => {
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
               onClick={() => dispatch(ExchangeApi.getRates(token, exchange.kwargs))}
             >
-                <i className="mdi mdi-refresh"></i>
+                <i className="mdi mdi-refresh" />
               </button>
         }
       </h3>

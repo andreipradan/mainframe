@@ -50,7 +50,7 @@ const Devices = () =>  {
           )
         }
       }
-      ></i>
+       />
       {
         sorting?.find(s => s.startsWith(`${column}-`)) &&
         <sup>{sorting.findIndex(s => s.startsWith(`${column}-`)) + 1}</sup>
@@ -97,11 +97,11 @@ const Devices = () =>  {
                 Available devices
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
                         onClick={() => dispatch(DevicesApi.getList(token))}>
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
                 <button type="button" className="btn btn-outline-primary btn-sm p-0 border-0 bg-transparent"
                         onClick={() => dispatch(DevicesApi.sync(token))}>
-                  <i className="mdi mdi-sync-alert"></i>
+                  <i className="mdi mdi-sync-alert" />
                 </button>
                 <button
                   type="button"
@@ -115,7 +115,7 @@ const Devices = () =>  {
                   className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
                   onClick={() => dispatch(setModalOpen(true))}
                 >
-                  <i className="mdi mdi-plus"></i>
+                  <i className="mdi mdi-plus" />
                 </button>
                 <p className="text-small text-muted">Total: {count}</p>
 

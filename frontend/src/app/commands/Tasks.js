@@ -48,7 +48,7 @@ const Tasks = () =>  {
                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
                   onClick={() => dispatch(TasksApi.getList(token))}
                 >
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
               </h4>
               {!selectedItem && <Errors errors={errors}/>}
@@ -132,7 +132,7 @@ const Tasks = () =>  {
                           className="btn btn-outline-success btn-sm border-0 bg-transparent"
                           onClick={() => dispatch(TasksApi.getItem(token, selectedItem?.name, selectedItem?.id))}
                         >
-                          <i className="mdi mdi-refresh"></i>
+                          <i className="mdi mdi-refresh" />
                         </button>
                       </div>
                     </div>

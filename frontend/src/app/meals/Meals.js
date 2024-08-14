@@ -43,10 +43,10 @@ const Meals = () =>  {
               <h4 className="card-title">
                 Available meals
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(MealsApi.getList(token, dateRange.start, dateRange.end))}>
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
                 <button type="button" className="btn btn-outline-primary btn-sm p-0 border-0 bg-transparent" onClick={() => dispatch(MealsApi.sync(token))}>
-                  <i className="mdi mdi-sync-alert"></i>
+                  <i className="mdi mdi-sync-alert" />
                 </button>
               </h4>
               {alertOpen && <Alert variant="danger" dismissible onClose={() => setAlertOpen(false)}>{errors}</Alert>}

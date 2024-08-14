@@ -271,7 +271,7 @@ const Transactions = () => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => dispatch(AccountsApi.get(token, accounts.selectedItem.id))}
               >
-                <i className="mdi mdi-refresh"></i>
+                <i className="mdi mdi-refresh" />
               </button>
             </h5>
             {
@@ -466,7 +466,7 @@ const Transactions = () => {
                     type="submit"
                     className="btn btn-outline-warning ml-3 btn-sm"
                   >
-                    <i className="mdi mdi-upload"></i> Upload
+                    <i className="mdi mdi-upload" /> Upload
                   </button>
                 </Form>
               </Collapse>
@@ -547,7 +547,7 @@ const Transactions = () => {
                           disabled={transactions.loading}
                           onChange={() => setAllChecked(!allChecked)}
                         />
-                        <i className="input-helper"></i>
+                        <i className="input-helper" />
                       </label>
                     </div>
                   </th>
@@ -600,7 +600,7 @@ const Transactions = () => {
                                     }, t.description)
                                   }
                                 />
-                                <i className="input-helper"></i>
+                                <i className="input-helper" />
                               </label>
                             </div>
                           </td>

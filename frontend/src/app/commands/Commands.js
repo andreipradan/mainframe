@@ -68,7 +68,7 @@ const Commands = () =>  {
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => dispatch(CommandsApi.getList(token))}
                 >
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
               </h4>
               <Errors errors={errors}/>
@@ -93,7 +93,7 @@ const Commands = () =>  {
                                         className="pl-3 mt-1 cursor-pointer"
                                         onClick={() => setSelectedCommand(command)}
                                       >
-                                        <i className="mdi mdi-play text-success"></i> {command.name}
+                                        <i className="mdi mdi-play text-success" /> {command.name}
                                       </li>)
                                     : null
                                 }

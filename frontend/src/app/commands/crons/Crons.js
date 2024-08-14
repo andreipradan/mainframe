@@ -46,14 +46,14 @@ const Crons = () =>  {
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => dispatch(CronsApi.getList(token))}
                 >
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
                 <button
                     type="button"
                     className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
                     onClick={() => dispatch(setModalOpen(true))}
                 >
-                  <i className="mdi mdi-plus"></i>
+                  <i className="mdi mdi-plus" />
                 </button>
               </h4>
 
@@ -117,7 +117,7 @@ const Crons = () =>  {
                                         setSelectedActionCron(cron);
                                       }}
                                     >
-                                      <i className="mdi mdi-play"></i>
+                                      <i className="mdi mdi-play" />
                                     </button>
                                     <button
                                       type="button"
@@ -127,7 +127,7 @@ const Crons = () =>  {
                                         setSelectedActionCron(cron);
                                       }}
                                     >
-                                      <i className="mdi mdi-skull-crossbones"></i>
+                                      <i className="mdi mdi-skull-crossbones" />
                                     </button>
                                   </div>
                                 </td>

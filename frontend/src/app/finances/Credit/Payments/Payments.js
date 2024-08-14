@@ -51,7 +51,7 @@ const Payments = () => {
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
           onClick={() => dispatch(PaymentsApi.getList(token))}
         >
-          <i className="mdi mdi-refresh"></i>
+          <i className="mdi mdi-refresh" />
         </button>
       </h3>
       <nav aria-label="breadcrumb">
@@ -99,7 +99,7 @@ const Payments = () => {
                     type="submit"
                     className="btn btn-outline-warning ml-3 btn-sm"
                   >
-                    <i className="mdi mdi-upload"></i> Upload
+                    <i className="mdi mdi-upload" /> Upload
                   </button>
                 </Form>
               </Collapse>

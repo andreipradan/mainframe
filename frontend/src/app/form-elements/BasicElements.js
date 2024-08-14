@@ -56,7 +56,7 @@ export class BasicElements extends Component {
                   <div className="form-check">
                     <label className="form-check-label text-muted">
                       <input type="checkbox" className="form-check-input"/>
-                      <i className="input-helper"></i>
+                      <i className="input-helper" />
                       Remember me
                     </label>
                   </div>
@@ -105,7 +105,7 @@ export class BasicElements extends Component {
                   <div className="form-check">
                     <label className="form-check-label text-muted">
                       <input type="checkbox" className="form-check-input"/>
-                      <i className="input-helper"></i>
+                      <i className="input-helper" />
                       Remember me
                     </label>
                   </div>
@@ -282,7 +282,7 @@ export class BasicElements extends Component {
                     <Form.Control type="text" className="form-control" placeholder="Find in facebook" aria-label="Recipient's username" aria-describedby="basic-addon2" />
                       <div className="input-group-append">
                         <button className="btn btn-sm btn-facebook" type="button">
-                          <i className="mdi mdi-facebook"></i>
+                          <i className="mdi mdi-facebook" />
                         </button>
                       </div>
                   </div>
@@ -302,28 +302,28 @@ export class BasicElements extends Component {
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="checkbox" className="form-check-input"/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Default
                           </label>
                         </div>
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="checkbox" defaultChecked className="form-check-input"/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Checked
                           </label>
                         </div>
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="checkbox" disabled className="form-check-input"/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Disabled
                           </label>
                         </div>
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="checkbox" disabled defaultChecked className="form-check-input"/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Disabled checked
                           </label>
                         </div>
@@ -334,28 +334,28 @@ export class BasicElements extends Component {
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="optionsRadios" id="optionsRadios1" value=""/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Default
                           </label>
                         </div>
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2" defaultChecked/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Selected
                           </label>
                         </div>
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="optionsRadios2" id="optionsRadios3" value="option3" disabled/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Disabled
                           </label>
                         </div>
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="optionsRadios2" id="optionsRadios4" value="option4" disabled defaultChecked/>
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                             Selected and disabled 
                           </label>
                         </div>
@@ -373,31 +373,31 @@ export class BasicElements extends Component {
                         <div className="form-check form-check-primary">
                           <label className="form-check-label">
                             <input type="checkbox" className="form-check-input" defaultChecked /> Primary 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-success">
                           <label className="form-check-label">
                             <input type="checkbox" className="form-check-input" defaultChecked /> Success 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-info">
                           <label className="form-check-label">
                             <input type="checkbox" className="form-check-input" defaultChecked /> Info 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-danger">
                           <label className="form-check-label">
                             <input type="checkbox" className="form-check-input" defaultChecked /> Danger 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-warning">
                           <label className="form-check-label">
                             <input type="checkbox" className="form-check-input" defaultChecked /> Warning 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                       </Form.Group>
@@ -407,31 +407,31 @@ export class BasicElements extends Component {
                         <div className="form-check form-check-primary">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio1" id="ExampleRadio1" defaultChecked /> Primary 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-success">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio2" id="ExampleRadio2" defaultChecked /> Success 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-info">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio3" id="ExampleRadio3" defaultChecked /> Info 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-danger">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio4" id="ExampleRadio4" defaultChecked /> Danger 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         <div className="form-check form-check-warning">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio5" id="ExampleRadio5" defaultChecked /> Warning 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                       </Form.Group>
@@ -459,7 +459,7 @@ export class BasicElements extends Component {
                   <div className="form-check mx-sm-2">
                     <label className="form-check-label">
                       <input type="checkbox" className="form-check-input" defaultChecked/> Remember me 
-                      <i className="input-helper"></i>
+                      <i className="input-helper" />
                     </label>
                   </div>
                   <button type="submit" className="btn btn-primary mb-2">Submit</button>
@@ -536,7 +536,7 @@ export class BasicElements extends Component {
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio4" id="membershipRadios1" defaultChecked /> Free 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         </div>
@@ -544,7 +544,7 @@ export class BasicElements extends Component {
                         <div className="form-check">
                           <label className="form-check-label">
                             <input type="radio" className="form-check-input" name="ExampleRadio4" id="membershipRadios2" /> Proffessional 
-                            <i className="input-helper"></i>
+                            <i className="input-helper" />
                           </label>
                         </div>
                         </div>

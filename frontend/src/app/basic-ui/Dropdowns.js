@@ -301,7 +301,7 @@ export class Dropdowns extends Component {
                     <div className="template-demo d-flex flex-wrap justify-content-between">
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-warning" id="dropdownMenuIconButton1">
-                          <i className="mdi mdi-earth"></i>
+                          <i className="mdi mdi-earth" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -314,7 +314,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-danger" id="dropdownMenuIconButton2">
-                          <i className="mdi mdi-trophy-outline"></i>
+                          <i className="mdi mdi-trophy-outline" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -327,7 +327,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-outline-info" id="dropdownMenuIconButton3">
-                          <i className="mdi mdi-clock"></i>
+                          <i className="mdi mdi-clock" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -340,7 +340,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-success" id="dropdownMenuIconButton4">
-                          <i className="mdi mdi-heart"></i>
+                          <i className="mdi mdi-heart" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -353,7 +353,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-warning" id="dropdownMenuIconButton5">
-                          <i className="mdi mdi-logout"></i>
+                          <i className="mdi mdi-logout" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -366,7 +366,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-primary" id="dropdownMenuIconButton6">
-                          <i className="mdi mdi-security"></i>
+                          <i className="mdi mdi-security" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -379,7 +379,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-dark" id="dropdownMenuIconButton7">
-                          <i className="mdi mdi-account"></i>
+                          <i className="mdi mdi-account" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -392,7 +392,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-info" id="dropdownMenuIconButton8">
-                          <i className="mdi mdi-bell"></i>
+                          <i className="mdi mdi-bell" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>
@@ -405,7 +405,7 @@ export class Dropdowns extends Component {
                       </Dropdown>
                       <Dropdown>
                         <Dropdown.Toggle variant="btn btn-success" id="dropdownMenuIconButton7">
-                          <i className="mdi mdi-account"></i>
+                          <i className="mdi mdi-account" />
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Header>Settings</Dropdown.Header>

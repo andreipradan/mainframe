@@ -47,7 +47,7 @@ const Navbar = () => {
                 <Dropdown.Item href="!#" onClick={evt => evt.preventDefault()} className="preview-item">
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-file-outline text-primary"></i>
+                      <i className="mdi mdi-file-outline text-primary" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -58,7 +58,7 @@ const Navbar = () => {
                 <Dropdown.Item href="!#" onClick={evt => evt.preventDefault()} className="preview-item">
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-web text-info"></i>
+                      <i className="mdi mdi-web text-info" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -69,7 +69,7 @@ const Navbar = () => {
                 <Dropdown.Item href="!#" onClick={evt => evt.preventDefault()} className="preview-item">
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-layers text-danger"></i>
+                      <i className="mdi mdi-layers text-danger" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -82,12 +82,12 @@ const Navbar = () => {
             </Dropdown>
             <li className="nav-item d-none d-lg-block">
               <a className="nav-link" href="!#" onClick={event => event.preventDefault()}>
-                <i className="mdi mdi-view-grid"></i>
+                <i className="mdi mdi-view-grid" />
               </a>
             </li>
             <Dropdown alignRight as="li" className="nav-item border-left">
               <Dropdown.Toggle as="a" className="nav-link count-indicator cursor-pointer">
-                <i className="mdi mdi-email"></i>
+                <i className="mdi mdi-email" />
                 <span className="count bg-success"></span>
               </Dropdown.Toggle>
               <Dropdown.Menu className="navbar-dropdown preview-list">
@@ -137,7 +137,7 @@ const Navbar = () => {
             </Dropdown>
             <Dropdown alignRight as="li" className="nav-item border-left">
               <Dropdown.Toggle as="a" className="nav-link count-indicator cursor-pointer">
-                <i className="mdi mdi-bell"></i>
+                <i className="mdi mdi-bell" />
                 <span className="count bg-danger"></span>
               </Dropdown.Toggle>
               <Dropdown.Menu className="dropdown-menu navbar-dropdown preview-list">
@@ -146,7 +146,7 @@ const Navbar = () => {
                 <Dropdown.Item className="dropdown-item preview-item" onClick={evt => evt.preventDefault()}>
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-calendar text-success"></i>
+                      <i className="mdi mdi-calendar text-success" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -160,7 +160,7 @@ const Navbar = () => {
                 <Dropdown.Item className="dropdown-item preview-item" onClick={evt => evt.preventDefault()}>
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-settings text-danger"></i>
+                      <i className="mdi mdi-settings text-danger" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -174,7 +174,7 @@ const Navbar = () => {
                 <Dropdown.Item className="dropdown-item preview-item" onClick={evt => evt.preventDefault()}>
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-link-variant text-warning"></i>
+                      <i className="mdi mdi-link-variant text-warning" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -194,7 +194,7 @@ const Navbar = () => {
                   <img className="img-xs rounded-circle" src={require('../../assets/images/faces/face15.jpg')}
                        alt="profile"/>
                   <p className="mb-0 d-none d-sm-block navbar-profile-name">{user.email}</p>
-                  <i className="mdi mdi-menu-down d-none d-sm-block"></i>
+                  <i className="mdi mdi-menu-down d-none d-sm-block" />
                 </div>
               </Dropdown.Toggle>
 
@@ -208,7 +208,7 @@ const Navbar = () => {
                 } className="preview-item">
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-settings text-success"></i>
+                      <i className="mdi mdi-settings text-success" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -225,7 +225,7 @@ const Navbar = () => {
                     className="preview-item">
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-logout text-danger"></i>
+                      <i className="mdi mdi-logout text-danger" />
                     </div>
                   </div>
                   <div className="preview-item-content">

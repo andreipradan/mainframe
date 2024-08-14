@@ -281,7 +281,7 @@ const Details = () => {
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
           onClick={() => dispatch(FinanceApi.getCredit(token))}
         >
-          <i className="mdi mdi-refresh"></i>
+          <i className="mdi mdi-refresh" />
         </button>
       </h3>
       <nav aria-label="breadcrumb">

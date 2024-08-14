@@ -103,7 +103,7 @@ const Timetables = () => {
                     type="submit"
                     className="btn btn-outline-warning ml-3 btn-sm"
                   >
-                    <i className="mdi mdi-upload"></i> Upload
+                    <i className="mdi mdi-upload" /> Upload
                   </button>
                 </Form>
               </Collapse>

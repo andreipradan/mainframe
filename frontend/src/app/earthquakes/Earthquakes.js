@@ -238,26 +238,26 @@ const Earthquakes = () => {
                     dispatch(BotsApi.getList(token))
                   }
                 }>
-                <i className="mdi mdi-refresh"></i>
+                <i className="mdi mdi-refresh" />
               </button>
               <div className="form-check float-right ml-4">
                 <label className="form-check-label text-muted">
                   <input type="checkbox" className="form-check-input" onChange={() => dispatch(setKwargs({local_events: !earthquakes.kwargs.local_events}))} checked={earthquakes.kwargs.local_events}/>
-                  <i className="input-helper"></i>
+                  <i className="input-helper" />
                   Only local events
                 </label>
               </div>
               <div className="form-check float-right ml-4">
                 <label className="form-check-label text-muted">
                   <input type="checkbox" className="form-check-input" onChange={() => dispatch(setKwargs({magnitude_gt5: !earthquakes.kwargs.magnitude_gt5}))} checked={earthquakes.kwargs.magnitude_gt5}/>
-                  <i className="input-helper"></i>
+                  <i className="input-helper" />
                   > 5 ML
                 </label>
               </div>
               <div className="form-check float-right">
                 <label className="form-check-label text-muted">
                   <input type="checkbox" className="form-check-input" onChange={() => dispatch(setKwargs({largest_events: !earthquakes.kwargs.largest_events}))} checked={earthquakes.kwargs.largest_events}/>
-                  <i className="input-helper"></i>
+                  <i className="input-helper" />
                   Largest events
                 </label>
               </div>

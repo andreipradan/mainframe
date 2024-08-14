@@ -102,10 +102,10 @@ const ListItem = (props) => {
                     <input className="checkbox" type="checkbox" 
                         checked={props.isCompleted} 
                         onChange={props.changed} 
-                        /> {props.children} <i className="input-helper"></i>
+                        /> {props.children} <i className="input-helper" />
                 </label>
             </div>
-            <i className="remove mdi mdi-close-box" onClick={props.remove}></i>
+            <i className="remove mdi mdi-close-box" onClick={props.remove} />
         </li>
     )
 };

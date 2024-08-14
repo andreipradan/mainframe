@@ -84,7 +84,7 @@ const EditModal = () => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => dispatch(ExpensesApi.get(token, expenses.selectedItem?.id))}
               >
-                <i className="mdi mdi-refresh"></i>
+                <i className="mdi mdi-refresh" />
               </button>
             }
           </div>

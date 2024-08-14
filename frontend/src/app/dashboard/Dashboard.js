@@ -177,7 +177,7 @@ const Dashboard = () => {
                               </div>
                               <div className="preview-item-content d-sm-flex flex-grow" onClick={() => toggleLightExpanded(light.ip)} style={{cursor: "pointer"}}>
                                 <div className="flex-grow">
-                                  <h6 className="preview-subject">{light.capabilities.name} <i className="mdi mdi-menu-down"></i></h6>
+                                  <h6 className="preview-subject">{light.capabilities.name} <i className="mdi mdi-menu-down" /></h6>
                                   <p className="text-muted mb-0">{light.ip}</p>
                                 </div>
                                 <div className="mr-auto text-sm-right pt-2 pt-sm-0">
@@ -304,7 +304,7 @@ const Dashboard = () => {
                 <h6 className="text-muted font-weight-normal"> 9.61% Since last month</h6>
               </div>
               <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                <i className="icon-lg mdi mdi-wallet-travel text-danger ml-auto"></i>
+                <i className="icon-lg mdi mdi-wallet-travel text-danger ml-auto" />
               </div>
             </div>
           </div>
@@ -323,7 +323,7 @@ const Dashboard = () => {
                 <h6 className="text-muted font-weight-normal">2.27% Since last month</h6>
               </div>
               <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                <i className="icon-lg mdi mdi-monitor text-success ml-auto"></i>
+                <i className="icon-lg mdi mdi-monitor text-success ml-auto" />
               </div>
             </div>
           </div>
@@ -343,7 +343,7 @@ const Dashboard = () => {
                       <div className="form-check form-check-muted m-0">
                         <label className="form-check-label">
                           <input type="checkbox" className="form-check-input" />
-                          <i className="input-helper"></i>
+                          <i className="input-helper" />
                         </label>
                       </div>
                     </th>
@@ -362,7 +362,7 @@ const Dashboard = () => {
                       <div className="form-check form-check-muted m-0">
                         <label className="form-check-label">
                           <input type="checkbox" className="form-check-input" />
-                          <i className="input-helper"></i>
+                          <i className="input-helper" />
                         </label>
                       </div>
                     </td>
@@ -386,7 +386,7 @@ const Dashboard = () => {
                       <div className="form-check form-check-muted m-0">
                         <label className="form-check-label">
                           <input type="checkbox" className="form-check-input" />
-                          <i className="input-helper"></i>
+                          <i className="input-helper" />
                         </label>
                       </div>
                     </td>
@@ -410,7 +410,7 @@ const Dashboard = () => {
                       <div className="form-check form-check-muted m-0">
                         <label className="form-check-label">
                           <input type="checkbox" className="form-check-input" />
-                          <i className="input-helper"></i>
+                          <i className="input-helper" />
                         </label>
                       </div>
                     </td>
@@ -434,7 +434,7 @@ const Dashboard = () => {
                       <div className="form-check form-check-muted m-0">
                         <label className="form-check-label">
                           <input type="checkbox" className="form-check-input" />
-                          <i className="input-helper"></i>
+                          <i className="input-helper" />
                         </label>
                       </div>
                     </td>
@@ -458,7 +458,7 @@ const Dashboard = () => {
                       <div className="form-check form-check-muted m-0">
                         <label className="form-check-label">
                           <input type="checkbox" className="form-check-input" />
-                          <i className="input-helper"></i>
+                          <i className="input-helper" />
                         </label>
                       </div>
                     </td>

@@ -38,7 +38,7 @@ const TransactionsBulkUpdateModal = props => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={() => dispatch(TransactionsApi.bulkUpdateTransactionsPreview(token, props.checkedCategories))}
               >
-                <i className="mdi mdi-refresh"></i>
+                <i className="mdi mdi-refresh" />
               </button>
 
             }

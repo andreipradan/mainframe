@@ -158,7 +158,7 @@ const Sidebar = () => {
             </div>
             <Dropdown alignRight>
               <Dropdown.Toggle as="a" className="cursor-pointer no-caret">
-                <i className="mdi mdi-dots-vertical"></i>
+                <i className="mdi mdi-dots-vertical" />
               </Dropdown.Toggle>
               <Dropdown.Menu className="sidebar-dropdown preview-list">
                 <a href="!#" className="dropdown-item preview-item" onClick={evt => {
@@ -167,7 +167,7 @@ const Sidebar = () => {
                 }}>
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-settings text-primary"></i>
+                      <i className="mdi mdi-settings text-primary" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -178,7 +178,7 @@ const Sidebar = () => {
                 <a href="!#" className="dropdown-item preview-item" onClick={evt =>evt.preventDefault()}>
                   <div className="preview-thumbnail">
                     <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-onepassword  text-info"></i>
+                      <i className="mdi mdi-onepassword  text-info" />
                     </div>
                   </div>
                   <div className="preview-item-content">
@@ -191,7 +191,7 @@ const Sidebar = () => {
                     <a href="!#" className="dropdown-item preview-item" onClick={evt =>evt.preventDefault()}>
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-calendar-today text-success"></i>
+                          <i className="mdi mdi-calendar-today text-success" />
                         </div>
                       </div>
                       <div className="preview-item-content">
@@ -206,7 +206,7 @@ const Sidebar = () => {
                     }} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-delete text-warning"></i>
+                          <i className="mdi mdi-delete text-warning" />
                         </div>
                       </div>
                       <div className="preview-item-content">
@@ -217,7 +217,7 @@ const Sidebar = () => {
                     <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-timer text-warning"></i>
+                          <i className="mdi mdi-timer text-warning" />
                         </div>
                       </div>
                       <div className="preview-item-content">
@@ -228,7 +228,7 @@ const Sidebar = () => {
                     <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-server text-warning"></i>
+                          <i className="mdi mdi-server text-warning" />
                         </div>
                       </div>
                       <div className="preview-item-content">
@@ -243,7 +243,7 @@ const Sidebar = () => {
                     }} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-restart text-danger"></i>
+                          <i className="mdi mdi-restart text-danger" />
                         </div>
                       </div>
                       <div className="preview-item-content">
@@ -264,7 +264,7 @@ const Sidebar = () => {
               <li className="nav-item nav-category"><span className="nav-link">Admin</span></li>
               <li className={location.pathname === '/' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/">
-                  <span className="menu-icon"><i className="mdi mdi-speedometer"></i></span>
+                  <span className="menu-icon"><i className="mdi mdi-speedometer" /></span>
                   <span className="menu-title"><Trans>Dashboard</Trans></span>
                 </Link>
               </li>
@@ -272,10 +272,10 @@ const Sidebar = () => {
                 <div className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                      onClick={() => setAppsMenuOpen(!appsMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
-                    <i className="mdi mdi-apps"></i>
+                    <i className="mdi mdi-apps" />
                   </span>
                   <span className="menu-title"><Trans>Apps</Trans></span>
-                  <i className="menu-arrow"></i>
+                  <i className="menu-arrow" />
                 </div>
                 <Collapse in={appsMenuOpen}>
                   <div>
@@ -307,10 +307,10 @@ const Sidebar = () => {
               <li className={isPathActive('/auth') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <div className={authMenuOpen ? 'nav-link menu-expanded' : 'nav-link'} onClick={() => setAuthMenuOpen(!authMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
-                    <i className="mdi mdi-account-multiple"></i>
+                    <i className="mdi mdi-account-multiple" />
                   </span>
                   <span className="menu-title">Auth</span>
-                  <i className="menu-arrow"></i>
+                  <i className="menu-arrow" />
                 </div>
 
                 <Collapse in={authMenuOpen}>
@@ -332,7 +332,7 @@ const Sidebar = () => {
               </li>
               <li className={isPathActive('/bots') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/bots">
-                  <span className="menu-icon"><i className="mdi mdi-speedometer"></i></span>
+                  <span className="menu-icon"><i className="mdi mdi-speedometer" /></span>
                   <span className="menu-title">Bots</span>
                 </Link>
               </li>
@@ -343,10 +343,10 @@ const Sidebar = () => {
                   data-toggle="collapse"
                 >
                   <span className="menu-icon">
-                    <i className="mdi mdi-bash"></i>
+                    <i className="mdi mdi-bash" />
                   </span>
                   <span className="menu-title">Commands</span>
-                  <i className="menu-arrow"></i>
+                  <i className="menu-arrow" />
                 </div>
                 <Collapse in={commandsMenuOpen}>
                   <div>
@@ -356,7 +356,7 @@ const Sidebar = () => {
                           className={isPathActive('/commands/crons') ? 'nav-link active' : 'nav-link'}
                           to="/commands/crons"
                         >
-                          <i className="mdi mdi-timer"></i>&nbsp;Crons
+                          <i className="mdi mdi-timer" />&nbsp;Crons
                         </Link>
                       </li>
                       <li className="nav-item">
@@ -364,7 +364,7 @@ const Sidebar = () => {
                           className={isPathActive('/commands/management') ? 'nav-link active' : 'nav-link'}
                           to="/commands/management"
                         >
-                          <i className="mdi mdi-account"></i>&nbsp;Management
+                          <i className="mdi mdi-account" />&nbsp;Management
                         </Link>
                       </li>
                       <li className="nav-item">
@@ -404,10 +404,10 @@ const Sidebar = () => {
                 <div className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                      onClick={() => setFinancesMenuOpen(!financesMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
-                    <i className="mdi mdi-credit-card-outline"></i>
+                    <i className="mdi mdi-credit-card-outline" />
                   </span>
                   <span className="menu-title">Accounts</span>
-                  <i className="menu-arrow"></i>
+                  <i className="menu-arrow" />
                 </div>
                 <Collapse in={financesMenuOpen}>
                   <div>
@@ -437,10 +437,10 @@ const Sidebar = () => {
                 <div className={creditMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                      onClick={() => setCreditMenuOpen(!creditMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
-                    <i className="mdi mdi-cash-multiple"></i>
+                    <i className="mdi mdi-cash-multiple" />
                   </span>
                   <span className="menu-title">Credit</span>
-                  <i className="menu-arrow"></i>
+                  <i className="menu-arrow" />
                 </div>
                 <Collapse in={creditMenuOpen}>
                   <div>
@@ -475,7 +475,7 @@ const Sidebar = () => {
               </li>
               <li className={isPathActive('/stocks') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/stocks">
-                  <span className="menu-icon"><i className="mdi mdi-chart-bar"></i></span>
+                  <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>
                   <span className="menu-title">Stocks</span>
                 </Link>
               </li>
@@ -486,9 +486,9 @@ const Sidebar = () => {
         <li className={isPathActive('/expenses') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <div className={expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                onClick={() => setExpensesMenuOpen(!expensesMenuOpen)} data-toggle="collapse">
-            <span className="menu-icon"><i className="mdi mdi-cash"></i></span>
+            <span className="menu-icon"><i className="mdi mdi-cash" /></span>
             <span className="menu-title">Expenses</span>
-            <i className="menu-arrow"></i>
+            <i className="menu-arrow" />
           </div>
           <Collapse in={expensesMenuOpen}>
             <div>
@@ -510,29 +510,29 @@ const Sidebar = () => {
         </li>
         <li className={location.pathname === '/exchange-rates' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <Link className="nav-link" to="/exchange-rates">
-            <span className="menu-icon"><i className="mdi mdi-chart-bar"></i></span>
+            <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>
             <span className="menu-title">Exchange Rates</span>
           </Link>
         </li>
         <li className="nav-item nav-category"><span className="nav-link">Public</span></li>
         <li className={isPathActive('/earthquakes') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <Link className="nav-link" to="/earthquakes">
-            <span className="menu-icon"><i className="mdi mdi-earth"></i></span>
+            <span className="menu-icon"><i className="mdi mdi-earth" /></span>
             <span className="menu-title">Earthquakes</span>
           </Link>
         </li>
         <li className={ isPathActive('/meals') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
           <Link className="nav-link" to="/meals">
-            <span className="menu-icon"><i className="mdi mdi-food"></i></span>
+            <span className="menu-icon"><i className="mdi mdi-food" /></span>
             <span className="menu-title">Meals</span>
           </Link>
         </li>
 
         <li className={ isPathActive('/documentation') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
           <div className={ documentationMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setDocumentationMenuOpen(!documentationMenuOpen) } data-toggle="collapse">
-            <span className="menu-icon"><i className="mdi mdi-lock"></i></span>
+            <span className="menu-icon"><i className="mdi mdi-lock" /></span>
             <span className="menu-title">Docs</span>
-            <i className="menu-arrow"></i>
+            <i className="menu-arrow" />
           </div>
           <Collapse in={ documentationMenuOpen }>
             <div>
@@ -549,10 +549,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/basic-ui') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ basicUiMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setBasicUiMenuOpen(!basicUiMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-laptop"></i>
+                      <i className="mdi mdi-laptop" />
                     </span>
                     <span className="menu-title"><Trans>Basic UI Elements</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ basicUiMenuOpen }>
                     <div>
@@ -567,10 +567,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/form-elements') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ formElementsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setFormElementsMenuOpen(!formElementsMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-playlist-play"></i>
+                      <i className="mdi mdi-playlist-play" />
                     </span>
                     <span className="menu-title"><Trans>Form Elements</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ formElementsMenuOpen }>
                     <div>
@@ -583,10 +583,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/tables') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ tablesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setTablesMenuOpen(!tablesMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-table-large"></i>
+                      <i className="mdi mdi-table-large" />
                     </span>
                     <span className="menu-title"><Trans>Tables</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ tablesMenuOpen }>
                     <div>
@@ -599,10 +599,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/charts') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ chartsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setChartsMenuOpen(!chartsMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-chart-bar"></i>
+                      <i className="mdi mdi-chart-bar" />
                     </span>
                     <span className="menu-title"><Trans>Charts</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ chartsMenuOpen }>
                     <div>
@@ -615,10 +615,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/icons') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ iconsMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setIconsMenuOpen(!iconsMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-contacts"></i>
+                      <i className="mdi mdi-contacts" />
                     </span>
                     <span className="menu-title"><Trans>Icons</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ iconsMenuOpen }>
                     <div>
@@ -631,10 +631,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/login') || isPathActive('/register') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ userPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setUserPagesMenuOpen(!userPagesMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-security"></i>
+                      <i className="mdi mdi-security" />
                     </span>
                     <span className="menu-title"><Trans>User Pages</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ userPagesMenuOpen }>
                     <div>
@@ -648,10 +648,10 @@ const Sidebar = () => {
                 <li className={ isPathActive('/error-pages') ? 'nav-item menu-items active' : 'nav-item menu-items' }>
                   <div className={ errorPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link' } onClick={ () => setErrorPagesMenuOpen(!errorPagesMenuOpen) } data-toggle="collapse">
                     <span className="menu-icon">
-                      <i className="mdi mdi-lock"></i>
+                      <i className="mdi mdi-lock" />
                     </span>
                     <span className="menu-title"><Trans>Error Pages</Trans></span>
-                    <i className="menu-arrow"></i>
+                    <i className="menu-arrow" />
                   </div>
                   <Collapse in={ errorPagesMenuOpen }>
                     <div>
@@ -665,7 +665,7 @@ const Sidebar = () => {
                 <li className="nav-item menu-items">
                   <a className="nav-link" href="http://bootstrapdash.com/demo/corona-react-free/documentation/documentation.html" rel="noopener noreferrer" target="_blank">
                     <span className="menu-icon">
-                      <i className="mdi mdi-file-document-box"></i>
+                      <i className="mdi mdi-file-document-box" />
                     </span>
                     <span className="menu-title"><Trans>Documentation</Trans></span>
                   </a>

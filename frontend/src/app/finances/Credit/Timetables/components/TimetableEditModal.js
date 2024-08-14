@@ -30,7 +30,7 @@ const TimetableEditModal = () => {
           <div className="col-lg-12 grid-margin stretch-card mb-1">
             Amortization Table
             <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(TimetableApi.get(token, timetable?.id))}>
-              <i className="mdi mdi-refresh"></i>
+              <i className="mdi mdi-refresh" />
             </button>
           </div>
         </div>

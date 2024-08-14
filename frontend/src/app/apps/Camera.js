@@ -48,7 +48,7 @@ export const Camera = () => {
                 Available Images
                 <div className="btn-group" role="group" aria-label="Basic example">
                   <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(CameraApi.getList(token, path))}>
-                    <i className="mdi mdi-refresh"></i>
+                    <i className="mdi mdi-refresh" />
                   </button>
                 </div>
                 <div className="text-small">

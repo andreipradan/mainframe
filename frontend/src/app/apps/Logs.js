@@ -30,7 +30,7 @@ const Logs = () =>  {
               <h4 className="card-title">
                 Available Logs
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(LogsApi.getList(token))}>
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">

@@ -122,7 +122,7 @@ const Watchers = () =>  {
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => dispatch(WatchersApi.getList(token))}
                 >
-                  <i className="mdi mdi-refresh"></i>
+                  <i className="mdi mdi-refresh" />
                 </button>
                 <button
                     type="button"
@@ -132,7 +132,7 @@ const Watchers = () =>  {
                       dispatch(setModalOpen(true))
                     }}
                 >
-                  <i className="mdi mdi-plus"></i>
+                  <i className="mdi mdi-plus" />
                 </button>
               </h4>
               {!selectedItem && !modalOpen ? <Errors errors={errors}/> : null}
@@ -239,7 +239,7 @@ const Watchers = () =>  {
                         className="btn btn-outline-success btn-sm border-0 bg-transparent"
                         onClick={() => dispatch(WatchersApi.getItem(token, selectedItem?.id))}
                       >
-                        <i className="mdi mdi-refresh"></i>
+                        <i className="mdi mdi-refresh" />
                       </button>
                     : null
                 }

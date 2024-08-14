@@ -191,7 +191,7 @@ const Categorize = () => {
                       dispatch(PredictionApi.getTasks(token))
                     }}
                   >
-                      <i className="mdi mdi-refresh"></i>
+                      <i className="mdi mdi-refresh" />
                     </button>
               }
               <div className="float-right">
@@ -259,7 +259,7 @@ const Categorize = () => {
                                 e.preventDefault()
                                 setTrainHistoryOpen(!trainHistoryOpen)
                               } } data-toggle="collapse">
-                                History <i className={`mdi mdi-chevron-${trainHistoryOpen ? 'down' : 'right'}`}></i>
+                                History <i className={`mdi mdi-chevron-${trainHistoryOpen ? 'down' : 'right'}`} />
                               </a>
                               <Collapse in={ trainHistoryOpen }>
                                 <ul>
@@ -292,7 +292,7 @@ const Categorize = () => {
                                       className="btn btn-outline-success btn-sm border-0 bg-transparent"
                                       onClick={() => dispatch(PredictionApi.getTask(token, "train"))}
                                     >
-                                      <i className="mdi mdi-refresh"></i>
+                                      <i className="mdi mdi-refresh" />
                                     </button>
                               }
                             </td>
@@ -345,7 +345,7 @@ const Categorize = () => {
                                 e.preventDefault()
                                 setPredictHistoryOpen(!predictHistoryOpen)
                               } } data-toggle="collapse">
-                                History <i className={`mdi mdi-chevron-${predictHistoryOpen ? 'down' : 'right'}`}></i>
+                                History <i className={`mdi mdi-chevron-${predictHistoryOpen ? 'down' : 'right'}`} />
                               </a>
                               <Collapse in={ predictHistoryOpen }>
                                 <ul>
@@ -378,7 +378,7 @@ const Categorize = () => {
                                       className="btn btn-outline-success btn-sm border-0 bg-transparent"
                                       onClick={() => dispatch(PredictionApi.getTask(token, "predict"))}
                                     >
-                                      <i className="mdi mdi-refresh"></i>
+                                      <i className="mdi mdi-refresh" />
                                     </button>
                               }
                             </td>
@@ -419,7 +419,7 @@ const Categorize = () => {
                       dispatch(PredictionApi.getTasks(token));
                     }}
                   >
-                    <i className="mdi mdi-refresh"></i>
+                    <i className="mdi mdi-refresh" />
                   </button>
               }
               <div className="float-right">
@@ -531,7 +531,7 @@ const Categorize = () => {
                           disabled={transactions.loading}
                           onChange={() => setAllChecked(!allChecked)}
                         />
-                        <i className="input-helper"></i>
+                        <i className="input-helper" />
                       </label>
                     </div>
                   </th>
@@ -574,7 +574,7 @@ const Categorize = () => {
                                   }, t.description)
                                 }
                               />
-                              <i className="input-helper"></i>
+                              <i className="input-helper" />
                             </label>
                           </div>
                         </td>

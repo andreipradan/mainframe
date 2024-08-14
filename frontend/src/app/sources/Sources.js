@@ -116,14 +116,14 @@ const Sources = () =>  {
                           className="btn btn-outline-success btn-sm border-0 bg-transparent"
                           onClick={() => dispatch(SourcesApi.getList(token, sources.kwargs))}
                         >
-                          <i className="mdi mdi-refresh"></i>
+                          <i className="mdi mdi-refresh" />
                         </button>
                         <button
                           type="button"
                           className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
                           onClick={() => dispatch(setModalOpen(true))}
                         >
-                          <i className="mdi mdi-plus"></i>
+                          <i className="mdi mdi-plus" />
                         </button>
                         <p className="text-small text-muted">Total: {sources.count}</p>
                       </h4>

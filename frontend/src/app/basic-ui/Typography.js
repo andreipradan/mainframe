@@ -88,19 +88,19 @@ export class Typography extends Component {
                     <div className="row">
                       <div className="col-md-4 d-flex align-items-center">
                         <div className="d-flex flex-row align-items-center">
-                          <i className="mdi mdi-compass icon-lg text-warning"></i>
+                          <i className="mdi mdi-compass icon-lg text-warning" />
                           <p className="mb-0 ml-1"> Icon-lg </p>
                         </div>
                       </div>
                       <div className="col-md-4 d-flex align-items-center">
                         <div className="d-flex flex-row align-items-center">
-                          <i className="mdi mdi-compass icon-md text-success"></i>
+                          <i className="mdi mdi-compass icon-md text-success" />
                           <p className="mb-0 ml-1"> Icon-md </p>
                         </div>
                       </div>
                       <div className="col-md-4 d-flex align-items-center">
                         <div className="d-flex flex-row align-items-center">
-                          <i className="mdi mdi-compass icon-sm text-danger"></i>
+                          <i className="mdi mdi-compass icon-sm text-danger" />
                           <p className="mb-0 ml-1"> Icon-sm </p>
                         </div>
                       </div>
@@ -189,7 +189,7 @@ export class Typography extends Component {
               <div className="card-body">
                 <h4 className="card-title">Top aligned media</h4>
                 <div className="media">
-                  <i className="mdi mdi-earth icon-md text-info d-flex align-self-start mr-3"></i>
+                  <i className="mdi mdi-earth icon-md text-info d-flex align-self-start mr-3" />
                   <div className="media-body">
                     <p className="card-text">Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque.</p>
                   </div>
@@ -202,7 +202,7 @@ export class Typography extends Component {
               <div className="card-body">
                 <h4 className="card-title">Center aligned media</h4>
                 <div className="media">
-                  <i className="mdi mdi-earth icon-md text-info d-flex align-self-center mr-3"></i>
+                  <i className="mdi mdi-earth icon-md text-info d-flex align-self-center mr-3" />
                   <div className="media-body">
                     <p className="card-text">Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque.</p>
                   </div>
@@ -215,7 +215,7 @@ export class Typography extends Component {
               <div className="card-body">
                 <h4 className="card-title">Bottom aligned media</h4>
                 <div className="media">
-                  <i className="mdi mdi-earth icon-md text-info d-flex align-self-end mr-3"></i>
+                  <i className="mdi mdi-earth icon-md text-info d-flex align-self-end mr-3" />
                   <div className="media-body">
                     <p className="card-text">Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque.</p>
                   </div>
