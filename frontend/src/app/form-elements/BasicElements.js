@@ -153,7 +153,7 @@ export class BasicElements extends Component {
                   </Form.Group>
                   <Form.Group>
                     <label htmlFor="exampleTextarea1">Textarea</label>
-                    <textarea className="form-control" id="exampleTextarea1" rows="4"></textarea>
+                    <textarea className="form-control" id="exampleTextarea1" rows="4" />
                   </Form.Group>
                   <button type="submit" className="btn btn-primary mr-2">Submit</button>
                   <button className="btn btn-dark">Cancel</button>
@@ -270,7 +270,7 @@ export class BasicElements extends Component {
                         <a className="dropdown-item" href="!#" onClick={event => event.preventDefault()}>Action</a>
                         <a className="dropdown-item" href="!#" onClick={event => event.preventDefault()}>Another action</a>
                         <a className="dropdown-item" href="!#" onClick={event => event.preventDefault()}>Something else here</a>
-                        <div role="separator" className="dropdown-divider"></div>
+                        <div role="separator" className="dropdown-divider" />
                         <a className="dropdown-item" href="!#" onClick={event => event.preventDefault()}>Separated link</a>
                       </div>
                     </div>

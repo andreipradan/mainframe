@@ -26,7 +26,7 @@ const Navbar = () => {
         <div className="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
           <button className="navbar-toggler align-self-center" type="button"
                   onClick={() => document.body.classList.toggle('sidebar-icon-only')}>
-            <span className="mdi mdi-menu"></span>
+            <span className="mdi mdi-menu" />
           </button>
           <ul className="navbar-nav w-100">
             <li className="nav-item w-100">
@@ -88,7 +88,7 @@ const Navbar = () => {
             <Dropdown alignRight as="li" className="nav-item border-left">
               <Dropdown.Toggle as="a" className="nav-link count-indicator cursor-pointer">
                 <i className="mdi mdi-email" />
-                <span className="count bg-success"></span>
+                <span className="count bg-success" />
               </Dropdown.Toggle>
               <Dropdown.Menu className="navbar-dropdown preview-list">
                 <h6 className="p-3 mb-0"><Trans>Messages</Trans></h6>
@@ -138,7 +138,7 @@ const Navbar = () => {
             <Dropdown alignRight as="li" className="nav-item border-left">
               <Dropdown.Toggle as="a" className="nav-link count-indicator cursor-pointer">
                 <i className="mdi mdi-bell" />
-                <span className="count bg-danger"></span>
+                <span className="count bg-danger" />
               </Dropdown.Toggle>
               <Dropdown.Menu className="dropdown-menu navbar-dropdown preview-list">
                 <h6 className="p-3 mb-0"><Trans>Notifications</Trans></h6>
@@ -237,7 +237,7 @@ const Navbar = () => {
           </ul>
           <button className="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button"
                   onClick={toggleOffcanvas}>
-            <span className="mdi mdi-format-line-spacing"></span>
+            <span className="mdi mdi-format-line-spacing" />
           </button>
         </div>
       </nav>

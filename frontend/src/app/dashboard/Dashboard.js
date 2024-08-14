@@ -590,7 +590,7 @@ const Dashboard = () => {
             </div>
             <p className="text-muted">Well, it seems to be working now. </p>
             <div className="progress progress-md portfolio-progress">
-              <div className="progress-bar bg-success" role="progressbar" style={{width: '50%'}} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+              <div className="progress-bar bg-success" role="progressbar" style={{width: '50%'}} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" />
             </div>
           </div>
         </div>
