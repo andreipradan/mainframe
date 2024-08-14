@@ -116,7 +116,7 @@ const Transactions = () => {
   }
 
   useEffect(() => {
-    !!transactions.msg && toast.success(
+    Boolean(transactions.msg) && toast.success(
       `${transactions.msg.message}`,
       toastParams)
   }, [transactions.msg])
@@ -124,7 +124,7 @@ const Transactions = () => {
     !allChecked
       ? setCheckedCategories(null)
       : setCheckedCategories(transactions.results?.filter(t=>
-        !!t.category_suggestion
+        Boolean(t.category_suggestion)
       ).map(t => ({description: t.description, category: t.category_suggestion})))
   }, [allChecked])
   useEffect(() => {
@@ -732,7 +732,7 @@ const Transactions = () => {
     </div>
     <AccountEditModal />
     <TransactionEditModal year={selectedDate.getFullYear()}/>
-    <Modal centered show={!!transactionToRemove} onHide={() => setTransactionToRemove(null)}>
+    <Modal centered show={Boolean(transactionToRemove)} onHide={() => setTransactionToRemove(null)}>
       <Modal.Header closeButton>
         <Modal.Title>
           <div className="row">

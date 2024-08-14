@@ -21,7 +21,7 @@ const Meals = () =>  {
     dateRange && dispatch(MealsApi.getList(token, dateRange.start, dateRange.end));
   }, [dateRange]);
 
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
+  useEffect(() => {setAlertOpen(Boolean(errors))}, [errors])
 
   const renderEventContent = eventInfo => <><b>{eventInfo.timeText}</b><i>{eventInfo.event.title}</i></>
 

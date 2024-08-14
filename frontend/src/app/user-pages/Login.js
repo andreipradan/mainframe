@@ -19,7 +19,7 @@ const Login = () => {
     dispatch(AuthApi.Login({email, password}, history))
   }
 
-  useEffect(() => setMessageOpen(!!auth.message), [auth.message])
+  useEffect(() => setMessageOpen(Boolean(auth.message)), [auth.message])
 
   return <div>
     <div className="d-flex align-items-center auth px-0">

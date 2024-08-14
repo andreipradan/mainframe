@@ -84,7 +84,7 @@ const EditModal = () => {
     }
   }, [device]);
 
-  return <Modal centered show={!!device || modalOpen} onHide={closeModal}>
+  return <Modal centered show={Boolean(device) || modalOpen} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
@@ -146,7 +146,7 @@ const EditModal = () => {
             type="text"
             value={mac}
             required
-            readOnly={!!device}
+            readOnly={Boolean(device)}
             onChange={e => setMac(e.target.value)}
           />
         </Form.Group>
@@ -182,7 +182,7 @@ const EditModal = () => {
     }
     <Modal.Footer>
       {
-        !!device && <Button variant="danger" className="float-left" onClick={() => dispatch(DevicesApi.delete(token, device.id))}>
+        Boolean(device) && <Button variant="danger" className="float-left" onClick={() => dispatch(DevicesApi.delete(token, device.id))}>
           Delete
         </Button>
       }

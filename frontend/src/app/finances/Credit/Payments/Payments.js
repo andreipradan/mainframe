@@ -41,7 +41,7 @@ const Payments = () => {
     setSelectedFile(null)
   };
 
-  useEffect(() => setUploadOpen(!!payment.errors), [payment.errors]);
+  useEffect(() => setUploadOpen(Boolean(payment.errors)), [payment.errors]);
 
   return <div>
     <div className="page-header mb-0">

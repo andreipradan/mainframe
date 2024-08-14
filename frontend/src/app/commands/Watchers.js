@@ -226,7 +226,7 @@ const Watchers = () =>  {
         </div>
       </div>
       <EditModal />
-      <Modal centered show={!!selectedItem || modalOpen} onHide={closeModal}>
+      <Modal centered show={Boolean(selectedItem) || modalOpen} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">
@@ -450,7 +450,7 @@ const Watchers = () =>  {
             selectedItem
               ? <>
                   <Button variant="primary"
-                    disabled={!!requestAnnotations || !!latestAnnotations}
+                    disabled={Boolean(requestAnnotations) || Boolean(latestAnnotations)}
                     onClick={() => {
                       dispatch(WatchersApi.update(token, selectedItem?.id, {
                         chat_id: chatId || null,
@@ -467,7 +467,7 @@ const Watchers = () =>  {
                   </Button>
                 </>
               : <Button variant="primary"
-                  disabled={!!requestAnnotations || !!latestAnnotations}
+                  disabled={Boolean(requestAnnotations) || Boolean(latestAnnotations)}
                   onClick={() => {
                     dispatch(WatchersApi.create(token, {
                       chat_id: chatId || null,

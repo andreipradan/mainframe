@@ -43,8 +43,8 @@ const Sidebar = () => {
   const [userPagesMenuOpen, setUserPagesMenuOpen] = useState(false)
   const [errorPagesMenuOpen, setErrorPagesMenuOpen] = useState(false)
 
-  useEffect(() => {setAlertOpen(!!errors)}, [errors])
-  useEffect(() => {setMessageOpen(!!message)}, [message])
+  useEffect(() => {setAlertOpen(Boolean(errors))}, [errors])
+  useEffect(() => {setMessageOpen(Boolean(message))}, [message])
 
   useEffect(() => {
     onRouteChanged()

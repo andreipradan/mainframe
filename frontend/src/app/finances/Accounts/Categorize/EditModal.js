@@ -64,7 +64,7 @@ const EditModal = () => {
     [transaction]
   )
 
-  return transaction ? <Modal centered show={!!transaction} onHide={closeModal}>
+  return transaction ? <Modal centered show={Boolean(transaction)} onHide={closeModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">

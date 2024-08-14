@@ -38,7 +38,7 @@ export const cronsSlice = createSlice({
     },
     select: (state, action) => {
       state.selectedCron = action.payload ? state.results.find(cron => cron.id === action.payload) : null
-      state.modalOpen = !!action.payload
+      state.modalOpen = Boolean(action.payload)
     },
     set: (state, action) => {
       state.errors = null

@@ -180,7 +180,7 @@ const Sources = () =>  {
           </div>
         </div>
       </div>
-      <Modal centered show={!! sources.selectedItem || sources.modalOpen} onHide={() => dispatch(closeModal)}>
+      <Modal centered show={Boolean(sources.selectedItem) || sources.modalOpen} onHide={() => dispatch(closeModal)}>
         <Modal.Header closeButton>
           <Modal.Title>
             {sources.selectedItem ? 'Edit' : 'Add new'}&nbsp; source

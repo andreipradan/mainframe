@@ -25,7 +25,7 @@ const EditModal = () => {
   useEffect(() => {
     if (selectedPayment) setSaved(selectedPayment.saved || 0)
   }, [selectedPayment]);
-  return <Modal centered show={!!selectedPayment} onHide={() => dispatch(selectPayment())}>
+  return <Modal centered show={Boolean(selectedPayment)} onHide={() => dispatch(selectPayment())}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
