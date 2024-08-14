@@ -112,9 +112,9 @@ const EditModal = () => {
             theme="monokai"
             onChange={onAdditionalDataChange}
             fontSize={12}
-            showPrintMargin={true}
-            showGutter={true}
-            highlightActiveLine={true}
+            showPrintMargin
+            showGutter
+            highlightActiveLine
             value={additionalData}
             setOptions={{
               enableBasicAutocompletion: false,

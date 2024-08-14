@@ -52,7 +52,7 @@ const Logs = () =>  {
                 {
                   loading
                     ? <BallTriangle
-                      visible={true}
+                      visible
                       width="100%"
                       ariaLabel="ball-triangle-loading"
                       wrapperStyle={{}}

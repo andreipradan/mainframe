@@ -77,7 +77,7 @@ export const Camera = () => {
               <ul className="list-arrow" style={{maxHeight: "60vh", overflowY: "scroll"}}>
                 {
                   loading ? <BallTriangle
-                        visible={true}
+                        visible
                         width="100%"
                         ariaLabel="ball-triangle-loading"
                         wrapperStyle={{}}
@@ -108,7 +108,7 @@ export const Camera = () => {
                         {
                           loadingFiles?.includes(result.is_file && path ? `${path}/${result.name}` : result.name)
                           ? <Circles
-                              visible={true}
+                              visible
                               height="15"
                               ariaLabel="ball-triangle-loading"
                               wrapperStyle={{float: "right"}}

@@ -143,7 +143,7 @@ const Sidebar = () => {
                   <Row>
                     {user?.username}&nbsp;
                     {loading && <Circles
-                      visible={true}
+                      visible
                       height="15"
                       width="100%"
                       ariaLabel="ball-triangle-loading"

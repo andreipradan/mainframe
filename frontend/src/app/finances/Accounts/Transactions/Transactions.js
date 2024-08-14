@@ -316,7 +316,7 @@ const Transactions = () => {
               transactions.loading
                 ? <Circles />
                 : transactions.results?.length
-                  ? <Marquee duration={10000} pauseOnHover={true} >
+                  ? <Marquee duration={10000} pauseOnHover >
                     <ListItem label={"Completed"} value={transactions.results[0].completed_at} className="mr-3" />
                     <ListItem label={"Started"} value={transactions.results[0].started_at} className="mr-3" />
                     <ListItem label={"Amount"} value={transactions.results[0].amount} textType={parseFloat(transactions.results[0]) < 0 ? "success" : "warning"} className="mr-3" />
@@ -411,7 +411,7 @@ const Transactions = () => {
               {
                 transactions.loading
                   ? <Circles
-                    visible={true}
+                    visible
                     height={20}
                     width={20}
                     wrapperClass="btn"
@@ -566,7 +566,7 @@ const Transactions = () => {
                   transactions.loading
                     ? <tr>
                       <td colSpan={3}><Circles
-                        visible={true}
+                        visible
                         width="100%"
                         ariaLabel="ball-triangle-loading"
                         wrapperStyle={{ float: 'right' }}

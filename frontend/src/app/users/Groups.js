@@ -47,7 +47,7 @@ const Groups = () => {
         {
           groups.loading
             ? <Circles
-              visible={true}
+              visible
               height={20}
               width={20}
               wrapperClass="btn"

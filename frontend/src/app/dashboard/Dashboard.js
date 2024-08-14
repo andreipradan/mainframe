@@ -80,7 +80,7 @@ const Dashboard = () => {
             {
               bots.loading
                 ? <BallTriangle
-                  visible={true}
+                  visible
                   width="100%"
                   ariaLabel="ball-triangle-loading"
                   wrapperStyle={{}}
@@ -109,7 +109,7 @@ const Dashboard = () => {
             {
               lights.loading
                 ? <InfinitySpin
-                  visible={true}
+                  visible
                   width="100%"
                   ariaLabel="infinity-spin-loading"
                   wrapperStyle={{}}
@@ -161,7 +161,7 @@ const Dashboard = () => {
                   {
                     lights.loading
                       ? <InfinitySpin
-                        visible={true}
+                        visible
                         width="100%"
                         ariaLabel="InfinitySpin-loading"
                         wrapperStyle={{}}
@@ -207,7 +207,7 @@ const Dashboard = () => {
                                 }} className="btn btn-outline-secondary btn-sm" >Change name? </button><br/><br/>
                                 {lights.loadingItems?.includes(light.ip)
                                   ? <LineWave
-                                    visible={true}
+                                    visible
                                     width="100%"
                                     ariaLabel="line-wave-loading"
                                     wrapperStyle={{}}
@@ -229,7 +229,7 @@ const Dashboard = () => {
                                       dispatch(LightsApi.setBrightness(token, light.ip, percent[0]));
                                     }}
                                     onSlide={onSlide(i, true)}
-                                    tooltips={true}
+                                    tooltips
                                   />
                                     <SliderPicker
                                       className="mt-4"
@@ -251,7 +251,7 @@ const Dashboard = () => {
                                       onChange={(render, handle, value) => {
                                         dispatch(LightsApi.setColorTemp(token, light.ip, value[0]));
                                       }}
-                                      tooltips={true}
+                                      tooltips
                                     />
                                   </>
                                   }

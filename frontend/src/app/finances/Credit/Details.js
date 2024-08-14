@@ -321,8 +321,8 @@ const Details = () => {
               ]
             }
             styles={selectStyles}
-            isClearable={true}
-            closeMenuOnSelect={true}
+            isClearable
+            closeMenuOnSelect
           />
         : null
       }
@@ -429,7 +429,7 @@ const Details = () => {
               overview.loading
                   ? <Circles/>
                   : latestTimetable?.length
-                      ? <Marquee pauseOnHover={true}>
+                      ? <Marquee pauseOnHover>
                         <ListItem label={"Total"} value={getAmountInCurrency(latestTimetable[0].total)} textType={"primary"} className="mr-3"/>
                         <ListItem label={"Principal"} value={getAmountInCurrency(latestTimetable[0].principal)} textType={"success"} className="mr-3"/>
                         <ListItem
@@ -486,7 +486,7 @@ const Details = () => {
               payment.loading
                   ? <Circles/>
                   : payment.results?.length
-                  ? <Marquee duration={10000} pauseOnHover={true} >
+                  ? <Marquee duration={10000} pauseOnHover >
                     <ListItem label={"Total"} value={getAmountInCurrency(payment.results[0].total)} textType={"primary"} className="mr-3" />
                     <ListItem label={"Date"} value={payment.results[0].date} textType={"warning"} className="mr-3" />
                     <ListItem label={"Type"} value={payment.results[0].is_prepayment ? "Prepayment" : "Installment"} textType={payment.results[0].is_prepayment ? "success" : "warning"} className="mr-3" />
