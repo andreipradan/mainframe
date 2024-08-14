@@ -53,14 +53,17 @@ class BaseEarthquakeCommand(BaseCommand):
             requests.exceptions.HTTPError,
             requests.exceptions.ReadTimeout,
         ) as e:
-            return self.logger.warning(str(e))
+            self.logger.warning(str(e))
+            return
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
         except OperationalError as e:
-            return self.logger.error(str(e))
+            self.logger.error(str(e))
+            return
         except Bot.DoesNotExist:
-            return self.logger.error(self.style.ERROR("No bots with earthquake config"))
+            self.logger.error(self.style.ERROR("No bots with earthquake config"))
+            return
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if self.source == Earthquake.SOURCE_INFP:

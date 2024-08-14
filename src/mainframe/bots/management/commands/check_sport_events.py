@@ -168,7 +168,7 @@ def get_next_category(contents):
         while (item := next(contents)).name != "h4":
             continue
     except StopIteration:
-        return
+        return None
     return item.text.strip()
 
 

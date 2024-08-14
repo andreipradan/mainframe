@@ -83,6 +83,7 @@ class DevicesClient:
                 ) from e
             return new_macs
         self.logger.warning("Got no devices.")
+        return []
 
 
 def parse_device(device):

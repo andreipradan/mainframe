@@ -202,7 +202,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         translation = translate_text(text, source=source, target=target)
         return reply(update, translation, parse_mode=None)
 
-    logger.error("Unhandled: %s", update.to_dict())
+    return logger.error("Unhandled: %s", update.to_dict())
 
 
 def save_to_db(message, chat, text=None):

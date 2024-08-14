@@ -48,7 +48,7 @@ class Watcher(TimeStampedModel):
             found = elements[0 if self.top else -1]
             if self.latest.get("title") == (title := found.text.strip()):
                 logger.info("No new items")
-                return
+                return False
             url = (
                 urljoin(self.url, found.attrs["href"])
                 if not found.attrs["href"].startswith("http")

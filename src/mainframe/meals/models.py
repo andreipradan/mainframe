@@ -44,3 +44,4 @@ class Meal(TimeStampedModel):
             return 16
         if self.type == self.TYPE_DINNER:
             return 18
+        return None

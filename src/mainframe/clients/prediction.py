@@ -21,15 +21,16 @@ def load(file_name):
 
 def save(item, item_type, prefix, logger):
     if settings.ENV != "local":
-        return upload_blob_from_string(
+        upload_blob_from_string(
             string=pickle.dumps(item),
             destination=f"{item_type}.pkl",
             logger=logger,
             prefix=prefix,
         )
-    model_path = f"{settings.BASE_DIR}/finance/data/model"
-    with open(f"{model_path}/latest_{item_type}.pkl", "wb") as file:
-        pickle.dump(item, file)
+    else:
+        model_path = f"{settings.BASE_DIR}/finance/data/model"
+        with open(f"{model_path}/latest_{item_type}.pkl", "wb") as file:
+            pickle.dump(item, file)
 
 
 class SKLearn:

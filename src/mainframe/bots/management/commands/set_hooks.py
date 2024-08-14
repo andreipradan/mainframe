@@ -17,6 +17,7 @@ def get_ngrok_url(name="mainframe"):
     for tunnel in resp["tunnels"]:
         if tunnel["name"] == name:
             return tunnel["public_url"]
+    return None
 
 
 def set_github_hook(ngrok_url):

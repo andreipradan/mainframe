@@ -164,7 +164,7 @@ class CTPClient:
         response, line, occ, url = args
         if not response or "<title> 404 Not Found" in response:
             self.logger.warning("No or 404 in response for %s", url)
-            return
+            return None
 
         rows = [row.strip() for row in response.split("\n") if row.strip()]
         date_row = rows[2].split(",")[1].rstrip(".")

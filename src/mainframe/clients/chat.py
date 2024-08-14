@@ -25,10 +25,10 @@ def send_telegram_message(text, **kwargs):
     config = dotenv.dotenv_values()
     if not (chat_id := config.get("TELEGRAM_DEBUG_CHAT_ID")):
         logger.error("TELEGRAM_DEBUG_CHAT_ID not set on env")
-        return
+        return None
     if not (token := config.get("TELEGRAM_DEBUG_TOKEN")):
         logger.error("TELEGRAM_DEBUG_TOKEN not set on env")
-        return
+        return None
 
     bot_kwargs = {
         "chat_id": chat_id,
@@ -42,22 +42,7 @@ def send_telegram_message(text, **kwargs):
         return bot.send_message(text=text, **bot_kwargs)
     except telegram.error.TelegramError as e:
         logger.error(str(e))
-
-
-def send_photo(photo, **kwargs):
-    logger = kwargs.pop("logger", logging)
-    logger.info("[Telegram] Sending photo")
-    config = dotenv.dotenv_values()
-    bot = telegram.Bot(config["TELEGRAM_DEBUG_TOKEN"])
-    try:
-        return bot.send_photo(
-            chat_id=config["TELEGRAM_DEBUG_CHAT_ID"],
-            photo=photo,
-            **kwargs,
-        )
-    except telegram.error.TelegramError as e:
-        logger.error(str(e))
-    logger.info("[Telegram] Done")
+    return None
 
 
 if __name__ == "__main__":
