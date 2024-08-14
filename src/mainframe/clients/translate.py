@@ -15,7 +15,7 @@ def translate_text(text, source=None, target="en"):
         return "Couldn't authenticate to google cloud"
 
     if isinstance(text, six.binary_type):
-        text = text.decode("utf-8")
+        text = text.decode()
 
     default_kwargs = {"target_language": target, "format_": "text"}
     if source:

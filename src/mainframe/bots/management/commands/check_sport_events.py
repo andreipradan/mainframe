@@ -252,7 +252,7 @@ def parse_list_details(data):
 
 def strip_accents(string):
     string = string.lower()
-    return normalize("NFD", string).encode("ascii", "ignore").decode("utf-8")
+    return normalize("NFD", string).encode("ascii", "ignore").decode()
 
 
 def to_local(date_time):

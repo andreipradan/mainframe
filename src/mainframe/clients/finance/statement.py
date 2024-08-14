@@ -248,7 +248,7 @@ class RevolutParser(StatementParser):
         return transaction
 
     def run(self):
-        reader = csv.DictReader(io.StringIO(self.file.read().decode("utf-8")))
+        reader = csv.DictReader(io.StringIO(self.file.read().decode()))
         reader.fieldnames = list(map(self.get_field, reader.fieldnames))
         return [Transaction(**self.normalize(line)) for line in reader]
 

@@ -15,7 +15,7 @@ class ActiveSessionAuthentication(authentication.BaseAuthentication):
         if not auth_header:
             return None
 
-        token = auth_header.decode("utf-8")
+        token = auth_header.decode()
         return self._authenticate_credentials(token)
 
     def _authenticate_credentials(self, token):

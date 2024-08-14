@@ -80,7 +80,7 @@ def validate_message(message, bot, custom_logger):
 
     text = text.strip()
     if isinstance(text, six.binary_type):
-        text = text.decode("utf-8")
+        text = text.decode()
 
     if len(text) < 1 or not text.startswith("/"):
         custom_logger.info(
