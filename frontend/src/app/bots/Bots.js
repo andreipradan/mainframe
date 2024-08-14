@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import BotsApi from "../../api/bots";
 import {Audio, ColorRing} from "react-loader-spinner";
 import {select} from "../../redux/botsSlice";
-import EditModal from "./components/EditModal";
+import EditModal from "./EditModal";
 import Errors from "../shared/Errors";
 
 

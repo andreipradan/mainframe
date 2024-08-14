@@ -34,13 +34,13 @@ const AccountEditModal = () => {
   const submitForm = event => {
     event.preventDefault()
     const data = {
-      bank: bank,
+      bank,
       client_code: clientCode,
       first_name: firstName,
       last_name: lastName,
-      number: number,
-      type: type,
-      currency: currency,
+      number,
+      type,
+      currency,
     }
     if (accounts.modalOpen === "new")
       dispatch(AccountsApi.create(token, data, "new"))

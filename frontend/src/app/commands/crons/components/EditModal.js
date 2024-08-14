@@ -96,9 +96,9 @@ const EditModal = () => {
   const onSubmit = useCallback(() => {
     const data = {
       command: command.value,
-      expression: expression,
+      expression,
       is_active: isActive,
-      name: name
+      name
     }
     if (args) data.args = args.split("\n")
     if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ""))

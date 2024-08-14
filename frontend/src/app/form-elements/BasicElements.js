@@ -141,7 +141,7 @@ export class BasicElements extends Component {
                     </select>
                   </Form.Group>
                   <Form.Group>
-                    <label>File upload</label>
+                    <span>File upload</span>
                     <div className="custom-file">
                       <Form.Control type="file" className="form-control visibility-hidden" id="customFileLang" lang="es"/>
                       <label className="custom-file-label" htmlFor="customFileLang">Upload image</label>
@@ -167,15 +167,15 @@ export class BasicElements extends Component {
                 <h4 className="card-title">Input size</h4>
                 <p className="card-description"> Add classNames like <code>.form-control-lg</code> and <code>.form-control-sm</code>. </p>
                 <Form.Group>
-                  <label>Large input</label>
+                  <span>Large input</span>
                   <Form.Control type="text" className="form-control-lg" placeholder="Username" aria-label="Username" />
                 </Form.Group>
                 <Form.Group>
-                  <label>Default input</label>
+                  <span>Default input</span>
                   <Form.Control type="text" className="form-control" placeholder="Username" aria-label="Username" />
                 </Form.Group>
                 <Form.Group>
-                  <label>Small input</label>
+                  <span>Small input</span>
                   <Form.Control type="text" className="form-control-sm" placeholder="Username" aria-label="Username" />
                 </Form.Group>
               </div>
@@ -476,7 +476,7 @@ export class BasicElements extends Component {
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">First Name</label>
+                        <span className="col-sm-3 col-form-label">First Name</span>
                         <div className="col-sm-9">
                         <Form.Control  type="text" />
                         </div>
@@ -484,7 +484,7 @@ export class BasicElements extends Component {
                     </div>
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Last Name</label>
+                        <span className="col-sm-3 col-form-label">Last Name</span>
                         <div className="col-sm-9">
                         <Form.Control type="text" />
                         </div>
@@ -494,9 +494,9 @@ export class BasicElements extends Component {
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Gender</label>
+                        <label className="col-sm-3 col-form-label" htmlFor={"gender-select"}>Gender</label>
                         <div className="col-sm-9">
-                          <select className="form-control">
+                          <select className="form-control" id={"gender-select"}>
                             <option>Male</option>
                             <option>Female</option>
                           </select>
@@ -505,9 +505,10 @@ export class BasicElements extends Component {
                     </div>
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Date of Birth</label>
+                        <span className="col-sm-3 col-form-label">Date of Birth</span>
                         <div className="col-sm-9">
-                        <DatePicker className="form-control w-100"
+                        <DatePicker
+                          className="form-control w-100"
                           selected={this.state.startDate}
                           onChange={this.handleChange}
                         />
@@ -518,9 +519,9 @@ export class BasicElements extends Component {
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Category</label>
+                        <label className="col-sm-3 col-form-label" htmlFor={"category-select"}>Category</label>
                         <div className="col-sm-9">
-                          <select className="form-control">
+                          <select className="form-control" id={"category-select"}>
                             <option>Category1</option>
                             <option>Category2</option>
                             <option>Category3</option>
@@ -531,7 +532,7 @@ export class BasicElements extends Component {
                     </div>
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Membership</label>
+                        <span className="col-sm-3 col-form-label">Membership</span>
                         <div className="col-sm-4">
                         <div className="form-check">
                           <label className="form-check-label">
@@ -555,35 +556,17 @@ export class BasicElements extends Component {
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Address 1</label>
+                        <label className="col-sm-3 col-form-label" htmlFor={"address-1"}>Address 1</label>
                         <div className="col-sm-9">
-                        <Form.Control type="text"/>
+                        <Form.Control type="text" id={"address-1"}/>
                         </div>
                       </Form.Group>
                     </div>
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">State 1</label>
+                        <label className="col-sm-3 col-form-label" htmlFor={"state-1"}>State 1</label>
                         <div className="col-sm-9">
-                        <Form.Control type="text"/>
-                        </div>
-                      </Form.Group>
-                    </div>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Address 2</label>
-                        <div className="col-sm-9">
-                        <Form.Control type="text"/>
-                        </div>
-                      </Form.Group>
-                    </div>
-                    <div className="col-md-6">
-                      <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Postcode</label>
-                        <div className="col-sm-9">
-                        <Form.Control type="text"/>
+                        <Form.Control type="text" id={"state-1"}/>
                         </div>
                       </Form.Group>
                     </div>
@@ -591,17 +574,35 @@ export class BasicElements extends Component {
                   <div className="row">
                     <div className="col-md-6">
                       <Form.Group className="row">
-                        <label className="col-sm-3 col-form-label">Cirt</label>
+                        <label className="col-sm-3 col-form-label" htmlFor={"address-2"}>Address 2</label>
                         <div className="col-sm-9">
-                        <Form.Control type="text"/>
+                        <Form.Control type="text" id={"address-2"}/>
+                        </div>
+                      </Form.Group>
+                    </div>
+                    <div className="col-md-6">
+                      <Form.Group className="row">
+                        <label className="col-sm-3 col-form-label" htmlFor={"postcode"}>Postcode</label>
+                        <div className="col-sm-9">
+                        <Form.Control type="text" id={"postcode"}/>
+                        </div>
+                      </Form.Group>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <Form.Group className="row">
+                        <label className="col-sm-3 col-form-label" htmlFor={"cirt"}>Cirt</label>
+                        <div className="col-sm-9">
+                        <Form.Control type="text" id={"cirt"}/>
                         </div>
                       </Form.Group>
                     </div>
                     <div className="col-md-6">
                       <Form.Group className="row">  
-                        <label className="col-sm-3 col-form-label">Country</label>
+                        <label htmlFor="country-select" className="col-sm-3 col-form-label">Country</label>
                         <div className="col-sm-9">
-                          <select className="form-control">
+                          <select className="form-control" id="country-select">
                             <option>America</option>
                             <option>Italy</option>
                             <option>Russia</option>

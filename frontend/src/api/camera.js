@@ -35,7 +35,7 @@ class CameraApi {
     axios
       .put(`${base}/download/?filename=${filename}`, {}, { headers: { Authorization: token } })
       .then((response) => {
-        dispatch(download({data: response.data, filename: filename}))
+        dispatch(download({data: response.data, filename}))
       })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };

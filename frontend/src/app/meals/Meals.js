@@ -55,7 +55,7 @@ const Meals = () =>  {
                 datesSet={(arg) => {
                   const start = arg.start.toISOString().split("T")[0]
                   const end = arg.end.toISOString().split('T')[0]
-                  setDateRange({start: start, end: end})
+                  setDateRange({start, end})
                 }}
                 plugins={[dayGridPlugin]}
                 eventClick={event => dispatch(select(parseInt(event.event.id)))}

@@ -121,7 +121,7 @@ const EditModal = () => {
             onChange={newValue => setCategory(newValue?.value ? newValue.value : "Unidentified")}
             onCreateOption={id => {
               dispatch(TransactionsApi.update(token, transaction.id, {category: id}))
-              dispatch(createCategory({id: id, value: capitalize(id).replace("-", " ")}))
+              dispatch(createCategory({id, value: capitalize(id).replace("-", " ")}))
             }}
             styles={selectStyles}
             value={createOption(category)}

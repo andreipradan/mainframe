@@ -38,7 +38,7 @@ const EditModal = () => {
       email,
       is_active: isActive,
       is_staff: isStaff,
-      username: username,
+      username,
     }
     dispatch(UsersApi.updateUser(token, selectedUser.id, data))
   }

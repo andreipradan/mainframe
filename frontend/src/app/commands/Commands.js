@@ -41,7 +41,7 @@ const Commands = () =>  {
   useEffect(() => {!results && dispatch(CommandsApi.getList(token))}, []);
   useEffect(() => {
     if (selectedCommand) {
-      commandArgumentsRef.current && commandArgumentsRef.current.focus()
+      commandArgumentsRef.current?.focus()
       setCron(selectedCommand.cron?.expression)
     }
   }, [selectedCommand]);

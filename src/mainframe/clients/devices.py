@@ -82,8 +82,7 @@ class DevicesClient:
                     "Error while trying to store devices: '%s'", e
                 ) from e
             return new_macs
-        else:
-            self.logger.warning("Got no devices.")
+        self.logger.warning("Got no devices.")
 
 
 def parse_device(device):

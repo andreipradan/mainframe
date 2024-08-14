@@ -53,7 +53,7 @@ class WatchersApi {
   static test = (token, url, selector) => dispatch => {
     dispatch(setLoading());
     axios
-      .put(`${base}test/`, {url: url, selector: selector}, { headers: { Authorization: token } })
+      .put(`${base}test/`, {url, selector}, { headers: { Authorization: token } })
       .then(response => toast.success(response.data.result, toastParams))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   }

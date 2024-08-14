@@ -3,8 +3,8 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
-import {select} from "../../../redux/botsSlice";
-import BotsApi from "../../../api/bots";
+import {select} from "../../redux/botsSlice";
+import BotsApi from "../../api/bots";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
 import AceEditor from "react-ace";
@@ -139,7 +139,7 @@ const EditModal = () => {
         dispatch(BotsApi.updateBot(token, bot.id, {
           additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
           is_active: isActive,
-          webhook: webhook,
+          webhook,
           webhook_name: webhookName,
           whitelist: whitelist ? whitelist.split("\n") : [],
         }))

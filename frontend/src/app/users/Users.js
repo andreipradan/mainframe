@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { Circles } from "react-loader-spinner";
@@ -24,13 +24,15 @@ const Users = () => {
     return () => dispatch(selectUser())
   }, []);
 
+  const onUsersRefresh = useCallback(() => dispatch(UsersApi.getList(token)), [])
+
   return <div>
     <div className="page-header">
       <h3 className="page-title">
         Users
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(UsersApi.getList(token))}
+          onClick={onUsersRefresh}
         >
           <i className="mdi mdi-refresh" />
         </button>

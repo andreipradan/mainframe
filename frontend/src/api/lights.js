@@ -28,9 +28,9 @@ class LightsApi {
     axios
       .patch(
         `${base}/${lightIp}/set-brightness/`,
-        {brightness: brightness},
+        {brightness},
         {headers: {Authorization: token}})
-      .then(() => dispatch(setBrightness({ip: lightIp, brightness: brightness})))
+      .then(() => dispatch(setBrightness({ip: lightIp, brightness})))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setColorTemp = (token, lightIp, colorTemp) => (dispatch) => {
@@ -39,16 +39,16 @@ class LightsApi {
       .patch(`${base}/${lightIp}/set-color-temp/`,
         {color_temp: colorTemp},
         {headers: {Authorization: token}})
-      .then(() => dispatch(setColorTemp({ip: lightIp, colorTemp: colorTemp})))
+      .then(() => dispatch(setColorTemp({ip: lightIp, colorTemp})))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setName = (token, lightIp, name) => dispatch => {
     dispatch(setLoadingItems(lightIp));
     axios
       .patch(`${base}/${lightIp}/set-name/`,
-        {name: name},
+        {name},
         {headers: {Authorization: token}})
-      .then(() => dispatch(setName({ip: lightIp, name: name})))
+      .then(() => dispatch(setName({ip: lightIp, name})))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setRgb = (token, lightIp, rgb) => (dispatch) => {

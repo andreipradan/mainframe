@@ -169,7 +169,7 @@ const Transactions = () => {
     dispatch(setKwargs({
       account_id: accounts.selectedItem.id,
       category: category === "Unidentified" ? "Unidentified" : category.toLowerCase().replace(" ", "-"),
-      month: month,
+      month,
       only_expenses: true,
       page: 1,
       year: selectedDate.getFullYear(),
@@ -194,7 +194,7 @@ const Transactions = () => {
   }
   const onCheckedCategoryChange = (newValue, description) => {
     if (!newValue.value) return
-    const newCategory = {description: description, category: newValue.value}
+    const newCategory = {description, category: newValue.value}
     setCheckedCategories(
       !checkedCategories?.length
         ? newCategory.category !== "Unidentified" ? [newCategory] : null
@@ -539,8 +539,9 @@ const Transactions = () => {
                 <tr>
                   <th>
                     <div className="form-check form-check-muted m-0">
-                      <label className="form-check-label">
+                      <label className="form-check-label" htmlFor={"all-checkbox"}>
                         <input
+                          id={"all-checkbox"}
                           type="checkbox"
                           className="form-check-input"
                           checked={allChecked}
@@ -586,8 +587,9 @@ const Transactions = () => {
                         >
                           <td>
                             <div className="form-check form-check-muted m-0 bordered">
-                              <label className="form-check-label">
+                              <label className="form-check-label" htmlFor={`checkbox-${i}`}>
                                 <input
+                                  id={`checkbox-${i}`}
                                   disabled={!t.category_suggestion || transactions.loading}
                                   type="checkbox"
                                   className="form-check-input"

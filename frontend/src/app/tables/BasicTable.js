@@ -36,31 +36,31 @@ export class BasicTable extends Component {
                         <td>Jacob</td>
                         <td>53275531</td>
                         <td>12 May 2017</td>
-                        <td><label className="badge badge-danger">Pending</label></td>
+                        <td><span className="badge badge-danger">Pending</span></td>
                       </tr>
                       <tr>
                         <td>Messsy</td>
                         <td>53275532</td>
                         <td>15 May 2017</td>
-                        <td><label className="badge badge-warning">In progress</label></td>
+                        <td><span className="badge badge-warning">In progress</span></td>
                       </tr>
                       <tr>
                         <td>John</td>
                         <td>53275533</td>
                         <td>14 May 2017</td>
-                        <td><label className="badge badge-info">Fixed</label></td>
+                        <td><span className="badge badge-info">Fixed</span></td>
                       </tr>
                       <tr>
                         <td>Peter</td>
                         <td>53275534</td>
                         <td>16 May 2017</td>
-                        <td><label className="badge badge-success">Completed</label></td>
+                        <td><span className="badge badge-success">Completed</span></td>
                       </tr>
                       <tr>
                         <td>Dave</td>
                         <td>53275535</td>
                         <td>20 May 2017</td>
-                        <td><label className="badge badge-warning">In progress</label></td>
+                        <td><span className="badge badge-warning">In progress</span></td>
                       </tr>
                     </tbody>
                   </table>
@@ -89,31 +89,31 @@ export class BasicTable extends Component {
                         <td>Jacob</td>
                         <td>Photoshop</td>
                         <td className="text-danger"> 28.76% <i className="mdi mdi-arrow-down" /></td>
-                        <td><label className="badge badge-danger">Pending</label></td>
+                        <td><span className="badge badge-danger">Pending</span></td>
                       </tr>
                       <tr>
                         <td>Messsy</td>
                         <td>Flash</td>
                         <td className="text-danger"> 21.06% <i className="mdi mdi-arrow-down" /></td>
-                        <td><label className="badge badge-warning">In progress</label></td>
+                        <td><span className="badge badge-warning">In progress</span></td>
                       </tr>
                       <tr>
                         <td>John</td>
                         <td>Premier</td>
                         <td className="text-danger"> 35.00% <i className="mdi mdi-arrow-down" /></td>
-                        <td><label className="badge badge-info">Fixed</label></td>
+                        <td><span className="badge badge-info">Fixed</span></td>
                       </tr>
                       <tr>
                         <td>Peter</td>
                         <td>After effects</td>
                         <td className="text-success"> 82.00% <i className="mdi mdi-arrow-up" /></td>
-                        <td><label className="badge badge-success">Completed</label></td>
+                        <td><span className="badge badge-success">Completed</span></td>
                       </tr>
                       <tr>
                         <td>Dave</td>
                         <td>53275535</td>
                         <td className="text-success"> 98.05% <i className="mdi mdi-arrow-up" /></td>
-                        <td><label className="badge badge-warning">In progress</label></td>
+                        <td><span className="badge badge-warning">In progress</span></td>
                       </tr>
                     </tbody>
                   </table>

@@ -12,8 +12,8 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 
-import DevicesApi from "../../../../api/devices";
-import { selectItem, setModalOpen } from '../../../../redux/devicesSlice';
+import DevicesApi from "../../../api/devices";
+import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
 
 const EditModal = () => {
   const dispatch = useDispatch();
@@ -58,11 +58,10 @@ const EditModal = () => {
   const onSubmit = e => {
     e.preventDefault()
     const data = {
-      alias: alias,
-      ip:ip,
-      is_active:
-      isActive,
-      name: name,
+      alias,
+      ip,
+      is_active: isActive,
+      name,
     }
     if (additionalData)
       data.additional_data = JSON.parse(additionalData.replace(/[\r\n\t]/g, ""))

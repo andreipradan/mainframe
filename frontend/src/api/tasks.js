@@ -48,7 +48,7 @@ class TasksApi {
     axios
       .put(
         `${base}/${taskName}/revoke/`,
-        {"app": app, method: method},
+        {app, method},
         { headers: { Authorization: token } }
       )
       .then(response => {

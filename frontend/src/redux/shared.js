@@ -1,5 +1,5 @@
 export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}) => ({
-  name: name,
+  name,
   initialState: {
     count: 0,
     errors: null,

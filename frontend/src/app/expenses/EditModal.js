@@ -76,7 +76,7 @@ const EditModal = () => {
       <Modal.Title>
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card mb-1">
-            {expenses.selectedItem ? `Edit expense?` : 'Add expense?'}
+            {expenses.selectedItem ? "Edit expense?" : "Add expense?"}
             {
               expenses.selectedItem &&
               <button

@@ -4,7 +4,7 @@ import { Audio, ColorRing } from "react-loader-spinner";
 import { Collapse } from 'react-bootstrap';
 
 import DevicesApi from "../../../api/devices";
-import EditModal from "./components/EditModal";
+import EditModal from "./EditModal";
 import Errors from "../../shared/Errors";
 import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
 

@@ -454,13 +454,13 @@ const Watchers = () =>  {
                     onClick={() => {
                       dispatch(WatchersApi.update(token, selectedItem?.id, {
                         chat_id: chatId || null,
-                        cron: cron,
+                        cron,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
-                        name: name,
+                        name,
                         request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
-                        selector: selector,
-                        top: top,
-                        url: url,
+                        selector,
+                        top,
+                        url,
                       }))
                   }}>
                     Save Changes
@@ -471,13 +471,13 @@ const Watchers = () =>  {
                   onClick={() => {
                     dispatch(WatchersApi.create(token, {
                       chat_id: chatId || null,
-                      cron: cron,
+                      cron,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
-                      name: name,
+                      name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
-                      selector: selector,
-                      top: top,
-                      url: url,
+                      selector,
+                      top,
+                      url,
                     }))
                 }}>
                   Create

@@ -64,7 +64,7 @@ const Details = () => {
     animation: {animateScale: true, animateRotate: true},
     tooltips: {
       callbacks: {
-        label: function(tooltipItem, data) {
+        label: (tooltipItem, data)=> {
           let dataset = data.datasets[tooltipItem.datasetIndex];
           let meta = dataset._meta[Object.keys(dataset._meta)[0]];
           let total = meta.total;

@@ -10,11 +10,11 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 
-import { PaymentsApi } from '../../../../../api/finance/payments';
-import { selectItem as selectPayment } from "../../../../../redux/paymentSlice";
-import Errors from "../../../../shared/Errors";
+import { PaymentsApi } from '../../../../api/finance/payments';
+import { selectItem as selectPayment } from "../../../../redux/paymentSlice";
+import Errors from "../../../shared/Errors";
 
-const PaymentEditModal = () => {
+const EditModal = () => {
   const dispatch = useDispatch();
   const payment = useSelector(state => state.payment)
   const selectedPayment = useSelector(state => state.payment.selectedItem)
@@ -49,14 +49,13 @@ const PaymentEditModal = () => {
         : <Form
             onSubmit={event => {
               event.preventDefault()
-              dispatch(PaymentsApi.update(token, selectedPayment.id, {saved: saved}))
+              dispatch(PaymentsApi.update(token, selectedPayment.id, {saved}))
             }}
           >
             <Form.Group className="mb-3">
               <Form.Label>Saved</Form.Label>
               <Form.Control
                 type="text"
-                
                 value={saved}
                 onChange={e => setSaved(e.target.value)}
               />
@@ -65,17 +64,13 @@ const PaymentEditModal = () => {
       }
     </Modal.Body>
     <Modal.Footer>
-      <Button variant="secondary" onClick={() => dispatch(selectPayment())}>
-        Close
-      </Button>
-      <Button variant="primary" onClick={() => {
-        dispatch(PaymentsApi.update(token, selectedPayment.id, {
-          saved: saved,
-        }))
-      }}>
+      <Button variant="secondary" onClick={() => dispatch(selectPayment())}>Close</Button>
+      <Button variant="primary" onClick={() =>
+        dispatch(PaymentsApi.update(token, selectedPayment.id, {saved}))}
+      >
         Save Changes
       </Button>
     </Modal.Footer>
   </Modal>
 }
-export default PaymentEditModal;
+export default EditModal;

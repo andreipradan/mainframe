@@ -10,7 +10,7 @@ import { selectItem as selectPayment, setKwargs } from "../../../../redux/paymen
 import { useHistory } from "react-router-dom";
 import BottomPagination from "../../../shared/BottomPagination";
 import Errors from "../../../shared/Errors";
-import PaymentEditModal from "./components/PaymentEditModal";
+import EditModal from "./EditModal";
 
 const Payments = () => {
   const history = useHistory()
@@ -162,7 +162,7 @@ const Payments = () => {
         </div>
       </div>
     </div>
-    <PaymentEditModal />
+    <EditModal />
 
   </div>
 }

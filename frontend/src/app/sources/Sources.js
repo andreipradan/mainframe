@@ -70,7 +70,7 @@ const Sources = () =>  {
   }
   const onSubmit = e => {
     e.preventDefault()
-    const data = {is_default: isDefault, name: name, url: url}
+    const data = {is_default: isDefault, name, url}
     if (config)
       data.config = JSON.parse(config.replace(/[\r\n\t]/g, ""))
     if (headers)
