@@ -14,7 +14,7 @@ from mainframe.bots.models import Bot
 from mainframe.clients.logs import get_default_logger
 from rest_framework import status
 
-logger = get_default_logger(__name__, management=True)
+logger = get_default_logger(__name__)
 
 
 class Command(BaseCommand):

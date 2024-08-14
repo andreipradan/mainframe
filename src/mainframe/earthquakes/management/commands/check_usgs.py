@@ -9,7 +9,7 @@ from mainframe.earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand):
-    logger = get_default_logger(__name__, management=True)
+    logger = get_default_logger(__name__)
 
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"

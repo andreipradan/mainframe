@@ -8,7 +8,7 @@ from mainframe.clients.logs import get_default_logger
 @periodic_task(crontab(minute="*/5"))
 @HUEY.lock_task("healthcheck-lock")
 def healthcheck():
-    if settings.ENV != "prod":
+    if settings.ENV != "rpi":
         return
     logger = get_default_logger(__name__)
     healthchecks.ping(logger)

@@ -6,7 +6,7 @@ from mainframe.clients.meals import FetchMealsException, MealsClient
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
 
         logger.info("Fetching menu for the next month")
         healthchecks.ping(logger, "meals")

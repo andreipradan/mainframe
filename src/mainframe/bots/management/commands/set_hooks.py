@@ -8,7 +8,7 @@ from mainframe.bots.models import Bot
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 
-logger = get_default_logger(__name__, management=True)
+logger = get_default_logger(__name__)
 
 
 def get_ngrok_url(name="mainframe"):

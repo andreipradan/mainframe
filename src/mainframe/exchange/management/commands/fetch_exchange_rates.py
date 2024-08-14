@@ -5,7 +5,7 @@ from mainframe.exchange.management.clients import BNR, ECB, FetchExchangeRatesEx
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}
 
-logger = get_default_logger(__name__, management=True)
+logger = get_default_logger(__name__)
 
 
 class Command(BaseCommand):

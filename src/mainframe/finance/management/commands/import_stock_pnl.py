@@ -30,7 +30,7 @@ def parse_pnl(file_name):
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
 
         logger.info("Importing stock PnL")
         now = datetime.now()

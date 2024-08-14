@@ -7,7 +7,7 @@ from mainframe.sources.models import Source
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
         client = DevicesClient(Source.objects.default(), logger=logger)
         if new_macs := client.run():
             send_telegram_message(

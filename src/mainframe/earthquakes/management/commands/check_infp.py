@@ -9,7 +9,7 @@ from requests import Response
 
 
 class Command(BaseEarthquakeCommand):
-    logger = get_default_logger(__name__, management=True)
+    logger = get_default_logger(__name__)
 
     source = Earthquake.SOURCE_INFP
     url = "https://web.infp.ro/quakes"

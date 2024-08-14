@@ -40,13 +40,13 @@ class AxiomHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         self.format(record)
-        if settings.ENV != "prod":
-            logging.warning(record.msg)
-        else:
+        if settings.ENV in ("prod", "rpi"):
             self.client.ingest_events(self.dataset, [parse_record(record)])
+        else:
+            logging.warning(record.msg)
 
 
-class LogfireMainframeHandler(logfire.LogfireLoggingHandler):
+class LogfireHandler(logfire.LogfireLoggingHandler):
     def __init__(self, prefix):
         self.prefix = prefix
         super().__init__()
@@ -56,22 +56,10 @@ class LogfireMainframeHandler(logfire.LogfireLoggingHandler):
         return super().emit(record)
 
 
-class ManagementCommandsHandler(AxiomHandler):
-    def __init__(self):
-        super().__init__("management")
-
-
-class MainframeHandler(AxiomHandler):
-    def __init__(self):
-        super().__init__("mainframe")
-
-
-def get_default_logger(name, management=False):
+def get_default_logger(name):
     logger = logging.getLogger(name)
-    if settings.ENV == "prod" and not logger.handlers:
-        logger.addHandler(LogfireMainframeHandler(name.split(".")[-1]))
-    elif management:
-        logger.addHandler(ManagementCommandsHandler())
+    if settings.ENV in ("prod", "rpi") and not logger.handlers:
+        logger.addHandler(LogfireHandler(name.split(".")[-1]))
     else:
-        logger.addHandler(MainframeHandler())
+        logger.addHandler(AxiomHandler("mainframe"))
     return logger

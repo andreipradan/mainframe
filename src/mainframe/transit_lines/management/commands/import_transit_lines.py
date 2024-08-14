@@ -9,7 +9,7 @@ DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
 
         logger.info("Importing transit lines")
         healthchecks.ping(logger, "transit")

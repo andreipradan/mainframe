@@ -38,7 +38,7 @@ def parse_transactions(file_name, _):
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
 
         logger.info("Importing stock statements")
         now = datetime.now()

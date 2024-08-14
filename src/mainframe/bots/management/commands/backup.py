@@ -14,7 +14,7 @@ class Command(BaseCommand):
         parser.add_argument("--model", type=str, default="")
 
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
 
         app = options["app"]
         healthchecks.ping(logger, f"{app.upper()}_BACKUP")

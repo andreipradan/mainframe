@@ -233,7 +233,7 @@ DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
     "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
 )
 
-if (ENV := env("ENV", default=None)) in ["local", "prod"]:
+if (ENV := env("ENV", default=None)) in ["local", "prod", "rpi"]:
     if ENV == "local":
         INSTALLED_APPS += ["debug_toolbar"]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
@@ -251,7 +251,7 @@ if (ENV := env("ENV", default=None)) in ["local", "prod"]:
             "PORT": env("DB_PORT"),
         }
     }
-    if ENV == "prod":
+    if ENV in ("prod", "rpi"):
         logfire.configure(send_to_logfire="if-token-present")
         logfire.instrument_django()
         LOGGING["loggers"]["django"]["handlers"].append("logfire")

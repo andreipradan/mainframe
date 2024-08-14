@@ -20,7 +20,7 @@ def get_tomorrow_run() -> datetime:
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = get_default_logger(__name__, management=True)
+        logger = get_default_logger(__name__)
 
         config = environ.Env()
         logger.info("It's time to take a picture...")
