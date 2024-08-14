@@ -22,7 +22,7 @@ import { createOption, selectStyles } from "../../Categorize/EditModal";
 import { selectItem as selectCategory } from "../../../../../redux/categoriesSlice";
 import { selectItem as selectTransaction } from "../../../../../redux/transactionsSlice";
 
-const TransactionEditModal = props => {
+const TransactionEditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const dispatch = useDispatch();
   const categories = useSelector(state => state.categories)
@@ -38,7 +38,7 @@ const TransactionEditModal = props => {
   }, [])
 
   useEffect(() => {
-    if(!!selectedItem) {
+    if(selectedItem) {
       dispatch(selectCategory(selectedItem.category))
       setAdditionalData(JSON.stringify(selectedItem.additional_data, null, "\t"));
     } else {
@@ -82,10 +82,10 @@ const TransactionEditModal = props => {
           <div className="mt-1">Amount: {selectedItem?.amount} {selectedItem?.currency} </div>
           {parseFloat(selectedItem?.fee) ? `Fee: ${selectedItem?.fee}` : null}
           {
-              ["state", "product", "type"].map((item, i) =>
-                <div>{capitalize(item)}: {capitalize(selectedItem?.[item] || " ")}</div>
-              )
-            }
+            ["state", "product", "type"].map((item, i) =>
+              <div key={i}>{capitalize(item)}: {capitalize(selectedItem?.[item] || " ")}</div>
+            )
+          }
         </p>
       </Modal.Title>
     </Modal.Header>

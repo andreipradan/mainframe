@@ -27,9 +27,7 @@ class CronsApi {
     dispatch(setLoadingCron(cronId));
     axios
       .delete(`${base}/${cronId}/`, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(deleteCron(cronId));
-      })
+      .then(() => dispatch(deleteCron(cronId)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static getList = (token, page = null) => (dispatch) => {

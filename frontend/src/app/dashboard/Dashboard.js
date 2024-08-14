@@ -144,8 +144,11 @@ const Dashboard = () => {
                     id="checkbox-toggle"
                     label=""
                     onChange={() => {
-                      const action = lights?.results?.some(l => l.capabilities.power === "on") ? LightsApi.turn_all_off : LightsApi.turn_all_on
-                      dispatch(action(token))
+                      const state =
+                        lights?.results?.some(l => l.capabilities.power === "on")
+                          ? "off"
+                          : "on"
+                      dispatch(LightsApi.turn_all(token, state))
                     }}
                   />
                   <p className="text-muted mb-0">All lights</p>
@@ -245,7 +248,7 @@ const Dashboard = () => {
                                       step={1}
                                       start={light.capabilities.ct}
                                       range={{min: 1700, max: 6500}}
-                                      onChange={(render, handle, value, un, percent) => {
+                                      onChange={(render, handle, value) => {
                                         dispatch(LightsApi.setColorTemp(token, light.ip, value[0]));
                                       }}
                                       tooltips={true}

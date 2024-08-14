@@ -11,7 +11,6 @@ import {
   setErrors,
   setLoading,
   setModalOpen,
-  update,
 } from '../../redux/accountsSlice';
 
 export class AccountsApi {

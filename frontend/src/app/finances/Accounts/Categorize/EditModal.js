@@ -40,7 +40,7 @@ export const selectStyles = {
     ...defaultStyles,
     backgroundColor: state.isSelected ? "#2f84d3" : state.isFocused ? "#829fbb": "#212529",
   }),
-  singleValue: (styles, { data }) => ({ ...styles, color:"#ccc"}),
+  singleValue: (styles) => ({ ...styles, color:"#ccc"}),
 }
 
 const EditModal = () => {

@@ -7,8 +7,7 @@ import {
   setLoading,
   setLoadingItems,
   setName,
-  turn_all_off,
-  turn_all_on,
+  turn_all,
   turn_off,
   turn_on,
   unsetLoadingLight,
@@ -61,18 +60,11 @@ class LightsApi {
       .then(() => dispatch(unsetLoadingLight(lightIp)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static turn_all_off = token => (dispatch) => {
+  static turn_all = (token, state) => (dispatch) => {
     dispatch(setLoading(true));
     axios
-      .put(`${base}/turn-all-off/`, {}, {headers: {Authorization: token}})
-      .then(() => dispatch(turn_all_off()))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static turn_all_on = token => (dispatch) => {
-    dispatch(setLoading(true));
-    axios
-      .put(`${base}/turn-all-on/`, {}, {headers: {Authorization: token}})
-      .then(() => dispatch(turn_all_on()))
+      .put(`${base}/turn-all-${state}/`, {}, {headers: {Authorization: token}})
+      .then(() => dispatch(turn_all(state)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_off = (token, lightId) => (dispatch) => {

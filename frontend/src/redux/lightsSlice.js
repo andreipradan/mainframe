@@ -29,13 +29,8 @@ export const lightsSlice = createSlice(getBaseSliceOptions(
       state.errors = null;
       state.loadingItems = state.loadingItems.filter(ip => ip !== action.payload.ip)
     },
-    turn_all_off: (state, action) => {
-      state.results = state.results?.map(l => ({...l, capabilities: {...l.capabilities, power: "off"}}));
-      state.errors = null;
-      state.loading = false;
-    },
-    turn_all_on: (state, action) => {
-      state.results = state.results?.map((l) => ({...l, capabilities: {...l.capabilities, power: "on"}}));
+    turn_all: (state, action) => {
+      state.results = state.results?.map(l => ({...l, capabilities: {...l.capabilities, power: action.data}}));
       state.errors = null;
       state.loading = false;
     },
@@ -69,8 +64,7 @@ export const {
   setLoading,
   setLoadingItems,
   setName,
-  turn_all_off,
-  turn_all_on,
+  turn_all,
   turn_off,
   turn_on,
   unsetLoadingLight

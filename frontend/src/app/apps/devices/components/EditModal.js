@@ -192,7 +192,7 @@ const EditModal = () => {
         Close
       </Button>
       <Button variant="primary" onClick={onSubmit}>
-        {!!device ? "Update" : "Add"}
+        {device ? "Update" : "Add"}
       </Button>
     </Modal.Footer>
   </Modal>

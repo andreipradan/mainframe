@@ -161,7 +161,7 @@ const Watchers = () =>  {
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{i + 1}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.name}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron}</td>
-                                <td><a href={watcher.url} target="_blank">{watcher.url}</a></td>
+                                <td><a href={watcher.url} target="_blank" rel="noopener noreferrer">{watcher.url}</a></td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>
                                   {
                                     watcher.redis.history?.[0]?.timestamp

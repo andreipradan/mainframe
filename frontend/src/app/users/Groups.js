@@ -25,14 +25,12 @@ const Groups = () => {
   const [addGroupOpen, setAddGroupOpen] = useState(false)
   const [groupName, setGroupName] = useState("")
 
-  const [email, setEmail] = useState("")
   const [emailOpen, setEmailOpen] = useState(null)
 
   const [groupToRemove, setGroupToRemove] = useState(null)
   const [userToRemove, setUserToRemove] = useState(null)
 
   const toggleEmailOpen = groupId => {
-    setEmail("")
     emailOpen === groupId
       ? setEmailOpen(null)
       : setEmailOpen(groupId)
