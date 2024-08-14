@@ -1,8 +1,6 @@
 import json
 import logging
-from functools import cached_property
 
-import environ
 import logfire
 from django.conf import settings
 
@@ -26,26 +24,6 @@ def parse_record(record: logging.LogRecord) -> dict:
     return record
 
 
-class AxiomHandler(logging.Handler):
-    def __init__(self, dataset):
-        super().__init__()
-        self.dataset = dataset
-        self.setFormatter(logging.Formatter(fmt=FORMAT))
-
-    @cached_property
-    def client(self):
-        import axiom
-
-        return axiom.Client(environ.Env()("AXIOM_TOKEN"))
-
-    def emit(self, record: logging.LogRecord) -> None:
-        self.format(record)
-        if settings.ENV in ("prod", "rpi"):
-            self.client.ingest_events(self.dataset, [parse_record(record)])
-        else:
-            logging.warning(record.msg)
-
-
 class LogfireHandler(logfire.LogfireLoggingHandler):
     def __init__(self, prefix):
         self.prefix = prefix
@@ -60,6 +38,4 @@ def get_default_logger(name):
     logger = logging.getLogger(name)
     if settings.ENV in ("prod", "rpi") and not logger.handlers:
         logger.addHandler(LogfireHandler(name.split(".")[-1]))
-    else:
-        logger.addHandler(AxiomHandler("mainframe"))
     return logger

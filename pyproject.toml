@@ -7,7 +7,6 @@ authors = [
 ]
 dependencies = [
     "aiohttp>=3.9.0",
-    "axiom-py==0.1.0",
     "beautifulsoup4==4.11.1",
     "django==5.0.4",
     "django-cors-headers==3.13.0",
