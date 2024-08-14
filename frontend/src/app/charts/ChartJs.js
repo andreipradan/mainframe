@@ -222,7 +222,7 @@ export class ChartJs extends Component {
                     </h3>
                     <nav aria-label="breadcrumb">
                         <ol className="breadcrumb">
-                        <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Charts</a></li>
+                        <li className="breadcrumb-item"><a href="!#">Charts</a></li>
                         <li className="breadcrumb-item active" aria-current="page">Chart-js</li>
                         </ol>
                     </nav>

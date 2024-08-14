@@ -70,7 +70,17 @@ export const cronsSlice = createSlice({
   },
 });
 
-export const { create, deleteCron, select, set, setErrors, setLoading, setLoadingCron, setModalOpen, update } =
+export const {
+  create,
+  deleteCron,
+  select,
+  set,
+  setErrors,
+  setLoading,
+  setLoadingCron,
+  setModalOpen,
+  update
+} =
   cronsSlice.actions;
 
 export default cronsSlice.reducer;

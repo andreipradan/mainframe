@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
@@ -28,7 +28,7 @@ const EditModal = () => {
   const [annotations, setAnnotations] = useState(null);
   const [args, setArgs] = useState("");
   const [allCommands, setAllCommands] = useState(null)
-  const [command, setCommand] = useState("");
+  const [command, setCommand] = useState(null);
   const [expression, setExpression] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [kwargs, setKwargs] = useState(null);
@@ -48,7 +48,7 @@ const EditModal = () => {
   useEffect(() => {
     if (cron) {
       setArgs(cron.args?.length ? cron.args.join("\n") : "")
-      setCommand(allCommands.find(c => c.value === cron.command) || "")
+      setCommand(allCommands.find(c => c.value === cron.command) || null)
       setExpression(cron.expression)
       setIsActive(cron.is_active)
       setKwargs(JSON.stringify(cron.kwargs, null, "\t"))
@@ -60,7 +60,7 @@ const EditModal = () => {
 
   const clearModal = () => {
     setArgs("")
-    setCommand("")
+    setCommand(null)
     setExpression("")
     setIsActive(false)
     setKwargs(null)
@@ -68,16 +68,20 @@ const EditModal = () => {
     setName("")
   }
 
-  const closeModal = () => {
+  const onArgsChange = useCallback(e => setArgs(e.target.value), [])
+  const onCloseModal = useCallback(() => {
     dispatch(select())
     dispatch(setModalOpen(false))
     clearModal()
-  }
-
-  const onCommandChange = e => {
-    setCommand({ label: allCommands.find(c => c.value === e.value).label, value: e.value })
-  }
-  const onKwargsChange = (e, i) => {
+  }, [])
+  const onCommandChange = useCallback(e =>
+    allCommands && setCommand({ label: allCommands.find(c => c.value === e.value).label, value: e.value }),
+    [allCommands]
+  )
+  const onDelete = useCallback(() => dispatch(CronsApi.delete(token, cron.id)), [token, cron])
+  const onExpressionChange = useCallback(e => setExpression(e.target.value), [])
+  const onIsActiveChange = useCallback(() => setIsActive(!isActive), [])
+  const onKwargsChange = useCallback((e, i) => {
     setKwargs(e)
     try {
       JSON.parse(e)
@@ -87,8 +91,9 @@ const EditModal = () => {
       const annotation = {...i.end, text: error.message, type: 'error'}
       setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
     }
-  }
-  const onSubmit = () => {
+  }, [annotations, cron])
+  const onNameChange = useCallback(e => setName(e.target.value), [])
+  const onSubmit = useCallback(() => {
     const data = {
       command: command.value,
       expression: expression,
@@ -100,9 +105,9 @@ const EditModal = () => {
     if (cron) dispatch(CronsApi.updateCron(token, cron.id, data))
     else dispatch(CronsApi.create(token, data))
     clearModal()
-  }
+  }, [args, command, cron, expression, kwargs, name])
 
-  return <Modal centered show={!!cron || modalOpen} onHide={closeModal}>
+  return <Modal centered show={!!cron || modalOpen} onHide={onCloseModal}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
@@ -121,31 +126,15 @@ const EditModal = () => {
           wrapperStyle={{width: "100%"}}
         />
       : <Modal.Body>
-      <Form onSubmit={
-        (e) => {
-          e.preventDefault()
-          dispatch(CronsApi.updateCron(token, cron.id, {command: command}))
-          dispatch(select())
-        }
-      }>
+      <Form onSubmit={onSubmit}>
         <Errors errors={errors}/>
         <Form.Group className="mb-3">
           <Form.Label>Name</Form.Label>
-          <Form.Control
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
+          <Form.Control type="text" value={name} onChange={onNameChange} />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Is Active?</Form.Label>
-          <Form.Check
-            checked={isActive}
-            type="switch"
-            id="checkbox"
-            label=""
-            onChange={() => {setIsActive(!isActive)}}
-          />
+          <Form.Check checked={isActive} type="switch" id="checkbox" label="" onChange={onIsActiveChange} />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Management Command</Form.Label>
@@ -163,20 +152,13 @@ const EditModal = () => {
           <Form.Control
             type="text"
             value={expression}
-            onChange={e => setExpression(e.target.value)}
+            onChange={onExpressionChange}
             required={true}
           />
         </Form.Group>
-
         <Form.Group className="mb-3">
           <Form.Label>Args</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            value={args || ""}
-            placeholder={"args"}
-            onChange={e => setArgs(e.target.value)}
-          />
+          <Form.Control as="textarea" rows={3} value={args || ""} placeholder={"args"} onChange={onArgsChange} />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Kwargs</Form.Label>
@@ -232,11 +214,11 @@ const EditModal = () => {
     }
     <Modal.Footer>
       {
-        cron && <Button variant="danger" className="float-left" onClick={() => dispatch(CronsApi.delete(token, cron.id))}>
+        cron && <Button variant="danger" className="float-left" onClick={onDelete}>
           Delete
         </Button>
       }
-      <Button variant="secondary" onClick={closeModal}>Close</Button>
+      <Button variant="secondary" onClick={onCloseModal}>Close</Button>
       <Button variant="primary" onClick={onSubmit}>Save Changes</Button>
     </Modal.Footer>
   </Modal>

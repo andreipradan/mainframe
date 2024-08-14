@@ -15,7 +15,7 @@ import { selectItem } from '../../../redux/watchersSlice';
 const Crons = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {selectedCron, results: crons, errors, loading, loadingCrons } = useSelector(state => state.crons)
+  const {selectedCron, results: crons, errors, loading, loadingCrons, modalOpen } = useSelector(state => state.crons)
 
   const [selectedAction, setSelectedAction] = useState("")
   const [selectedActionCron, setSelectedActionCron] = useState(null)
@@ -57,7 +57,7 @@ const Crons = () =>  {
                 </button>
               </h4>
 
-              {!selectedCron && <Errors errors={errors}/>}
+              {!selectedCron && !modalOpen && <Errors errors={errors}/>}
 
               <div className="table-responsive">
                 <table className="table table-hover">
@@ -143,18 +143,13 @@ const Crons = () =>  {
                               </tr>
                           )
                           : <tr>
-                            <td colSpan={6}>No crons available</td>
+                            <td colSpan={7}>No crons available</td>
                           </tr>
                         : <tr>
-                          <td colSpan={6}>
-                            <Audio
-                              width="100%"
-                              radius="9"
-                              color="green"
-                                wrapperStyle={{width: "100%"}}
-                              />
-                            </td>
-                          </tr>
+                          <td colSpan={7}>
+                            <Audio width="100%" radius="9" color="green" wrapperStyle={{width: "100%"}} />
+                          </td>
+                        </tr>
                     }
                   </tbody>
                 </table>
