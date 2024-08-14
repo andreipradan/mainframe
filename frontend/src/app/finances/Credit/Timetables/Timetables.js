@@ -133,17 +133,17 @@ const Timetables = () => {
                         color='orange'
                       />
                     : timetable.results?.length
-                        ? timetable.results.map(timetable =>
+                        ? timetable.results.map(t =>
                           <tr
-                            key={timetable.id}
-                            onClick={() => dispatch(selectTimetable(timetable.id))}
-                            style={{cursor: "pointer"}}
+                            key={t.id}
+                            onClick={() => dispatch(selectTimetable(t.id))}
+                            className={"cursor-pointer"}
                           >
-                            <td> {timetable.date} </td>
-                            <td> {timetable.interest}% </td>
-                            <td> {timetable.margin}% </td>
-                            <td> {timetable.ircc}% </td>
-                            <td> {timetable.amortization_table.length} </td>
+                            <td> {t.date} </td>
+                            <td> {t.interest}% </td>
+                            <td> {t.margin}% </td>
+                            <td> {t.ircc}% </td>
+                            <td> {t.amortization_table.length} </td>
                           </tr>)
                       : <tr><td colSpan={6}><span>No timetables found</span></td></tr>
                 }

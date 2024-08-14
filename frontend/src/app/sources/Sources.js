@@ -149,7 +149,7 @@ const Sources = () =>  {
                                 <td>{s.name}</td>
                                 <td>{s.url}</td>
                               </tr>
-                          : <tr>
+                          : <tr key={i}>
                             <td colSpan={6}>
                               <ColorRing
                                   width = "100%"

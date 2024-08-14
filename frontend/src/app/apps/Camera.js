@@ -98,7 +98,7 @@ export const Camera = () => {
                       !results?.length && <li>No files found</li>
                     }
                     {
-                      results?.map((result, i) =>
+                      results?.map(result =>
                       <li key={result.name}>
                         <span
                           style={{cursor: result.is_local ? "pointer": ""}}
