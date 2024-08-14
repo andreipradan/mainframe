@@ -563,7 +563,7 @@ const Details = () => {
             <Line data={interestData} options={{
               scales: {
                 yAxes: [{
-                  ticks: {beginAtZero: true, precision: .1},
+                  ticks: {beginAtZero: true, precision: 0.1},
                   gridLines: {color: "rgba(204, 204, 204,0.1)"},
                 }],
                 xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
