@@ -97,7 +97,7 @@ jobs:
       contents: 'read'
       id-token: 'write'
     needs:
-      - pre-commit
+      - linting-and-formatting
       - security
       - tests
     steps:
