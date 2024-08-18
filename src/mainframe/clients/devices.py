@@ -86,10 +86,12 @@ class DevicesClient:
 
 
 def parse_device(device):
-    return {
+    data = {
         "additional_data": device,
-        "ip": device.pop("ipv4").replace("_point_", "."),
         "is_active": True,
         "mac": device.pop("mac").upper(),
         "name": device.pop("name"),
     }
+    if ip := device.pop("ipv4").replace("_point_", "."):
+        data["ip"] = ip
+    return data
