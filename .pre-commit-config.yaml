@@ -28,5 +28,5 @@ repos:
       - id: pytest
         language: system
         name: pytest
-        entry: sh -c "pytest tests"
+        entry: sh -c "pytest tests --cov . --ds=mainframe.core.settings --nomigrations"
         stages: [commit]

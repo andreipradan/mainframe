@@ -66,7 +66,6 @@ jobs:
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pre-commit/action@v3.0.1
       - uses: Harmon758/postgresql-action@v1.0.0
         with:
           postgresql version: 13
@@ -74,9 +73,11 @@ jobs:
           postgresql user: test_user
           postgresql password: test_pass
       - name: Run a multi-line script
-        run: |
-          pip install -r requirements-dev.lock
-          PYTHONPATH=src ENV=ci pytest tests --cov=. --ds mainframe.core.settings --nomigrations
+        run: pip install -r requirements-dev.lock
+      - uses: pre-commit/action@v3.0.1
+        env:
+          ENV: ci
+          PYTHONPATH: src
 
   backend-deploy:
     name: BE - Deploy
