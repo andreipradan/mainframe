@@ -90,8 +90,9 @@ def parse_device(device):
         "additional_data": device,
         "is_active": True,
         "mac": device.pop("mac").upper(),
-        "name": device.pop("name"),
     }
     if ip := device.pop("ipv4").replace("_point_", "."):
         data["ip"] = ip
+    if name := device.pop("name"):
+        data["name"] = name
     return data
