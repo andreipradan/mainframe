@@ -63,7 +63,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.tests == 'true') }}
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
@@ -85,10 +85,8 @@ jobs:
       contents: 'read'
       id-token: 'write'
     needs:
-      - changes
       - pre-commit
       - security
-    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - name: Notify BE start deployment
         uses: appleboy/telegram-action@master
