@@ -66,7 +66,6 @@ jobs:
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
-      - uses: chartboost/ruff-action@v1
       - name: Installing dev dependencies for migration check
         run: pip install -r requirements-dev.lock
       - uses: pre-commit/action@v3.0.1
@@ -97,9 +96,9 @@ jobs:
       contents: 'read'
       id-token: 'write'
     needs:
-      - linting-and-formatting
+      - changes
       - security
-      - tests
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - name: Notify BE start deployment
         uses: appleboy/telegram-action@master
