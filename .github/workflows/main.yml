@@ -66,7 +66,7 @@ jobs:
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
-      - uses: chartboost/ruff-action@v1
+      - uses: pre-commit/action@v3.0.1
       - uses: Harmon758/postgresql-action@v1.0.0
         with:
           postgresql version: 13
