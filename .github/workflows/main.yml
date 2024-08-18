@@ -60,10 +60,23 @@ jobs:
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
           args: --detailed-output
-  pre-commit:
+  linting-and-formatting:
     runs-on: ubuntu-latest
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: chartboost/ruff-action@v1
+      - name: Installing dev dependencies for migration check
+        run: pip install -r requirements-dev.lock
+      - uses: pre-commit/action@v3.0.1
+        env:
+          SKIP: pytest
+
+  tests:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
       - uses: Harmon758/postgresql-action@v1.0.0
@@ -73,11 +86,9 @@ jobs:
           postgresql user: test_user
           postgresql password: test_pass
       - name: Run a multi-line script
-        run: pip install -r requirements-dev.lock
-      - uses: pre-commit/action@v3.0.1
-        env:
-          ENV: ci
-          PYTHONPATH: src
+        run: |
+          pip install -r requirements-dev.lock
+          PYTHONPATH=src ENV=ci pytest tests --cov=. --ds mainframe.core.settings --nomigrations
 
   backend-deploy:
     name: BE - Deploy
@@ -88,6 +99,7 @@ jobs:
     needs:
       - pre-commit
       - security
+      - tests
     steps:
       - name: Notify BE start deployment
         uses: appleboy/telegram-action@master
