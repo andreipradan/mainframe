@@ -84,7 +84,7 @@ googleapis-common-protos==1.63.0
     # via opentelemetry-exporter-otlp-proto-http
 grpc-google-iam-v1==0.13.1
     # via google-cloud-translate
-grpcio==1.65.4
+grpcio==1.65.5
     # via google-api-core
     # via googleapis-common-protos
     # via grpc-google-iam-v1
