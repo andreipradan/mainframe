@@ -257,6 +257,7 @@ if (ENV := env("ENV", default=None)) in ["local", "prod", "rpi"]:
         LOGGING["loggers"]["django"]["handlers"].append("logfire")
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
+            environment=ENV,
             integrations=[DjangoIntegration()],
             traces_sample_rate=1.0,
             send_default_pii=False,
