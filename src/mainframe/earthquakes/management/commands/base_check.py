@@ -121,7 +121,8 @@ class BaseEarthquakeCommand(BaseCommand):
     def fetch(self, **options):
         raise NotImplementedError
 
-    def fetch_events(self, response):
+    @staticmethod
+    def fetch_events(response):
         raise NotImplementedError
 
     def parse_earthquake(self, card) -> Earthquake:

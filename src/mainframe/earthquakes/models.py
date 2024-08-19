@@ -26,6 +26,9 @@ class Earthquake(TimeStampedModel):
     timestamp = models.DateTimeField(unique=True)
 
     class Meta:
+        indexes = (
+            models.Index(fields=["source", "-timestamp"], name="source_timestamp_idx"),
+        )
         ordering = ("-timestamp",)
 
     def __str__(self):

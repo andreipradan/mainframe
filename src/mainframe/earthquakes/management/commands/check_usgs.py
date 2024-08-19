@@ -14,19 +14,11 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 
-    @staticmethod
-    def add_arguments(parser):
-        parser.add_argument("--minutes", type=int, help="Since how many minutes ago")
-
     def fetch(self, **options):
         since = datetime.now().astimezone(
             pytz.timezone(settings.TIME_ZONE)
         ) - timedelta(minutes=5)
-        if options["minutes"]:
-            since = datetime.now().astimezone(
-                pytz.timezone(settings.TIME_ZONE)
-            ) - timedelta(minutes=options["minutes"])
-        elif (
+        if (
             latest := Earthquake.objects.filter(source=Earthquake.SOURCE_USGS)
             .order_by("-timestamp")
             .first()
