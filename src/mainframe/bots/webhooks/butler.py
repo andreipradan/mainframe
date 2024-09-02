@@ -16,6 +16,7 @@ from mainframe.clients.translate import translate_text
 from mainframe.earthquakes.management.commands.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 from mainframe.finance.tasks import finance_import
+from telegram import ParseMode
 
 logger = get_default_logger(__name__)
 
@@ -124,7 +125,11 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
                 args,
                 update.to_dict(),
             )
-            return reply(update, "What do you want to search? (usage: '/dex <word>')")
+            return reply(
+                update,
+                "What do you want to search? (usage: '/dex <word>')",
+                parse_mode=ParseMode.MARKDOWN,
+            )
         try:
             word, definition = dexonline.fetch_definition(word=word)
         except dexonline.DexOnlineError as e:

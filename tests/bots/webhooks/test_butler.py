@@ -6,6 +6,7 @@ from django.core.management import CommandError
 from mainframe.bots.models import Bot
 from mainframe.bots.webhooks.butler import ButlerException, call
 from mainframe.clients.dexonline import DexOnlineError
+from telegram import ParseMode
 
 from tests.factories.bots import BotFactory
 from tests.factories.earthquakes import EarthquakeFactory
@@ -217,7 +218,7 @@ class TestDex:
         assert update.message.reply_text.call_args_list == [
             mock.call(
                 "What do you want to search? (usage: '/dex <word>')",
-                **DEFAULT_REPLY_KWARGS,
+                **{**DEFAULT_REPLY_KWARGS, "parse_mode": ParseMode.MARKDOWN},
             )
         ]
 
