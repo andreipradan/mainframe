@@ -1,11 +1,10 @@
-import random
 from collections import deque
 
 import requests
 from bs4 import BeautifulSoup
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.bots.models import Bot
+from mainframe.clients import dexonline
 from mainframe.clients.logs import get_default_logger
 
 
@@ -28,27 +27,6 @@ class Sources:
         red = " 🔴" if "red" in tomorrow.attrs["class"] or week_day == "D" else ""
         prefix = f"[{day} {week_day}{red}]"
         return f"{prefix} <a href='{tomorrow.a.attrs['href']}'>{tomorrow.a.text}</a>"
-
-    @staticmethod
-    def fetch_word():
-        dex_url = "https://dexonline.ro/definitie/{}/json"
-        min_len = 5
-        data_path = settings.BASE_DIR / "bots" / "management" / "commands" / "data"
-        with open(data_path / "ro-words.txt", "r") as file:
-            while len(word := random.choice(file.readlines())) < min_len:  # noqa: S311
-                ...
-
-        word = word.strip()
-        response = requests.get(dex_url.format(word), timeout=10)
-        response.raise_for_status()
-        response = response.json()
-        definition = BeautifulSoup(response["definitions"][0]["htmlRep"], "html.parser")
-        for tag_name in ["abbr", "span", "sup"]:
-            for tag in definition.find_all(tag_name):
-                tag.replace_with(tag.text)
-        if "," in definition.text:
-            return definition.text.split(",")[0], definition
-        return definition.text.split()[0], definition
 
 
 def whos_next(config):
@@ -92,7 +70,7 @@ class Command(BaseCommand):
         if not (chat_id := config.get("chat_id")):
             raise CommandError("Missing chat_id in whos_next config")
 
-        word, definition = Sources.fetch_word()
+        word, definition = dexonline.fetch_definition()
         config["theme"] = f"<b>{word}</b>\n\n{definition}"
         config["url"] = f"https://dexonline.ro/definitie/{word}"
         post_order = config["post_order"]

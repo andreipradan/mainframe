@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from mainframe.bots.models import Bot, Message
 from mainframe.bots.serializers import BotSerializer, MessageSerializer
+from mainframe.bots.webhooks.butler import ButlerException
 from mainframe.clients.logs import get_default_logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -59,6 +60,9 @@ class BotViewSet(viewsets.ModelViewSet):
                 instance,
             )
             return JsonResponse(data={"status": "404"})
+        except ButlerException as e:
+            logger.exception(e)
+            return JsonResponse(data={"status": "400", "message": "Butler error"})
         return JsonResponse(data={"status": "200"})
 
 

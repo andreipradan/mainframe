@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 import pytest
 from django.core.management import CommandError
 from mainframe.bots.models import Bot
-from mainframe.bots.webhooks.butler import call
+from mainframe.bots.webhooks.butler import ButlerException, call
+from mainframe.clients.dexonline import DexOnlineError
 
 from tests.factories.bots import BotFactory
 from tests.factories.earthquakes import EarthquakeFactory
@@ -39,10 +40,9 @@ class TestInitialNewChatTitleAndMembers:
     def test_no_message(self, update, logger, _):
         update.return_value.message = None
         bot = BotFactory()
-        call({}, bot)
-        assert logger.info.call_args_list == [
-            mock.call("No message or chat: %s", update().to_dict())
-        ]
+        with pytest.raises(ButlerException) as e:
+            call({}, bot)
+        assert e.value.args == (f"No message or chat: {update().to_dict()}",)
 
     def test_new_chat_title_without_who_s_next(self, update, logger, _):
         update = prepare_update(update, new_chat_title=1)
@@ -128,14 +128,11 @@ class TestInitialNewChatTitleAndMembers:
             from_user=MagicMock(full_name="foo", username="foo_username", id="foo_id"),
         )
         bot = BotFactory()
-        call({}, bot)
-        assert logger.info.call_args_list == []
-        assert logger.error.call_args_list == [
-            mock.call(
-                "Ignoring message from: %s",
-                "Name: foo. Username: foo_username. ID: foo_id",
-            )
-        ]
+        with pytest.raises(ButlerException) as e:
+            call({}, bot)
+        assert e.value.args == (
+            "Ignoring message from: Name: foo. Username: foo_username. ID: foo_id",
+        )
 
 
 @mock.patch.object(Bot, "telegram_bot")
@@ -158,11 +155,10 @@ class TestDocuments:
         )
         bot = BotFactory(whitelist=["foo_username"])
 
-        call({}, bot)
+        with pytest.raises(ButlerException) as e:
+            call({}, bot)
 
-        assert logger.error.call_args_list == [
-            mock.call("Unhandled document: %s", "filename.pdf")
-        ]
+        assert e.value.args == ("Unhandled document: filename.pdf",)
         assert logger.info.call_args_list == []
         assert finance_import.call_args_list == []
         assert update.message.reply_text.call_args_list == []
@@ -175,12 +171,11 @@ class TestDocuments:
         )
         bot = BotFactory(whitelist=["foo_username"])
 
-        call({}, bot)
+        with pytest.raises(ButlerException) as e:
+            call({}, bot)
 
         assert logger.error.call_args_list == []
-        assert logger.info.call_args_list == [
-            mock.call("No message text: %s. From: %s", update.to_dict(), user),
-        ]
+        assert e.value.args == (f"No message text: {update.to_dict()}. From: {user}",)
 
     def test_invalid_command(self, update, logger, _):
         user = "Name: foo. Username: foo_username. ID: foo_id"
@@ -191,11 +186,82 @@ class TestDocuments:
         )
         bot = BotFactory(whitelist=["foo_username"])
 
+        with pytest.raises(ButlerException) as e:
+            call({}, bot)
+
+        assert logger.error.call_args_list == []
+        assert e.value.args == (
+            f"Invalid command: '{update.message.text}'. From: {user}",
+        )
+
+
+@mock.patch.object(Bot, "telegram_bot")
+@mock.patch("mainframe.bots.webhooks.butler.logger")
+@mock.patch("telegram.Update.de_json", return_value=MagicMock(callback_query=None))
+@pytest.mark.django_db
+class TestDex:
+    def test_missing_args(self, update, logger, _):
+        update = prepare_update(update, text="/dex")
+        bot = BotFactory(whitelist=["foo_username"])
+
         call({}, bot)
 
         assert logger.error.call_args_list == []
         assert logger.warning.call_args_list == [
-            mock.call("Invalid command: '%s'. From: %s", update.message.text, user),
+            mock.call(
+                "DexOnline - invalid args: '%s'. Update: '%s'",
+                [],
+                update.to_dict(),
+            )
+        ]
+        assert update.message.reply_text.call_args_list == [
+            mock.call(
+                "What do you want to search? (usage: '/dex <word>')",
+                **DEFAULT_REPLY_KWARGS,
+            )
+        ]
+
+    @mock.patch("requests.get", side_effect=DexOnlineError("foo"))
+    def test_empty_word(self, _, update, logger, __):
+        update = prepare_update(update, text="/dex 1")
+        bot = BotFactory(whitelist=["foo_username"])
+
+        call({}, bot)
+
+        assert logger.warning.call_args_list == []
+        assert logger.error.call_args_list == [
+            mock.call(
+                "DexOnlineError: '%s'. Update: '%s'. Args: '%s'",
+                mock.ANY,
+                update.to_dict(),
+                ["1"],
+            )
+        ]
+        assert update.message.reply_text.call_args_list == [
+            mock.call(
+                "Couldn't find definition for '1'",
+                **DEFAULT_REPLY_KWARGS,
+            )
+        ]
+
+    @mock.patch("requests.get")
+    def test_success(self, get_mock, update, logger, __):
+        get_mock.return_value = MagicMock(
+            status_code=200,
+            json=MagicMock(return_value={"definitions": [{"htmlRep": "foo, bar"}]}),
+        )
+        update = prepare_update(update, text="/dex 1")
+        bot = BotFactory(whitelist=["foo_username"])
+
+        call({}, bot)
+
+        assert logger.warning.call_args_list == []
+        assert logger.error.call_args_list == []
+        assert update.message.reply_text.call_args_list == [
+            mock.call(
+                "bar",
+                **DEFAULT_REPLY_KWARGS,
+            )
         ]
 
 

@@ -10,6 +10,7 @@ from mainframe.bots.webhooks.inlines.bus import BusInline
 from mainframe.bots.webhooks.inlines.meals import MealsInline
 from mainframe.bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from mainframe.bots.webhooks.shared import reply
+from mainframe.clients import dexonline
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.translate import translate_text
 from mainframe.earthquakes.management.commands.base_check import parse_event
@@ -17,6 +18,10 @@ from mainframe.earthquakes.models import Earthquake
 from mainframe.finance.tasks import finance_import
 
 logger = get_default_logger(__name__)
+
+
+class ButlerException(Exception):
+    ...
 
 
 def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
@@ -29,24 +34,24 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         if callback == "end":
             return SavedMessagesInlines.end(update)
         if not args:
-            return logger.error("No args for callback query data: %s", data)
+            raise ButlerException(f"No args for callback query data: {data}")
+
         if callback in ["bus", "meal"]:
             inline = MealsInline if callback == "meal" else BusInline
             try:
                 return getattr(inline, args.pop(0))(update, *args)
             except (AttributeError, TypeError) as e:
-                logger.error("E: %s, args: %s", e, args)
-                return ""
+                raise ButlerException(f"E: {e}, args: {args}") from e
 
         saved_inline = SavedMessagesInlines(args.pop(0))
         method = getattr(saved_inline, callback, None)
         if not method:
-            return logger.error("Unhandled callback: %s", data)
+            raise ButlerException(f"Unhandled callback: {data}")
         return method(update, *args)
 
     message = update.message
     if not message or not getattr(message, "chat", None) or not message.chat.id:
-        return logger.info("No message or chat: %s", update.to_dict())
+        raise ButlerException(f"No message or chat: {update.to_dict()}")
 
     if message.new_chat_title:
         if (
@@ -75,7 +80,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         f"Username: {from_user.username}. ID: {from_user.id}"
     )
     if str(from_user.username or from_user.id) not in instance.whitelist:
-        return logger.error("Ignoring message from: %s", user)
+        raise ButlerException(f"Ignoring message from: {user}")
 
     if message.document:
         file_name = message.document.file_name
@@ -86,7 +91,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         ]:
             doc_type = stock_type
         else:
-            return logger.error("Unhandled document: %s", file_name)
+            raise ButlerException(f"Unhandled document: {file_name}")
 
         logger.info("Got %s saving...", extension)
         path = settings.BASE_DIR / "finance" / "data" / doc_type / file_name
@@ -100,10 +105,10 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         return reply(update, f"Saved {doc_type}: {file_name}")
 
     if not message.text:
-        return logger.info("No message text: %s. From: %s", update.to_dict(), user)
+        raise ButlerException(f"No message text: {update.to_dict()}. From: {user}")
 
     if not message.text.startswith("/"):
-        return logger.warning("Invalid command: '%s'. From: %s", message.text, user)
+        raise ButlerException(f"Invalid command: '{message.text}'. From: {user}")
 
     cmd, *args = message.text[1:].split(" ")
     if "bot_command" in [e.type for e in update.message.entities]:
@@ -111,6 +116,26 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
 
     if cmd == "bus":
         return BusInline.start(update)
+
+    if cmd == "dex":
+        if len(args) != 1 or not (word := args[0]):
+            logger.warning(
+                "DexOnline - invalid args: '%s'. Update: '%s'",
+                args,
+                update.to_dict(),
+            )
+            return reply(update, "What do you want to search? (usage: '/dex <word>')")
+        try:
+            word, definition = dexonline.fetch_definition(word=word)
+        except dexonline.DexOnlineError as e:
+            logger.error(
+                "DexOnlineError: '%s'. Update: '%s'. Args: '%s'",
+                e,
+                update.to_dict(),
+                args,
+            )
+            return reply(update, f"Couldn't find definition for '{word}'")
+        return reply(update, text=definition)
 
     if cmd == "earthquake":
         earthquake = instance.additional_data.get("earthquake")
@@ -202,7 +227,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         translation = translate_text(text, source=source, target=target)
         return reply(update, translation, parse_mode=None)
 
-    return logger.error("Unhandled: %s", update.to_dict())
+    raise ButlerException(f"Unhandled butler call: {update.to_dict()}. From {user}")
 
 
 def save_to_db(message, chat, text=None):
