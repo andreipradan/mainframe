@@ -140,7 +140,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
                 args,
             )
             return reply(update, f"Couldn't find definition for '{word}'")
-        return reply(update, text=definition)
+        return reply(update, text=f"{word}: {definition}")
 
     if cmd == "earthquake":
         earthquake = instance.additional_data.get("earthquake")

@@ -249,7 +249,7 @@ class TestDex:
     def test_success(self, get_mock, update, logger, __):
         get_mock.return_value = MagicMock(
             status_code=200,
-            json=MagicMock(return_value={"definitions": [{"htmlRep": "foo, bar"}]}),
+            json=MagicMock(return_value={"definitions": [{"htmlRep": "foo bar"}]}),
         )
         update = prepare_update(update, text="/dex 1")
         bot = BotFactory(whitelist=["foo_username"])
@@ -260,7 +260,7 @@ class TestDex:
         assert logger.error.call_args_list == []
         assert update.message.reply_text.call_args_list == [
             mock.call(
-                "bar",
+                "foo: bar",
                 **DEFAULT_REPLY_KWARGS,
             )
         ]

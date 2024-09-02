@@ -26,13 +26,11 @@ def fetch_definition(word=None):
         raise DexOnlineError from e
 
     response = response.json()
+    if not response["definitions"]:
+        raise DexOnlineError(f"Could not find any definitions for '{word}'")
+
     definition = BeautifulSoup(response["definitions"][0]["htmlRep"], "html.parser")
     for tag_name in ["abbr", "span", "sup"]:
         for tag in definition.find_all(tag_name):
             tag.replace_with(tag.text)
-    if "," in definition.text:
-        return (
-            definition.text.split(",")[0],
-            ",".join(definition.text.split(",")[1:]).strip(),
-        )
     return definition.text.split()[0], " ".join(definition.text.split()[1:]).strip()
