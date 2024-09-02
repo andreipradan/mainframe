@@ -210,9 +210,7 @@ class TestDex:
         assert logger.error.call_args_list == []
         assert logger.warning.call_args_list == [
             mock.call(
-                "DexOnline - invalid args: '%s'. Update: '%s'",
-                [],
-                update.to_dict(),
+                "DexOnline - invalid args: '%s'. Update: '%s'", [], update.to_dict()
             )
         ]
         assert update.message.reply_text.call_args_list == [
@@ -239,10 +237,7 @@ class TestDex:
             )
         ]
         assert update.message.reply_text.call_args_list == [
-            mock.call(
-                "Couldn't find definition for '1'",
-                **DEFAULT_REPLY_KWARGS,
-            )
+            mock.call("Couldn't find definition for '1'", **DEFAULT_REPLY_KWARGS)
         ]
 
     @mock.patch("requests.get")
@@ -259,10 +254,7 @@ class TestDex:
         assert logger.warning.call_args_list == []
         assert logger.error.call_args_list == []
         assert update.message.reply_text.call_args_list == [
-            mock.call(
-                "foo: bar",
-                **DEFAULT_REPLY_KWARGS,
-            )
+            mock.call("foo: bar", **DEFAULT_REPLY_KWARGS)
         ]
 
 

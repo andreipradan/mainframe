@@ -132,6 +132,9 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
             )
         try:
             word, definition = dexonline.fetch_definition(word=word)
+        except dexonline.DexOnlineNotFoundError:
+            logger.warning("DexOnline - word not found: '%s'", word)
+            return reply(update, f"Couldn't find definition for '{word}'")
         except dexonline.DexOnlineError as e:
             logger.error(
                 "DexOnlineError: '%s'. Update: '%s'. Args: '%s'",

@@ -9,6 +9,10 @@ class DexOnlineError(Exception):
     ...
 
 
+class DexOnlineNotFoundError(DexOnlineError):
+    ...
+
+
 def fetch_definition(word=None):
     dex_url = "https://dexonline.ro/definitie/{}/json"
 
@@ -27,7 +31,7 @@ def fetch_definition(word=None):
 
     response = response.json()
     if not response["definitions"]:
-        raise DexOnlineError(f"Could not find any definitions for '{word}'")
+        raise DexOnlineNotFoundError(f"Could not find any definitions for '{word}'")
 
     definition = BeautifulSoup(response["definitions"][0]["htmlRep"], "html.parser")
     for tag_name in ["abbr", "span", "sup"]:
