@@ -10,7 +10,7 @@ from mainframe.bots.webhooks.inlines.bus import BusInline
 from mainframe.bots.webhooks.inlines.meals import MealsInline
 from mainframe.bots.webhooks.inlines.saved_messages import SavedMessagesInlines
 from mainframe.bots.webhooks.shared import reply
-from mainframe.clients import dexonline
+from mainframe.clients import dexonline, gemini
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.translate import translate_text
 from mainframe.earthquakes.management.commands.base_check import parse_event
@@ -107,6 +107,16 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
 
     if not message.text:
         raise ButlerException(f"No message text: {update.to_dict()}. From: {user}")
+
+    if message.text.startswith(f"@{instance.username}"):
+        try:
+            response = gemini.generate_content(
+                message.text.replace(f"@{instance.username}", "")
+            )
+        except Exception as e:
+            logger.exception(e)
+            return reply(update, text="Couldn't process your prompt")
+        return reply(update, text=response)
 
     if not message.text.startswith("/"):
         raise ButlerException(f"Invalid command: '{message.text}'. From: {user}")
