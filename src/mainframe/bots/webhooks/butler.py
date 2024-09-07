@@ -109,6 +109,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
         raise ButlerException(f"No message text: {update.to_dict()}. From: {user}")
 
     if message.text.startswith(f"@{instance.username}"):
+        reply(update, text="Processing you request...")
         try:
             response = gemini.generate_content(
                 message.text.replace(f"@{instance.username}", "")

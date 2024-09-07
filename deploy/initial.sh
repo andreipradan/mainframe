@@ -36,7 +36,7 @@ echo "[zsh] Setting theme to af-magic" && sed -i -e 's/ZSH_THEME="robbyrussell"/
 echo "[zsh] Done."
 
 echo "[env] Setting .env placeholder" &&
-ENV_FILE="${PROJECT_DIR}/backend/.env"
+ENV_FILE="${PROJECT_DIR}/src/mainframe/.env"
 if [ -f "$ENV_FILE" ]; then
   echo "env file already exists";
 else

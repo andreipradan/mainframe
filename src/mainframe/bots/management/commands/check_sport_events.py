@@ -18,7 +18,12 @@ logger = get_default_logger(__name__)
 
 
 class Command(BaseCommand):
-    def handle(self, *_, **__):
+    def add_arguments(self, parser):
+        parser.add_argument("--chat_id", type=str, required=True)
+
+    def handle(self, *_, **options):
+        chat_id = options["chat_id"]
+
         logger.info("Checking today's sport events")
         try:
             bot = Bot.objects.get(additional_data__sport_events__isnull=False)
