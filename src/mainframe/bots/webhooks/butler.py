@@ -121,7 +121,7 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
             except Exception as e:
                 logger.exception(e)
                 return reply(update, text="Couldn't process your prompt")
-            return reply(update, text=response)
+            return reply(update, text=response, parse_mode=ParseMode.MARKDOWN)
         raise ButlerException(f"Invalid command: '{message.text}'. From: {user}")
 
     cmd, *args = message.text[1:].split(" ")
