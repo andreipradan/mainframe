@@ -108,18 +108,20 @@ def call(data, instance: Bot):  # noqa: PLR0911, PLR0912, PLR0915, C901
     if not message.text:
         raise ButlerException(f"No message text: {update.to_dict()}. From: {user}")
 
-    if message.text.startswith(f"@{instance.username}"):
-        reply(update, text="Processing you request...")
-        try:
-            response = gemini.generate_content(
-                message.text.replace(f"@{instance.username}", "")
-            )
-        except Exception as e:
-            logger.exception(e)
-            return reply(update, text="Couldn't process your prompt")
-        return reply(update, text=response)
-
     if not message.text.startswith("/"):
+        if (
+            message.text.startswith(f"@{instance.username}")
+            or message.chat.type == "private"
+        ):
+            reply(update, text="Processing you request...")
+            try:
+                response = gemini.generate_content(
+                    message.text.replace(f"@{instance.username}", "")
+                )
+            except Exception as e:
+                logger.exception(e)
+                return reply(update, text="Couldn't process your prompt")
+            return reply(update, text=response)
         raise ButlerException(f"Invalid command: '{message.text}'. From: {user}")
 
     cmd, *args = message.text[1:].split(" ")
