@@ -22,7 +22,6 @@ const EditModal = () => {
 
   const [isActive, setIsActive] = useState(bot?.is_active || false);
   const [webhook, setWebhook] = useState("");
-  const [webhookName, setWebhookName] = useState("");
   const [whitelist, setWhitelist] = useState(null);
   const [additionalData, setAdditionalData] = useState(null);
   const [annotations, setAnnotations] = useState(null);
@@ -31,7 +30,6 @@ const EditModal = () => {
     if (bot) {
       setIsActive(bot.is_active)
       setWebhook(bot.webhook || "")
-      setWebhookName(bot.webhook_name || "")
       setWhitelist(bot.whitelist.join("\n") || "")
       setAdditionalData(JSON.stringify(bot.additional_data, null, "\t"))
     }
@@ -78,15 +76,6 @@ const EditModal = () => {
             
             value={webhook}
             onChange={e => setWebhook(e.target.value)}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Webhook Name</Form.Label>
-          <Form.Control
-            type="text"
-            
-            value={webhookName}
-            onChange={e => setWebhookName(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="mb-3">
@@ -140,7 +129,6 @@ const EditModal = () => {
           additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
           is_active: isActive,
           webhook,
-          webhook_name: webhookName,
           whitelist: whitelist ? whitelist.split("\n") : [],
         }))
       }}>

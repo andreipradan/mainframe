@@ -76,7 +76,7 @@ const Bots = () =>  {
                                   }
                                   <br />
                                   <small>({bot.username})</small></td>
-                                <td>{bot.webhook_name || parseURL(bot.webhook) || "-"}</td>
+                                <td>{parseURL(bot.webhook) || "-"}</td>
                                 <td>{bot.whitelist.join(", ")}</td>
                                 <td>{
                                   bot.last_called_on

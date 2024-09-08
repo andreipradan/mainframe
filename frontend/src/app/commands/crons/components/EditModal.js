@@ -56,7 +56,7 @@ const EditModal = () => {
       setName(cron.name)
     }
     if (!commands.results) dispatch(CommandsApi.getList(token))
-  }, [cron]);
+  }, [allCommands, commands.results, cron, dispatch, token]);
 
   const clearModal = () => {
     setArgs("")
@@ -73,14 +73,17 @@ const EditModal = () => {
     dispatch(select())
     dispatch(setModalOpen(false))
     clearModal()
-  }, [])
+  }, [dispatch])
   const onCommandChange = useCallback(e =>
     allCommands && setCommand({ label: allCommands.find(c => c.value === e.value).label, value: e.value }),
     [allCommands]
   )
-  const onDelete = useCallback(() => dispatch(CronsApi.delete(token, cron.id)), [token, cron])
+  const onDelete = useCallback(() => dispatch(CronsApi.delete(token, cron.id)), [dispatch, token, cron])
   const onExpressionChange = useCallback(e => setExpression(e.target.value), [])
-  const onIsActiveChange = useCallback(() => setIsActive(!isActive), [])
+  const onIsActiveChange = useCallback(() => {
+    console.log(isActive, !isActive)
+    setIsActive(!isActive);
+  }, [isActive])
   const onKwargsChange = useCallback((e, i) => {
     setKwargs(e)
     try {
@@ -91,7 +94,7 @@ const EditModal = () => {
       const annotation = {...i.end, text: error.message, type: 'error'}
       setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
     }
-  }, [annotations, cron])
+  }, [annotations])
   const onNameChange = useCallback(e => setName(e.target.value), [])
   const onSubmit = useCallback(() => {
     const data = {
@@ -105,7 +108,7 @@ const EditModal = () => {
     if (cron) dispatch(CronsApi.updateCron(token, cron.id, data))
     else dispatch(CronsApi.create(token, data))
     clearModal()
-  }, [args, command, cron, expression, kwargs, name])
+  }, [args, command, cron, dispatch, expression, isActive, kwargs, name, token])
 
   return <Modal centered show={Boolean(cron) || modalOpen} onHide={onCloseModal}>
     <Modal.Header closeButton>
