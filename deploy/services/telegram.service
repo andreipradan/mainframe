@@ -1,0 +1,14 @@
+[Unit]
+Description=telegram bot polling service
+
+[Service]
+User=rpi
+WorkingDirectory=/home/rpi/projects/mainframe/src
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_bot_polling -w 4
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[bot]] up
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[bot]] down
+Restart=on-success
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target

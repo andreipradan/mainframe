@@ -4,7 +4,7 @@ from typing import List
 
 import pytz
 from django.conf import settings
-from mainframe.bots.webhooks.shared import BaseInlines, chunks
+from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
 from mainframe.clients.logs import get_default_logger
@@ -201,7 +201,7 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def start(cls, update, line_type="favorites", page=1, override_message=None):
+    def start(cls, update, line_type="favorites", page=1, override_message=None, **__):
         user = (
             update.callback_query.from_user
             if update.callback_query

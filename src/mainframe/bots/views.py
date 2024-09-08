@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from mainframe.bots.models import Bot, Message
 from mainframe.bots.serializers import BotSerializer, MessageSerializer
-from mainframe.bots.webhooks.butler import ButlerException
 from mainframe.clients.logs import get_default_logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -27,43 +26,6 @@ class BotViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
-
-    @action(detail=True, methods=["post"])
-    def webhook(self, request, **kwargs):
-        instance = self.get_object()
-        data = request.data
-        if not (
-            user := data.get(
-                "message",
-                data.get(
-                    "callback_query",
-                    data.get("edited_message", {}),
-                ),
-            ).get("from", {})
-        ):
-            logger.error("No user found in webhook data")
-            return JsonResponse(data={"status": "404"})
-        if not any(
-            (
-                user.get("username") in instance.whitelist,
-                str(user.get("id")) in instance.whitelist,
-            )
-        ):
-            logger.error("User %s not whitelisted", user)
-            return JsonResponse(data={"status": "404"})
-
-        try:
-            instance.call(request.data)
-        except ModuleNotFoundError:
-            logger.error(
-                "Webhook call for '%s' with no associated webhook implementation",
-                instance,
-            )
-            return JsonResponse(data={"status": "404"})
-        except ButlerException as e:
-            logger.exception(e)
-            return JsonResponse(data={"status": "400", "message": "Butler error"})
-        return JsonResponse(data={"status": "200"})
 
 
 class MessageViewSet(viewsets.ModelViewSet):

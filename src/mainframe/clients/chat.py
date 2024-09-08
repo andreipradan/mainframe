@@ -23,11 +23,11 @@ def edit_message(bot, chat_id, message_id, text, reply_markup=None):
 def send_telegram_message(text, **kwargs):
     logger = kwargs.pop("logger", logging)
     config = dotenv.dotenv_values()
-    if not (chat_id := config.get("TELEGRAM_DEBUG_CHAT_ID")):
-        logger.error("TELEGRAM_DEBUG_CHAT_ID not set on env")
+    if not (chat_id := config.get("TELEGRAM_CHAT_ID")):
+        logger.error("TELEGRAM_CHAT_ID not set on env")
         return None
-    if not (token := config.get("TELEGRAM_DEBUG_TOKEN")):
-        logger.error("TELEGRAM_DEBUG_TOKEN not set on env")
+    if not (token := config.get("TELEGRAM_TOKEN")):
+        logger.error("TELEGRAM_TOKEN not set on env")
         return None
 
     bot_kwargs = {

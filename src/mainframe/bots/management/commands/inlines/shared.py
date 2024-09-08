@@ -24,13 +24,24 @@ class BaseInlines:
         raise NotImplementedError
 
     @classmethod
-    def start(cls, update):
-        user = update.message.from_user
-        logger.info("User %s started the conversation.", user.full_name)
-        return update.message.reply_text(
-            f"Hi {update.message.from_user.full_name}!",
+    def start(cls, update: telegram.Update):
+        user = (
+            update.callback_query.from_user
+            if update.callback_query
+            else update.message.from_user
+        )
+
+        if not update.callback_query:
+            logger.info("User %s started the conversation.", user.full_name)
+            return update.message.edit_text(
+                f"Welcome {user.full_name}\nChoose your favorite line",
+                reply_markup=cls.get_markup(),
+            ).to_json()
+
+        return update.callback_query.edit_message_text(
+            f"Hi {user.full_name}!",
             reply_markup=cls.get_markup(),
-        ).to_json()
+        )
 
 
 def chunks(lst, n):

@@ -3,18 +3,20 @@ set -e -o pipefail
 
 PROJECT_DIR=${HOME}/projects/mainframe
 
+# For new rpi https://www.thedigitalpictureframe.com/stay-connected-enhancing-raspberry-pi-wi-fi-stability-by-turning-off-power-management/
+
 if [ "$1" == "--continue" ]; then
 
   cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "$HOME/.config/ngrok/ngrok.yml"
   echo "WARNING: If you have a custom domain - fill it in the ~/.config/ngrok.yml"
 
-#  REDIS_DIR=/etc/redis
-#  echo "[redis] Installing redis server"
-#  sudo apt install -y redis-server
-#  echo "[redis] Setting supervised from no to systemd"
-#  sudo sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
-#  sudo systemctl restart redis.service
-#  echo "[redis] Done."
+  REDIS_DIR=/etc/redis
+  echo "[redis] Installing redis server"
+  sudo apt install -y redis-server
+  echo "[redis] Setting supervised from no to systemd"
+  sudo sed -i -e 's/supervised no/supervised systemd/g' "${REDIS_DIR}/redis.conf"
+  sudo systemctl restart redis.service
+  echo "[redis] Done."
 
   echo "=== Initial setup Done! ==="
   echo "Please fill out the env vars inside mainframe/backend/.env"

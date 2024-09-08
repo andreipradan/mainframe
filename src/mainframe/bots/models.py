@@ -1,10 +1,8 @@
 from functools import cached_property
-from importlib import import_module
 
 import telegram
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils import timezone
 from mainframe.core.models import TimeStampedModel
 
 
@@ -33,12 +31,6 @@ class Bot(TimeStampedModel):
     @cached_property
     def telegram_bot(self):
         return telegram.Bot(self.token)
-
-    def call(self, data):
-        webhook_module = import_module(f"mainframe.bots.webhooks.{self.webhook_name}")
-        webhook_module.call(data, self)
-        self.last_called_on = timezone.now()
-        self.save()
 
     def send_message(  # noqa: PLR0913
         self,

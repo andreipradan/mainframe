@@ -14,7 +14,6 @@ dependencies = [
     "django-extensions==3.2.1",
     "djangorestframework==3.14.0",
     "google-cloud-storage==2.9.0",
-    "google-cloud-translate>=3.16.0",
     "google-generativeai>=0.7.2",
     "gunicorn==22.0.0",
     "huey==2.5.0",

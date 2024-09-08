@@ -92,7 +92,6 @@ google-api-core==2.18.0
     # via google-api-python-client
     # via google-cloud-core
     # via google-cloud-storage
-    # via google-cloud-translate
     # via google-generativeai
 google-api-python-client==2.143.0
     # via google-generativeai
@@ -103,15 +102,12 @@ google-auth==2.29.0
     # via google-auth-httplib2
     # via google-cloud-core
     # via google-cloud-storage
-    # via google-cloud-translate
     # via google-generativeai
 google-auth-httplib2==0.2.0
     # via google-api-python-client
 google-cloud-core==2.4.1
     # via google-cloud-storage
-    # via google-cloud-translate
 google-cloud-storage==2.9.0
-google-cloud-translate==3.16.0
 google-crc32c==1.5.0
     # via google-resumable-media
 google-generativeai==0.7.2
@@ -119,15 +115,10 @@ google-resumable-media==2.7.0
     # via google-cloud-storage
 googleapis-common-protos==1.63.0
     # via google-api-core
-    # via grpc-google-iam-v1
     # via grpcio-status
     # via opentelemetry-exporter-otlp-proto-http
-grpc-google-iam-v1==0.13.1
-    # via google-cloud-translate
 grpcio==1.65.5
     # via google-api-core
-    # via googleapis-common-protos
-    # via grpc-google-iam-v1
     # via grpcio-status
 grpcio-status==1.62.3
     # via google-api-core
@@ -224,14 +215,11 @@ prompt-toolkit==3.0.43
 proto-plus==1.23.0
     # via google-ai-generativelanguage
     # via google-api-core
-    # via google-cloud-translate
 protobuf==4.25.3
     # via google-ai-generativelanguage
     # via google-api-core
-    # via google-cloud-translate
     # via google-generativeai
     # via googleapis-common-protos
-    # via grpc-google-iam-v1
     # via grpcio-status
     # via logfire
     # via opentelemetry-proto

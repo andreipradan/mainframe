@@ -1,8 +1,8 @@
 import math
 
 import telegram.error
+from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.bots.models import Message
-from mainframe.bots.webhooks.shared import BaseInlines
 from mainframe.clients.chat import edit_message
 from mainframe.clients.logs import get_default_logger
 from telegram import InlineKeyboardButton as Button

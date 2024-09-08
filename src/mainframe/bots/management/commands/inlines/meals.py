@@ -1,6 +1,6 @@
 import math
 
-from mainframe.bots.webhooks.shared import BaseInlines, chunks
+from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.meals import MealsClient
@@ -39,13 +39,13 @@ class MealsInline(BaseInlines):
             buttons[0].insert(
                 0,
                 InlineKeyboardButton(
-                    "👆", callback_data=f"meal fetch_day {day} {page}"
+                    "👆", callback_data=f"meals fetch_day {day} {page}"
                 ),
             )
             return InlineKeyboardMarkup(buttons)
 
         buttons[0].insert(
-            0, InlineKeyboardButton("👆", callback_data=f"meal start {page}")
+            0, InlineKeyboardButton("👆", callback_data=f"meals start {page}")
         )
         items = Meal.objects.filter(date=day).order_by("type")
         logger.info("Got %d meals", len(items))
@@ -55,7 +55,7 @@ class MealsInline(BaseInlines):
                 [
                     InlineKeyboardButton(
                         f"{item.get_type_display()}",
-                        callback_data=f"meal fetch {item.pk} {page}",
+                        callback_data=f"meals fetch {item.pk} {page}",
                     )
                 ]
                 for item in items
@@ -68,14 +68,14 @@ class MealsInline(BaseInlines):
         buttons = [
             [
                 InlineKeyboardButton("✅", callback_data="end"),
-                InlineKeyboardButton("♻️", callback_data="meal sync"),
+                InlineKeyboardButton("♻️", callback_data="meals sync"),
             ]
         ]
 
         if not is_top_level:
             buttons[0].insert(
                 0,
-                InlineKeyboardButton("👆", callback_data=f"meal start {page}"),
+                InlineKeyboardButton("👆", callback_data=f"meals start {page}"),
             )
             return InlineKeyboardMarkup(buttons)
 
@@ -84,13 +84,13 @@ class MealsInline(BaseInlines):
                 0,
                 InlineKeyboardButton(
                     "👈",
-                    callback_data=f"meal start {page - 1 if page > 1 else last_page}",
+                    callback_data=f"meals start {page - 1 if page > 1 else last_page}",
                 ),
             )
             buttons[0].append(
                 InlineKeyboardButton(
                     "👉",
-                    callback_data=f"meal start {page + 1 if page != last_page else 1}",
+                    callback_data=f"meals start {page + 1 if page != last_page else 1}",
                 )
             )
 
@@ -106,7 +106,7 @@ class MealsInline(BaseInlines):
                     InlineKeyboardButton(
                         f"{item.date.strftime('%d %b %y')}",
                         callback_data=(
-                            f"meal fetch_day {item.date.strftime('%Y-%m-%d')} {page}"
+                            f"meals fetch_day {item.date.strftime('%Y-%m-%d')} {page}"
                         ),
                     )
                     for item in chunk
@@ -147,7 +147,7 @@ class MealsInline(BaseInlines):
         )
 
     @classmethod
-    def start(cls, update, page=None, override_message=None):
+    def start(cls, update, page=None, override_message=None, **__):
         count = Meal.objects.distinct("date").count()
         logger.info("Counted %s dates", count)
         last_page = math.ceil(count / cls.PER_PAGE)
