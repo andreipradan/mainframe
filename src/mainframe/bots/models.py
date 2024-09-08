@@ -10,14 +10,12 @@ class Bot(TimeStampedModel):
     additional_data = models.JSONField(blank=True, default=dict, null=True)
     first_name = models.CharField(max_length=32)
     full_name = models.CharField(max_length=32)
-    is_active = models.BooleanField(default=False)
     last_called_on = models.DateTimeField(blank=True, null=True)
     last_name = models.CharField(blank=True, max_length=32)
     telegram_id = models.BigIntegerField()
     token = models.CharField(max_length=64, unique=True)
     username = models.CharField(max_length=32)
     webhook = models.URLField(blank=True)
-    webhook_name = models.CharField(blank=True, max_length=32)
     whitelist = ArrayField(
         models.CharField(max_length=24),
         blank=True,

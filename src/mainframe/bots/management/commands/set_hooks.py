@@ -1,10 +1,8 @@
 import environ
 import github
 import requests
-import telegram
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from mainframe.bots.models import Bot
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 
@@ -53,18 +51,6 @@ class Command(BaseCommand):
             raise CommandError("Tunnel 'mainframe' not found")
 
         set_github_hook(ngrok_url)
-        logger.info("[Hooks][GitHub] Done")
-        for bot in Bot.objects.filter(is_active=True):
-            url = f"{ngrok_url}/telegram/bots/{bot.id}/webhook/"
-            try:
-                response = bot.telegram_bot.set_webhook(url)
-                logger.info(
-                    "[Hooks][Telegram] %s: %s",
-                    bot.full_name,
-                    "✅" if response else "❌",
-                )
-            except telegram.error.TelegramError as e:
-                logger.error(str(e))
         logger.info("[Hooks] Done")
         send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}")
         self.stdout.write(self.style.SUCCESS("[Hooks] Done."))
