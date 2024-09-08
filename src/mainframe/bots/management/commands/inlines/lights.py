@@ -5,14 +5,16 @@ import telegram
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.clients.lights import LightsClient, LightsException
 from mainframe.clients.logs import get_default_logger
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 logger = get_default_logger(__name__)
 
 
 class LightsInline(BaseInlines):
     @classmethod
-    def get_markup(cls, status=None):
+    def get_markup(cls, bot):
+        status = bot.additional_data["state"].get("status")
+
         def verbose_light(light):
             props = light["capabilities"]
             name = props["name"] or light["ip"]
@@ -47,9 +49,8 @@ class LightsInline(BaseInlines):
         )
 
     @classmethod
-    def refresh(cls, update, state=None):
-        bot = update.callback_query.bot
-        message = update.callback_query.message
+    def refresh(cls, update: Update, bot):
+        state = bot.additional_data.get("state")
         greeting_message = f"Hi {update.callback_query.from_user.full_name}!"
         status = state["status"] if state else ""
 
@@ -60,17 +61,15 @@ class LightsInline(BaseInlines):
                 f"{status.title()}\nSince: {state['last_updated']}\n{text}"
             )
         try:
-            return bot.edit_message_text(
-                chat_id=message.chat_id,
-                message_id=message.message_id,
+            return update.callback_query.edit_message_text(
                 text=f"{greeting_message}\n{text}",
-                reply_markup=cls.get_markup(status=status),
-            ).to_json()
+                reply_markup=cls.get_markup(bot=bot),
+            )
         except telegram.error.BadRequest as e:
             return e.message
 
     @classmethod
-    def toggle(cls, update, ip):
+    def toggle(cls, update, ip, bot):
         try:
             response = LightsClient.toggle(ip)
         except LightsException as e:
@@ -78,14 +77,14 @@ class LightsInline(BaseInlines):
             return ""
 
         logger.info("Bulb %s was toggled. Response: %s", ip, response)
-        return cls.refresh(update)
+        return cls.refresh(update, bot)
 
     @classmethod
-    def toggle_home(cls, update, bot, value):
+    def toggle_home(cls, update, value, bot):
         last_updated = datetime.now().astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
         state = {"status": value, "last_updated": last_updated}
         bot.additional_data["state"] = state
         bot.save()
 
         logger.info("Switched state to '%s'", value)
-        return cls.refresh(update, state=state)
+        return cls.refresh(update, bot=bot)

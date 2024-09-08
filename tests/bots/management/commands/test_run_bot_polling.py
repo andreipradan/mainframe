@@ -365,7 +365,7 @@ class TestWhoSNext:
             whitelist=["foo_username"],
             additional_data={"whos_next": {"chat_id": 1, "post_order": [1, 2, 0]}},
         )
-        handle_next(update, mock.ANY, bot)
+        handle_next(update, mock.ANY, bot=bot)
         assert logger.error.call_args_list == []
         assert logger.warning.call_args_list == []
         assert update.message.reply_text.call_args_list == [
@@ -379,7 +379,7 @@ class TestWhoSNext:
     def test_who_s_next_error(self, _, update, logger, __):
         update = prepare_update(update, text="/next")
         bot = BotFactory(whitelist=["foo_username"])
-        handle_next(update, mock.ANY, bot)
+        handle_next(update, mock.ANY, bot=bot)
         assert logger.error.call_args_list == []
         assert logger.warning.call_args_list == []
         assert update.message.reply_text.call_args_list == [
@@ -394,7 +394,7 @@ class TestWhoSNext:
                 "whos_next": {"chat_id": 1, "post_order": [1, 2, 0], "posted": True}
             },
         )
-        handle_next(update, mock.ANY, bot)
+        handle_next(update, mock.ANY, bot=bot)
         assert logger.error.call_args_list == []
         assert logger.warning.call_args_list == []
         assert update.message.reply_text.call_args_list == [
@@ -414,7 +414,7 @@ class TestWhoSNext:
                 }
             },
         )
-        handle_next(update, mock.ANY, bot)
+        handle_next(update, mock.ANY, bot=bot)
         assert logger.error.call_args_list == []
         assert logger.warning.call_args_list == []
         assert update.message.reply_text.call_args_list == [

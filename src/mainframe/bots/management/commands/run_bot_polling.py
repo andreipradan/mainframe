@@ -88,7 +88,7 @@ def handle_callback_query(update: Update, *_, bot, **__):
             return logger.error("Unhandled callback: %s", query.data)
         return method(update, *args)
 
-    if cmd == "meal":
+    if cmd == "meals":
         inline = MealsInline
     elif cmd == "bus":
         inline = BusInline
@@ -98,10 +98,11 @@ def handle_callback_query(update: Update, *_, bot, **__):
         logger.error("Unhandled inline: %s", query.data)
         return
     method = args.pop(0)
-    if method == "toggle_home":
-        args.insert(0, bot)
+    kwargs = {}
+    if inline == LightsInline:
+        kwargs["bot"] = bot
     try:
-        return getattr(inline, method)(update, *args)
+        return getattr(inline, method)(update, *args, **kwargs)
     except (AttributeError, TypeError) as e:
         logger.error("E: %s, args: %s", e, args)
 
@@ -156,7 +157,7 @@ def handle_left_chat_member(update: Update, *_, **__) -> None:
     return reply(update, f"Bye {update.message.left_chat_member.full_name}! 😢")
 
 
-def handle_next(update: Update, _, bot: Bot, **__):
+def handle_next(update: Update, *_, bot: Bot, **__):
     try:
         return reply(update, whos_next(bot.additional_data.get("whos_next")))
     except CommandError as e:
@@ -182,7 +183,7 @@ def handle_new_chat_title(update: Update, context: CallbackContext, bot: Bot) ->
     return reply(update, text="Saved ✔")
 
 
-def handle_new_session(update: Update, _, **__) -> None:
+def handle_new_session(update: Update, *_, **__) -> None:
     storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
     redis_client.delete(storage_key)
     reply(update, "New session started!")
@@ -224,15 +225,7 @@ def handle_process_message(update: Update, context: CallbackContext, **__) -> No
         history.append({"role": "model", "parts": response})
         redis_client.set(context_key, history)
 
-        try:
-            reply(update, response.replace("**", "").replace("*", "\*"))
-        except TelegramError as e:
-            logger.warning("Couldn't send markdown '%s'. Error: '%s'", response, e)
-            try:
-                message.reply_text(response)
-            except TelegramError as e:
-                logger.exception("Failed to reply with '%s'. Original: %s", response, e)
-                message.reply_text("Got an error trying to send response")
+        reply(update, response.replace("**", "").replace("*", "\*"))
 
 
 def handle_randomize(update: Update, context: CallbackContext, **__) -> None:
@@ -270,13 +263,21 @@ def handle_saved(update: Update, context: CallbackContext, **__) -> None:
 
 
 def reply(update: Update, text: str, **kwargs):
-    update.message.reply_text(
-        text,
-        disable_notification=True,
-        disable_web_page_preview=True,
-        parse_mode=telegram.ParseMode.MARKDOWN,
+    default_kwargs = {
+        "disable_notification": True,
+        "disable_web_page_preview": True,
+        "parse_mode": telegram.ParseMode.MARKDOWN,
         **kwargs,
-    )
+    }
+    try:
+        update.message.reply_text(text, **default_kwargs)
+    except TelegramError as e:
+        logger.warning("Couldn't send markdown '%s'. Error: '%s'", text, e)
+        try:
+            update.message.reply_text(text)
+        except TelegramError as e:
+            logger.exception("Failed to reply with '%s'. Original: %s", text, e)
+            update.message.reply_text("Got an error trying to send response")
 
 
 def handle_start(update: Update, *_, **__):
@@ -287,7 +288,7 @@ def handle_start(update: Update, *_, **__):
             [
                 [
                     InlineKeyboardButton("Buses", callback_data="bus start"),
-                    InlineKeyboardButton("Lights", callback_data="lights start"),
+                    InlineKeyboardButton("Lights", callback_data="lights refresh"),
                     InlineKeyboardButton("Meals", callback_data="meals start"),
                 ]
             ]
