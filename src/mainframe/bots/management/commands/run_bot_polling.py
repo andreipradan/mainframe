@@ -3,6 +3,7 @@ import random
 import zlib
 
 import environ
+import logfire
 import redis
 import telegram
 from django.core.management import BaseCommand, CommandError
@@ -61,8 +62,14 @@ class RedisContextClient:
         self.client.delete(key)
 
     def get(self, key):
-        if value := self.client.get(key):
-            return ast.literal_eval(zlib.decompress(value).decode())
+        try:
+            if value := self.client.get(key):
+                return ast.literal_eval(zlib.decompress(value).decode())
+        except redis.exceptions.ConnectionError as e:
+            logger.exception(e)
+
+    def ping(self):
+        return self.client.ping()
 
     def set(self, key, value):
         self.client.set(key, zlib.compress(str(value).encode()))
@@ -105,6 +112,16 @@ def handle_callback_query(update: Update, *_, bot, **__):
         return getattr(inline, method)(update, *args, **kwargs)
     except (AttributeError, TypeError) as e:
         logger.error("E: %s, args: %s", e, args)
+
+
+def handle_chat(update: Update, *_, **__):
+    context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
+    if (state := redis_client.get(context_key) or {}).get("running"):
+        return reply(update, "Already chatting, what's up?")
+
+    state["running"] = True
+    redis_client.set(context_key, state)
+    reply(update, "Hi, what do you want to talk about?")
 
 
 def handle_chat_id(update: Update, *_, **__):
@@ -183,47 +200,55 @@ def handle_new_chat_title(update: Update, context: CallbackContext, bot: Bot) ->
     return reply(update, text="Saved ✔")
 
 
-def handle_new_session(update: Update, *_, **__) -> None:
+def handle_clear(update: Update, *_, **__) -> None:
     storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
     redis_client.delete(storage_key)
-    reply(update, "New session started!")
+    reply(update, "My memory was erased!")
 
 
 def handle_photo(update: Update, *_, **__):
     return reply(update, "Not implemented.")
 
 
-def handle_process_message(update: Update, context: CallbackContext, **__) -> None:
+def handle_process_message(update: Update, *_, **__) -> None:
     message = update.message
+    text = message.text
 
-    if not (
-        context.bot.username in message.text
-        or message.reply_to_message
-        or message.chat.type == "private"
-    ):
-        logger.info("Skipping %s", message.text)
+    if not text:
+        return logger.warning("No text in '%s'", update.to_dict())
+
+    if not redis_client.ping():
+        logger.error("Can't connect to redis")
         return
 
     context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    text = message.text
+    initial_history = [
+        {
+            "role": "user",
+            "parts": "You can use emojis to make the discussion friendlier",
+        }
+    ]
+    if not (state := redis_client.get(context_key)):
+        state = {"history": initial_history, "running": False}
+        logger.info("Created context: '%s'", context_key)
+        redis_client.set(context_key, state)
+        return
 
-    if not (history := redis_client.get(context_key)):
-        history = [
-            {
-                "role": "user",
-                "parts": "You can use emojis to make the discussion friendlier",
-            }
-        ]
+    if not state.get("running"):
+        return logger.info("Not running state")
 
-    history.append({"role": "user", "parts": text})
+    if not state.get("history"):
+        state["history"] = initial_history
+
+    state["history"].append({"role": "user", "parts": text})
     try:
-        response = generate_content(prompt=text, history=history)
+        response = generate_content(prompt=text, history=state["history"])
     except GeminiError as e:
         logger.exception(e)
         reply(update, "Got an error trying to process your message")
     else:
-        history.append({"role": "model", "parts": response})
-        redis_client.set(context_key, history)
+        state["history"].append({"role": "model", "parts": response})
+        redis_client.set(context_key, state)
 
         reply(update, response.replace("**", "").replace("*", "\*"))
 
@@ -263,6 +288,10 @@ def handle_saved(update: Update, context: CallbackContext, **__) -> None:
 
 
 def reply(update: Update, text: str, **kwargs):
+    if not update.message:
+        logger.error("Can't reply - no message to reply to: '%s'", update.to_dict())
+        return
+
     default_kwargs = {
         "disable_notification": True,
         "disable_web_page_preview": True,
@@ -283,7 +312,7 @@ def reply(update: Update, text: str, **kwargs):
 def handle_start(update: Update, *_, **__):
     reply(
         update,
-        "Hi! I can remember our conversation. Type /new to start fresh.",
+        f"Hi {update.effective_user.full_name}!",
         reply_markup=InlineKeyboardMarkup(
             [
                 [
@@ -294,6 +323,16 @@ def handle_start(update: Update, *_, **__):
             ]
         ),
     )
+
+
+def handle_stop(update: Update, *_, **__):
+    context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
+    if not (state := redis_client.get(context_key)):
+        reply(update, "Nothing to stop, hit `/chat` if you want to start a chat")
+        return
+    state["running"] = False
+    redis_client.set(context_key, state)
+    reply(update, "Got it, I'll shut up until you /chat me again")
 
 
 def save_to_db(message, chat, text=None):
@@ -316,6 +355,7 @@ def save_to_db(message, chat, text=None):
 
 
 class Command(BaseCommand):
+    @logfire.instrument("run_bot_polling")
     def handle(self, *_, **__):
         logger.info("Starting bot polling")
         config = environ.Env()
@@ -329,15 +369,17 @@ class Command(BaseCommand):
         dp.add_handler(CommandHandler("bus", is_whitelisted(BusInline.start)))
         dp.add_handler(CallbackQueryHandler(is_whitelisted(handle_callback_query)))
         dp.add_handler(CommandHandler("chat_id", is_whitelisted(handle_chat_id)))
+        dp.add_handler(CommandHandler("chat", is_whitelisted(handle_chat)))
+        dp.add_handler(CommandHandler("clear", is_whitelisted(handle_clear)))
         dp.add_handler(CommandHandler("dex", is_whitelisted(handle_dex)))
         dp.add_handler(CommandHandler("earthquake", is_whitelisted(handle_earthquake)))
         dp.add_handler(CommandHandler("meals", is_whitelisted(MealsInline.start)))
-        dp.add_handler(CommandHandler("new", is_whitelisted(handle_new_session)))
         dp.add_handler(CommandHandler("next", is_whitelisted(handle_next)))
         dp.add_handler(CommandHandler("randomize", is_whitelisted(handle_randomize)))
         dp.add_handler(CommandHandler("save", is_whitelisted(handle_save)))
         dp.add_handler(CommandHandler("saved", is_whitelisted(handle_saved)))
         dp.add_handler(CommandHandler("start", is_whitelisted(handle_start)))
+        dp.add_handler(CommandHandler("stop", is_whitelisted(handle_stop)))
         dp.add_handler(
             MessageHandler(
                 Filters.text & ~Filters.command, is_whitelisted(handle_process_message)

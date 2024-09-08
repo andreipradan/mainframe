@@ -18,6 +18,7 @@ def generate_content(prompt: str, history=None):
         generation_config=genai.types.GenerationConfig(
             max_output_tokens=1000, temperature=1.0
         ),
+        safety_settings="BLOCK_ONLY_HIGH",
     )
     chat = model.start_chat(history=history)
     try:
