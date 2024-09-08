@@ -20,7 +20,6 @@ const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const loadingBots = useSelector(state => state.bots.loadingBots)
 
-  const [isActive, setIsActive] = useState(bot?.is_active || false);
   const [webhook, setWebhook] = useState("");
   const [whitelist, setWhitelist] = useState(null);
   const [additionalData, setAdditionalData] = useState(null);
@@ -28,7 +27,6 @@ const EditModal = () => {
 
   useEffect(() => {
     if (bot) {
-      setIsActive(bot.is_active)
       setWebhook(bot.webhook || "")
       setWhitelist(bot.whitelist.join("\n") || "")
       setAdditionalData(JSON.stringify(bot.additional_data, null, "\t"))
@@ -79,15 +77,6 @@ const EditModal = () => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Check
-            type="switch"
-            id="custom-switch"
-            label="Is Active"
-            checked={isActive}
-            onChange={() => {setIsActive(!isActive)}}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
           <Form.Label>Whitelist</Form.Label>
           <Form.Control as="textarea" rows={3} value={whitelist || ""} onChange={e => setWhitelist(e.target.value)}/>
         </Form.Group>
@@ -127,7 +116,6 @@ const EditModal = () => {
       <Button variant="primary" disabled={Boolean(annotations)} onClick={() => {
         dispatch(BotsApi.updateBot(token, bot.id, {
           additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
-          is_active: isActive,
           webhook,
           whitelist: whitelist ? whitelist.split("\n") : [],
         }))

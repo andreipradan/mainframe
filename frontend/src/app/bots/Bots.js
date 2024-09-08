@@ -69,12 +69,6 @@ const Bots = () =>  {
                                 <td>{i + 1}</td>
                                 <td>
                                   {bot.full_name} &nbsp;
-                                  {
-                                    !bot.is_active
-                                      ? <i className="mdi mdi-exclamation" />
-                                      : ""
-                                  }
-                                  <br />
                                   <small>({bot.username})</small></td>
                                 <td>{parseURL(bot.webhook) || "-"}</td>
                                 <td>{bot.whitelist.join(", ")}</td>
