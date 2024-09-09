@@ -6,22 +6,6 @@ export const doughnutPieOptions = {
   }
 };
 
-export const getBotsActiveData = (activeCount, inactiveCount) => ({
-  labels: ["Inactive", "Active"],
-    datasets: [{
-      data: [inactiveCount, activeCount],
-      backgroundColor: [
-        'rgba(54, 162, 235, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
-      ],
-      borderColor: [
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-      ],
-    }]
-})
-
-
 export const getLightsData = (onCount, offCount) => ({
   datasets: [{
       data: [onCount, offCount],
