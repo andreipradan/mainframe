@@ -40,8 +40,16 @@ def send_telegram_message(text, **kwargs):
     bot = telegram.Bot(token)
     try:
         return bot.send_message(text=text, **bot_kwargs)
-    except telegram.error.TelegramError as e:
-        logger.error(str(e))
+    except telegram.error.BadRequest as e:
+        if "can't find end of the entity" in str(e):
+            location = int(e.message.split()[-1])
+            logger.warning(
+                "Error parsing markdown - removing char at position: %s",
+                location,
+            )
+            text = f"{text[location:]}{text[location+1:]}"
+            return send_telegram_message(text, chat_id=chat_id, logger=logger)
+        logger.exception("Error sending message. Original: %s", e)
     return None
 
 

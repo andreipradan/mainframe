@@ -68,7 +68,11 @@ def schedule_deploy():
     else:
         cmd_params.append("no-requirements")
 
-    if "deploy/" in output:
+    if (
+        "deploy/" in output
+        or "/commands/run_bot_polling.py" in output
+        or "bots/management/commands/inlines" in output
+    ):
         cmd_params.append("restart")
         msg_extra.append("Restart all services")
     else:

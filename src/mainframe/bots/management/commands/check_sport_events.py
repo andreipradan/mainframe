@@ -6,11 +6,10 @@ from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import aiohttp
-import telegram
 from bs4 import BeautifulSoup
 from django.conf import settings
-from django.core.management import BaseCommand, CommandError
-from mainframe.bots.models import Bot
+from django.core.management import BaseCommand
+from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 from rest_framework import status
 
@@ -20,39 +19,14 @@ logger = get_default_logger(__name__)
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--chat_id", type=str, required=True)
+        parser.add_argument("--categories", type=list, required=True, nargs="+")
 
     def handle(self, *_, **options):
         chat_id = options["chat_id"]
+        categories = options["categories"]
 
         logger.info("Checking today's sport events")
-        try:
-            bot = Bot.objects.get(additional_data__sport_events__isnull=False)
-        except Bot.DoesNotExist as e:
-            raise CommandError(
-                "Bot with sport_events config in additional_data does not exist"
-            ) from e
-
-        events = bot.additional_data["sport_events"]
-        if not isinstance(events, dict) or not (chat_id := events.get("chat_id")):
-            raise CommandError(
-                "chat_id missing from sport_events in bot additional data"
-            )
-        if not (categories := events.get("categories")) or not isinstance(
-            categories, list
-        ):
-            raise CommandError(
-                "categories missing from sport_events in bot additional data or "
-                "not of type list"
-            )
-
         results = fetch_all(categories)
-
-        def send_message(text):
-            return bot.send_message(
-                chat_id=chat_id,
-                text=text,
-                parse_mode=telegram.ParseMode.MARKDOWN,
-            )
 
         results_size = len(results)
         max_size = 2000
@@ -73,21 +47,9 @@ class Command(BaseCommand):
             logger.warning("Too many batches: %s, sending only first 10", batches_no)
             chunks = chunks[:10]
 
-        entity = ""
         for i, chunk in enumerate(chunks):
-            batch_no = f"[{i + 1}/{batches_no}]"
-            try:
-                send_message(f"{entity}{chunk}\n[{batch_no}]")
-                entity = ""
-            except telegram.error.BadRequest as e:
-                logger.warning("%d Bad request: %s", batch_no, e)
-                if "can't find end of the entity" in str(e):
-                    location = int(e.message.split()[-1])
-                    entity = bytes(chunk, encoding="utf-8")[
-                        location : location + 1
-                    ].decode()
-                    logger.info('Fixed entity "%s"', entity)
-                    send_message(f"{chunk}{entity}[{batch_no}]")
+            text = f"{chunk}\n[[{i + 1}/{batches_no}]]"
+            send_telegram_message(text, chat_id=chat_id, logger=logger)
 
         self.stdout.write(self.style.SUCCESS("Done."))
 
