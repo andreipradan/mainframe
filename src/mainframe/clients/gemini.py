@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+import google.api_core.exceptions
 import google.generativeai as genai
 from mainframe.clients.logs import get_default_logger
 
@@ -17,7 +18,12 @@ def generate_content(prompt: str, history=None, file_path=None):
     genai.configure(api_key=config("GEMINI_API_KEY"))
 
     if file_path:
-        upload_results = genai.upload_file(file_path)
+        try:
+            upload_results = genai.upload_file(file_path)
+        except google.api_core.exceptions.GoogleAPIError as e:
+            Path(file_path).unlink()
+            raise GeminiError(e) from e
+
         logger.info("Uploaded file: '%s' -> '%s'", file_path, upload_results.name)
         prompt = [prompt, upload_results]
         Path(file_path).unlink()

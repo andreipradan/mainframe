@@ -190,11 +190,6 @@ def handle_new_chat_title(update: Update, context: CallbackContext, bot: Bot) ->
     return reply(update, text="Saved ✔")
 
 
-def handle_pdf(update: Update, context: CallbackContext, bot: Bot) -> None:
-    logger.warning("handle_pdf: %s\n\n%s", update.to_dict(), context)
-    reply(update, "PDF parsing not implemented yet")
-
-
 def handle_process_message(update: Update, context: CallbackContext, *_, **__) -> None:
     if not (message := update.message):
         return logger.error("No message in '%s'", update.to_dict())
@@ -221,6 +216,8 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
         file_path = update.message.photo[-1].get_file().download()
         # TODO: set uploaded docs (name from genai.upload_file) in redis -
         #  clear them on handle_clear
+    elif doc := update.message.document:
+        file_path = doc.get_file().download()
 
     state["history"].append({"role": "user", "parts": text})
     try:
@@ -369,7 +366,9 @@ class Command(BaseCommand):
         dp.add_handler(CallbackQueryHandler(is_whitelisted(handle_callback_query)))
         dp.add_handler(
             MessageHandler(
-                (Filters.text & ~Filters.command) | Filters.photo,
+                (Filters.text & ~Filters.command)
+                | Filters.photo
+                | Filters.document.pdf,
                 is_whitelisted(handle_process_message),
             )
         )
@@ -391,6 +390,5 @@ class Command(BaseCommand):
                 is_whitelisted(handle_left_chat_member),
             )
         )
-        dp.add_handler(MessageHandler(Filters.document.pdf, is_whitelisted(handle_pdf)))
         updater.start_polling()
         updater.idle()
