@@ -114,24 +114,8 @@ def handle_callback_query(update: Update, *_, bot, **__):
         logger.error("E: %s, args: %s", e, args)
 
 
-def handle_chat(update: Update, *_, **__):
-    context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    if (state := redis_client.get(context_key) or {}).get("running"):
-        return reply(update, "Already chatting, what's up?")
-
-    state["running"] = True
-    redis_client.set(context_key, state)
-    reply(update, "Hi, what do you want to talk about?")
-
-
 def handle_chat_id(update: Update, *_, **__):
     return reply(update, f"Chat ID: {update.effective_chat.id}")
-
-
-def handle_clear(update: Update, *_, **__) -> None:
-    storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    redis_client.delete(storage_key)
-    reply(update, "My memory was erased! Write /chat if you want to talk again.")
 
 
 def handle_dex(update, context: CallbackContext, **__):
@@ -207,42 +191,34 @@ def handle_new_chat_title(update: Update, context: CallbackContext, bot: Bot) ->
 
 
 def handle_pdf(update: Update, context: CallbackContext, bot: Bot) -> None:
-    logger.warning("%s\n\n%s", update.to_dict(), context)
+    logger.warning("handle_pdf: %s\n\n%s", update.to_dict(), context)
+    reply(update, "PDF parsing not implemented yet")
 
 
-def handle_process_message(update: Update, *_, **__) -> None:
-    message = update.message
+def handle_process_message(update: Update, context: CallbackContext, *_, **__) -> None:
+    if not (message := update.message):
+        return logger.error("No message in '%s'", update.to_dict())
+
+    text = getattr(message, "text", "") or message.caption or ""
+    if not (context.bot.username in text or update.effective_chat.type == "private"):
+        return logger.info("No tag or caption")
 
     if not redis_client.ping():
         logger.error("Can't connect to redis")
         return
 
     context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    initial_history = [
-        {
-            "role": "user",
-            "parts": "You can use emojis to make the discussion friendlier",
-        }
-    ]
+    history = [{"role": "user", "parts": "You can use emojis"}]
     if not (state := redis_client.get(context_key)):
-        state = {"history": initial_history, "running": False}
-        logger.info("Created context: '%s'", context_key)
-        redis_client.set(context_key, state)
-        return
-
-    if not state.get("running"):
-        return logger.info("Not running state")
+        state = {"history": history}
+        logger.info("Adding initial context: '%s'", context_key)
 
     if not state.get("history"):
-        state["history"] = initial_history
+        state["history"] = history
 
     file_path = None
-    if not (text := message.text):
-        if not update.message.photo:
-            return logger.warning("No text or photo in '%s'", update.to_dict())
-
+    if update.message.photo:
         file_path = update.message.photo[-1].get_file().download()
-        text = "Shortly describe this photo"
         # TODO: set uploaded docs (name from genai.upload_file) in redis -
         #  clear them on handle_clear
 
@@ -266,6 +242,15 @@ def handle_randomize(update: Update, context: CallbackContext, **__) -> None:
         return reply(update, "Must contain 2-50 items separated by spaces")
     random.shuffle(args)
     return reply(update, "\n".join(f"{i + 1}. {item}" for i, item in enumerate(args)))
+
+
+def handle_reset(update: Update, *_, **__) -> None:
+    storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
+    if state := redis_client.get(storage_key):
+        state["history"] = []
+        reply(update, "My memory was erased! Who are you? 😄")
+    else:
+        reply(update, "No previous memories to reset 📛")
 
 
 def handle_save(update: Update, context: CallbackContext, **__) -> None:
@@ -339,16 +324,6 @@ def handle_start(update: Update, *_, **__):
     )
 
 
-def handle_stop(update: Update, *_, **__):
-    context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    if not (state := redis_client.get(context_key)):
-        reply(update, "Nothing to stop, hit `/chat` if you want to start a chat")
-        return
-    state["running"] = False
-    redis_client.set(context_key, state)
-    reply(update, "Got it, I'll shut up until you /chat me again")
-
-
 def save_to_db(message, chat, text=None):
     author = message.from_user.to_dict()
     author["full_name"] = message.from_user.full_name
@@ -381,19 +356,17 @@ class Command(BaseCommand):
 
         # Warning! make sure all handlers are wrapped in is_whitelisted!
         dp.add_handler(CommandHandler("bus", is_whitelisted(BusInline.start)))
-        dp.add_handler(CallbackQueryHandler(is_whitelisted(handle_callback_query)))
         dp.add_handler(CommandHandler("chat_id", is_whitelisted(handle_chat_id)))
-        dp.add_handler(CommandHandler("chat", is_whitelisted(handle_chat)))
-        dp.add_handler(CommandHandler("clear", is_whitelisted(handle_clear)))
         dp.add_handler(CommandHandler("dex", is_whitelisted(handle_dex)))
         dp.add_handler(CommandHandler("earthquake", is_whitelisted(handle_earthquake)))
         dp.add_handler(CommandHandler("meals", is_whitelisted(MealsInline.start)))
         dp.add_handler(CommandHandler("next", is_whitelisted(handle_next)))
         dp.add_handler(CommandHandler("randomize", is_whitelisted(handle_randomize)))
+        dp.add_handler(CommandHandler("reset", is_whitelisted(handle_reset)))
         dp.add_handler(CommandHandler("save", is_whitelisted(handle_save)))
         dp.add_handler(CommandHandler("saved", is_whitelisted(handle_saved)))
         dp.add_handler(CommandHandler("start", is_whitelisted(handle_start)))
-        dp.add_handler(CommandHandler("stop", is_whitelisted(handle_stop)))
+        dp.add_handler(CallbackQueryHandler(is_whitelisted(handle_callback_query)))
         dp.add_handler(
             MessageHandler(
                 (Filters.text & ~Filters.command) | Filters.photo,
