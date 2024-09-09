@@ -21,7 +21,7 @@ from mainframe.clients.gemini import GeminiError, generate_content
 from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, TelegramError, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     CallbackContext,
     CallbackQueryHandler,
@@ -300,12 +300,16 @@ def reply(update: Update, text: str, **kwargs):
     }
     try:
         update.message.reply_text(text, **default_kwargs)
-    except TelegramError as e:
-        logger.warning("Couldn't send markdown '%s'. Error: '%s'", text, e)
+    except telegram.error.TelegramError as e:
+        if "can't find end of the entity" in str(e):
+            location = int(e.message.split()[-1])
+            logger.warning("Error parsing markdown - skipping '%s'", text[location])
+            return reply(update, f"{text[location:]}{text[location + 1:]}")
+        logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
         try:
             update.message.reply_text(text)
-        except TelegramError as e:
-            logger.exception("Failed to reply with '%s'. Original: %s", text, e)
+        except telegram.error.TelegramError as e:
+            logger.exception("Error sending unformatted message. (%s)", e)
             update.message.reply_text("Got an error trying to send response")
 
 

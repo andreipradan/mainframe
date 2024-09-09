@@ -1,5 +1,6 @@
 import psutil
 from django.core.exceptions import ValidationError
+from django.core.management import CommandError
 from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
 from mainframe.crons.models import Cron
@@ -30,7 +31,7 @@ class CronViewSet(viewsets.ModelViewSet):
         instance: Cron = self.get_object()
         try:
             instance.run()
-        except ValidationError as e:
+        except (CommandError, ValidationError) as e:
             return JsonResponse(
                 data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )

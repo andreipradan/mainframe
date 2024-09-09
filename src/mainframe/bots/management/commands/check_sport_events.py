@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import aiohttp
 from bs4 import BeautifulSoup
 from django.conf import settings
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, CommandError
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
 from rest_framework import status
@@ -69,9 +69,8 @@ async def fetch(session, sem, url, categories):
         try:
             async with session.get(url) as response:
                 if response.status != status.HTTP_200_OK:
-                    raise ValueError(
-                        f"Unexpected status for {url}. Status: {response.status}"
-                    )
+                    err = f"Unexpected status for {url} ({response.status})"
+                    raise CommandError(err)
                 return await response.text(), url, categories
         except aiohttp.client_exceptions.ClientConnectorError as e:
             logger.error(e)
