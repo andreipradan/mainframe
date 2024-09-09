@@ -128,6 +128,12 @@ def handle_chat_id(update: Update, *_, **__):
     return reply(update, f"Chat ID: {update.effective_chat.id}")
 
 
+def handle_clear(update: Update, *_, **__) -> None:
+    storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
+    redis_client.delete(storage_key)
+    reply(update, "My memory was erased! Write /chat if you want to talk again.")
+
+
 def handle_dex(update, context: CallbackContext, **__):
     if len(context.args) != 1 or not (word := context.args[0]):
         reply(update, "What do you want to search? (usage: '/dex <word>')")
@@ -200,22 +206,12 @@ def handle_new_chat_title(update: Update, context: CallbackContext, bot: Bot) ->
     return reply(update, text="Saved ✔")
 
 
-def handle_clear(update: Update, *_, **__) -> None:
-    storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    redis_client.delete(storage_key)
-    reply(update, "My memory was erased!")
-
-
-def handle_photo(update: Update, *_, **__):
-    return reply(update, "Not implemented.")
+def handle_pdf(update: Update, context: CallbackContext, bot: Bot) -> None:
+    logger.warning("%s\n\n%s", update.to_dict(), context)
 
 
 def handle_process_message(update: Update, *_, **__) -> None:
     message = update.message
-    text = message.text
-
-    if not text:
-        return logger.warning("No text in '%s'", update.to_dict())
 
     if not redis_client.ping():
         logger.error("Can't connect to redis")
@@ -240,9 +236,21 @@ def handle_process_message(update: Update, *_, **__) -> None:
     if not state.get("history"):
         state["history"] = initial_history
 
+    file_path = None
+    if not (text := message.text):
+        if not update.message.photo:
+            return logger.warning("No text or photo in '%s'", update.to_dict())
+
+        file_path = update.message.photo[-1].get_file().download()
+        text = "Shortly describe this photo"
+        # TODO: set uploaded docs (name from genai.upload_file) in redis -
+        #  clear them on handle_clear
+
     state["history"].append({"role": "user", "parts": text})
     try:
-        response = generate_content(prompt=text, history=state["history"])
+        response = generate_content(
+            prompt=text, history=state["history"], file_path=file_path
+        )
     except GeminiError as e:
         logger.exception(e)
         reply(update, "Got an error trying to process your message")
@@ -304,7 +312,9 @@ def reply(update: Update, text: str, **kwargs):
         if "can't find end of the entity" in str(e):
             location = int(e.message.split()[-1])
             logger.warning("Error parsing markdown - skipping '%s'", text[location])
-            return reply(update, f"{text[location:]}{text[location + 1:]}")
+            return reply(
+                update, f"{text[:location]}\\{text[location]}{text[location + 1:]}"
+            )
         logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
         try:
             update.message.reply_text(text)
@@ -386,7 +396,8 @@ class Command(BaseCommand):
         dp.add_handler(CommandHandler("stop", is_whitelisted(handle_stop)))
         dp.add_handler(
             MessageHandler(
-                Filters.text & ~Filters.command, is_whitelisted(handle_process_message)
+                (Filters.text & ~Filters.command) | Filters.photo,
+                is_whitelisted(handle_process_message),
             )
         )
         dp.add_handler(
@@ -407,6 +418,6 @@ class Command(BaseCommand):
                 is_whitelisted(handle_left_chat_member),
             )
         )
-        dp.add_handler(MessageHandler(Filters.photo, is_whitelisted(handle_photo)))
+        dp.add_handler(MessageHandler(Filters.document.pdf, is_whitelisted(handle_pdf)))
         updater.start_polling()
         updater.idle()

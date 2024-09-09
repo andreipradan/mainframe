@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import environ
 import google.generativeai as genai
 from mainframe.clients.logs import get_default_logger
@@ -9,10 +11,17 @@ class GeminiError(Exception):
     ...
 
 
-def generate_content(prompt: str, history=None):
+def generate_content(prompt: str, history=None, file_path=None):
     history = history or []
     config = environ.Env()
     genai.configure(api_key=config("GEMINI_API_KEY"))
+
+    if file_path:
+        upload_results = genai.upload_file(file_path)
+        logger.info("Uploaded file: '%s' -> '%s'", file_path, upload_results.name)
+        prompt = [prompt, upload_results]
+        Path(file_path).unlink()
+
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config=genai.types.GenerationConfig(
