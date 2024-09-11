@@ -202,8 +202,9 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
         logger.error("Can't connect to redis")
         return
 
-    context_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    history = [{"role": "user", "parts": "You can use emojis"}]
+    role = update.effective_user.full_name
+    context_key = f"context:{update.effective_chat.id}"
+    history = [{"role": role, "parts": "You can use emojis"}]
     if not (state := redis_client.get(context_key)):
         state = {"history": history}
         logger.info("Adding initial context: '%s'", context_key)
@@ -219,7 +220,7 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
     elif doc := update.message.document:
         file_path = doc.get_file().download()
 
-    state["history"].append({"role": "user", "parts": text})
+    state["history"].append({"role": role, "parts": text})
     try:
         response = generate_content(
             prompt=text, history=state["history"], file_path=file_path
