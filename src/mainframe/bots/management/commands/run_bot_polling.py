@@ -203,13 +203,8 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
         return
 
     context_key = f"context:{update.effective_chat.id}"
-    history = [{"role": "user", "parts": "You can use emojis"}]
-    if not (state := redis_client.get(context_key)):
-        state = {"history": history}
-        logger.info("Adding initial context: '%s'", context_key)
-
-    if not state.get("history"):
-        state["history"] = history
+    if not (history := redis_client.get(context_key)):
+        history = [{"role": "user", "parts": "You can use emojis"}]
 
     file_path = None
     if update.message.photo:
@@ -219,22 +214,20 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
     elif doc := update.message.document:
         file_path = doc.get_file().download()
 
-    state["history"].append(
+    history.append(
         {
             "role": "user",
             "parts": f"User: {update.effective_user.full_name}. Text: {text}",
         }
     )
     try:
-        response = generate_content(
-            prompt=text, history=state["history"], file_path=file_path
-        )
+        response = generate_content(prompt=text, history=history, file_path=file_path)
     except GeminiError as e:
         logger.exception(e)
         reply(update, "Got an error trying to process your message")
     else:
-        state["history"].append({"role": "model", "parts": response})
-        redis_client.set(context_key, state)
+        history.append({"role": "model", "parts": response})
+        redis_client.set(context_key, history)
 
         reply(update, response.replace("**", "").replace("*", "\*"))
 
@@ -248,11 +241,8 @@ def handle_randomize(update: Update, context: CallbackContext, **__) -> None:
 
 def handle_reset(update: Update, *_, **__) -> None:
     storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
-    if state := redis_client.get(storage_key):
-        state["history"] = []
-        reply(update, "My memory was erased! Who are you? 😄")
-    else:
-        reply(update, "No previous memories to reset 📛")
+    redis_client.delete(storage_key)
+    reply(update, "My memory was erased! Who are you? 😄")
 
 
 def handle_save(update: Update, context: CallbackContext, **__) -> None:

@@ -70,7 +70,7 @@ def schedule_deploy():
 
     if (
         "deploy/" in output
-        or "/commands/run_bot_polling.py" in output
+        or "bots/management/commands/run_bot_polling.py" in output
         or "bots/management/commands/inlines" in output
     ):
         cmd_params.append("restart")
