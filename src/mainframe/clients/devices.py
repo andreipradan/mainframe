@@ -50,7 +50,7 @@ class DevicesClient:
             raise DevicesException(f"Unexpected response {response.status_code}")
         response = response.json()
         if set(response) != {"ret", "topo"}:
-            raise DevicesException(f"Unexpected top level keys: {set(response)}")
+            raise DevicesException(f"Unexpected top level keys in response: {response}")
         if len(response["topo"]) != 1:
             raise DevicesException(f"Got multiple routers: {len(response['topo'])}")
 
