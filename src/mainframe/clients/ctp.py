@@ -177,6 +177,8 @@ class CTPClient:
                 schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y2")
             elif date_row == "17.05.2024.2024":
                 schedule_start_date = datetime.strptime(date_row, "%d.%m.%Y.2024")
+            elif date_row == "30.09.06.2024":
+                schedule_start_date = datetime.strptime(date_row, "%d.%m.06.%Y")
             elif date_row == ".":
                 schedule_start_date = None
             else:
