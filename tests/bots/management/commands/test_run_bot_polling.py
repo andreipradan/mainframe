@@ -17,7 +17,6 @@ from mainframe.bots.management.commands.run_bot_polling import (
 )
 from mainframe.bots.models import Bot
 from mainframe.clients.dexonline import DexOnlineError
-from telegram import ParseMode
 
 from tests.factories.bots import BotFactory
 from tests.factories.earthquakes import EarthquakeFactory
@@ -25,7 +24,7 @@ from tests.factories.earthquakes import EarthquakeFactory
 DEFAULT_REPLY_KWARGS = {
     "disable_notification": True,
     "disable_web_page_preview": True,
-    "parse_mode": "Markdown",
+    "parse_mode": "HTML",
 }
 
 
@@ -158,7 +157,7 @@ class TestHandleDex:
         assert update.message.reply_text.call_args_list == [
             mock.call(
                 "What do you want to search? (usage: '/dex <word>')",
-                **{**DEFAULT_REPLY_KWARGS, "parse_mode": ParseMode.MARKDOWN},
+                **DEFAULT_REPLY_KWARGS,
             )
         ]
 

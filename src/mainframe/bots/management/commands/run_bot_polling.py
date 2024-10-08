@@ -229,7 +229,11 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
         history.append({"role": "model", "parts": response})
         redis_client.set(context_key, history)
 
-        reply(update, response.replace("**", "").replace("*", "\*"))
+        reply(
+            update,
+            response.replace("**", "").replace("*", "\*"),
+            parse_mode=telegram.ParseMode.HTML,
+        )
 
 
 def handle_randomize(update: Update, context: CallbackContext, **__) -> None:
@@ -280,7 +284,7 @@ def reply(update: Update, text: str, **kwargs):
     default_kwargs = {
         "disable_notification": True,
         "disable_web_page_preview": True,
-        "parse_mode": telegram.ParseMode.MARKDOWN,
+        "parse_mode": telegram.ParseMode.HTML,
         **kwargs,
     }
     try:
@@ -310,6 +314,10 @@ def handle_start(update: Update, *_, **__):
                     InlineKeyboardButton("Buses", callback_data="bus start"),
                     InlineKeyboardButton("Lights", callback_data="lights refresh"),
                     InlineKeyboardButton("Meals", callback_data="meals start"),
+                    InlineKeyboardButton(
+                        "Saved", callback_data=f"start {update.effective_chat.id} 1"
+                    ),
+                    InlineKeyboardButton("✅", callback_data="end"),
                 ]
             ]
         ),
