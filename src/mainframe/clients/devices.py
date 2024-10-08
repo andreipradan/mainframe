@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+from operator import attrgetter
 
 import requests
 from django.db import IntegrityError
@@ -55,18 +56,38 @@ class DevicesClient:
             raise DevicesException(f"Got multiple routers: {len(response['topo'])}")
 
         if devices := list(map(parse_device, response["topo"][0]["sta"])):
-            existing_macs = Device.objects.values_list("mac", flat=True)
-            new_macs = [d["mac"] for d in devices if d["mac"] not in existing_macs]
+            existing_devices = list(Device.objects.all())
+            new_devices = [
+                device
+                for device in devices
+                if device.mac not in list(map(attrgetter("mac"), existing_devices))
+            ]
             self.logger.info(
                 "Got %d devices%s",
                 len(devices),
-                f" ({len(new_macs)} new ones)" if new_macs else "",
+                f" ({len(new_devices)} new ones)" if new_devices else "",
+                extra={"new_devices": new_devices},
             )
 
-            Device.objects.update(is_active=False)
+            active_macs = list(map(attrgetter("mac"), devices))
+            went_online = [
+                device
+                for device in existing_devices
+                if not device.is_active and device.mac in active_macs
+            ]
+            went_offline = [
+                device
+                for device in existing_devices
+                if device.is_active and device.mac not in active_macs
+            ]
+            if went_offline:
+                Device.objects.filter(
+                    mac__in=map(attrgetter("mac"), went_offline)
+                ).update(is_active=False)
+
             try:
                 Device.objects.bulk_create(
-                    [Device(**d) for d in devices],
+                    devices,
                     update_conflicts=True,
                     update_fields=["additional_data", "is_active", "ip", "name"],
                     unique_fields=["mac"],
@@ -80,16 +101,16 @@ class DevicesClient:
                 raise DevicesException(
                     "Error while trying to store devices. Check the logs"
                 ) from e
-            return new_macs
+            return new_devices, went_online, went_offline
         self.logger.warning("Got no devices.")
         return []
 
 
 def parse_device(device):
-    return {
-        "additional_data": device,
-        "ip": device.pop("ipv4").replace("_point_", "."),
-        "is_active": True,
-        "mac": device.pop("mac").upper(),
-        "name": device.pop("name"),
-    }
+    return Device(
+        additional_data=device,
+        ip=device.pop("ipv4").replace("_point_", "."),
+        is_active=True,
+        mac=device.pop("mac").upper(),
+        name=device.pop("name"),
+    )
