@@ -9,6 +9,7 @@ class Device(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     mac = models.CharField(max_length=24, unique=True)
     name = models.CharField(blank=True, max_length=32)
+    should_notify_presence = models.BooleanField(default=True)
 
     def __repr__(self):
         return self.alias or self.name or self.ip or self.mac
