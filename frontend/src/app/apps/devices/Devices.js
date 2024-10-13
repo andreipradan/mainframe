@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { Audio, ColorRing } from "react-loader-spinner";
+import { Audio, Circles, ColorRing } from 'react-loader-spinner';
 import { Collapse } from 'react-bootstrap';
 
 import DevicesApi from "../../../api/devices";
@@ -22,7 +22,7 @@ const Devices = () =>  {
   const search = () => {
     return results.filter(d =>
       ["ip", "mac", "name"].some(key =>
-        d[key].toLowerCase().includes(searchTerm.toLowerCase()))
+        d[key]?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }
 
@@ -90,7 +90,7 @@ const Devices = () =>  {
         </nav>
       </div>
       <div className="row">
-        <div className="col-lg-12 grid-margin stretch-card">
+        <div className="col-md-12 offset-xl-1 col-xl-10 grid-margin stretch-card cent">
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">
@@ -123,21 +123,21 @@ const Devices = () =>  {
               <Errors errors={errors} />
               <Collapse in={searchOpen}>
               <ul className="navbar-nav w-100 rounded">
-                  <li className="nav-item w-100">
-                    <form
-                      className="nav-link mt-2 mt-md-0 d-lg-flex search"
-                      onSubmit={e => {e.preventDefault()}}
-                    >
-                      <input
-                        value={searchTerm}
-                        type="search"
-                        className="form-control"
-                        placeholder="Search devices"
-                        onChange={e => setSearchTerm(e.target.value)}
-                      />
-                    </form>
-                  </li>
-                </ul>
+                <li className="nav-item w-100">
+                  <form
+                    className="nav-link mt-2 mt-md-0 d-lg-flex search"
+                    onSubmit={e => {e.preventDefault()}}
+                  >
+                    <input
+                      value={searchTerm}
+                      type="search"
+                      className="form-control"
+                      placeholder="Search devices"
+                      onChange={e => setSearchTerm(e.target.value)}
+                    />
+                  </form>
+                </li>
+              </ul>
               </Collapse>
               <div className="table-responsive table-hover">
                 <table className="table">
@@ -163,12 +163,19 @@ const Devices = () =>  {
                               className={"cursor-pointer"}
                             >
                             <td>{i + 1}</td>
-                                <td>{device.alias || device.name || "-"} &nbsp;</td>
-                                <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
-                                <td>{device.ip }</td>
-                                <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac}</td>
-                                <td>{new Date(device.updated_at).toLocaleString()}</td>
-                              </tr>
+                              <td>
+                                {device.display_name || "-"}
+                                {
+                                  !device.should_notify_presence
+                                    ? <sup className="text-gray"> <i className="mdi mdi-bell-off"/></sup>
+                                    : null
+                                }
+                              </td>
+                              <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
+                              <td>{device.ip }</td>
+                              <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac}</td>
+                              <td>{new Date(device.updated_at).toLocaleString()}</td>
+                            </tr>
                           : <tr key={i}>
                             <td colSpan={6}>
                               <ColorRing

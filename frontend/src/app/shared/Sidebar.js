@@ -118,8 +118,8 @@ const Sidebar = () => {
   const handleSubmitModal = evt => {
     evt.preventDefault()
     if (currentModal === "reboot") dispatch(RpiApi.reboot(token))
-    else if (currentModal === "clear build") dispatch(RpiApi.clearBuild(token))
     else if (currentModal === "Restart backend") dispatch(RpiApi.restartService(token, "backend"))
+    else if (currentModal === "Restart bot") dispatch(RpiApi.restartService(token, "bot"))
     else if (currentModal === "Restart huey") dispatch(RpiApi.restartService(token, "huey"))
     setModalOpen(false)
   }
@@ -174,43 +174,28 @@ const Sidebar = () => {
                     <p className="preview-subject ellipsis mb-1 text-small">Account settings</p>
                   </div>
                 </a>
-                <div className="dropdown-divider" />
-                <a href="!#" className="dropdown-item preview-item" onClick={evt =>evt.preventDefault()}>
-                  <div className="preview-thumbnail">
-                    <div className="preview-icon bg-dark rounded-circle">
-                      <i className="mdi mdi-onepassword  text-info" />
-                    </div>
-                  </div>
-                  <div className="preview-item-content">
-                    <p className="preview-subject ellipsis mb-1 text-small"><Trans>Change Password</Trans></p>
-                  </div>
-                </a>
                 {
                   user?.is_staff && <>
-                    <div className="dropdown-divider" />
-                    <a href="!#" className="dropdown-item preview-item" onClick={evt =>evt.preventDefault()}>
-                      <div className="preview-thumbnail">
-                        <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-calendar-today text-success" />
-                        </div>
-                      </div>
-                      <div className="preview-item-content">
-                        <p className="preview-subject ellipsis mb-1 text-small"><Trans>To-do list</Trans></p>
-                      </div>
-                    </a>
                     <Dropdown.Divider/>
-                    <Dropdown.Item href="!#" onClick={e => {
-                      e.preventDefault()
-                      setModalOpen(true)
-                      setCurrentModal("clear build")
-                    }} className="preview-item">
+                    <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-delete text-warning" />
+                          <i className="mdi mdi-server text-success" />
                         </div>
                       </div>
                       <div className="preview-item-content">
-                        <p className="preview-subject mb-1"><Trans>Clear build</Trans></p>
+                        <p className="preview-subject mb-1">Restart backend</p>
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Divider/>
+                    <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
+                      <div className="preview-thumbnail">
+                        <div className="preview-icon bg-dark rounded-circle">
+                          <i className="mdi mdi-robot text-info" />
+                        </div>
+                      </div>
+                      <div className="preview-item-content">
+                        <p className="preview-subject mb-1">Restart bot</p>
                       </div>
                     </Dropdown.Item>
                     <Dropdown.Divider/>
@@ -222,17 +207,6 @@ const Sidebar = () => {
                       </div>
                       <div className="preview-item-content">
                         <p className="preview-subject mb-1">Restart huey</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider/>
-                    <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
-                      <div className="preview-thumbnail">
-                        <div className="preview-icon bg-dark rounded-circle">
-                          <i className="mdi mdi-server text-warning" />
-                        </div>
-                      </div>
-                      <div className="preview-item-content">
-                        <p className="preview-subject mb-1">Restart backend</p>
                       </div>
                     </Dropdown.Item>
                     <Dropdown.Divider/>

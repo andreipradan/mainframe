@@ -9,13 +9,6 @@ import {logout} from "../redux/authSlice";
 
 
 class RpiApi {
-  static clearBuild = token => dispatch => {
-    dispatch(setLoading(true))
-    ngrokAxios
-      .put(`${base}/clear-build/`, {}, {headers: {Authorization: token}})
-      .then(() => dispatch(completed("Build cleared, after copying the static files, please restart backend")))
-      .catch(err => handleErrors(err, dispatch, setErrors))
-  }
   static reboot = token => dispatch => {
     dispatch(setLoading(true));
     ngrokAxios

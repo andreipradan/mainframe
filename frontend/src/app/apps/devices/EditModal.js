@@ -14,6 +14,7 @@ import "ace-builds/src-noconflict/ext-language_tools";
 
 import DevicesApi from "../../../api/devices";
 import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
+import { Tooltip } from 'react-tooltip';
 
 const EditModal = () => {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ const EditModal = () => {
   const [isActive, setIsActive] = useState(false);
   const [mac, setMac] = useState("");
   const [name, setName] = useState("");
+  const [shouldNotifyPresence, setShouldNotifyPresence] = useState(false)
 
   const [additionalDataAnnotations, setAdditionalDataAnnotations] = useState(null)
 
@@ -36,6 +38,7 @@ const EditModal = () => {
     setIsActive(false)
     setMac("")
     setName("")
+    setShouldNotifyPresence(true)
   }
 
   const closeModal = () => {
@@ -62,6 +65,7 @@ const EditModal = () => {
       ip,
       is_active: isActive,
       name,
+      should_notify_presence: shouldNotifyPresence,
     }
     if (additionalData)
       data.additional_data = JSON.parse(additionalData.replace(/[\r\n\t]/g, ""))
@@ -76,11 +80,12 @@ const EditModal = () => {
   useEffect(() => {
     if (device) {
       setAdditionalData(JSON.stringify(device.additional_data, null, "\t"))
-      setAlias(device.alias || "")
-      setIp(device.ip || "")
-      setIsActive(device.is_active || false)
-      setMac(device.mac || "")
-      setName(device.name || "")
+      setAlias(device.alias)
+      setIp(device.ip)
+      setIsActive(device.is_active)
+      setMac(device.mac)
+      setName(device.name)
+      setShouldNotifyPresence(device.should_notify_presence)
     }
   }, [device]);
 
@@ -89,10 +94,17 @@ const EditModal = () => {
       <Modal.Title>
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
-            {device ? 'Edit' : 'Add new device'} {device?.name || device?.ip }
+            {device ? 'Edit' : 'Add new device'} {device?.display_name } ?
           </div>
         </div>
-        {device ? <p className="text-muted mb-0">{device?.mac}</p> : null}
+        {
+          device
+            ? <p className="text-muted mb-0">
+                {device.should_notify_presence ? null : <span><i className="mdi mdi-bell-off" /> Telegram notifications turned off<br/></span>}
+                {device?.mac}
+              </p>
+            : null
+        }
       </Modal.Title>
     </Modal.Header>
     {
@@ -137,6 +149,19 @@ const EditModal = () => {
             value={ip}
             required
             onChange={e => setIp(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>
+            Should notify presence?&nbsp;
+            <sup><i id="should-notify-presence" className="mdi mdi-information-outline" /></sup>
+          </Form.Label>
+          <Form.Check
+            checked={shouldNotifyPresence}
+            type="switch"
+            id="notify-checkbox"
+            label=""
+            onChange={() => {setShouldNotifyPresence(!shouldNotifyPresence)}}
           />
         </Form.Group>
         {
@@ -194,6 +219,10 @@ const EditModal = () => {
         {device ? "Update" : "Add"}
       </Button>
     </Modal.Footer>
+    <Tooltip anchorSelect="#should-notify-presence" place="bottom-start">
+      Used to send notifications on Telegram<br/>
+      when this device goes online or offline<br/>
+    </Tooltip>
   </Modal>
 }
 export default EditModal;
