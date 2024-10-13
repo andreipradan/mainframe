@@ -5,6 +5,8 @@ from rest_framework.exceptions import ValidationError
 
 
 class DeviceSerializer(serializers.ModelSerializer):
+    display_name = serializers.CharField(source="__repr__", read_only=True)
+
     class Meta:
         model = Device
         fields = "__all__"

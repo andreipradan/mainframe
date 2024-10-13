@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.http import JsonResponse
 from mainframe.clients.system import run_cmd
 from rest_framework import viewsets
@@ -17,10 +16,6 @@ class RpiViewSet(viewsets.ViewSet):
             return JsonResponse(status=400, data={"data": str(e)})
 
         return JsonResponse(status=204, data={"data": output})
-
-    @action(detail=False, methods=["put"], url_path="clear-build")
-    def clear_build(self, request, **kwargs):
-        return self.run_command(f"rm -rf {settings.BASE_DIR / 'build'}")
 
     @action(detail=False, methods=["put"])
     def reboot(self, request, **kwargs):

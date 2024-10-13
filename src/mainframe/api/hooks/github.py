@@ -38,7 +38,7 @@ def mainframe(request):  # noqa: C901, PLR0911
             f"{PREFIX} Warning, {client_ip_address} tried "
             f"to call mainframe github webhook URL"
         )
-        return HttpResponseForbidden("Unexpected status: %d" % response.status_code)
+        return HttpResponseForbidden(f"Unexpected status: {response.status_code}")
 
     for valid_ip in response.json()["hooks"]:
         if client_ip_address in ip_network(valid_ip):

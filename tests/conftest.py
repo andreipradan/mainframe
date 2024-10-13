@@ -10,7 +10,7 @@ dotenv.load_dotenv()
 
 
 @pytest.fixture(autouse=True)
-def disable_google_generativeai_api_calls(monkeypatch):
+def disable_google_generativeai_api_calls():
     with patch("mainframe.clients.gemini.genai") as mock_method:
         mock_method.return_value = {"status": "success", "data": "Mocked response data"}
         yield mock_method
