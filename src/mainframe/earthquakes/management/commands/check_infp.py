@@ -2,57 +2,60 @@ from datetime import datetime
 
 import pytz
 import requests
+from bs4 import BeautifulSoup
 from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
-from requests import Response
 
 
 class Command(BaseEarthquakeCommand):
     logger = get_default_logger(__name__)
 
     source = Earthquake.SOURCE_INFP
-    url = "https://web.infp.ro/quakes"
-
-    def handle(self, *args, **options):
-        super().handle(*args, **options)
+    url = "http://n1.infp.ro/"
 
     def fetch(self, **__):
-        return requests.get(self.url, timeout=30, verify=False)  # noqa S501
+        return requests.get(self.url, timeout=10, verify=False)  # noqa S501
 
     @staticmethod
-    def fetch_events(response: Response):
-        magnitude_2 = 2
-        return [
-            r
-            for r in response.json()["result"]
-            if r["sols"]["primary"]["magnitudes"]["primary"]["value"] >= magnitude_2
-        ]
+    def fetch_events(response):
+        soup = BeautifulSoup(response.text, features="html.parser")
+        return soup.html.body.find_all("div", {"class": "card"})
 
     @staticmethod
     def get_datetime(string):
-        return pytz.utc.localize(datetime.fromisoformat(string))
+        date, time, tz = string.split()
+        dt = datetime.strptime(f"{date} {time}", "%d.%m.%Y, %H:%M:%S")
+        return pytz.timezone(tz).localize(dt)
 
-    def parse_earthquake(self, result: dict) -> Earthquake:
-        if result["_id"] == result["id"]:
-            result.pop("_id")
-
-        primary = result["sols"]["primary"]
-        location = primary.get("region", {}).pop("name", "<Missing region>")
-        timestamp = self.get_datetime(primary.pop("time"))
-        depth = primary.pop("depth") / 1000
-        magnitude = primary["magnitudes"]["primary"].pop("value")
-        long, lat = primary["lonlat"].pop("coordinates")
-        if not primary["lonlat"]:
-            primary.pop("lonlat")
-        additional_data = result
+    def parse_earthquake(self, card) -> Earthquake:
+        body = card.find("div", {"class": "card-body"})
+        text, *rest = body.find_all("p")
+        lat = (
+            body.find("span", {"title": "Latitudine"})
+            .text.removeprefix("\n Latitudine ")
+            .removesuffix(" °N\n")
+        )
+        long = (
+            body.find("span", {"title": "Longitudine"})
+            .text.removeprefix("\n Longitudine")
+            .removesuffix(" °E\n")
+        )
+        magnitude, *location = (
+            card.find("div", {"class": "card-footer"}).text.strip().split(", ")
+        )
+        timestamp = (
+            card.find("div", {"class": "card-header"})
+            .text.replace("Loading...", "")
+            .strip()
+        )
         return Earthquake(
-            additional_data=additional_data,
-            timestamp=timestamp,
-            depth=depth,
+            timestamp=self.get_datetime(timestamp),
+            depth=text.text.strip().split("la adâncimea de ")[1][:-1].split(" ")[0],
+            intensity=rest[0].text.strip().split()[1] if len(rest) > 1 else "",
             latitude=lat,
             longitude=long,
-            location=location,
-            magnitude=magnitude,
+            location=",".join(location),
+            magnitude=magnitude.split()[1],
             source=Earthquake.SOURCE_INFP,
         )
