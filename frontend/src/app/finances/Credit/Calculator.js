@@ -10,6 +10,7 @@ import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import { TimetableApi } from "../../../api/finance";
 import Errors from "../../shared/Errors";
+import { Tooltip } from 'react-tooltip';
 
 const PMT = (ir, np, pv, fv, type) => {
     fv || (fv = 0);
@@ -42,6 +43,11 @@ const Calculator = () => {
   const [monthlyAmount, setMonthlyAmount] = useState(0)
   const [monthlyError, setMonthlyError] = useState('')
   const [monthlyOtherAmounts, setMonthlyOtherAmounts] = useState(null)
+
+  const [totalRate, setTotalRate] = useState(0)
+  const [totalInterest, setTotalInterest] = useState(0)
+  const [totalPrincipal, setTotalPrincipal] = useState(0)
+  const [totalPrepayment, setTotalPrepayment] = useState(0)
 
   useEffect(() => {
       if (latestTimetable?.length) {
@@ -117,6 +123,10 @@ const Calculator = () => {
         }
     })
     setMonthlyOtherAmounts(suggestedAmounts)
+    setTotalRate(calculateSum(Object.values(suggestedAmounts), "rate"))
+    setTotalInterest(calculateSum(Object.values(suggestedAmounts), "interest"))
+    setTotalPrincipal(calculateSum(Object.values(suggestedAmounts), "principal"))
+    setTotalPrepayment((Object.values(suggestedAmounts).length) * monthlyAmount)
   }
 
   return <div>
@@ -242,9 +252,13 @@ const Calculator = () => {
                     />
                     <small>{monthlyError}</small>
                   </div>
-                  <div className="col-md-5 pt-2" style={{textAlign: "center"}}>
-                    Maturity in: {Object.keys(monthlyOtherAmounts || {}).length} months
+                  <div className="col-md-4 pt-2" style={{textAlign: "center"}}>
+                    Maturity in: {Object.keys(monthlyOtherAmounts || {}).length} months<br/>
+                    <sub className={"text-muted"}>
+                      ({Object.values(monthlyOtherAmounts || {}).length} * {monthlyAmount} = {Object.values(monthlyOtherAmounts || {}).length * monthlyAmount})
+                    </sub>
                   </div>
+                  <div className="col-md-4 pt-2 text-warning">Total: {Object.values(monthlyOtherAmounts || {}).length * monthlyAmount + totalRate}</div>
                 </div>
               </div>
               {
@@ -252,12 +266,12 @@ const Calculator = () => {
                   <table className="table">
                     <thead>
                       <tr>
-                        <th> # </th>
-                        <th> Total </th>
-                        <th> Interest </th>
-                        <th> Principal </th>
-                        <th> Remaining </th>
-                        <th> Maturity </th>
+                        <th>#</th>
+                        <th>Rate <sup className="text-warning">{totalRate}</sup></th>
+                        <th>Interest <sup className="text-warning">{totalInterest}</sup></th>
+                        <th>Principal <sup className="text-warning">{totalPrincipal}</sup></th>
+                        <th>Remaining</th>
+                        <th>Maturity</th>
                       </tr>
                     </thead>
                     <tbody>
