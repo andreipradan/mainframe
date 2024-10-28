@@ -64,13 +64,13 @@ class Watcher(TimeStampedModel):
             logger.info("Found new item!")
             text = (
                 f"<a href='{url}'>{title}</a>\n"
-                f"All items <a href='{self.url}'>here</a>"
+                f"More articles: <a href='{self.url}'>here</a>"
             )
             kwargs = {"parse_mode": telegram.ParseMode.HTML}
             if self.chat_id:
                 kwargs["chat_id"] = self.chat_id
             else:
-                text = f"📣 <b>New <i>{self.name}</i> item!</b> 📣\n{text}"
+                text = f"📣 <b>{self.name}</b> 📣\n{text}"
             send_telegram_message(text, **kwargs)
             logger.info("Done")
             return True
