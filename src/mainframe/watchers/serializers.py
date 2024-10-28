@@ -1,11 +1,12 @@
 import json
 
+from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.watchers.models import Watcher
 from rest_framework import serializers
 
 
-class WatcherSerializer(serializers.ModelSerializer):
+class WatcherSerializer(ScheduleTaskIsRenamedSerializer):
     redis = serializers.SerializerMethodField()
 
     class Meta:

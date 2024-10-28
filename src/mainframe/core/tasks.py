@@ -36,8 +36,6 @@ def log_status(key, error=None, **kwargs):
 
 @HUEY.signal()
 def signal_handler(signal, t, exc=None):
-    if t.name in ["check usgs", "healthcheck"] and not exc:
-        return
     now = timezone.now().isoformat()
     kwargs = {"id": t.id, "status": signal, "timestamp": now}
     log_status(t.name, {"timestamp": now, "msg": str(exc)} if exc else None, **kwargs)
@@ -112,9 +110,6 @@ def schedule_task(instance, **kwargs):
             kwargs,
         )
 
-    def wrapper():
-        instance.run()
-
     task_name = f"mainframe.core.tasks.{instance.name}"
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
@@ -123,5 +118,5 @@ def schedule_task(instance, **kwargs):
     if expression and is_active:
         schedule = crontab(*expression.split())
         lock_task = HUEY.lock_task(f"{task_name}-lock")
-        lock_task(periodic_task(schedule, name=instance.name)(wrapper))
+        lock_task(periodic_task(schedule, name=instance.name)(instance.run))
         logger.info("[%s] Scheduled: %s (%s)", class_name, instance.name, expression)

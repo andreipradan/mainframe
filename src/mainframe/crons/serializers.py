@@ -1,12 +1,13 @@
 import json
 
 from crontab import CronTab
+from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.crons.models import Cron
 from rest_framework import serializers
 
 
-class CronSerializer(serializers.ModelSerializer):
+class CronSerializer(ScheduleTaskIsRenamedSerializer):
     redis = serializers.SerializerMethodField()
 
     class Meta:

@@ -84,4 +84,6 @@ def post_delete(sender, instance, **kwargs):  # noqa: PYL-W0613
 
 @receiver(signals.post_save, sender=Watcher)
 def post_save(sender, instance, **kwargs):  # noqa: PYL-W0613
+    if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
+        instance.cron = ""
     schedule_task(instance)
