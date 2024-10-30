@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 
 import AceEditor from "react-ace";
@@ -23,6 +23,7 @@ const Watchers = () =>  {
 
   const [chatId, setChatId] = useState("");
   const [cron, setCron] = useState("");
+  const [isActive, setIsActive] = useState(false)
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
   const [top, setTop] = useState(selectedItem?.top || true);
@@ -42,6 +43,7 @@ const Watchers = () =>  {
     if (selectedItem) {
       setChatId(selectedItem.chat_id || "")
       setCron(selectedItem.cron)
+      setIsActive(selectedItem.is_active)
       setLatest(JSON.stringify(selectedItem.latest, null, "\t"))
       setName(selectedItem.name)
       setRequest(JSON.stringify(selectedItem.request, null, "\t"))
@@ -77,6 +79,7 @@ const Watchers = () =>  {
   const clearModal = () => {
     setChatId("")
     setCron("* * * * *")
+    setIsActive(false)
     setLatest("{}")
     setName("")
     setRequest("{}")
@@ -92,6 +95,7 @@ const Watchers = () =>  {
   const duplicate = watcher => {
     setChatId(watcher.chat_id || "")
     setCron(watcher.cron)
+    setIsActive(watcher.is_active)
     setLatest(JSON.stringify(watcher.latest, null, "\t"))
     setName(watcher.name)
     setRequest(JSON.stringify(watcher.request, null, "\t"))
@@ -99,6 +103,10 @@ const Watchers = () =>  {
     setTop(watcher.top)
     setUrl(watcher.url)
   }
+
+  const onIsActiveChange = useCallback(() => {
+    setIsActive(!isActive)
+  }, [isActive])
 
   return (
     <div>
@@ -144,6 +152,7 @@ const Watchers = () =>  {
                       <th> # </th>
                       <th> Name </th>
                       <th> Cron </th>
+                      <th> Is Active? </th>
                       <th> URL </th>
                       <th> Last check </th>
                       <th> Last status </th>
@@ -161,6 +170,10 @@ const Watchers = () =>  {
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{i + 1}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.name}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron}</td>
+                                <td onClick={() => dispatch(selectedItem(cron.id))} className="cursor-pointer">
+                                  <i
+                                    className={`mdi mdi-${watcher.is_active ? 'check text-success' : 'alert text-danger'}`} />
+                                </td>
                                 <td><a href={watcher.url} target="_blank" rel="noopener noreferrer">{watcher.url}</a></td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>
                                   {
@@ -332,6 +345,10 @@ const Watchers = () =>  {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
+                <Form.Label>Is Active?</Form.Label>
+                <Form.Check checked={isActive} type="switch" id="checkbox" label="" onChange={onIsActiveChange} />
+              </Form.Group>
+              <Form.Group className="mb-3">
                 <Form.Label>Chat Id</Form.Label>
                 <Form.Control
                   type="text"
@@ -455,6 +472,7 @@ const Watchers = () =>  {
                       dispatch(WatchersApi.update(token, selectedItem?.id, {
                         chat_id: chatId || null,
                         cron,
+                        is_active: isActive,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                         name,
                         request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
@@ -472,6 +490,7 @@ const Watchers = () =>  {
                     dispatch(WatchersApi.create(token, {
                       chat_id: chatId || null,
                       cron,
+                      is_active: isActive,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                       name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
