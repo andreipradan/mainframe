@@ -108,7 +108,7 @@ def schedule_task(instance, **kwargs):
             kwargs,
         )
 
-    task_name = f"mainframe.core.tasks.{instance.name}"
+    task_name = f"{instance.__module__}.{instance.name}"
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
