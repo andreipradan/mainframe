@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import accountsReducer from "../redux/accountsSlice";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
-import cameraReducer from "./cameraSlice";
 import categoriesReducer from "./categoriesSlice";
 import creditReducer from "../redux/creditSlice"
 import commandsReducer from "../redux/commandsSlice"
@@ -33,7 +32,6 @@ export default configureStore({
     accounts: accountsReducer,
     auth: authReducer,
     bots: botReducer,
-    camera: cameraReducer,
     categories: categoriesReducer,
     commands: commandsReducer,
     credit: creditReducer,

@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
-const Camera = lazy(() => import ("./apps/Camera"));
 const Commands = lazy(() => import('./commands/Commands'));
 const Crons = lazy(() => import('./commands/crons/Crons'));
 const Devices = lazy(() => import('./apps/devices/Devices'));
@@ -67,7 +66,6 @@ const AppRoutes = () => {
         <Route exact path="/profile" component={ Profile } />
 
         {user?.is_staff && <Route exact path="/" component={Dashboard}/>}
-        {user?.is_staff && <Route exact path="/apps/camera" component={ Camera } />}
         {user?.is_staff && <Route exact path="/apps/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/apps/logs" component={ Logs } />}
         {user?.is_staff && <Route exact path="/apps/todo" component={ Todo } />}

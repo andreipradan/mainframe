@@ -255,11 +255,6 @@ const Sidebar = () => {
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
-                        <Link className={isPathActive('/apps/camera') ? 'nav-link active' : 'nav-link'} to="/apps/camera">
-                          Camera
-                        </Link>
-                      </li>
-                      <li className="nav-item">
                         <Link className={isPathActive('/apps/devices') ? 'nav-link active' : 'nav-link'} to="/apps/devices">
                           Devices
                         </Link>
