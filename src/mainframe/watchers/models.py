@@ -19,6 +19,7 @@ logger = get_default_logger(__name__)
 class Watcher(TimeStampedModel):
     chat_id = models.BigIntegerField(blank=True, null=True)
     cron = models.CharField(blank=True, max_length=32)
+    is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
