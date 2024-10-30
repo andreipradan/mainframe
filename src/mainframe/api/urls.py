@@ -1,7 +1,6 @@
 from django.urls import include, path
 
 urlpatterns = [
-    path("camera/", include(("mainframe.camera.routers", "api"), namespace="camera")),
     path(
         "commands/",
         include(("mainframe.api.commands.routers", "api"), namespace="commands"),

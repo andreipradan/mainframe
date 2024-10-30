@@ -5,7 +5,7 @@ import pytest
 from mainframe.api.user.models import User
 from rest_framework import status
 
-from tests.api.factories import UserFactory
+from tests.factories.user import UserFactory
 
 
 @pytest.mark.django_db

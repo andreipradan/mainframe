@@ -4,8 +4,7 @@ import django.db.models
 from django.conf import settings
 from django.utils import timezone
 from huey.signals import SIGNAL_ERROR
-from mainframe.camera.views import download_blob_into_memory
-from mainframe.clients.storage import upload_blob_from_string
+from mainframe.clients.storage import download_blob_into_memory, upload_blob_from_string
 from mainframe.core.tasks import log_status
 
 

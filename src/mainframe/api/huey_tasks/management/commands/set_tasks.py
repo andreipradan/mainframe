@@ -10,6 +10,6 @@ class Command(BaseCommand):
         for cron in Cron.objects.filter(is_active=True):
             schedule_task(cron)
 
-        for watcher in Watcher.objects.exclude(cron=""):
+        for watcher in Watcher.objects.filter(is_active=True):
             schedule_task(watcher)
         send_telegram_message(text="[[huey]] up")

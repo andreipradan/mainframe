@@ -17,7 +17,6 @@ def disable_google_generativeai_api_calls():
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def staff_session():
     user_data = {"email": "foo@bar.com", "password": "password", "is_active": True}
     user = User.objects.create(**user_data, username="foo@bar.com", is_staff=True)

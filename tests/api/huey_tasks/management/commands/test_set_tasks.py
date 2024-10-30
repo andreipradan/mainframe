@@ -29,7 +29,7 @@ class TestCommand:
     @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
     def test_crons_and_watchers(self, _, logging_mock, send_mock, schedule_task_mock):
-        cron, watcher = CronFactory(is_active=True), WatcherFactory()
+        cron, watcher = CronFactory(is_active=True), WatcherFactory(is_active=True)
         call_command("set_tasks")
         assert send_mock.call_args_list == [mock.call(text="[[huey]] up")]
         assert logging_mock.return_value.info.call_args_list == []

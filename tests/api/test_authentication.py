@@ -1,9 +1,11 @@
 from unittest import mock
 
 import pytest
+from jwt.exceptions import ExpiredSignatureError
+from mainframe.api.authentication.serializers import _generate_jwt_token
 from rest_framework import status
 
-from tests.api.factories import UserFactory
+from tests.factories.user import UserFactory
 
 
 @pytest.mark.django_db
@@ -45,6 +47,19 @@ class TestLogin:
         response = client.post("/users/login", data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert response.data == {"detail": "Wrong credentials"}
+
+    @mock.patch("mainframe.api.authentication.backends.jwt.decode")
+    def test_expired_signature(self, decode_mock, client, session):
+        decode_mock.side_effect = ExpiredSignatureError
+        response = client.get(
+            f"/users/{session.user_id}", HTTP_AUTHORIZATION=session.token
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_no_session(self, client):
+        token = _generate_jwt_token(UserFactory())
+        response = client.get("/users/foo", HTTP_AUTHORIZATION=token)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db
