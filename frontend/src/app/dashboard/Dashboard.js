@@ -18,6 +18,9 @@ import {
   getLightsData,
   sliderSettings
 } from "./chartsData";
+import DevicesApi from '../../api/devices';
+import CronsApi from '../../api/crons';
+import WatchersApi from '../../api/watchers';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -25,16 +28,20 @@ const Dashboard = () => {
   const token = useSelector((state) => state.auth.token)
 
   const bots = useSelector(state => state.bots)
+  const crons = useSelector(state => state.crons)
+  const devices = useSelector(state => state.devices)
   const lights = useSelector(state => state.lights)
+  const watchers = useSelector(state => state.watchers)
 
   const lightsOnCount = lights.results?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.results?.filter(b => b.capabilities.power === "off").length
 
   const [lightsExpanded, setLightsExpanded] = useState(null)
   const [lightColors, setLightColors] = useState(null)
+
   const getExpanded = ip => lightsExpanded?.find(l => l.ip === ip)?.expanded
   const toggleLightExpanded = ip => setLightsExpanded(
-    lightsExpanded?.map(l => l.ip === ip ? {...l, expanded: !l.expanded} : l)
+    lightsExpanded?.map(l => l.ip === ip ? { ...l, expanded: !l.expanded } : l)
   )
 
   const [lightName, setLightName] = useState("")
@@ -42,85 +49,68 @@ const Dashboard = () => {
 
   useEffect(() => {
     !bots.results && dispatch(BotsApi.getList(token));
+    !crons.results && dispatch(CronsApi.getList(token))
+    !devices.results && dispatch(DevicesApi.getList(token))
     !lights.results && dispatch(LightsApi.getList(token));
+    !watchers.results && dispatch(WatchersApi.getList(token))
   }, []);
 
-  useEffect( () => {
+  useEffect(() => {
     if (lights.results) {
       if (!lightsExpanded)
-        setLightsExpanded(lights.results?.map(l => ({ip: l.ip, expanded: false})))
-      setLightColors(lights.results?.map(l => ({ip: l.ip, color: "#0059ff"})))
+        setLightsExpanded(lights.results?.map(l => ({ ip: l.ip, expanded: false })))
+      setLightColors(lights.results?.map(l => ({ ip: l.ip, color: "#0059ff" })))
     }
   }, [lights.results])
 
   const onSlide = (i, isDisplayed) => () => {
     const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
     if (tooltip)
-      tooltip.style.display = isDisplayed ? "block": "none"
+      tooltip.style.display = isDisplayed ? "block" : "none"
   }
 
   const lightsChartData = getLightsData(lightsOnCount, lightsOffCount)
 
+  const DashboardCard = props => <div className="col-sm-4 grid-margin">
+    <div className="card">
+      <div className="card-body">
+        <h5>{props.name[0].toUpperCase() + props.name.slice(1)}</h5>
+        <div className="row">
+          <div className="col-8 col-sm-12 col-xl-8 my-auto">
+            <div className="d-flex d-sm-block d-md-flex align-items-center">
+              <h2 className="mb-0">{props.count}</h2>
+              <p className="text-success ml-2 mb-0 font-weight-medium">{props.activeCount || null} {props.activeCount ? 'active' : null}</p>
+            </div>
+            <h6 className="text-muted font-weight-normal">{props.inactiveCount} {props.inactiveCount ? 'inactive' : null}</h6>
+
+          </div>
+          <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
+            <i className={`icon-lg mdi mdi-${props.icon} text-${props.iconVariant} ml-auto`} />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   return <div>
     <div className="row">
-      <div className="col-sm-4 grid-margin">
-        <div className="card">
-          <div className="card-body">
-            <h5>Bots</h5>
-            <div className="row">
-              <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                <div className="d-flex d-sm-block d-md-flex align-items-center">
-                  <h2 className="mb-0">{bots.count}</h2>
-                  <p className="text-success ml-2 mb-0 font-weight-medium">+3.4%</p>
-                </div>
-                <h6 className="text-muted font-weight-normal"> 5.21% Since last month</h6>
-
-              </div>
-              <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-              <i className="icon-lg mdi mdi-robot text-primary ml-auto" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="col-sm-4 grid-margin">
-        <div className="card">
-          <div className="card-body">
-            <h5>Lights</h5>
-            <div className="row">
-              <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                <div className="d-flex d-sm-block d-md-flex align-items-center">
-                  <h2 className="mb-0">{lights.count}</h2>
-                  <p className="text-success ml-2 mb-0 font-weight-medium">+1.2%</p>
-                </div>
-                <h6 className="text-muted font-weight-normal"> 9.61% Since last month</h6>
-              </div>
-              <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                <i className="icon-lg mdi mdi-lightbulb text-warning ml-auto" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="col-sm-4 grid-margin">
-        <div className="card">
-          <div className="card-body">
-            <h5>Fictive stuff</h5>
-            <div className="row">
-              <div className="col-8 col-sm-12 col-xl-8 my-auto">
-                <div className="d-flex d-sm-block d-md-flex align-items-center">
-                  <h2 className="mb-0">$2039</h2>
-                  <p className="text-danger ml-2 mb-0 font-weight-medium">-2.1% </p>
-                </div>
-                <h6 className="text-muted font-weight-normal">2.27% Since last month</h6>
-              </div>
-              <div className="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
-                <i className="icon-lg mdi mdi-monitor text-success ml-auto" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DashboardCard count={bots.count} icon="robot" iconVariant="primary" name="bots"/>
+      <DashboardCard
+        activeCount={devices.results?.filter(b => b.is_active).length}
+        count={devices.count}
+        icon="monitor"
+        iconVariant="success"
+        inactiveCount={devices.results?.filter(b => !b.is_active).length}
+        name="devices"
+      />
+      <DashboardCard
+        activeCount={lightsOnCount}
+        count={lights.count}
+        icon="lightbulb"
+        iconVariant="warning"
+        inactiveCount={lightsOffCount}
+        name="ligths"
+      />
     </div>
     <div className="row">
       <div className="col-md-6 grid-margin stretch-card">
