@@ -1,9 +1,9 @@
 import decimal
 from decimal import Decimal
 
-import requests
 from bs4 import BeautifulSoup
 from defusedxml import ElementTree
+from mainframe.clients.scraper import fetch
 from mainframe.exchange.models import ExchangeRate
 
 
@@ -20,12 +20,10 @@ class BaseExchange:
         self.logger = logger
 
     def do_request(self, url):
-        resp = requests.get(url, timeout=20)
-        try:
-            resp.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            self.logger.exception(e)
-            raise FetchExchangeRatesException("Error fetching exchange rates") from e
+        resp, error = fetch(url, self.logger, soup=False, timeout=20)
+        if error:
+            self.logger.exception(error)
+            raise FetchExchangeRatesException("Error fetching exchange rates")
         return resp.content
 
     def fetch(self, full):

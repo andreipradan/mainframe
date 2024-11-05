@@ -1,7 +1,6 @@
-import requests
-from bs4 import BeautifulSoup
 from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
+from mainframe.clients.scraper import fetch
 from mainframe.watchers.models import Watcher, WatcherError
 from mainframe.watchers.serializers import WatcherSerializer
 from rest_framework import viewsets
@@ -28,15 +27,12 @@ class WatcherViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["PUT"])
     def test(self, request):
-        response = requests.get(
-            request.data["url"], timeout=10, headers={"User-Agent": "foo"}
+        soup, error = fetch(
+            request.data["url"], logger, timeout=10, headers={"User-Agent": "foo"}
         )
-        try:
-            response.raise_for_status()
-        except requests.HTTPError as e:
-            raise ValidationError(e) from requests.HTTPError
+        if error:
+            raise ValidationError(error)
 
-        soup = BeautifulSoup(response.content)
         elements = soup.select(request.data["selector"])
         if not elements:
             raise ValidationError("No elements found")

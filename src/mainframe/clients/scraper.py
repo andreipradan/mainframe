@@ -1,5 +1,3 @@
-from typing import Union
-
 import requests
 from bs4 import BeautifulSoup
 from requests import Response
@@ -7,7 +5,7 @@ from requests import Response
 
 def fetch(
     url, logger, retries=0, soup=True, timeout=45, **kwargs
-) -> tuple[Union[BeautifulSoup, Response, None], None]:
+) -> tuple[BeautifulSoup | Response | None, Exception | None]:
     logger.info("Fetching: %s", url)
     try:
         response = requests.get(url, timeout=timeout, **kwargs)

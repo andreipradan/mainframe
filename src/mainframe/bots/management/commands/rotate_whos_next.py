@@ -1,24 +1,25 @@
 from collections import deque
 
-import requests
-from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.bots.models import Bot
 from mainframe.clients import dexonline
 from mainframe.clients.logs import get_default_logger
+from mainframe.clients.scraper import fetch
+
+logger = get_default_logger(__name__)
 
 
 class Sources:
     @staticmethod
     def fetch_tomorrow(url):
-        soup = BeautifulSoup(
-            requests.get(url, timeout=30).content, features="html.parser"
-        )
+        soup, error = fetch(url, logger, timeout=30)
+        if not soup or error:
+            raise CommandError(error)
+
         tomorrow = soup.find(id="calendar-azi").find_next_sibling()
         if not tomorrow:
             url = soup.li.find_next_sibling().a.attrs["href"]
-            response = requests.get(url, timeout=30)
-            soup = BeautifulSoup(response.content, features="html.parser")
+            soup, _ = fetch(url, logger, timeout=30)
             tomorrow = soup.tr
         if not tomorrow.th:
             tomorrow = tomorrow.find_next_sibling()

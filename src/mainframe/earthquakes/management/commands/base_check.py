@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import pytz
-import requests
 import telegram
 from django.conf import settings
 from django.core.management import BaseCommand
@@ -9,6 +8,7 @@ from django.db import OperationalError
 from mainframe.bots.models import Bot
 from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
+from mainframe.clients.scraper import fetch
 from mainframe.earthquakes.models import Earthquake
 
 DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
@@ -43,17 +43,16 @@ class BaseEarthquakeCommand(BaseCommand):
     source = NotImplemented
     url = NotImplemented
 
-    def handle(self, *_, **options):
+    def handle(self, *_, **__):
         healthchecks.ping(self.logger, self.source)
-        try:
-            response = self.fetch(**options)
-            response.raise_for_status()
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-            requests.exceptions.ReadTimeout,
-        ) as e:
-            self.logger.warning(str(e))
+        response, error = fetch(
+            self.url,
+            self.logger,
+            soup=False,
+            **self.get_kwargs(),
+        )
+        if error:
+            self.logger.warning(str(error))
             return
 
         try:
@@ -118,7 +117,7 @@ class BaseEarthquakeCommand(BaseCommand):
         self.logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))
 
-    def fetch(self, **options):
+    def get_kwargs(self) -> dict:
         raise NotImplementedError
 
     @staticmethod

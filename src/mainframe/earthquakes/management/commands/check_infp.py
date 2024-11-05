@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import pytz
-import requests
 from bs4 import BeautifulSoup
 from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
@@ -14,8 +13,8 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_INFP
     url = "http://n1.infp.ro/"
 
-    def fetch(self, **__):
-        return requests.get(self.url, timeout=10, verify=False)  # noqa S501
+    def get_kwargs(self):
+        return {"timeout": 10, "verify": False}
 
     @staticmethod
     def fetch_events(response):

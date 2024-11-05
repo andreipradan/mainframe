@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import pytz
-import requests
 from django.conf import settings
 from mainframe.clients.logs import get_default_logger
 from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
@@ -14,26 +13,29 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 
-    def fetch(self, **options):
-        since = datetime.now().astimezone(
-            pytz.timezone(settings.TIME_ZONE)
-        ) - timedelta(minutes=5)
+    def get_kwargs(self):
         if (
             latest := Earthquake.objects.filter(source=Earthquake.SOURCE_USGS)
             .order_by("-timestamp")
             .first()
         ):
             since = latest.timestamp
+        else:
+            since = datetime.now().astimezone(
+                pytz.timezone(settings.TIME_ZONE)
+            ) - timedelta(minutes=5)
 
-        params = {
-            "format": "geojson",
-            "starttime": since,
-            "latitude": 45.94320,
-            "longitude": 24.96680,
-            "maxradiuskm": 386.02,
-            "minmagnitude": 2,
+        return {
+            "params": {
+                "format": "geojson",
+                "starttime": since,
+                "latitude": 45.94320,
+                "longitude": 24.96680,
+                "maxradiuskm": 386.02,
+                "minmagnitude": 2,
+            },
+            "timeout": 30,
         }
-        return requests.get(self.url, params=params, timeout=30)
 
     @staticmethod
     def fetch_events(response):
