@@ -38,6 +38,9 @@ const Details = () => {
   const [lineChartInterest, setLineChartInterest] = useState(null)
   const [lineChartLabels, setLineChartLabels] = useState(null)
 
+  const getPrincipal = payments => payments ? payments.map(p => p.principal).reverse() : []
+  const getInterest = payments => payments ? payments.map(p => p.interest).reverse() : []
+
   useEffect(() => {
     {
       !payment.results && dispatch(PaymentsApi.getList(token));
@@ -49,8 +52,8 @@ const Details = () => {
     }, [overview.credit]
   );
 
-  useEffect(() => setBarChartPrincipal(payment.results?.map(p => p.principal).reverse()), [payment.results])
-  useEffect(() => setBarChartInterest(payment.results?.map(p => p.interest).reverse()), [payment.results])
+  useEffect(() => setBarChartPrincipal(getPrincipal(payment.results)), [payment.results])
+  useEffect(() => setBarChartInterest(getInterest(payment.results)), [payment.results])
   useEffect(() => setBarChartLabels(payment.results?.map(p => p.date).reverse()), [payment.results])
 
 
@@ -131,8 +134,8 @@ const Details = () => {
     setPaidPrepaid(getAmountInCurrency(overview.payment_stats?.prepaid, currency))
     setPaidPrincipal(getAmountInCurrency(overview.payment_stats?.principal, currency))
 
-    setBarChartPrincipal(barChartPrincipal?.map(p => getAmountInCurrency(p, currency)))
-    setBarChartInterest(barChartInterest?.map(p => getAmountInCurrency(p, currency)))
+    setBarChartPrincipal(getPrincipal(payment.results).map(p => getAmountInCurrency(p, currency)))
+    setBarChartInterest(getInterest(payment.results).map(p => getAmountInCurrency(p, currency)))
   }
 
   const onExcludePrepaymentsChange = () => {
@@ -546,6 +549,8 @@ const Details = () => {
         </div>
       </div>
     </div>
+
+    {/* Line chart - Interest rate */}
     <div className="row">
       <div className="col-sm-12 grid-margin stretch-card">
         <div className="card">
