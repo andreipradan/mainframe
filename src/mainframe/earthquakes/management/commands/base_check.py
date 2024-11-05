@@ -52,7 +52,6 @@ class BaseEarthquakeCommand(BaseCommand):
             **self.get_kwargs(),
         )
         if error:
-            self.logger.warning(str(error))
             return
 
         try:
