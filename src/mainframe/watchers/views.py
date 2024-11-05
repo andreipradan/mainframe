@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
-from mainframe.watchers.models import Watcher
+from mainframe.watchers.models import Watcher, WatcherError
 from mainframe.watchers.serializers import WatcherSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -22,7 +22,7 @@ class WatcherViewSet(viewsets.ModelViewSet):
         obj = self.get_object()
         try:
             obj = obj.run()
-        except ValueError as e:
+        except WatcherError as e:
             raise ValidationError(str(e)) from ValueError
         return JsonResponse(self.serializer_class(obj).data if obj else obj, safe=False)
 

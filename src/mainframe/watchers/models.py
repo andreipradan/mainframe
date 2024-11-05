@@ -1,19 +1,26 @@
 from urllib.parse import urljoin
 
 import logfire
-import requests
 import telegram
-from bs4 import BeautifulSoup
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
 from django.utils import timezone
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.logs import get_default_logger
+from mainframe.clients.scraper import fetch
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
 
 logger = get_default_logger(__name__)
+
+
+class WatcherError(Exception):
+    ...
+
+
+class WatcherElementsNotFound(WatcherError):
+    ...
 
 
 class Watcher(TimeStampedModel):
@@ -32,49 +39,49 @@ class Watcher(TimeStampedModel):
 
     @logfire.instrument("[{self}] - Running watcher")
     def run(self):
-        with logfire.span(f"Requesting {self.url}", **self.request):
-            response = requests.get(self.url, timeout=10, **self.request)
-        with logfire.span("Validating status", response=response):
-            response.raise_for_status()
-            logger.info("Status: %s", response.status_code)
-
-        with logfire.span("Checking for element", selector=self.selector):
-            soup = BeautifulSoup(response.text, "html.parser")
-            elements = soup.select(self.selector)
-            if not elements:
-                raise ValueError(f"[{self.name}] Watcher did not found any elements")
-            logger.info("Found it!")
-
-        with logfire.span("Checking if the element is new"):
-            found = elements[0 if self.top else -1]
-            if self.latest.get("title") == (title := found.text.strip()):
-                logger.info("No new items")
-                return False
-            url = (
-                urljoin(self.url, found.attrs["href"])
-                if not found.attrs["href"].startswith("http")
-                else found.attrs["href"]
+        def get_elements(retry=False):
+            soup, error = fetch(
+                self.url, logger=logger, retries=1, timeout=10, **self.request
             )
-            self.latest = {
-                "title": title,
-                "url": url,
-                "timestamp": timezone.now().isoformat(),
-            }
-            self.save()
+            if items := soup.select(self.selector):
+                return items
+            if retry:
+                logger.warning("No elements found - retrying")
+                return get_elements(retry=False)
+            if error:
+                raise WatcherError(error)
+            raise WatcherElementsNotFound(f"[{self.name}] No elements found")
 
-            logger.info("Found new item!")
-            text = (
-                f"<a href='{url}'>{title}</a>\n"
-                f"More articles: <a href='{self.url}'>here</a>"
-            )
-            kwargs = {"parse_mode": telegram.ParseMode.HTML}
-            if self.chat_id:
-                kwargs["chat_id"] = self.chat_id
-            else:
-                text = f"📣 <b>{self.name}</b> 📣\n{text}"
-            send_telegram_message(text, **kwargs)
-            logger.info("Done")
-            return True
+        elements = get_elements(retry=True)
+        found = elements[0 if self.top else -1]
+        if self.latest.get("title") == (title := found.text.strip()):
+            logger.info("No new items")
+            return False
+        url = (
+            urljoin(self.url, found.attrs["href"])
+            if not found.attrs["href"].startswith("http")
+            else found.attrs["href"]
+        )
+        self.latest = {
+            "title": title,
+            "url": url,
+            "timestamp": timezone.now().isoformat(),
+        }
+        self.save()
+
+        logger.info("Found new item!")
+        text = (
+            f"<a href='{url}'>{title}</a>\n"
+            f"More articles: <a href='{self.url}'>here</a>"
+        )
+        kwargs = {"parse_mode": telegram.ParseMode.HTML}
+        if self.chat_id:
+            kwargs["chat_id"] = self.chat_id
+        else:
+            text = f"📣 <b>{self.name}</b> 📣\n{text}"
+        send_telegram_message(text, **kwargs)
+        logger.info("Done")
+        return self
 
 
 @receiver(signals.post_delete, sender=Watcher)

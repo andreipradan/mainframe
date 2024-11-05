@@ -1,8 +1,11 @@
 import random
 
-import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
+from mainframe.clients.logs import get_default_logger
+from mainframe.clients.scraper import fetch
+
+logger = get_default_logger(__name__)
 
 
 class DexOnlineError(Exception):
@@ -23,11 +26,9 @@ def fetch_definition(word=None):
             while len(word := random.choice(file.readlines())) < min_len:  # noqa: S311
                 ...
 
-    try:
-        response = requests.get(dex_url.format(word.strip()), timeout=10)
-        response.raise_for_status()
-    except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as e:
-        raise DexOnlineError from e
+    response, error = fetch(dex_url.format(word.strip()), logger, 1, False, timeout=10)
+    if error:
+        raise DexOnlineError(error)
 
     response = response.json()
     if not response["definitions"]:
