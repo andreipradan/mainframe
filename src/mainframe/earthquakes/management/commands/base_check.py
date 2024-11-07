@@ -52,6 +52,10 @@ class BaseEarthquakeCommand(BaseCommand):
             **self.get_kwargs(),
         )
         if error:
+            if self.source == Earthquake.SOURCE_INFP:
+                self.logger.warning(str(error))
+            else:
+                self.logger.error(str(error))
             return
 
         try:

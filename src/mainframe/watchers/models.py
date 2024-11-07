@@ -43,7 +43,7 @@ class Watcher(TimeStampedModel):
             soup, error = fetch(
                 self.url, logger=logger, retries=1, timeout=10, **self.request
             )
-            if items := soup.select(self.selector):
+            if soup and (items := soup.select(self.selector)):
                 return items
             if retry:
                 logger.warning("No elements found - retrying")

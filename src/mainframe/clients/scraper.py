@@ -15,7 +15,6 @@ def fetch(
         requests.exceptions.HTTPError,
         requests.exceptions.ReadTimeout,
     ) as e:
-        logger.error(str(e))
         if retries > 0:
             return fetch(url, logger, retries - 1, soup, timeout, **kwargs)
         return None, e
