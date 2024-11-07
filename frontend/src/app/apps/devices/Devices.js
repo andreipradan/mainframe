@@ -12,7 +12,7 @@ import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
 const Devices = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results, errors, loading, loadingDevices, count } = useSelector(state => state.devices)
+  const {results, errors, loading, loadingItems, count } = useSelector(state => state.devices)
 
   const [devices, setDevices] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -156,15 +156,25 @@ const Devices = () =>  {
                     !loading
                       ? devices?.length
                         ? devices.map(
-                          (device, i) => !loadingDevices?.includes(device.id)
-                            ? <tr
+                          (device, i) => <tr
                               key={i}
                               onClick={() => dispatch(selectItem(device.id))}
                               className={"cursor-pointer"}
                             >
                             <td>{i + 1}</td>
-                              <td>
+                              <td className="row">
                                 {device.display_name || "-"}
+                                {
+                                  loadingItems?.includes(device.id)
+                                    ? <Circles
+                                        visible={true}
+                                        height="15"
+                                        width="100%"
+                                        wrapperClass="pl-2"
+                                        color='green'
+                                      />
+                                    : null
+                                }
                                 {
                                   !device.should_notify_presence
                                     ? <sup className="text-gray"> <i className="mdi mdi-bell-off"/></sup>
@@ -176,15 +186,6 @@ const Devices = () =>  {
                               <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac}</td>
                               <td>{new Date(device.updated_at).toLocaleString()}</td>
                             </tr>
-                          : <tr key={i}>
-                            <td colSpan={6}>
-                              <ColorRing
-                                  width = "100%"
-                                  height = "50"
-                                  wrapperStyle={{width: "100%"}}
-                                />
-                            </td>
-                          </tr>
                             )
                           : <tr><td colSpan={6}>No devices available</td></tr>
                         : <tr>
