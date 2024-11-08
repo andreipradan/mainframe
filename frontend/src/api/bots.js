@@ -1,9 +1,10 @@
 import axios from "./index";
 import {
+  create,
   set,
   setErrors,
   setLoading,
-  setLoadingBots,
+  setLoadingItems as setLoadingBots,
   update,
 } from "../redux/botsSlice";
 
@@ -11,6 +12,15 @@ import {handleErrors} from "./errors";
 
 
 class BotsApi {
+  static create = (token, data) => dispatch => {
+    dispatch(setLoading(true))
+    axios
+      .post(`${base}/`, data, { headers: {Authorization: token} })
+      .then(response => {
+        dispatch(create(response.data))
+      })
+      .catch(err => handleErrors(err, dispatch, setErrors))
+  }
   static getList = token => dispatch => {
     dispatch(setLoading(true));
     axios

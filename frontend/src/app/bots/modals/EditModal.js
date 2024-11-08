@@ -1,24 +1,25 @@
 import React, {useEffect, useState} from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import AceEditor from "react-ace";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { useDispatch, useSelector } from "react-redux";
-import {select} from "../../redux/botsSlice";
-import BotsApi from "../../api/bots";
 import 'ace-builds'
 import 'ace-builds/webpack-resolver'
-import AceEditor from "react-ace";
-
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
-import {ColorRing} from "react-loader-spinner";
+import { ColorRing } from "react-loader-spinner";
+
+import BotsApi from "../../../api/bots";
+import { selectItem as select } from "../../../redux/botsSlice";
 
 const EditModal = () => {
   const dispatch = useDispatch();
-  const bot = useSelector(state => state.bots.selectedBot)
+  const bot = useSelector(state => state.bots.selectedItem)
   const token = useSelector((state) => state.auth.token)
-  const loadingBots = useSelector(state => state.bots.loadingBots)
+  const loadingBots = useSelector(state => state.bots.loadingItems)
 
   const [webhook, setWebhook] = useState("");
   const [whitelist, setWhitelist] = useState(null);

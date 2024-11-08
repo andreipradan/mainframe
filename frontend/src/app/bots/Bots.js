@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from "react-redux";
+import { Audio, ColorRing } from "react-loader-spinner";
+import AddModal from './modals/AddModal';
 import BotsApi from "../../api/bots";
-import {Audio, ColorRing} from "react-loader-spinner";
-import {select} from "../../redux/botsSlice";
-import EditModal from "./EditModal";
+import EditModal from "./modals/EditModal";
 import Errors from "../shared/Errors";
+import { selectItem as select } from "../../redux/botsSlice";
+import { setModalOpen } from '../../redux/botsSlice';
 
 
 const Bots = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results: bots, errors, loading, loadingBots} = useSelector(state => state.bots)
+  const {results: bots, errors, loading, loadingItems: loadingBots} = useSelector(state => state.bots)
 
   useEffect(() => {
     !bots && dispatch(BotsApi.getList(token));
@@ -44,6 +46,13 @@ const Bots = () =>  {
                 Available bots
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
                   <i className="mdi mdi-refresh" />
+                </button>
+                <button
+                  type="button"
+                  className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
+                  onClick={() => dispatch(setModalOpen(true))}
+                >
+                  <i className="mdi mdi-plus" />
                 </button>
               </h4>
               <Errors errors={errors}/>
@@ -126,6 +135,7 @@ const Bots = () =>  {
           </div>
         </div>
       </div>
+      <AddModal />
       <EditModal />
     </div>
   )
