@@ -1,0 +1,14 @@
+[Unit]
+Description=quiz bot polling service
+
+[Service]
+User=rpi
+WorkingDirectory=/home/rpi/projects/mainframe/src
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_quiz_bot_polling
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[quiz]] up
+ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[quiz]] down
+Restart=on-success
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target

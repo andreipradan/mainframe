@@ -62,15 +62,20 @@ class RedisClient:
     def delete(self, key):
         self.client.delete(key)
 
-    def get(self, key):
+    def get(self, key, compressed=True):
         try:
             if value := self.client.get(key):
-                return ast.literal_eval(zlib.decompress(value).decode())
+                if compressed:
+                    value = zlib.decompress(value)
+                return ast.literal_eval(value.decode())
         except redis.exceptions.ConnectionError as e:
             self.logger.exception(e)
 
     def ping(self):
         return self.client.ping()
 
-    def set(self, key, value):
-        self.client.set(key, zlib.compress(str(value).encode()))
+    def set(self, key, value, compressed=True):
+        value = str(value).encode()
+        if compressed:
+            value = zlib.compress(value)
+        self.client.set(key, value)

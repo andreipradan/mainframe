@@ -27,8 +27,15 @@ def is_whitelisted(func):
 
 class BaseBotMeta(type):
     def __new__(cls, name, bases, dct):
+        excepted_methods = [
+            "__init__",
+            "ask_question",
+            "reply",
+            "regenerate_questions",
+            "reset",
+        ]
         for key, value in dct.items():
-            if key not in ["__init__", "reply"] and callable(value):
+            if key not in excepted_methods and callable(value):
                 dct[key] = is_whitelisted(value)
         return super().__new__(cls, name, bases, dct)
 

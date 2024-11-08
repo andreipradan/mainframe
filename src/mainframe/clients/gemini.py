@@ -12,7 +12,9 @@ class GeminiError(Exception):
     ...
 
 
-def generate_content(prompt: str, history=None, file_path=None):
+def generate_content(
+    prompt: str, history=None, file_path=None, max_output_tokens=1000, temperature=1.0
+):
     history = history or []
     config = environ.Env()
     genai.configure(api_key=config("GEMINI_API_KEY"))
@@ -31,7 +33,7 @@ def generate_content(prompt: str, history=None, file_path=None):
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config=genai.types.GenerationConfig(
-            max_output_tokens=1000, temperature=1.0
+            max_output_tokens=max_output_tokens, temperature=temperature
         ),
         safety_settings="BLOCK_ONLY_HIGH",
     )
