@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from mainframe.clients import healthchecks
 from mainframe.clients.logs import get_default_logger
-from mainframe.clients.storage import upload_blob_from_file
+from mainframe.clients.storage import GoogleCloudStorageClient
 from mainframe.clients.system import run_cmd
 
 
@@ -30,7 +30,8 @@ class Command(BaseCommand):
         with logfire.span(
             "[backup] Uploading to gcs", file_name=file_name, destination=destination
         ):
-            upload_blob_from_file(file_name, destination, logger)
+            client = GoogleCloudStorageClient(logger)
+            client.upload_blob_from_file(file_name, destination)
         run_cmd(f"rm {file_name}", logger=logger)
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))

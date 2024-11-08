@@ -1,10 +1,6 @@
-import ast
 import random
-import zlib
 
 import environ
-import logfire
-import redis
 import telegram
 from django.core.management import BaseCommand, CommandError
 from django.utils import timezone
@@ -19,6 +15,7 @@ from mainframe.bots.models import Bot, Message
 from mainframe.clients import dexonline
 from mainframe.clients.gemini import GeminiError, generate_content
 from mainframe.clients.logs import get_default_logger
+from mainframe.clients.storage import RedisClient
 from mainframe.earthquakes.management.commands.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -32,7 +29,6 @@ from telegram.ext import (
 )
 
 logger = get_default_logger(__name__)
-BUS_PER_PAGE = 24
 
 
 def is_whitelisted(func):
@@ -54,28 +50,7 @@ def is_whitelisted(func):
     return wrapper
 
 
-class RedisContextClient:
-    def __init__(self):
-        self.client = redis.Redis(host="localhost", port=6379)
-
-    def delete(self, key):
-        self.client.delete(key)
-
-    def get(self, key):
-        try:
-            if value := self.client.get(key):
-                return ast.literal_eval(zlib.decompress(value).decode())
-        except redis.exceptions.ConnectionError as e:
-            logger.exception(e)
-
-    def ping(self):
-        return self.client.ping()
-
-    def set(self, key, value):
-        self.client.set(key, zlib.compress(str(value).encode()))
-
-
-redis_client = RedisContextClient()
+redis_client = RedisClient(logger)
 
 
 def handle_callback_query(update: Update, *_, bot, **__):
@@ -344,12 +319,12 @@ def save_to_db(message, chat, text=None):
 
 
 class Command(BaseCommand):
-    @logfire.instrument("run_bot_polling")
     def handle(self, *_, **__):
         logger.info("Starting bot polling")
         config = environ.Env()
         if not (token := config("TELEGRAM_TOKEN")):
-            raise GeminiError("Missing TELEGRAM_TOKEN")
+            logger.error("Telegram token not found")
+            return
 
         updater = Updater(token, use_context=True)
         dp = updater.dispatcher

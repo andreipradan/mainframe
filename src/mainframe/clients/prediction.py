@@ -4,14 +4,17 @@ import django.db.models
 from django.conf import settings
 from django.utils import timezone
 from huey.signals import SIGNAL_ERROR
-from mainframe.clients.storage import download_blob_into_memory, upload_blob_from_string
+from mainframe.clients.storage import GoogleCloudStorageClient
 from mainframe.core.tasks import log_status
 
 
 def load(file_name):
     file_name = f"{file_name}.pkl"
     if settings.ENV != "local":
-        file = download_blob_into_memory(file_name, "GOOGLE_STORAGE_MODEL_BUCKET")
+        client = GoogleCloudStorageClient()
+        file = client.download_blob_into_memory(
+            file_name, "GOOGLE_STORAGE_MODEL_BUCKET"
+        )
         return pickle.loads(file)  # noqa: S301
     model_path = f"{settings.BASE_DIR}/finance/data/model"
     with open(f"{model_path}/{file_name}", "rb") as file:
@@ -20,11 +23,9 @@ def load(file_name):
 
 def save(item, item_type, prefix, logger):
     if settings.ENV != "local":
-        upload_blob_from_string(
-            string=pickle.dumps(item),
-            destination=f"{item_type}.pkl",
-            logger=logger,
-            prefix=prefix,
+        client = GoogleCloudStorageClient(logger)
+        client.upload_blob_from_string(
+            string=pickle.dumps(item), destination=f"{item_type}.pkl", prefix=prefix
         )
     else:
         model_path = f"{settings.BASE_DIR}/finance/data/model"
