@@ -8,7 +8,7 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Commands = lazy(() => import('./commands/Commands'));
 const Crons = lazy(() => import('./commands/crons/Crons'));
-const Devices = lazy(() => import('./apps/devices/Devices'));
+const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const Expenses = lazy(() => import('./expenses/Expenses'));
@@ -66,8 +66,8 @@ const AppRoutes = () => {
         <Route exact path="/profile" component={ Profile } />
 
         {user?.is_staff && <Route exact path="/" component={Dashboard}/>}
-        {user?.is_staff && <Route exact path="/apps/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/apps/logs" component={ Logs } />}
+        {user?.is_staff && <Route exact path="/apps/messages" component={ Messages } />}
         {user?.is_staff && <Route exact path="/apps/todo" component={ Todo } />}
         {user?.is_staff && <Route exact path="/auth/groups" component={ UserGroups } />}
         {user?.is_staff && <Route exact path="/auth/users" component={ Users } />}
@@ -80,9 +80,9 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/credit/details" component={ FinancesCreditDetails } />}
         {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/credit/timetables" component={ FinancesTimetables } />}
+        {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/finances/accounts/:id?" component={ FinancesAccountsTransactions } />}
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
-        {user?.is_staff && <Route exact path="/messages" component={ Messages } />}
         {user?.is_staff && <Route exact path="/sources" component={ Sources } />}
         {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
 

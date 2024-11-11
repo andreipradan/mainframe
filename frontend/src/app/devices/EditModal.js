@@ -12,8 +12,8 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/ext-language_tools";
 
-import DevicesApi from "../../../api/devices";
-import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
+import DevicesApi from "../../api/devices";
+import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 import { Tooltip } from 'react-tooltip';
 
 const EditModal = () => {

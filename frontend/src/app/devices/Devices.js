@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { Audio, Circles, ColorRing } from 'react-loader-spinner';
+import { Audio, Circles } from 'react-loader-spinner';
 import { Collapse } from 'react-bootstrap';
 
-import DevicesApi from "../../../api/devices";
+import DevicesApi from "../../api/devices";
 import EditModal from "./EditModal";
-import Errors from "../../shared/Errors";
-import { selectItem, setModalOpen } from '../../../redux/devicesSlice';
+import Errors from "../shared/Errors";
+import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 
 
 const Devices = () =>  {

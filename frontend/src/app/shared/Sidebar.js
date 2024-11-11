@@ -120,17 +120,23 @@ const Sidebar = () => {
     if (currentModal === "reboot") dispatch(RpiApi.reboot(token))
     else if (currentModal === "Restart backend") dispatch(RpiApi.restartService(token, "backend"))
     else if (currentModal === "Restart bot") dispatch(RpiApi.restartService(token, "bot"))
+    else if (currentModal === "Restart quiz bot") dispatch(RpiApi.restartService(token, "quiz"))
     else if (currentModal === "Restart huey") dispatch(RpiApi.restartService(token, "huey"))
     setModalOpen(false)
   }
 
   return (
     <nav className="sidebar sidebar-offcanvas" id="sidebar">
+
+      {/*logo */}
       <div className="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
         <a className="sidebar-brand brand-logo" href={user?.is_staff ? "/" : "/expenses"}><img src={logo} alt="logo" /></a>
         <a className="sidebar-brand brand-logo-mini" href={user?.is_staff ? "/" : "/expenses"}><img src={logoMini} alt="logo" /></a>
       </div>
+
       <ul className="nav">
+
+        {/* profile and rpi actions*/}
         <li className="nav-item profile">
           <div className="profile-desc">
             <div className="profile-pic">
@@ -202,6 +208,17 @@ const Sidebar = () => {
                     <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
                       <div className="preview-thumbnail">
                         <div className="preview-icon bg-dark rounded-circle">
+                          <i className="mdi mdi-head-question-outline text-info" />
+                        </div>
+                      </div>
+                      <div className="preview-item-content">
+                        <p className="preview-subject mb-1">Restart quiz bot</p>
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Divider/>
+                    <Dropdown.Item href="!#" onClick={handleSetModalAction} className="preview-item">
+                      <div className="preview-thumbnail">
+                        <div className="preview-icon bg-dark rounded-circle">
                           <i className="mdi mdi-timer text-warning" />
                         </div>
                       </div>
@@ -255,18 +272,18 @@ const Sidebar = () => {
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
-                        <Link className={isPathActive('/apps/devices') ? 'nav-link active' : 'nav-link'} to="/apps/devices">
-                          Devices
+                        <Link className={isPathActive('/apps/logs') ? 'nav-link active' : 'nav-link'} to="/apps/logs">
+                          <i className="mdi mdi-ballot" />&nbsp;Logs
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link className={isPathActive('/apps/logs') ? 'nav-link active' : 'nav-link'} to="/apps/logs">
-                          <span className="menu-title">Logs</span>
+                        <Link className={isPathActive('/apps/messages') ? 'nav-link active' : 'nav-link'} to="/apps/messages">
+                          <i className="mdi mdi-message" />&nbsp;Messages
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link className={isPathActive('/apps/todo') ? 'nav-link active' : 'nav-link'} to="/apps/todo">
-                          To do List
+                          <i className="mdi mdi-clipboard-list" />&nbsp;To do list
                         </Link>
                       </li>
                     </ul>
@@ -274,7 +291,8 @@ const Sidebar = () => {
                 </Collapse>
               </li>
               <li className={isPathActive('/auth') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-                <div className={authMenuOpen ? 'nav-link menu-expanded' : 'nav-link'} onClick={() => setAuthMenuOpen(!authMenuOpen)} data-toggle="collapse">
+                <div className={authMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                     onClick={() => setAuthMenuOpen(!authMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
                     <i className="mdi mdi-account-multiple" />
                   </span>
@@ -356,10 +374,11 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
-              <li className={isPathActive('/messages') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-                <Link className="nav-link" to="/messages">
-                  <span className="menu-icon"><i className="mdi mdi-message" /></span>
-                  <span className="menu-title">Messages</span>
+
+              <li className={isPathActive('/devices') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <Link className="nav-link" to="/devices">
+                  <span className="menu-icon"><i className="mdi mdi-devices" /></span>
+                  <span className="menu-title">Devices</span>
                 </Link>
               </li>
               <li className={isPathActive('/sources') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
@@ -643,6 +662,8 @@ const Sidebar = () => {
             : null
           }
       </ul>
+
+      {/* action modal */}
       <Modal centered show={modalOpen} onHide={() => setModalOpen(false)}>
         <Modal.Header closeButton>
           <Modal.Title>
