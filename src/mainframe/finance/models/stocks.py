@@ -5,14 +5,24 @@ from mainframe.core.models import TimeStampedModel
 class PnL(TimeStampedModel):
     amount = models.DecimalField(decimal_places=2, max_digits=7)
     cost_basis = models.DecimalField(decimal_places=2, max_digits=6)
+    country = models.CharField(max_length=2)
     currency = models.CharField(max_length=3)
     date_acquired = models.DateField()
     date_sold = models.DateField()
+    isin = models.CharField(max_length=12)
     pnl = models.DecimalField(decimal_places=2, max_digits=7)
     quantity = models.DecimalField(decimal_places=8, max_digits=11)
+    security_name = models.CharField(max_length=50)
     ticker = models.CharField(blank=True, max_length=5)
 
     class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_"
+                "date_acquired_date_sold_ticker_quantity_currency_uniq",
+                fields=("date_acquired", "date_sold", "ticker", "quantity", "currency"),
+            ),
+        )
         ordering = ["-date_sold", "-date_acquired", "ticker"]
 
     def __str__(self):

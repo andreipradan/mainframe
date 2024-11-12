@@ -62,12 +62,6 @@ class DevicesClient:
                 for device in devices
                 if device.mac not in list(map(attrgetter("mac"), existing_devices))
             ]
-            self.logger.info(
-                "Got %d devices%s",
-                len(devices),
-                f" ({len(new_devices)} new ones)" if new_devices else "",
-                extra={"new_devices": new_devices},
-            )
 
             active_macs = list(map(attrgetter("mac"), devices))
             went_online = [
@@ -80,6 +74,16 @@ class DevicesClient:
                 for device in existing_devices
                 if device.is_active and device.mac not in active_macs
             ]
+            self.logger.info(
+                "Got %d devices%s",
+                len(devices),
+                f" ({len(new_devices)} new ones)" if new_devices else "",
+                extra={
+                    "new_devices": new_devices,
+                    "went_online": went_online,
+                    "went_offline": went_offline,
+                },
+            )
             if went_offline:
                 Device.objects.filter(
                     mac__in=map(attrgetter("mac"), went_offline)

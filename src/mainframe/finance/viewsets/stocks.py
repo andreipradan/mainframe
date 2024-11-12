@@ -1,14 +1,31 @@
 from django.db.models import Count, Q, Sum
+from mainframe.clients.finance.stocks import (
+    StockImportError,
+    StockPnLImporter,
+    StockTransactionsImporter,
+)
+from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 
 
 class PnLViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = PnL.objects.all()
     serializer_class = PnLSerializer
+
+    def create(self, request, *args, **kwargs):
+        file = request.FILES["file"]
+        logger = get_default_logger(__name__)
+        try:
+            StockPnLImporter(file, logger).run()
+        except StockImportError as e:
+            logger.error("Could not process file: %s - error: %s", file, e)
+            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -49,6 +66,16 @@ class StocksViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = StockTransaction.objects.all()
     serializer_class = StockTransactionSerializer
+
+    def create(self, request, *args, **kwargs):
+        file = request.FILES["file"]
+        logger = get_default_logger(__name__)
+        try:
+            StockTransactionsImporter(file, logger).run()
+        except StockImportError as e:
+            logger.error("Could not process file: %s - error: %s", file, e)
+            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = super().get_queryset()
