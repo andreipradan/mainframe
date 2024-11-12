@@ -108,6 +108,21 @@ export class PnlApi {
       .then((response) => dispatch(setPnl(response.data)))
       .catch((err) => handleErrors(err, dispatch, setPnlErrors));
   };
+
+  static upload = (token, data) => dispatch => {
+    dispatch(setPnlLoading(true))
+    axios.post(
+      `${base}/pnl/`,
+      data,
+      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
+    )
+    .then((response) => {
+      dispatch(setPnl(response.data));
+      toast.success("PnL uploaded successfully!", toastParams)
+
+    })
+    .catch((err) => handleErrors(err, dispatch, setPnlErrors));
+  }
 }
 
 export class StocksApi {
@@ -118,6 +133,20 @@ export class StocksApi {
       .then((response) => dispatch(setStocks(response.data)))
       .catch((err) => handleErrors(err, dispatch, setStocksErrors));
   };
+  static upload = (token, data) => dispatch => {
+    dispatch(setStocksLoading(true))
+    axios.post(
+      `${base}/stocks/`,
+      data,
+      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
+    )
+    .then((response) => {
+      dispatch(setStocks(response.data));
+      toast.success("Stock transactions uploaded successfully!", toastParams)
+
+    })
+    .catch((err) => handleErrors(err, dispatch, setStocksErrors));
+  }
 }
 
 export class TimetableApi {
