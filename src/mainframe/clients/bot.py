@@ -3,7 +3,6 @@ from django.utils import timezone
 from mainframe.bots.models import Bot
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import RedisClient
-from telegram import Update
 
 
 def is_whitelisted(func):
@@ -20,7 +19,7 @@ def is_whitelisted(func):
             return
         bot.last_called_on = timezone.now()
         bot.save()
-        return func(self, update, *args, bot=bot, context=context, **kwargs)
+        return func(self, update, *args, context=context, **kwargs)
 
     return wrapper
 
@@ -45,12 +44,9 @@ class BaseBotClient(metaclass=BaseBotMeta):
         self.logger = logger or get_default_logger(__name__)
         self.redis = RedisClient(self.logger)
 
-    def reply(self, update: Update, text: str, **kwargs):
-        if not update.message:
-            self.logger.error(
-                "Can't reply - no message to reply to: '%s'", update.to_dict()
-            )
-            return
+    def reply(self, message: telegram.Message, text: str, **kwargs):
+        if not message:
+            return self.logger.error("Can't reply - message is empty")
 
         default_kwargs = {
             "disable_notification": True,
@@ -59,7 +55,7 @@ class BaseBotClient(metaclass=BaseBotMeta):
             **kwargs,
         }
         try:
-            update.message.reply_text(text, **default_kwargs)
+            message.reply_text(text, **default_kwargs)
         except telegram.error.TelegramError as e:
             if "can't find end of the entity" in str(e):
                 location = int(e.message.split()[-1])
@@ -67,11 +63,11 @@ class BaseBotClient(metaclass=BaseBotMeta):
                     "Error parsing markdown - skipping '%s'", text[location]
                 )
                 return self.reply(
-                    update, f"{text[:location]}\\{text[location]}{text[location + 1:]}"
+                    message, f"{text[:location]}\\{text[location]}{text[location + 1:]}"
                 )
             self.logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
             try:
-                update.message.reply_text(text)
+                message.reply_text(text)
             except telegram.error.TelegramError as e:
                 self.logger.exception("Error sending unformatted message. (%s)", e)
-                update.message.reply_text("Got an error trying to send response")
+                message.reply_text("Got an error trying to send response")
