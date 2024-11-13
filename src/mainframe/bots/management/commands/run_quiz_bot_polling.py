@@ -75,7 +75,13 @@ class BotClient(BaseBotClient):
             parse_mode=telegram.ParseMode.HTML,
         )
         quiz["current"] = {"ci": ci, "qi": qi, "answers": {}}
-        self.redis.set("quiz", quiz)
+        self.set_quiz(update.effective_chat.id, quiz)
+
+    def get_quiz(self, chat_id: int) -> dict:
+        return self.redis.get(f"quiz:{chat_id}")
+
+    def set_quiz(self, chat_id, quiz):
+        self.redis.set(f"quiz:{chat_id}", quiz)
 
     def handle_callback_query(self, update: Update, *_, **__):
         query = update.callback_query
@@ -89,7 +95,7 @@ class BotClient(BaseBotClient):
 
         category, question, *answer = query.data.split()
         user = update.effective_user.full_name
-        quiz = self.redis.get("quiz")
+        quiz = self.get_quiz(update.effective_chat.id)
         if (answers := quiz["current"]["answers"]) and user in answers:
             return self.logger("User %s already answered", user)
 
@@ -131,10 +137,11 @@ class BotClient(BaseBotClient):
 
     def handle_categories(self, update: Update, *_, **__):
         message = update.effective_message
-        quiz = self.redis.get("quiz")
+        chat_id = update.effective_chat.id
+        quiz = self.get_quiz(chat_id)
         if categories := message.text.lstrip("/categories "):  # noqa: B005
             quiz["categories"] = categories
-            return self.redis.set("quiz", quiz)
+            return self.set_quiz(f"quiz:{chat_id}", quiz)
 
         if not (categories := quiz.get("categories")):
             return self.reply(
@@ -149,28 +156,30 @@ class BotClient(BaseBotClient):
 
     def handle_ready(self, update: Update, *_, **__):
         new_player = update.effective_user.full_name
-        quiz = self.redis.get("quiz") or {}
+        chat_id = update.effective_chat.id
+        quiz = self.get_quiz(chat_id) or {}
         players = quiz.get("players", {})
         if new_player in players:
             return self.reply(update.effective_message, "You're already registered")
         players[new_player] = 0
-        self.redis.set("quiz", quiz)
+        self.set_quiz(chat_id, quiz)
         self.reply(
             update.effective_message,
             f"{new_player} joined\nCurrent players: {', '.join(list(players))}",
         )
 
     def handle_regenerate_questions(self, update: Update, *_, **__):
-        quiz = self.redis.get("quiz")
-        self.regenerate_questions(update.effective_message, quiz)
+        quiz = self.get_quiz(update.effective_chat.id)
+        self.regenerate_questions(update, quiz)
 
     def handle_restart(self, update: Update, *_, **__):
-        quiz = self.redis.get("quiz")
+        chat_id = update.effective_chat.id
+        quiz = self.get_quiz(chat_id)
         quiz["current"] = {}
         for player, _ in quiz["players"].items():
             quiz["players"][player] = 0
 
-        self.redis.set("quiz", quiz)
+        self.set_quiz(chat_id, quiz)
         text = (
             "Scores cleared, hit /start for a new quiz\n"
             "Hit /regenerate for new questions"
@@ -182,8 +191,8 @@ class BotClient(BaseBotClient):
 
     def handle_start(self, update: Update, *_, **__):
         message = update.effective_message
-        if not (quiz := self.redis.get("quiz")):
-            quiz = self.reset(message)
+        if not (quiz := self.get_quiz(update.effective_chat.id)):
+            quiz = self.reset(update)
 
         if not quiz.get("players"):
             return self.reply(message, "No players registered. Register doing /ready ")
@@ -198,7 +207,7 @@ class BotClient(BaseBotClient):
         self.ask_question(update, quiz)
 
     def handle_status(self, update: Update, *_, **__):
-        if not (quiz := self.redis.get("quiz")):
+        if not (quiz := self.get_quiz(update.effective_chat.id)):
             return self.reply(
                 update.effective_message,
                 "No players registered. Register doing /ready ",
@@ -207,10 +216,11 @@ class BotClient(BaseBotClient):
         status = "\n".join(f"{player}: {score}" for player, score in quiz.items())
         self.reply(update.effective_message, f"<b>Current status</b>\n{status}")
 
-    def regenerate_questions(self, message: telegram.Message, quiz):
+    def regenerate_questions(self, update: telegram.Update, quiz):
         if not (categories := quiz.get("categories")):
             categories = DEFAULT_CATEGORIES
 
+        message = update.effective_message
         self.reply(message, "Generating questions...")
 
         try:
@@ -264,15 +274,15 @@ class BotClient(BaseBotClient):
             self.logger.exception(e)
             return self.reply(message, "Eroare la generarea intrebarilor")
 
-        self.redis.set("quiz", quiz)
+        self.set_quiz(update, quiz)
         return quiz
 
-    def reset(self, message: telegram.Message):
+    def reset(self, update: telegram.Update):
         quiz = {"categories": DEFAULT_CATEGORIES, "current": {}, "players": {}}
-        quiz = self.regenerate_questions(message, quiz)
-        self.redis.set(key="quiz", value=quiz)
+        quiz = self.regenerate_questions(update, quiz)
+        self.set_quiz(update.effective_chat.id, quiz)
         self.reply(
-            message,
+            update.effective_message,
             "S-a creat un quiz nou\n"
             "Sa te alaturi: /ready\n"
             "Categoriile: /categories\n"

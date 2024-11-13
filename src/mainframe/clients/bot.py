@@ -29,9 +29,11 @@ class BaseBotMeta(type):
         excepted_methods = [
             "__init__",
             "ask_question",
+            "get_quiz",
             "reply",
             "regenerate_questions",
             "reset",
+            "set_quiz",
         ]
         for key, value in dct.items():
             if key not in excepted_methods and callable(value):
