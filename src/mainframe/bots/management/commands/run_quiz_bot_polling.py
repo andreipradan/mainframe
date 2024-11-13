@@ -91,8 +91,7 @@ class BotClient(BaseBotClient):
         user = update.effective_user.full_name
         quiz = self.redis.get("quiz")
         if (answers := quiz["current"]["answers"]) and user in answers:
-            self.logger("User %s already answered", user)
-            return
+            return self.logger("User %s already answered", user)
 
         answers[user] = " ".join(answer)
         questions = quiz.get("questions")

@@ -68,6 +68,6 @@ class BaseBotClient(metaclass=BaseBotMeta):
             self.logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
             try:
                 message.reply_text(text)
-            except telegram.error.TelegramError as e:
-                self.logger.exception("Error sending unformatted message. (%s)", e)
+            except telegram.error.TelegramError as err:
+                self.logger.exception("Error sending unformatted message. (%s)", err)
                 message.reply_text("Got an error trying to send response")
