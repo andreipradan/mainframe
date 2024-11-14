@@ -46,8 +46,7 @@ def get_start_markup():
                 InlineKeyboardButton("▶️", callback_data="play"),
                 InlineKeyboardButton("🫡", callback_data="ready"),
                 InlineKeyboardButton("🗂", callback_data="categories"),
-                InlineKeyboardButton("🔥", callback_data="regenerate"),
-                InlineKeyboardButton("🗑", callback_data="reset"),
+                InlineKeyboardButton("🔥", callback_data="reset"),
                 InlineKeyboardButton("♻️", callback_data="restart"),
                 InlineKeyboardButton("✅", callback_data="end"),
             ],
@@ -56,7 +55,8 @@ def get_start_markup():
 
 
 class Handler:
-    def __init__(self, query, quiz):
+    def __init__(self, logger, query, quiz):
+        self.logger = logger
         self.query = query
         self.quiz = quiz
 
@@ -77,11 +77,12 @@ class Handler:
 
     def handle_play(self):
         if not self.quiz.get("players"):
-            return self.query.edit_message_text(
-                "Nu sunt jucatori inregistrati. Apasa 🫡 sa te inregistrezi",
+            self.query.edit_message_text(
+                "Nu sunt jucatori inregistrati.\nApasa 🫡 sa te inregistrezi",
                 reply_markup=get_start_markup(),
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )
+            return
 
         self.query.edit_message_text(
             "Starting in 3...",
@@ -101,6 +102,83 @@ class Handler:
             reply_markup=get_start_markup(),
         )
         time.sleep(1)
+        return True
+
+    def handle_regenerate(self):
+        if not (categories := self.quiz.get("categories")):
+            categories = DEFAULT_CATEGORIES
+
+        self.query.edit_message_text(
+            "Generating questions...",
+            parse_mode=telegram.ParseMode.HTML,
+            reply_markup=get_start_markup(),
+        )
+
+        old_qs_text = ""
+        if self.quiz.get("questions"):
+            old_qs = [q["q"] for q in self.quiz["questions"]]
+            old_qs_text = f"f(cele vechi sunt: {old_qs})"
+
+        try:
+            response = generate_content(
+                prompt=f"""
+                    Genereaza un quiz standard cu intrebari noi {old_qs_text} pentru
+                    urmatoarele categorii:
+                    {', '.join(categories)}
+                    Fiecare categorie continand cate 6 intrebari.
+                    Pentru fiecare intrebare vreau cate 4 variante de raspuns
+                    din care doar 1 singura corecta
+                    Raspunsul trebuie sa fie
+                     de maxim 2000 de caractere
+                     in format json
+                     pe o singura linie
+                     fara formatare sau stilizare de genul ```json ```
+                     sau escape char e.g. \\n
+                     sa il pot incarca cu json.loads
+                     dupa cum urmeaza:
+                        {{
+                            'data': [
+                                {{
+                                    'category': <categorie1>,
+                                    'questions': [
+                                        {{
+                                            'q': <intrebarea1>,
+                                            'a': <raspunsul1>,
+                                            'options': [
+                                                <option1>,
+                                                <option2>,
+                                                <option3>,
+                                                <option4>
+                                            ]
+                                        }},
+                                    ],
+                                }}
+                            ]
+                        }}
+
+                    """,
+                max_output_tokens=2000,
+                temperature=0.5,
+            )
+        except GeminiError as e:
+            self.logger.exception(e)
+            return self.query.edit_message_text(
+                "Eroare la generarea intrebarilor",
+                parse_mode=telegram.ParseMode.HTML,
+                reply_markup=get_start_markup(),
+            )
+
+        try:
+            self.quiz["questions"] = json.loads(response)["data"]
+        except (json.JSONDecodeError, IndexError) as e:
+            self.logger.exception(e)
+            return self.query.edit_message_text(
+                "Eroare la procesarea intrebarilor",
+                parse_mode=telegram.ParseMode.HTML,
+                reply_markup=get_start_markup(),
+            )
+
+        return self.quiz
 
 
 class BotClient(BaseBotClient):
@@ -155,14 +233,15 @@ class BotClient(BaseBotClient):
             self.reset(query)
 
         if query.data == "categories":
-            return Handler(query, quiz).handle_categories()
+            return Handler(self.logger, query, quiz).handle_categories()
 
         if query.data == "end":
             return query.edit_message_text("See you next time!")
 
         if query.data == "play":
-            Handler(query, quiz).handle_play()
-            return self.ask_question(query, quiz)
+            if Handler(self.logger, query, quiz).handle_play():
+                return self.ask_question(query, quiz)
+            return
 
         if query.data == "ready":
             new_player = update.effective_user.full_name
@@ -185,9 +264,6 @@ class BotClient(BaseBotClient):
                 reply_markup=get_start_markup(),
                 parse_mode=telegram.ParseMode.HTML,
             )
-
-        if query.data == "regenerate":
-            return self.regenerate_questions(query, quiz)
 
         if query.data == "reset":
             return self.reset(query)
@@ -271,81 +347,9 @@ class BotClient(BaseBotClient):
             parse_mode=telegram.ParseMode.HTML,
         )
 
-    def regenerate_questions(self, query: telegram.CallbackQuery, quiz):
-        if not (categories := quiz.get("categories")):
-            categories = DEFAULT_CATEGORIES
-
-        query.edit_message_text(
-            "Generating questions...",
-            parse_mode=telegram.ParseMode.HTML,
-            reply_markup=get_start_markup(),
-        )
-
-        try:
-            response = generate_content(
-                prompt=f"""
-                Genereaza un quiz standard cu intrebari noi pentru
-                urmatoarele categorii:
-                {', '.join(categories)}
-                Fiecare categorie continand cate 6 intrebari.
-                Pentru fiecare intrebare vreau cate 4 variante de raspuns
-                din care doar 1 singura corecta
-                Raspunsul trebuie sa fie
-                 de maxim 2000 de caractere
-                 in format json
-                 pe o singura linie
-                 fara formatare sau stilizare de genul ```json ```
-                 sau escape char e.g. \\n
-                 sa il pot incarca cu json.loads
-                 dupa cum urmeaza:
-                    {{
-                        'data': [
-                            {{
-                                'category': <categorie1>,
-                                'questions': [
-                                    {{
-                                        'q': <intrebarea1>,
-                                        'a': <raspunsul1>,
-                                        'options': [
-                                            <option1>,
-                                            <option2>,
-                                            <option3>,
-                                            <option4>
-                                        ]
-                                    }},
-                                ],
-                            }}
-                        ]
-                    }}
-
-                """,
-                max_output_tokens=2000,
-                temperature=0,
-            )
-        except GeminiError as e:
-            self.logger.exception(e)
-            return query.edit_message_text(
-                "Eroare la generarea intrebarilor",
-                parse_mode=telegram.ParseMode.HTML,
-                reply_markup=get_start_markup(),
-            )
-
-        try:
-            quiz["questions"] = json.loads(response)["data"]
-        except (json.JSONDecodeError, IndexError) as e:
-            self.logger.exception(e)
-            return query.edit_message_text(
-                "Eroare la procesarea intrebarilor",
-                parse_mode=telegram.ParseMode.HTML,
-                reply_markup=get_start_markup(),
-            )
-
-        self.set_quiz(query.message.chat_id, quiz)
-        return quiz
-
     def reset(self, query: telegram.CallbackQuery):
         quiz = {"categories": DEFAULT_CATEGORIES, "current": {}, "players": {}}
-        quiz = self.regenerate_questions(query, quiz)
+        quiz = Handler(self.logger, query, quiz).handle_regenerate()
         self.set_quiz(query.message.chat_id, quiz)
         query.edit_message_text(
             "S-a creat un quiz nou\n"

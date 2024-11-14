@@ -31,7 +31,6 @@ class BaseBotMeta(type):
             "ask_question",
             "get_quiz",
             "reply",
-            "regenerate_questions",
             "reset",
             "set_quiz",
         ]
