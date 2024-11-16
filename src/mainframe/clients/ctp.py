@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import aiohttp
+from asgiref.sync import sync_to_async
 from mainframe.clients import scraper
 from mainframe.transit_lines.models import Schedule, TransitLine
 from rest_framework import status
@@ -94,10 +95,10 @@ class CTPClient:
             self.logger.info("Stored %d transit lines in db", len(lines))
         return lines
 
-    def fetch_schedules(
+    async def fetch_schedules(
         self, lines: List[TransitLine] = None, occurrence=None, commit=True
     ) -> List[Schedule]:
-        lines = lines or TransitLine.objects.all()
+        lines = lines or await sync_to_async(TransitLine.objects.all)()
         schedules = []
         for line in lines:
             if occurrence:
@@ -120,7 +121,7 @@ class CTPClient:
         )
         schedules = [s for s in asyncio.run(self.request_many(schedules)) if s]
         if commit:
-            Schedule.objects.bulk_create(
+            await sync_to_async(Schedule.objects.bulk_create)(
                 schedules,
                 update_conflicts=True,
                 update_fields=[

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 
 import pytz
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
@@ -154,21 +155,31 @@ class BusInline(BaseInlines):
         return Keyboard([buttons])
 
     @classmethod
-    def add_to_favorites(cls, update, line_name):
+    async def add_to_favorites(cls, update, line_name):
         user = update.callback_query.from_user
-        line = TransitLine.objects.get(name=line_name)
-        line.add_to_favorites(user.username or user.id)
-        return cls.start(update)
+
+        @sync_to_async
+        def add_to_favorites():
+            line = TransitLine.objects.get(name=line_name)
+            line.add_to_favorites(user.username or user.id)
+
+        await add_to_favorites()
+        return await cls.start(update)
 
     @classmethod
-    def remove_from_favorites(cls, update, line_name):
+    async def remove_from_favorites(cls, update, line_name):
         user = update.callback_query.from_user
-        line = TransitLine.objects.get(name=line_name)
-        line.remove_from_favorites(user.username or user.id)
-        return cls.start(update)
+
+        @sync_to_async
+        def remove_from_favorites():
+            line = TransitLine.objects.get(name=line_name)
+            line.remove_from_favorites(user.username or user.id)
+
+        await remove_from_favorites()
+        return await cls.start(update)
 
     @classmethod
-    def fetch(  # noqa: PLR0913
+    async def fetch(  # noqa: PLR0913
         cls, update, line_name, line_type, page, full_details=False
     ):
         now = datetime.now(pytz.timezone(settings.TIME_ZONE))
@@ -183,15 +194,20 @@ class BusInline(BaseInlines):
             logger.error("This shouldn't happen, like ever")
             return ""
         message = update.callback_query.message
-        try:
-            schedule = Schedule.objects.select_related("line").get(
-                line__name=line_name.upper(), occurrence=day
-            )
-            text = parse_schedule(schedule, now.strftime("%H:%M"), full_details)
-        except Schedule.DoesNotExist:
-            text = f"Scheduled for {line_name} not found"
-        return edit_message(
-            update.callback_query.bot,
+
+        @sync_to_async
+        def get_schedule_text():
+            try:
+                schedule = Schedule.objects.select_related("line").get(
+                    line__name=line_name.upper(), occurrence=day
+                )
+                return parse_schedule(schedule, now.strftime("%H:%M"), full_details)
+            except Schedule.DoesNotExist:
+                return f"Scheduled for {line_name} not found"
+
+        text = await get_schedule_text()
+        return await edit_message(
+            update.callback_query._bot,
             message.chat_id,
             message.message_id,
             text=text,
@@ -201,7 +217,9 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def start(cls, update, line_type="favorites", page=1, override_message=None, **__):
+    async def start(
+        cls, update, line_type="favorites", page=1, override_message=None, **__
+    ):
         user = (
             update.callback_query.from_user
             if update.callback_query
@@ -216,8 +234,11 @@ class BusInline(BaseInlines):
         else:
             qs = qs.filter(line_type=line_type)
 
-        lines = list(qs.order_by("name")[start : start + cls.PER_PAGE])
-        count = qs.count()
+        @sync_to_async
+        def fetch_lines():
+            return list(qs.order_by("name")[start : start + cls.PER_PAGE]), qs.count()
+
+        lines, count = await fetch_lines()
 
         last_page = math.ceil(count / cls.PER_PAGE)
 
@@ -231,12 +252,12 @@ class BusInline(BaseInlines):
             return update.message.reply_text(
                 f"Welcome {user.full_name}\nChoose your favorite line",
                 reply_markup=markup,
-            ).to_json()
+            )
 
         message = update.callback_query.message
-        return edit_message(
-            update.callback_query.bot,
-            message.chat_id,
+        return await edit_message(
+            update.callback_query._bot,
+            message.chat.id,
             message.message_id,
             text=override_message
             or f"{line_type.capitalize()} lines{pagination}{no_lines_msg}",
@@ -244,20 +265,32 @@ class BusInline(BaseInlines):
         )
 
     @classmethod
-    def sync(cls, update, line_type):
+    async def sync(cls, update, line_type):
         if line_type == "favorites":
             user = (
                 update.callback_query.from_user
                 if update.callback_query
                 else update.message.from_user
             )
-            lines = list(
-                TransitLine.objects.filter(
-                    favorite_of__contains=[user.username or user.id]
+
+            @sync_to_async
+            def fetch_lines():
+                return list(
+                    TransitLine.objects.filter(
+                        favorite_of__contains=[user.username or user.id]
+                    )
                 )
-            )
+
+            lines = await fetch_lines()
         else:
-            lines = list(TransitLine.objects.filter(line_type=line_type))
-        CTPClient.fetch_schedules(lines)
+
+            @sync_to_async
+            def fetch_lines():
+                return list(TransitLine.objects.filter(line_type=line_type))
+
+            lines = await fetch_lines()
+        await CTPClient(logger).fetch_schedules(lines)
         override_message = f"Synced schedules for {len(lines)} {line_type} lines 👌"
-        return cls.start(update, line_type=line_type, override_message=override_message)
+        return await cls.start(
+            update, line_type=line_type, override_message=override_message
+        )

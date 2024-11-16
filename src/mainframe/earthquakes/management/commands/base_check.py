@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import pytz
-import telegram
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.db import OperationalError
@@ -10,6 +9,7 @@ from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.scraper import fetch
 from mainframe.earthquakes.models import Earthquake
+from telegram.constants import ParseMode
 
 DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
 
@@ -113,7 +113,7 @@ class BaseEarthquakeCommand(BaseCommand):
             )
             send_telegram_message(
                 text="\n\n".join(parse_event(event) for event in events),
-                parse_mode=telegram.ParseMode.HTML,
+                parse_mode=ParseMode.HTML,
             )
 
         self.set_last_check(instance)

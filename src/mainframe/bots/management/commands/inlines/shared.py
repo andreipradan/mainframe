@@ -1,37 +1,37 @@
 import six
 import telegram
+from mainframe.clients.chat import edit_message
 from mainframe.clients.logs import get_default_logger
+from telegram.constants import ParseMode
 
 logger = get_default_logger(__name__)
 
 
 class BaseInlines:
     @classmethod
-    def end(cls, update):
+    async def end(cls, update):
         bot = update.callback_query.bot
         message = update.callback_query.message
-        try:
-            return bot.edit_message_text(
-                chat_id=message.chat_id,
-                message_id=message.message_id,
-                text="See you next time!",
-            ).to_json()
-        except telegram.error.BadRequest as e:
-            return e.message
+        await edit_message(
+            bot,
+            chat_id=update.message.chat_id,
+            message_id=message.message_id,
+            text="See you next time!",
+        )
 
     @classmethod
     def get_markup(cls, **kwargs):
         raise NotImplementedError
 
     @classmethod
-    def start(cls, update: telegram.Update, **kwargs):
+    async def start(cls, update: telegram.Update, **kwargs):
         user = (
             update.callback_query.from_user
             if update.callback_query
             else update.message.from_user
         )
 
-        return update.callback_query.edit_message_text(
+        return await update.callback_query.edit_message_text(
             f"Hi {user.full_name}!",
             reply_markup=cls.get_markup(**kwargs),
         )
@@ -47,7 +47,7 @@ def reply(update, text, **kwargs):
     kwargs = {
         "disable_notification": True,
         "disable_web_page_preview": True,
-        "parse_mode": telegram.ParseMode.HTML,
+        "parse_mode": ParseMode.HTML,
         **kwargs,
     }
     try:

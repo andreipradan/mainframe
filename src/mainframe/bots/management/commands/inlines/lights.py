@@ -11,7 +11,7 @@ logger = get_default_logger(__name__)
 
 class LightsInline(BaseInlines):
     @classmethod
-    def get_markup(cls, bot):
+    def get_markup(cls):
         def verbose_light(light):
             props = light["capabilities"]
             name = props["name"] or light["ip"]
@@ -37,20 +37,19 @@ class LightsInline(BaseInlines):
         )
 
     @classmethod
-    def refresh(cls, update: Update, bot):
+    def refresh(cls, update: Update):
         greeting_message = f"Hi {update.callback_query.from_user.full_name}!"
 
         text = f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         try:
             return update.callback_query.edit_message_text(
-                text=f"{greeting_message}\n{text}",
-                reply_markup=cls.get_markup(bot=bot),
+                text=f"{greeting_message}\n{text}", reply_markup=cls.get_markup()
             )
         except telegram.error.BadRequest as e:
             return e.message
 
     @classmethod
-    def toggle(cls, update, ip, bot):
+    def toggle(cls, update, ip):
         try:
             response = LightsClient.toggle(ip)
         except LightsException as e:
@@ -58,4 +57,4 @@ class LightsInline(BaseInlines):
             return ""
 
         logger.info("Bulb %s was toggled. Response: %s", ip, response)
-        return cls.refresh(update, bot)
+        return cls.refresh(update)

@@ -3,18 +3,19 @@ import sys
 
 import dotenv
 import telegram
+from telegram.constants import ParseMode
 
 
-def edit_message(bot, chat_id, message_id, text, reply_markup=None):
+async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
     try:
-        return bot.edit_message_text(
+        return await bot.edit_message_text(
             chat_id=chat_id,
             message_id=message_id,
             text=text or "Not found",
             reply_markup=reply_markup,
             disable_web_page_preview=True,
-            parse_mode=telegram.ParseMode.HTML,
-        ).to_json()
+            parse_mode=ParseMode.HTML,
+        )
     except telegram.error.BadRequest as e:
         logging.error(e)
         return e.message
@@ -34,7 +35,7 @@ def send_telegram_message(text, **kwargs):
         "chat_id": chat_id,
         "disable_notification": True,
         "disable_web_page_preview": True,
-        "parse_mode": telegram.ParseMode.MARKDOWN,
+        "parse_mode": ParseMode.MARKDOWN,
     }
     bot_kwargs.update(kwargs)
     bot = telegram.Bot(token)

@@ -1,7 +1,6 @@
 from urllib.parse import urljoin
 
 import logfire
-import telegram
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -11,6 +10,7 @@ from mainframe.clients.logs import get_default_logger
 from mainframe.clients.scraper import fetch
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
+from telegram.constants import ParseMode
 
 logger = get_default_logger(__name__)
 
@@ -74,7 +74,7 @@ class Watcher(TimeStampedModel):
             f"<a href='{url}'>{title}</a>\n"
             f"More articles: <a href='{self.url}'>here</a>"
         )
-        kwargs = {"parse_mode": telegram.ParseMode.HTML}
+        kwargs = {"parse_mode": ParseMode.HTML}
         if self.chat_id:
             kwargs["chat_id"] = self.chat_id
         else:

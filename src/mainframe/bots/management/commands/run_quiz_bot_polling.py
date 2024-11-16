@@ -1,5 +1,8 @@
+import asyncio
+import datetime
+import itertools
 import json
-import time
+import logging
 
 import environ
 import telegram
@@ -7,8 +10,26 @@ from django.core.management import BaseCommand
 from mainframe.clients.bot import BaseBotClient
 from mainframe.clients.gemini import GeminiError, generate_content
 from mainframe.clients.logs import get_default_logger
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Poll,
+    Update,
+)
+from telegram.constants import ParseMode
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    PollAnswerHandler,
+)
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logger = get_default_logger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 DEFAULT_CATEGORIES = [
     "Cultură generală",
@@ -20,26 +41,7 @@ DEFAULT_CATEGORIES = [
 ]
 
 
-def get_reply_markup(options, ci, qi):
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(o, callback_data=f"{ci} {qi} {o}")
-                for o in options[:2]
-            ],
-            [
-                InlineKeyboardButton(o, callback_data=f"{ci} {qi} {o}")
-                for o in options[2:]
-            ],
-            [
-                InlineKeyboardButton("♻️", callback_data="restart"),
-                InlineKeyboardButton("✅", callback_data="end"),
-            ],
-        ]
-    )
-
-
-def get_start_markup():
+def get_markup():
     return InlineKeyboardMarkup(
         [
             [
@@ -49,75 +51,173 @@ def get_start_markup():
                 InlineKeyboardButton("🔥", callback_data="reset"),
                 InlineKeyboardButton("♻️", callback_data="restart"),
                 InlineKeyboardButton("✅", callback_data="end"),
-            ],
+            ]
         ]
     )
 
 
 class Handler:
-    def __init__(self, logger, query, quiz):
-        self.logger = logger
-        self.query = query
-        self.quiz = quiz
+    def __init__(self, redis_client):
+        self.redis = redis_client
 
-    def handle_categories(self):
-        if not (categories := self.quiz.get("categories")):
-            return self.query.edit_message_text(
+    @staticmethod
+    async def categories(query, quiz):
+        if not (categories := quiz.get("categories")):
+            return await query.edit_message_text(
                 "Categoriile nu sunt definite.\n"
                 "Se pot seta cu: `/categories categorie1, categorie2`",
-                reply_markup=get_start_markup(),
-                parse_mode=telegram.ParseMode.MARKDOWN,
+                reply_markup=get_markup(),
+                parse_mode=ParseMode.MARKDOWN,
             )
-        return self.query.edit_message_text(
+        return await query.edit_message_text(
             f"Categorii: `{', '.join(categories)}`\n"
             "Pentru a seta categoriile: `/categories categorie1, categorie2`",
-            reply_markup=get_start_markup(),
-            parse_mode=telegram.ParseMode.MARKDOWN,
+            reply_markup=get_markup(),
+            parse_mode=ParseMode.MARKDOWN,
         )
 
-    def handle_play(self):
-        if not self.quiz.get("players"):
-            self.query.edit_message_text(
-                "Nu sunt jucatori inregistrati.\nApasa 🫡 sa te inregistrezi",
-                reply_markup=get_start_markup(),
-                parse_mode=telegram.ParseMode.MARKDOWN,
+    async def get_question(
+        self,
+        chat_id,
+        context: ContextTypes.DEFAULT_TYPE,
+        quiz,
+    ):
+        cat = quiz["questions"][quiz["ci"]]
+        category = cat["category"]
+        q = cat["questions"]
+        question = q[quiz["qi"]]["q"]
+        options = q[quiz["qi"]]["options"]
+        correct_option = options.index(q[quiz["qi"]]["a"])
+
+        params = {
+            "chat_id": chat_id,
+            "question": f"{category}\n[{quiz['qi'] + 1}/{len(q)}] {question}",
+            "options": options,
+            "is_anonymous": False,
+            "allows_multiple_answers": False,
+            "type": Poll.QUIZ,
+            "correct_option_id": correct_option,
+        }
+        quiz["answers"] = {}
+        quiz["correct_option"] = correct_option
+        await self.set_quiz(chat_id, quiz)
+
+        await asyncio.sleep(2)
+        try:
+            message = await context.bot.send_poll(**params)
+        except (telegram.error.RetryAfter, telegram.error.TimedOut) as e:
+            seconds = e.retry_after + 1
+            logger.warning("%s - retrying in %s seconds", e, seconds)
+            await asyncio.sleep(seconds)
+            message = await context.bot.send_poll(**params)
+
+        payload = {
+            message.poll.id: {"chat_id": chat_id, "message_id": message.message_id}
+        }
+
+        return context.bot_data.update(payload)
+
+    def get_quiz(self, chat_id: int) -> dict:
+        return self.redis.get(f"quiz:{chat_id}")
+
+    async def play(self, chat_id, context, query, quiz):
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if not quiz.get("players"):
+            return await query.edit_message_text(
+                "Nu sunt jucatori inregistrati.\n"
+                "Apasa 🫡 sa te inregistrezi\n"
+                f"{now}",
+                reply_markup=get_markup(),
+                parse_mode=ParseMode.MARKDOWN,
             )
+        await query.edit_message_text(
+            f"Quiz inceput la: {now}\nJucatori: {', '.join(quiz['players'])}",
+            reply_markup=get_markup(),
+        )
+        await self.set_quiz(chat_id, quiz)
+        return await self.get_question(chat_id, context, quiz)
+
+    async def receive_poll_answer(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
+        answer = update.poll_answer
+        try:
+            bot_data = context.bot_data[answer.poll_id]
+        except KeyError:
+            logger.info("Old poll")
             return
 
-        self.query.edit_message_text(
-            "Starting in 3...",
-            parse_mode=telegram.ParseMode.HTML,
-            reply_markup=get_start_markup(),
-        )
-        time.sleep(1)
-        self.query.edit_message_text(
-            "Starting in 2...",
-            parse_mode=telegram.ParseMode.HTML,
-            reply_markup=get_start_markup(),
-        )
-        time.sleep(1)
-        self.query.edit_message_text(
-            "Starting in 1...",
-            parse_mode=telegram.ParseMode.HTML,
-            reply_markup=get_start_markup(),
-        )
-        time.sleep(1)
-        return True
+        chat_id = bot_data["chat_id"]
 
-    def handle_regenerate(self):
-        if not (categories := self.quiz.get("categories")):
+        player = answer.user.full_name
+        answer = answer.option_ids[0]  # single choice
+
+        quiz = self.get_quiz(chat_id)
+
+        quiz["answers"][player] = answer
+        if answer == quiz["correct_option"]:
+            quiz["players"][player] += 1
+
+        if set(quiz["answers"]) == set(quiz["players"]):
+            try:
+                await context.bot.stop_poll(chat_id, bot_data["message_id"])
+            except telegram.error.RetryAfter as e:
+                seconds = e.retry_after + 1
+                logger.warning("Flood control - retrying in %d seconds", seconds)
+                await asyncio.sleep(seconds)
+                try:
+                    await context.bot.stop_poll(chat_id, bot_data["message_id"])
+                except telegram.error.BadRequest as e:
+                    logger.error(e)
+
+        max_ci = len(quiz["questions"])
+        max_qi = len(quiz["questions"][quiz["ci"]]["questions"])
+        if quiz["qi"] + 1 >= max_qi:
+            scores = "\n".join(f"{p}: {s}" for p, s in quiz["players"].items())
+            if quiz["ci"] + 1 >= max_ci:  # Done
+                await context.bot.send_message(
+                    chat_id=chat_id,
+                    text=f"Done! 🎉\n<b>Results</b>\n{scores}",
+                    parse_mode=ParseMode.HTML,
+                )
+                return  # completed all the questions
+            quiz["ci"] += 1
+            quiz["qi"] = 0
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text=f"{quiz['ci']} / {max_ci} "
+                f"categories completed\n"
+                f"Current score\n{scores}",
+            )
+        else:
+            quiz["qi"] += 1
+
+        await self.set_quiz(chat_id, quiz)
+
+        return await self.get_question(chat_id, context, quiz)
+
+    @staticmethod
+    async def regenerate(query, quiz):
+        if not (categories := quiz.get("categories")):
             categories = DEFAULT_CATEGORIES
 
-        self.query.edit_message_text(
+        await query.edit_message_text(
             "Generating questions...",
-            parse_mode=telegram.ParseMode.HTML,
-            reply_markup=get_start_markup(),
+            parse_mode=ParseMode.HTML,
+            reply_markup=get_markup(),
         )
 
         old_qs_text = ""
-        if self.quiz.get("questions"):
-            old_qs = [q["q"] for q in self.quiz["questions"]]
-            old_qs_text = f"f(cele vechi sunt: {old_qs})"
+        if quiz.get("questions"):
+            old_qs = [
+                q["q"]
+                for q in itertools.chain(
+                    *(cat["questions"] for cat in quiz["questions"])
+                )
+            ]
+            old_qs_text = (
+                f"f(total diferite de cele vechi care sunt urmatoarele: {old_qs})"
+            )
 
         try:
             response = generate_content(
@@ -161,225 +261,139 @@ class Handler:
                 temperature=0.5,
             )
         except GeminiError as e:
-            self.logger.exception(e)
-            return self.query.edit_message_text(
+            logger.exception(e)
+            return query.edit_message_text(
                 "Eroare la generarea intrebarilor",
-                parse_mode=telegram.ParseMode.HTML,
-                reply_markup=get_start_markup(),
+                parse_mode=ParseMode.HTML,
+                reply_markup=get_markup(),
             )
 
         try:
-            self.quiz["questions"] = json.loads(response)["data"]
+            quiz["questions"] = json.loads(response)["data"]
         except (json.JSONDecodeError, IndexError) as e:
-            self.logger.exception(e)
-            return self.query.edit_message_text(
+            logger.exception(e)
+            return await query.edit_message_text(
                 "Eroare la procesarea intrebarilor",
-                parse_mode=telegram.ParseMode.HTML,
-                reply_markup=get_start_markup(),
+                parse_mode=ParseMode.HTML,
+                reply_markup=get_markup(),
             )
 
-        return self.quiz
+        return quiz
 
-
-class BotClient(BaseBotClient):
-    def ask_question(self, query: telegram.CallbackQuery, quiz):
-        if not (questions := quiz.get("questions")):
-            return self.logger.warning("No questions")
-
-        if not (current := quiz.get("current")):
-            ci, qi = 0, 0
-        else:
-            ci, qi = int(current["ci"]), int(current["qi"])
-
-            item = questions[ci]
-            if len(item["questions"]) - 1 < qi + 1:
-                ci, qi = ci + 1, 0
-            else:
-                qi += 1
-
-        if ci + 1 > len(questions) or (
-            ci + 1 == len(questions) and qi + 1 > len(questions[ci]["questions"])
-        ):
-            scores = " | ".join(f"{p}: {s}" for p, s in quiz["players"].items())
-            query.edit_message_text(
-                f"Done!\nResults: {scores}",
-                reply_markup=get_start_markup(),
-                parse_mode=telegram.ParseMode.HTML,
-            )
-            return
-
-        category = questions[ci]["category"]
-        question = questions[ci]["questions"][qi]["q"]
-        options = questions[ci]["questions"][qi]["options"]
-        query.edit_message_text(
-            f"❓[{ci + 1}/6] <b>{category}</b> - "
-            f"[{qi + 1}/6] "
-            f"{question}\n\nAnswers: [0/{len(quiz['players'])}]",
-            reply_markup=get_reply_markup(options, ci, qi),
-            parse_mode=telegram.ParseMode.HTML,
-        )
-        quiz["current"] = {"ci": ci, "qi": qi, "answers": {}}
-        self.set_quiz(query.message.chat_id, quiz)
-
-    def get_quiz(self, chat_id: int) -> dict:
-        return self.redis.get(f"quiz:{chat_id}")
-
-    def handle_callback_query(self, update: Update, *_, **__):  # noqa: C901, PLR0911, PLR0912
-        query = update.callback_query
-        chat_id = update.effective_chat.id
-        query.answer()
-
-        if not (quiz := self.get_quiz(chat_id)):
-            self.reset(query)
-
-        if query.data == "categories":
-            return Handler(self.logger, query, quiz).handle_categories()
-
-        if query.data == "end":
-            return query.edit_message_text("See you next time!")
-
-        if query.data == "play":
-            if Handler(self.logger, query, quiz).handle_play():
-                return self.ask_question(query, quiz)
-            return
-
-        if query.data == "ready":
-            new_player = update.effective_user.full_name
-            players = quiz.get("players", {})
-            if new_player in players:
-                action = "a renuntat"
-                del players[new_player]
-                self.set_quiz(chat_id, quiz)
-            else:
-                players[new_player] = 0
-                action = "s-a alaturat"
-            players_text = (
-                f"Jucatori: {', '.join(list(players))}"
-                if list(players)
-                else "Nu sunt jucatori inregistrati"
-            )
-            self.set_quiz(chat_id, quiz)
-            return query.edit_message_text(
-                f"{new_player} {action}\n{players_text}",
-                reply_markup=get_start_markup(),
-                parse_mode=telegram.ParseMode.HTML,
-            )
-
-        if query.data == "reset":
-            return self.reset(query)
-
-        if query.data == "restart":
-            quiz["current"] = {}
-            for player, _ in quiz["players"].items():
-                quiz["players"][player] = 0
-
-            self.set_quiz(chat_id, quiz)
-            return query.edit_message_text(
-                "Scorul s-a resetat\nApasa 🔥 pentru intrebari noi",
-                parse_mode=telegram.ParseMode.HTML,
-                reply_markup=get_start_markup(),
-            )
-
-        category, question, *answer = query.data.split()
-        user = update.effective_user.full_name
-        if (answers := quiz["current"]["answers"]) and user in answers:
-            return self.logger("User %s already answered", user)
-
-        answers[user] = " ".join(answer)
-        questions = quiz.get("questions")
-        options = questions[int(category)]["questions"][int(question)]["options"]
-        players = quiz["players"]
-        category_text = query.message.text.split("-")[0]
-        text = query.message.text.replace(category_text, f"<b>{category_text}</b>")
-        answers_count = f"Answers: [{len(answers)}/{len(players)}]"
-        category_and_question = text.split("\n\n")[0]
-        try:
-            query.edit_message_text(
-                category_and_question + "\n\n" + answers_count,
-                reply_markup=get_reply_markup(options, category, question),
-                parse_mode=telegram.ParseMode.HTML,
-            )
-        except telegram.error.BadRequest as e:
-            self.logger.exception(e)
-            return query.edit_message_text(
-                f"{text}\nOld message - not acting",
-                parse_mode=telegram.ParseMode.HTML,
-                reply_markup=get_reply_markup(options, category, question),
-            )
-
-        if set(answers) == set(players):
-            current_questions = questions[int(category)]["questions"]
-            results = " | ".join(f"{p}: {a}" for p, a in answers.items())
-            correct_answer = current_questions[int(question)]["a"]
-            for player, answer in answers.items():
-                if answer == correct_answer:
-                    players[player] += 1
-            query.edit_message_text(
-                f"{category_and_question}\nCorrect: <b>{correct_answer}</b>\n{results}",
-                parse_mode=telegram.ParseMode.HTML,
-            )
-            self.ask_question(query, quiz)
-
-    def handle_categories(self, update: Update, *_, **__):
-        message = update.effective_message
-        chat_id = update.effective_chat.id
-        quiz = self.get_quiz(chat_id)
-        if categories := message.text.lstrip("/categories "):  # noqa: B005
-            quiz["categories"] = [c.strip() for c in categories.split(",")]
-            return self.set_quiz(f"quiz:{chat_id}", quiz)
-        self.reply(message, "Pentru a seta: `/categories categorie1, categorie2`")
-
-    def handle_start(self, update: Update, *_, **__):
-        message = update.effective_message
-        quiz = self.get_quiz(update.effective_chat.id)
-
-        players = quiz["players"]
-        players_text = (
-            f"Jucatori: {', '.join(list(players))}"
-            if list(players)
-            else "Nu sunt jucatori inregistrati"
-        )
-
-        self.reply(
-            message,
-            f"Bun venit la quiz\n{players_text}",
-            reply_markup=get_start_markup(),
-            parse_mode=telegram.ParseMode.HTML,
-        )
-
-    def reset(self, query: telegram.CallbackQuery):
-        quiz = {"categories": DEFAULT_CATEGORIES, "current": {}, "players": {}}
-        quiz = Handler(self.logger, query, quiz).handle_regenerate()
-        self.set_quiz(query.message.chat_id, quiz)
-        query.edit_message_text(
+    async def reset(self, query: telegram.CallbackQuery, quiz=None):
+        quiz = {"categories": DEFAULT_CATEGORIES, **(quiz or {}), "ci": 0, "qi": 0}
+        quiz = await self.regenerate(query, quiz)
+        await self.set_quiz(query.message.chat.id, quiz)
+        await query.edit_message_text(
             "S-a creat un quiz nou\n"
             "Apasa ca 🫡 sa te alaturi\n"
             f"Categoriile sunt: {', '.join(quiz['categories'])}\n"
             "Categoriile se pot seta cu: `/categories categorie1, categorie2`",
-            reply_markup=get_start_markup(),
-            parse_mode=telegram.ParseMode.MARKDOWN,
+            reply_markup=get_markup(),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+        return quiz
+
+    async def restart(self, chat_id, quiz, query, now):
+        quiz["ci"], quiz["qi"] = 0, 0
+        for player, _ in quiz["players"].items():
+            quiz["players"][player] = 0
+        await self.set_quiz(chat_id, quiz)
+        await query.edit_message_text(
+            f"Scorul s-a resetat la: {now}\nApasa 🔥 pentru intrebari noi",
+            parse_mode=ParseMode.HTML,
+            reply_markup=get_markup(),
         )
 
-    def set_quiz(self, chat_id, quiz):
+    async def set_quiz(self, chat_id, quiz):
         self.redis.set(f"quiz:{chat_id}", quiz)
+
+
+class BotClient(BaseBotClient):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.handler = Handler(self.redis)
+
+    async def handle_callback_query(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):  # noqa: C901, PLR0911, PLR0912
+        query = update.callback_query
+        chat_id = update.effective_chat.id
+        await query.answer()
+
+        if query.data == "end":
+            return await query.edit_message_text("See you next time!")
+
+        if not (quiz := self.handler.get_quiz(chat_id)):
+            quiz = await self.handler.reset(query)
+
+        if query.data == "categories":
+            return await self.handler.categories(query, quiz)
+
+        now = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        if query.data == "play":
+            return await self.handler.play(chat_id, context, query, quiz, now)
+
+        if query.data == "ready":
+            new_player = update.effective_user.full_name
+            if "players" not in quiz:
+                action = "s-a alaturat"
+                quiz["players"] = {new_player: 0}
+            elif new_player not in quiz["players"]:
+                action = "s-a alaturat"
+                quiz["players"][new_player] = 0
+            else:
+                action = "a renuntat"
+                del quiz["players"][new_player]
+            await self.handler.set_quiz(chat_id, quiz)
+            players_text = (
+                f"Jucatori: {', '.join(list(quiz['players']))}"
+                if list(quiz["players"])
+                else "Nu sunt jucatori inregistrati"
+            )
+            return await query.edit_message_text(
+                f"{new_player} {action}\n{players_text}",
+                reply_markup=get_markup(),
+                parse_mode=ParseMode.HTML,
+            )
+
+        if query.data == "reset":
+            return await self.handler.reset(query, quiz)
+
+        if query.data == "restart":
+            await self.handler.restart(chat_id, quiz, query, now)
+
+    async def handle_categories(self, update: Update, _: ContextTypes.DEFAULT_TYPE):
+        message = update.effective_message
+        chat_id = update.effective_chat.id
+        quiz = self.handler.get_quiz(chat_id)
+        if categories := message.text.lstrip("/categories "):  # noqa: B005
+            quiz["categories"] = [c.strip() for c in categories.split(",")]
+            return self.handler.set_quiz(f"quiz:{chat_id}", quiz)
+        await self.reply(message, "Pentru a seta: `/categories categorie1, categorie2`")
+
+    async def handle_start(self, update: Update, _: ContextTypes.DEFAULT_TYPE):
+        message = update.effective_message
+        await self.reply(
+            message,
+            "Bun venit la quiz",
+            reply_markup=get_markup(),
+            parse_mode=ParseMode.HTML,
+        )
 
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = get_default_logger(__name__)
         logger.info("Starting quiz bot polling")
         config = environ.Env()
         if not (token := config("TELEGRAM_QUIZ_TOKEN")):
             logger.error("Missing telegram quiz bot token")
             return
 
-        updater = Updater(token, use_context=True)
-        dp = updater.dispatcher
-
-        client = BotClient(logger=logger)
-        # Warning! make sure all handlers are wrapped in is_whitelisted!
-        dp.add_handler(CommandHandler("categories", client.handle_categories))
-        dp.add_handler(CommandHandler("start", client.handle_start))
-        dp.add_handler(CallbackQueryHandler(client.handle_callback_query))
-        updater.start_polling()
-        updater.idle()
+        client = BotClient(logger)
+        application = Application.builder().token(token).build()
+        application.add_handler(CallbackQueryHandler(client.handle_callback_query))
+        application.add_handler(PollAnswerHandler(client.handler.receive_poll_answer))
+        application.add_handler(CommandHandler("categories", client.handle_categories))
+        application.add_handler(CommandHandler("start", client.handle_start))
+        application.run_polling(allowed_updates=Update.ALL_TYPES)

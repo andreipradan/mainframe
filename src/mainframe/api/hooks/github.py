@@ -5,11 +5,12 @@ from ipaddress import ip_address, ip_network
 
 import environ
 import requests
-import telegram
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
+from telegram.constants import ParseMode
+
 from mainframe.clients.chat import send_telegram_message
 from mainframe.core.tasks import schedule_deploy
 from rest_framework import status
@@ -84,7 +85,7 @@ def mainframe(request):  # noqa: C901, PLR0911
         pusher = payload.get("pusher", {}).get("name", "")
         send_telegram_message(
             text=f"<b>{pusher}</b> {event}ed {new_changes_link} " f"{branch_message}",
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode=ParseMode.HTML,
         )
         return HttpResponse("pong")
 
@@ -104,5 +105,5 @@ def mainframe(request):  # noqa: C901, PLR0911
     schedule_deploy()
     message += "🎉\n🍓 Deployment scheduled 🚀"
 
-    send_telegram_message(text=message, parse_mode=telegram.ParseMode.HTML)
+    send_telegram_message(text=message, parse_mode=ParseMode.HTML)
     return HttpResponse(status=204)

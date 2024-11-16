@@ -1,5 +1,6 @@
 import math
 
+from asgiref.sync import sync_to_async
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.logs import get_default_logger
@@ -33,7 +34,7 @@ class MealsInline(BaseInlines):
     PER_PAGE = 24
 
     @classmethod
-    def get_meals_markup(cls, day, page, bottom_level=False):
+    async def get_meals_markup(cls, day, page, bottom_level=False):
         buttons = [[InlineKeyboardButton("✅", callback_data="end")]]
         if bottom_level:
             buttons[0].insert(
@@ -47,7 +48,12 @@ class MealsInline(BaseInlines):
         buttons[0].insert(
             0, InlineKeyboardButton("👆", callback_data=f"meals start {page}")
         )
-        items = Meal.objects.filter(date=day).order_by("type")
+
+        @sync_to_async
+        def fetch_meals():
+            return list(Meal.objects.filter(date=day).order_by("type"))
+
+        items = await fetch_meals()
         logger.info("Got %d meals", len(items))
 
         return InlineKeyboardMarkup(
@@ -64,7 +70,7 @@ class MealsInline(BaseInlines):
         )
 
     @classmethod
-    def get_markup(cls, page=1, is_top_level=False, last_page=None):
+    async def get_markup(cls, page=1, is_top_level=False, last_page=None):
         buttons = [
             [
                 InlineKeyboardButton("✅", callback_data="end"),
@@ -95,11 +101,16 @@ class MealsInline(BaseInlines):
             )
 
         start = (page - 1) * cls.PER_PAGE if page - 1 >= 0 else 0
-        items = list(
-            Meal.objects.distinct("date").order_by("date", "type")[
-                start : start + cls.PER_PAGE
-            ]
-        )
+
+        @sync_to_async
+        def fetch_meals():
+            return list(
+                Meal.objects.distinct("date").order_by("date", "type")[
+                    start : start + cls.PER_PAGE
+                ]
+            )
+
+        items = await fetch_meals()
         return InlineKeyboardMarkup(
             [
                 [
@@ -117,38 +128,47 @@ class MealsInline(BaseInlines):
         )
 
     @classmethod
-    def fetch_day(cls, update, day, page):
+    async def fetch_day(cls, update, day, page):
         message = update.callback_query.message
 
-        return edit_message(
-            update.callback_query.bot,
-            message.chat_id,
+        return await edit_message(
+            update.callback_query._bot,
+            message.chat.id,
             message.message_id,
             text=day,
-            reply_markup=cls.get_meals_markup(day=day, page=page),
+            reply_markup=await cls.get_meals_markup(day=day, page=page),
         )
 
     @classmethod
-    def fetch(cls, update, _id, page):
+    async def fetch(cls, update, _id, page):
         message = update.callback_query.message
-        try:
-            item = Meal.objects.get(pk=_id)
-        except Meal.DoesNotExist:
-            item = None
 
-        return edit_message(
-            bot=update.callback_query.bot,
-            chat_id=message.chat_id,
+        @sync_to_async
+        def fetch_item():
+            try:
+                return Meal.objects.get(pk=_id)
+            except Meal.DoesNotExist:
+                pass
+
+        item = await fetch_item()
+
+        return await edit_message(
+            bot=update.callback_query._bot,
+            chat_id=message.chat.id,
             message_id=message.message_id,
             text=parse_meal(item) if item else "Not found",
-            reply_markup=cls.get_meals_markup(
+            reply_markup=await cls.get_meals_markup(
                 day=item.date.strftime("%Y-%m-%d"), page=page, bottom_level=True
             ),
         )
 
     @classmethod
-    def start(cls, update, page=None, override_message=None, **__):
-        count = Meal.objects.distinct("date").count()
+    async def start(cls, update, page=None, override_message=None, **__):
+        @sync_to_async
+        def fetch_count():
+            return Meal.objects.distinct("date").count()
+
+        count = await fetch_count()
         logger.info("Counted %s dates", count)
         last_page = math.ceil(count / cls.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a date [{page} / {total}]"
@@ -165,14 +185,16 @@ class MealsInline(BaseInlines):
                         name=user.full_name, page=1, total=last_page, count=count
                     )
                 ),
-                reply_markup=cls.get_markup(is_top_level=True, last_page=last_page),
-            ).to_json()
+                reply_markup=await cls.get_markup(
+                    is_top_level=True, last_page=last_page
+                ),
+            )
 
         message = update.callback_query.message
         user = update.callback_query.from_user
-        return edit_message(
-            bot=update.callback_query.bot,
-            chat_id=message.chat_id,
+        return await edit_message(
+            bot=update.callback_query._bot,
+            chat_id=message.chat.id,
             message_id=message.message_id,
             text=(
                 override_message
@@ -181,7 +203,7 @@ class MealsInline(BaseInlines):
                     name=user.full_name, page=page or 1, total=last_page, count=count
                 )
             ),
-            reply_markup=cls.get_markup(
+            reply_markup=await cls.get_markup(
                 page=int(page) if page else 1,
                 is_top_level=True,
                 last_page=last_page,
@@ -189,7 +211,11 @@ class MealsInline(BaseInlines):
         )
 
     @classmethod
-    def sync(cls, update):
-        meals = MealsClient.fetch_meals()
+    async def sync(cls, update):
+        @sync_to_async
+        def fetch_meals():
+            return MealsClient.fetch_meals()
+
+        meals = await fetch_meals()
         override_message = f"Fetched {len(meals)} meals 👌"
-        return cls.start(update, override_message=override_message)
+        return await cls.start(update, override_message=override_message)

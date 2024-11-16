@@ -1,11 +1,11 @@
 from operator import attrgetter
 
-import telegram
 from django.core.management import BaseCommand
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.devices import DevicesClient
 from mainframe.clients.logs import get_default_logger
 from mainframe.sources.models import Source
+from telegram.constants import ParseMode
 
 
 def should_notify(devices):
@@ -37,9 +37,7 @@ class Command(BaseCommand):
             )
 
         if msg:
-            send_telegram_message(
-                msg, logger=logger, parse_mode=telegram.ParseMode.HTML
-            )
+            send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
 
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))

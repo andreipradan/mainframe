@@ -2,8 +2,8 @@ import random
 
 import environ
 import telegram
+from asgiref.sync import sync_to_async
 from django.core.management import BaseCommand, CommandError
-from django.utils import timezone
 from mainframe.bots.management.commands.inlines.bus import BusInline
 from mainframe.bots.management.commands.inlines.lights import LightsInline
 from mainframe.bots.management.commands.inlines.meals import MealsInline
@@ -19,22 +19,23 @@ from mainframe.clients.storage import RedisClient
 from mainframe.earthquakes.management.commands.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ParseMode
 from telegram.ext import (
+    Application,
     CallbackContext,
     CallbackQueryHandler,
     CommandHandler,
-    Filters,
     MessageHandler,
-    Updater,
+    filters,
 )
 
 logger = get_default_logger(__name__)
 
 
 def is_whitelisted(func):
-    def wrapper(update, context, *args, **kwargs):
+    async def wrapper(update, context, *args, **kwargs):
         try:
-            bot = Bot.objects.get(
+            bot = await sync_to_async(Bot.objects.get)(
                 username=context.bot.username,
                 whitelist__contains=[
                     update.effective_user.username or update.effective_user.id
@@ -43,9 +44,7 @@ def is_whitelisted(func):
         except Bot.DoesNotExist:
             logger.warning("Not whitelisted: %s", update.effective_user)
             return
-        bot.last_called_on = timezone.now()
-        bot.save()
-        return func(update, *args, bot=bot, context=context, **kwargs)
+        return await func(update, context, bot=bot, *args, **kwargs)  # noqa: B026
 
     return wrapper
 
@@ -53,13 +52,13 @@ def is_whitelisted(func):
 redis_client = RedisClient(logger)
 
 
-def handle_callback_query(update: Update, *_, bot, **__):
+async def handle_callback_query(update: Update, *_, **__):
     query = update.callback_query
-    query.answer()
+    await query.answer()
 
     cmd, *args = query.data.split()
     if cmd == "end":
-        return query.edit_message_text("See you next time!")
+        return await query.edit_message_text("See you next time!")
 
     if not args:
         return logger.error("No args for callback query data: %s", query.data)
@@ -68,7 +67,7 @@ def handle_callback_query(update: Update, *_, bot, **__):
         saved_inline = SavedMessagesInlines(args.pop(0))
         if not (method := getattr(saved_inline, cmd, None)):
             return logger.error("Unhandled callback: %s", query.data)
-        return method(update, *args)
+        return await method(update, *args)
 
     if cmd == "meals":
         inline = MealsInline
@@ -81,28 +80,27 @@ def handle_callback_query(update: Update, *_, bot, **__):
         return
     method = args.pop(0)
     kwargs = {}
-    if inline == LightsInline:
-        kwargs["bot"] = bot
-    try:
-        return getattr(inline, method)(update, *args, **kwargs)
-    except (AttributeError, TypeError) as e:
-        logger.error("E: %s, args: %s", e, args)
+    return await getattr(inline, method)(update, *args, **kwargs)
 
 
-def handle_chat_id(update: Update, *_, **__):
-    return reply(update, f"Chat ID: {update.effective_chat.id}")
+async def handle_chat_id(update: Update, *_, **__):
+    return await reply(update, f"Chat ID: {update.effective_chat.id}")
 
 
-def handle_dex(update, context: CallbackContext, **__):
+async def handle_dex(update, context: CallbackContext, **__):
     if len(context.args) != 1 or not (word := context.args[0]):
-        reply(update, "What do you want to search? (usage: '/dex <word>')")
+        await reply(
+            update,
+            "What do you want to search? (usage: '/dex <word>')",
+            parse_mode=ParseMode.MARKDOWN,
+        )
         return
 
     try:
         word, definition = dexonline.fetch_definition(word=word)
     except dexonline.DexOnlineNotFoundError:
         logger.warning("DexOnline - word not found: '%s'", word)
-        return reply(update, f"Couldn't find definition for '{word}'")
+        return await reply(update, f"Couldn't find definition for '{word}'")
     except dexonline.DexOnlineError as e:
         logger.error(
             "DexOnlineError: '%s'. Update: '%s'. Context: '%s'",
@@ -110,62 +108,75 @@ def handle_dex(update, context: CallbackContext, **__):
             update.to_dict(),
             context,
         )
-        return reply(update, f"Couldn't find definition for '{word}'")
-    return reply(update, text=f"{word}: {definition}")
+        return await reply(update, f"Couldn't find definition for '{word}'")
+    return await reply(update, text=f"{word}: {definition}")
 
 
-def handle_earthquake(update, context: CallbackContext, bot, **__):
+async def handle_earthquake(update, context: CallbackContext, bot, **__):
     config = bot.additional_data.get("earthquake")
 
     if not config:
-        return reply(update, text="No earthquake configuration found")
+        return await reply(update, text="No earthquake configuration found")
 
-    if not (latest := Earthquake.objects.order_by("-timestamp").first()):
-        return reply(update, text="No earthquakes stored")
+    @sync_to_async
+    def fetch_latest():
+        return Earthquake.objects.order_by("-timestamp").first()
+
+    if not (latest := await fetch_latest()):
+        return await reply(update, text="No earthquakes stored")
 
     args = context.args
     if len(args) == 2 and args[0] == "set_min_magnitude":  # noqa: PLR2004
         bot.additional_data["earthquake"]["min_magnitude"] = args[1]
-        bot.save()
-        return reply(update, text=f"Updated min magnitude to {args[1]}")
+        await sync_to_async(bot.save)()
+        return await reply(update, text=f"Updated min magnitude to {args[1]}")
 
     msg = parse_event(latest)
     if last_check := config.get("last_check"):
         msg += f"\nLast check: {last_check}"
-    return reply(update, text=msg)
+    return await reply(update, text=msg)
 
 
-def handle_left_chat_member(update: Update, *_, **__) -> None:
-    return reply(update, f"Bye {update.message.left_chat_member.full_name}! 😢")
+async def handle_left_chat_member(update: Update, *_, **__):
+    return await reply(update, f"Bye {update.message.left_chat_member.full_name}! 😢")
 
 
-def handle_next(update: Update, *_, bot: Bot, **__):
+async def handle_next(update: Update, *_, bot: Bot, **__):
     try:
-        return reply(update, whos_next(bot.additional_data.get("whos_next")))
+        return await reply(update, whos_next(bot.additional_data.get("whos_next")))
     except CommandError as e:
-        return reply(update, str(e))
+        return await reply(update, str(e))
 
 
-def handle_new_chat_members(update: Update, *_, **__) -> None:
+async def handle_new_chat_members(update: Update, *_, **__):
     new_members = [u.full_name for u in update.message.new_chat_members]
-    return reply(update, f"Welcome {', '.join(new_members)}!")
+    return await reply(update, f"Welcome {', '.join(new_members)}!")
 
 
-def handle_new_chat_title(update: Update, context: CallbackContext, bot: Bot) -> None:
+async def handle_new_chat_title(
+    update: Update, context: CallbackContext, bot: Bot
+) -> None:
     chat_id = update.effective_chat.id
     if bot.additional_data.get("whos_next", {}).get("chat_id") != chat_id:
         logger.info("[%s] New chat title: %s", chat_id, update.effective_chat.title)
         return
 
     config = bot.additional_data["whos_next"]
-    save_to_db(update.message, chat=context.bot.get_chat(chat_id))
+    await save_to_db(update.message, chat=await context.bot.get_chat(chat_id))
     config["posted"] = True
     config["initial"] = False
-    bot.save()
-    return reply(update, text="Saved ✔")
+
+    @sync_to_async
+    def save():
+        bot.save()
+
+    await save()
+    return await reply(update, text="Saved ✔")
 
 
-def handle_process_message(update: Update, context: CallbackContext, *_, **__) -> None:
+async def handle_process_message(
+    update: Update, context: CallbackContext, *_, **__
+) -> None:
     if not (message := update.message):
         return logger.error("No message in '%s'", update.to_dict())
 
@@ -183,11 +194,11 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
 
     file_path = None
     if update.message.photo:
-        file_path = update.message.photo[-1].get_file().download()
+        file_path = (await update.message.photo[-1].get_file()).download_to_drive()
         # TODO: set uploaded docs (name from genai.upload_file) in redis -
         #  clear them on handle_clear
     elif doc := update.message.document:
-        file_path = doc.get_file().download()
+        file_path = (await doc.get_file()).download_to_drive()
 
     history.append(
         {
@@ -199,59 +210,63 @@ def handle_process_message(update: Update, context: CallbackContext, *_, **__) -
         response = generate_content(prompt=text, history=history, file_path=file_path)
     except GeminiError as e:
         logger.exception(e)
-        reply(update, "Got an error trying to process your message")
+        await reply(update, "Got an error trying to process your message")
     else:
         history.append({"role": "model", "parts": response})
         redis_client.set(context_key, history)
 
-        reply(
+        await reply(
             update,
             response.replace("**", "").replace("*", "\*"),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode=ParseMode.HTML,
         )
 
 
-def handle_randomize(update: Update, context: CallbackContext, **__) -> None:
+async def handle_randomize(update: Update, context: CallbackContext, **__) -> None:
     if len(args := context.args) not in range(2, 51):
-        return reply(update, "Must contain 2-50 items separated by spaces")
+        return await reply(update, "Must contain 2-50 items separated by spaces")
     random.shuffle(args)
-    return reply(update, "\n".join(f"{i + 1}. {item}" for i, item in enumerate(args)))
+    return await reply(
+        update, "\n".join(f"{i + 1}. {item}" for i, item in enumerate(args))
+    )
 
 
-def handle_reset(update: Update, *_, **__) -> None:
+async def handle_reset(update: Update, *_, **__) -> None:
     storage_key = f"context:{update.effective_chat.id}:{update.effective_user.id}"
     redis_client.delete(storage_key)
-    reply(update, "My memory was erased! Who are you? 😄")
+    await reply(update, "My memory was erased! Who are you? 😄")
 
 
-def handle_save(update: Update, context: CallbackContext, **__) -> None:
+async def handle_save(update: Update, context: CallbackContext, **__) -> None:
     message = update.message.reply_to_message
     if not message:
-        return reply(
+        return await reply(
             update,
             text="This command must be sent as a reply to the "
             "message you want to save",
         )
     if message.text:
-        save_to_db(message, context.bot.get_chat(message.chat_id), text=message.text)
-        return reply(update, text="Saved message ✔")
+        await save_to_db(
+            message, await context.bot.get_chat(message.chat_id), text=message.text
+        )
+        return await reply(update, text="Saved message ✔")
 
     if message.new_chat_title:
-        chat = context.bot.get_chat(message.chat_id)
-        save_to_db(message, chat=chat)
-        return reply(update, text="Saved title ✔")
+        chat = await context.bot.get_chat(message.chat_id)
+        await save_to_db(message, chat=chat)
+        return await reply(update, text="Saved title ✔")
 
-    return reply(update, text="No text/title found to save.")
+    return await reply(update, text="No text/title found to save.")
 
 
-def handle_saved(update: Update, context: CallbackContext, **__) -> None:
+async def handle_saved(update: Update, context: CallbackContext, **__):
     chat_id = update.effective_chat.id
     if (args := context.args) and args[0].lstrip("-").isnumeric():
         chat_id = int(args[0])
-    return SavedMessagesInlines(chat_id).start(update, page=1)
+    return await SavedMessagesInlines(chat_id).start(update, page=1)
 
 
-def reply(update: Update, text: str, **kwargs):
+async def reply(update: Update, text: str, **kwargs):
     if not update.message:
         logger.error("Can't reply - no message to reply to: '%s'", update.to_dict())
         return
@@ -259,11 +274,11 @@ def reply(update: Update, text: str, **kwargs):
     default_kwargs = {
         "disable_notification": True,
         "disable_web_page_preview": True,
-        "parse_mode": telegram.ParseMode.HTML,
+        "parse_mode": ParseMode.HTML,
         **kwargs,
     }
     try:
-        update.message.reply_text(text, **default_kwargs)
+        await update.message.reply_text(text, **default_kwargs)
     except telegram.error.TelegramError as e:
         if "can't find end of the entity" in str(e):
             location = int(e.message.split()[-1])
@@ -273,14 +288,14 @@ def reply(update: Update, text: str, **kwargs):
             )
         logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
         try:
-            update.message.reply_text(text)
+            await update.message.reply_text(text)
         except telegram.error.TelegramError as e:
             logger.exception("Error sending unformatted message. (%s)", e)
-            update.message.reply_text("Got an error trying to send response")
+            await update.message.reply_text("Got an error trying to send response")
 
 
-def handle_start(update: Update, *_, **__):
-    reply(
+async def handle_start(update: Update, *_, **__):
+    await reply(
         update,
         f"Hi {update.effective_user.full_name}!",
         reply_markup=InlineKeyboardMarkup(
@@ -299,7 +314,7 @@ def handle_start(update: Update, *_, **__):
     )
 
 
-def save_to_db(message, chat, text=None):
+async def save_to_db(message, chat, text=None):
     author = message.from_user.to_dict()
     author["full_name"] = message.from_user.full_name
     text = text or chat.description
@@ -307,7 +322,7 @@ def save_to_db(message, chat, text=None):
         message.chat.title
         or f"{chat.bot.first_name if chat.type == 'private' else chat.id} ({chat.type})"
     )
-    Message.objects.create(
+    await sync_to_async(Message.objects.create)(
         author=author,
         chat_id=message.chat_id,
         chat_title=title,
@@ -326,47 +341,45 @@ class Command(BaseCommand):
             logger.error("Telegram token not found")
             return
 
-        updater = Updater(token, use_context=True)
-        dp = updater.dispatcher
+        app = Application.builder().token(token).build()
 
         # Warning! make sure all handlers are wrapped in is_whitelisted!
-        dp.add_handler(CommandHandler("bus", is_whitelisted(BusInline.start)))
-        dp.add_handler(CommandHandler("chat_id", is_whitelisted(handle_chat_id)))
-        dp.add_handler(CommandHandler("dex", is_whitelisted(handle_dex)))
-        dp.add_handler(CommandHandler("earthquake", is_whitelisted(handle_earthquake)))
-        dp.add_handler(CommandHandler("meals", is_whitelisted(MealsInline.start)))
-        dp.add_handler(CommandHandler("next", is_whitelisted(handle_next)))
-        dp.add_handler(CommandHandler("randomize", is_whitelisted(handle_randomize)))
-        dp.add_handler(CommandHandler("reset", is_whitelisted(handle_reset)))
-        dp.add_handler(CommandHandler("save", is_whitelisted(handle_save)))
-        dp.add_handler(CommandHandler("saved", is_whitelisted(handle_saved)))
-        dp.add_handler(CommandHandler("start", is_whitelisted(handle_start)))
-        dp.add_handler(CallbackQueryHandler(is_whitelisted(handle_callback_query)))
-        dp.add_handler(
+        app.add_handler(CommandHandler("bus", is_whitelisted(BusInline.start)))
+        app.add_handler(CommandHandler("chat_id", is_whitelisted(handle_chat_id)))
+        app.add_handler(CommandHandler("dex", is_whitelisted(handle_dex)))
+        app.add_handler(CommandHandler("earthquake", is_whitelisted(handle_earthquake)))
+        app.add_handler(CommandHandler("meals", is_whitelisted(MealsInline.start)))
+        app.add_handler(CommandHandler("next", is_whitelisted(handle_next)))
+        app.add_handler(CommandHandler("randomize", is_whitelisted(handle_randomize)))
+        app.add_handler(CommandHandler("reset", is_whitelisted(handle_reset)))
+        app.add_handler(CommandHandler("save", is_whitelisted(handle_save)))
+        app.add_handler(CommandHandler("saved", is_whitelisted(handle_saved)))
+        app.add_handler(CommandHandler("start", is_whitelisted(handle_start)))
+        app.add_handler(CallbackQueryHandler(is_whitelisted(handle_callback_query)))
+        app.add_handler(
             MessageHandler(
-                (Filters.text & ~Filters.command)
-                | Filters.photo
-                | Filters.document.pdf,
+                (filters.TEXT & ~filters.COMMAND)
+                | filters.PHOTO
+                | filters.Document.PDF,
                 is_whitelisted(handle_process_message),
             )
         )
-        dp.add_handler(
+        app.add_handler(
             MessageHandler(
-                Filters.status_update.new_chat_title,
+                filters.StatusUpdate.NEW_CHAT_TITLE,
                 is_whitelisted(handle_new_chat_title),
             )
         )
-        dp.add_handler(
+        app.add_handler(
             MessageHandler(
-                Filters.status_update.new_chat_members,
+                filters.StatusUpdate.NEW_CHAT_MEMBERS,
                 is_whitelisted(handle_new_chat_members),
             )
         )
-        dp.add_handler(
+        app.add_handler(
             MessageHandler(
-                Filters.status_update.left_chat_member,
+                filters.StatusUpdate.LEFT_CHAT_MEMBER,
                 is_whitelisted(handle_left_chat_member),
             )
         )
-        updater.start_polling()
-        updater.idle()
+        app.run_polling(allowed_updates=Update.ALL_TYPES)

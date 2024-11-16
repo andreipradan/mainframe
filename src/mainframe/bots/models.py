@@ -4,6 +4,7 @@ import telegram
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from mainframe.core.models import TimeStampedModel
+from telegram.constants import ParseMode
 
 
 class Bot(TimeStampedModel):
@@ -36,7 +37,7 @@ class Bot(TimeStampedModel):
         text,
         disable_notification=True,
         disable_web_page_preview=True,
-        parse_mode=telegram.ParseMode.HTML,
+        parse_mode=ParseMode.HTML,
         **kwargs,
     ):
         return self.telegram_bot.send_message(
