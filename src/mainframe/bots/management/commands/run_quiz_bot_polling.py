@@ -332,7 +332,7 @@ class BotClient(BaseBotClient):
 
         now = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         if query.data == "play":
-            return await self.handler.play(chat_id, context, query, quiz, now)
+            return await self.handler.play(chat_id, context, query, quiz)
 
         if query.data == "ready":
             new_player = update.effective_user.full_name
