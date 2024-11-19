@@ -273,24 +273,15 @@ class BusInline(BaseInlines):
                 else update.message.from_user
             )
 
-            @sync_to_async
-            def fetch_lines():
-                return list(
-                    TransitLine.objects.filter(
-                        favorite_of__contains=[user.username or user.id]
-                    )
-                )
-
-            lines = await fetch_lines()
+            lines = sync_to_async(TransitLine.objects.filter)(
+                favorite_of__contains=[user.username or user.id]
+            )
         else:
-
-            @sync_to_async
-            def fetch_lines():
-                return list(TransitLine.objects.filter(line_type=line_type))
-
-            lines = await fetch_lines()
-        await CTPClient(logger).fetch_schedules(lines)
-        override_message = f"Synced schedules for {len(lines)} {line_type} lines 👌"
+            lines = list(
+                await sync_to_async(TransitLine.objects.filter)(line_type=line_type)
+            )
+        schedules = await CTPClient(logger).fetch_schedules(lines)
+        override_message = f"Synced {len(schedules)} schedules for {line_type} lines 👌"
         return await cls.start(
             update, line_type=line_type, override_message=override_message
         )

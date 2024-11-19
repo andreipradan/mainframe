@@ -98,9 +98,11 @@ class CTPClient:
     async def fetch_schedules(
         self, lines: List[TransitLine] = None, occurrence=None, commit=True
     ) -> List[Schedule]:
-        lines = lines or await sync_to_async(TransitLine.objects.all)()
+        lines = lines or sync_to_async(TransitLine.objects.all)()
         schedules = []
-        for line in lines:
+        lines_count = 0
+        async for line in await lines:
+            lines_count += 1
             if occurrence:
                 schedules.append(
                     (
@@ -117,9 +119,9 @@ class CTPClient:
                     ]
                 )
         self.logger.info(
-            "Fetching %d schedules for %d transit lines", len(schedules), len(lines)
+            "Fetching %d schedules for %d transit lines", len(schedules), lines_count
         )
-        schedules = [s for s in asyncio.run(self.request_many(schedules)) if s]
+        schedules = [s for s in await self.request_many(schedules) if s]
         if commit:
             await sync_to_async(Schedule.objects.bulk_create)(
                 schedules,
