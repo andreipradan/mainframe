@@ -1,4 +1,5 @@
 tunnels:
   mainframe:
     addr: 80
+    domain:
     proto: http
