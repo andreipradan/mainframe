@@ -1,3 +1,6 @@
+import asyncio
+from typing import Callable
+
 import telegram
 from asgiref.sync import sync_to_async
 from mainframe.bots.models import Bot
@@ -25,7 +28,7 @@ def is_whitelisted(func):
 
 class BaseBotMeta(type):
     def __new__(cls, name, bases, dct):
-        excepted_methods = ["__init__", "reply"]
+        excepted_methods = ["__init__", "reply", "safe_send"]
         for key, value in dct.items():
             if key not in excepted_methods and callable(value):
                 dct[key] = is_whitelisted(value)
@@ -64,3 +67,20 @@ class BaseBotClient(metaclass=BaseBotMeta):
             except telegram.error.TelegramError as err:
                 self.logger.exception("Error sending unformatted message. (%s)", err)
                 await message.reply_text("Got an error trying to send response")
+
+    async def safe_send(self, send_message: Callable, **kwargs):
+        try:
+            return await send_message(**kwargs)
+        except telegram.error.TelegramError as err:
+            if isinstance(err, telegram.error.RetryAfter):
+                seconds = err.retry_after + 1
+                self.logger.warning(
+                    "%s - retrying in %d seconds", err, err.retry_after, extra=kwargs
+                )
+                await asyncio.sleep(seconds)
+                return await send_message(send_message, **kwargs)
+            elif isinstance(err, telegram.error.TimedOut):
+                self.logger.warning("Timed out - retrying", extra=kwargs)
+                return await send_message(send_message, **kwargs)
+            else:
+                raise

@@ -24,6 +24,8 @@ if [ "$1" == "--continue" ]; then
   exit 0
 fi
 
+echo "[Power save] Turning power_save off to keep wifi from disconnecting" && sudo iw dev wlan0 set power_save off
+
 echo "[homebridge] Installing homebridge"
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
 echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
@@ -45,17 +47,6 @@ else
   cat "${PROJECT_DIR}/deploy/.env" >> "$ENV_FILE";
 fi
 
-LOGS_DIR=/var/log/mainframe
-echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path"
-if [ -d "${LOGS_DIR}" ]; then
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path already exists";
-else
-  sudo mkdir -p "${LOGS_DIR}";
-  sudo touch "${LOGS_DIR}/server.log";
-  sudo chown -R rpi.rpi ${LOGS_DIR}
-  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path created"
-fi
-
 VIRTUALENV_DIR=${HOME}/projects/.virtualenvs/mainframe
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Creating venv"
 if [ -d "${VIRTUALENV_DIR}" ]; then
@@ -69,8 +60,8 @@ echo "[env] Done."
 echo "[postgres] Installing postgres deps..." && sudo apt-get -y install libpq-dev && echo "[postgres] Done."
 
 #echo "[sklearn] Installing scikit-learn deps..." && \
-#  sudo apt-get install gfortran libatlas-base-dev libopenblas-dev liblapack-dev -y && \
-#  echo "[sklearn] Done."
+#sudo apt-get install gfortran libatlas-base-dev libopenblas-dev liblapack-dev -y && \
+#echo "[sklearn] Done."
 
 echo "[redis] Installing redis..." && \
   sudo apt install redis-server -y && \

@@ -57,8 +57,8 @@ def get_markup():
 
 
 class Handler:
-    def __init__(self, redis_client):
-        self.redis = redis_client
+    def __init__(self, client):
+        self.client: BotClient = client
 
     @staticmethod
     async def categories(query, quiz):
@@ -103,13 +103,7 @@ class Handler:
         await self.set_quiz(chat_id, quiz)
 
         await asyncio.sleep(2)
-        try:
-            message = await context.bot.send_poll(**params)
-        except (telegram.error.RetryAfter, telegram.error.TimedOut) as e:
-            seconds = e.retry_after + 1
-            logger.warning("%s - retrying in %s seconds", e, seconds)
-            await asyncio.sleep(seconds)
-            message = await context.bot.send_poll(**params)
+        message = await self.client.safe_send(context.bot.send_poll, **params)
 
         payload = {
             message.poll.id: {"chat_id": chat_id, "message_id": message.message_id}
@@ -118,20 +112,22 @@ class Handler:
         return context.bot_data.update(payload)
 
     def get_quiz(self, chat_id: int) -> dict:
-        return self.redis.get(f"quiz:{chat_id}")
+        return self.client.redis.get(f"quiz:{chat_id}")
 
     async def play(self, chat_id, context, query, quiz):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if not quiz.get("players"):
-            return await query.edit_message_text(
-                "Nu sunt jucatori inregistrati.\n"
+            return await self.client.safe_send(
+                query.edit_message_text,
+                text="Nu sunt jucatori inregistrati.\n"
                 "Apasa 🫡 sa te inregistrezi\n"
                 f"{now}",
                 reply_markup=get_markup(),
                 parse_mode=ParseMode.MARKDOWN,
             )
-        await query.edit_message_text(
-            f"Quiz inceput la: {now}\nJucatori: {', '.join(quiz['players'])}",
+        await self.client.safe_send(
+            query.edit_message_text,
+            text=f"Quiz inceput la: {now}\nJucatori: {', '.join(quiz['players'])}",
             reply_markup=get_markup(),
         )
         await self.set_quiz(chat_id, quiz)
@@ -159,23 +155,17 @@ class Handler:
             quiz["players"][player] += 1
 
         if set(quiz["answers"]) == set(quiz["players"]):
-            try:
-                await context.bot.stop_poll(chat_id, bot_data["message_id"])
-            except telegram.error.RetryAfter as e:
-                seconds = e.retry_after + 1
-                logger.warning("Flood control - retrying in %d seconds", seconds)
-                await asyncio.sleep(seconds)
-                try:
-                    await context.bot.stop_poll(chat_id, bot_data["message_id"])
-                except telegram.error.BadRequest as e:
-                    logger.error(e)
+            await self.client.safe_send(
+                context.bot.send_poll, message_id=bot_data["message_id"]
+            )
 
         max_ci = len(quiz["questions"])
         max_qi = len(quiz["questions"][quiz["ci"]]["questions"])
         if quiz["qi"] + 1 >= max_qi:
             scores = "\n".join(f"{p}: {s}" for p, s in quiz["players"].items())
             if quiz["ci"] + 1 >= max_ci:  # Done
-                await context.bot.send_message(
+                await self.client.safe_send(
+                    context.bot.send_message,
                     chat_id=chat_id,
                     text=f"Done! 🎉\n<b>Results</b>\n{scores}",
                     parse_mode=ParseMode.HTML,
@@ -183,7 +173,8 @@ class Handler:
                 return  # completed all the questions
             quiz["ci"] += 1
             quiz["qi"] = 0
-            await context.bot.send_message(
+            await self.client.safe_send(
+                context.bot.send_message,
                 chat_id=chat_id,
                 text=f"{quiz['ci']} / {max_ci} "
                 f"categories completed\n"
@@ -306,13 +297,13 @@ class Handler:
         )
 
     async def set_quiz(self, chat_id, quiz):
-        self.redis.set(f"quiz:{chat_id}", quiz)
+        self.client.redis.set(f"quiz:{chat_id}", quiz)
 
 
 class BotClient(BaseBotClient):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.handler = Handler(self.redis)
+        self.handler = Handler(self)
 
     async def handle_callback_query(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
