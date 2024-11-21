@@ -3,7 +3,7 @@ Description=django backend server
 
 [Service]
 User=rpi
-ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/gunicorn -b 0:7777 --workers 3 --log-file=/var/log/mainframe/server.log mainframe.core.wsgi
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/gunicorn -b 0:7777 --workers 3 mainframe.core.wsgi
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[backend]] up
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[backend]] down
 Restart=on-success
