@@ -33,11 +33,15 @@ echo "sudo apt-get update" && sudo apt-get update
 sudo apt-get install -y homebridge
 echo "[homebridge] Done."
 
-echo "[zsh] Installing zsh" && sudo apt-get install -y zsh
-echo "[zsh] Installing ohmyzsh" && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-echo "[zsh] Setting .zshrc aliases" && cat "${PROJECT_DIR}/deploy/.zshrc" >> "${HOME}/.zshrc"
-echo "[zsh] Setting theme to af-magic" && sed -i -e 's/ZSH_THEME="robbyrussell"/ZSH_THEME="af-magic"/g' "${HOME}/.zshrc"
-echo "[zsh] Done."
+if [ -d "${HOME}/.oh-my-zsh" ]; then
+  echo "[zsh] ${HOME}/.oh-my-zsh - path already exists - skipping installation"
+else
+  echo "[zsh] Installing zsh" && sudo apt-get install -y zsh
+  echo "[zsh] Installing ohmyzsh" && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  echo "[zsh] Setting .zshrc aliases" && cat "${PROJECT_DIR}/deploy/.zshrc" >> "${HOME}/.zshrc"
+  echo "[zsh] Setting theme to af-magic" && sed -i -e 's/ZSH_THEME="robbyrussell"/ZSH_THEME="af-magic"/g' "${HOME}/.zshrc"
+  echo "[zsh] Done."
+fi
 
 echo "[env] Setting .env placeholder" &&
 ENV_FILE="${PROJECT_DIR}/src/mainframe/.env"
