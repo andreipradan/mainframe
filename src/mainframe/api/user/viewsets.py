@@ -1,3 +1,5 @@
+import asyncio
+
 from django.conf import settings
 from django.db import IntegrityError
 from mainframe.api.authentication.models import ActiveSession
@@ -64,5 +66,5 @@ class UserViewSet(viewsets.ModelViewSet):
         user = serializer.save()
         data = {"msg": "You were successfully registered 🎉"}
         if settings.ENV == "prod":
-            send_telegram_message(f"New mainframe user: {user.email}")
+            asyncio.run(send_telegram_message(f"New mainframe user: {user.email}"))
         return Response(data=data, status=status.HTTP_201_CREATED)

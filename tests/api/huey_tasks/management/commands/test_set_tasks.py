@@ -14,24 +14,26 @@ class TestCommand:
     path = "mainframe.api.huey_tasks.management.commands.set_tasks"
 
     @mock.patch("mainframe.crons.models.schedule_task")
-    @mock.patch(f"{path}.send_telegram_message")
+    @mock.patch(f"{path}.asyncio.run")
     @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
-    def test_nothing_set(self, _, logging_mock, send_mock, __):
+    def test_nothing_set(self, _, logging_mock, asyncio_run_mock, __):
         call_command("set_tasks")
-        assert send_mock.call_args_list == [
-            mock.call(text="[[huey]] up"),
-        ]
+        asyncio_run_mock.assert_called_once()
+        assert "Bot.send_message" in str(asyncio_run_mock.call_args[0])
         assert logging_mock.return_value.info.call_args_list == []
 
     @mock.patch(f"{path}.schedule_task")
-    @mock.patch(f"{path}.send_telegram_message")
+    @mock.patch(f"{path}.asyncio.run")
     @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
-    def test_crons_and_watchers(self, _, logging_mock, send_mock, schedule_task_mock):
+    def test_crons_and_watchers(
+        self, _, logging_mock, asyncio_run_mock, schedule_task_mock
+    ):
         cron, watcher = CronFactory(is_active=True), WatcherFactory(is_active=True)
         call_command("set_tasks")
-        assert send_mock.call_args_list == [mock.call(text="[[huey]] up")]
+        asyncio_run_mock.assert_called_once()
+        assert "Bot.send_message" in str(asyncio_run_mock.call_args[0])
         assert logging_mock.return_value.info.call_args_list == []
         assert len(calls := schedule_task_mock.call_args_list) == 2
 

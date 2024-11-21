@@ -1,3 +1,4 @@
+import asyncio
 from urllib.parse import urljoin
 
 import logfire
@@ -79,7 +80,7 @@ class Watcher(TimeStampedModel):
             kwargs["chat_id"] = self.chat_id
         else:
             text = f"📣 <b>{self.name}</b> 📣\n{text}"
-        send_telegram_message(text, **kwargs)
+        asyncio.run(send_telegram_message(text, **kwargs))
         logger.info("Done")
         return self
 

@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
         for i, chunk in enumerate(chunks):
             text = f"{chunk}\n[[{i + 1}/{batches_no}]]"
-            send_telegram_message(text, chat_id=chat_id, logger=logger)
+            asyncio.run(send_telegram_message(text, chat_id=chat_id, logger=logger))
 
         self.stdout.write(self.style.SUCCESS("Done."))
 

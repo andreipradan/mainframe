@@ -1,3 +1,5 @@
+import asyncio
+
 import environ
 import github
 import requests
@@ -52,5 +54,5 @@ class Command(BaseCommand):
 
         set_github_hook(ngrok_url)
         logger.info("[Hooks] Done")
-        send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}")
+        asyncio.run(send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}"))
         self.stdout.write(self.style.SUCCESS("[Hooks] Done."))

@@ -1,3 +1,4 @@
+import asyncio
 from operator import attrgetter
 
 from django.core.management import BaseCommand
@@ -37,7 +38,9 @@ class Command(BaseCommand):
             )
 
         if msg:
-            send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
+            asyncio.run(
+                send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
+            )
 
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))

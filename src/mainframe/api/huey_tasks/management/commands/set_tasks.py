@@ -1,3 +1,5 @@
+import asyncio
+
 from django.core.management import BaseCommand
 from mainframe.clients.chat import send_telegram_message
 from mainframe.core.tasks import schedule_task
@@ -12,4 +14,4 @@ class Command(BaseCommand):
 
         for watcher in Watcher.objects.filter(is_active=True):
             schedule_task(watcher)
-        send_telegram_message(text="[[huey]] up")
+        asyncio.run(send_telegram_message(text="[[huey]] up"))

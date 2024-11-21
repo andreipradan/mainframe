@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import hmac
 import json
@@ -35,9 +36,11 @@ def mainframe(request):  # noqa: C901, PLR0911
         timeout=30,
     )
     if response.status_code != status.HTTP_200_OK:
-        send_telegram_message(
-            f"{PREFIX} Warning, {client_ip_address} tried "
-            f"to call mainframe github webhook URL"
+        asyncio.run(
+            send_telegram_message(
+                f"{PREFIX} Warning, {client_ip_address} tried "
+                f"to call mainframe github webhook URL"
+            )
         )
         return HttpResponseForbidden(f"Unexpected status: {response.status_code}")
 
@@ -45,21 +48,23 @@ def mainframe(request):  # noqa: C901, PLR0911
         if client_ip_address in ip_network(valid_ip):
             break
     else:
-        send_telegram_message(
-            f"{PREFIX} Warning, {client_ip_address} tried "
-            f"to call mainframe github webhook URL"
+        asyncio.run(
+            send_telegram_message(
+                f"{PREFIX} Warning, {client_ip_address} tried "
+                f"to call mainframe github webhook URL"
+            )
         )
         return HttpResponseForbidden("Permission denied.")
 
     # Verify the request signature
     header_signature = request.META.get("HTTP_X_HUB_SIGNATURE")
     if header_signature is None:
-        send_telegram_message(text=f"{PREFIX} No signature")
+        asyncio.run(send_telegram_message(text=f"{PREFIX} No signature"))
         return HttpResponseForbidden("Permission denied.")
 
     sha_name, signature = header_signature.split("=")
     if sha_name != "sha1":
-        send_telegram_message(text=f"{PREFIX} operation not supported")
+        asyncio.run(send_telegram_message(text=f"{PREFIX} operation not supported"))
         return HttpResponseServerError("Operation not supported.", status=501)
 
     mac = hmac.new(
@@ -68,7 +73,7 @@ def mainframe(request):  # noqa: C901, PLR0911
         digestmod=hashlib.sha1,
     )
     if not hmac.compare_digest(force_bytes(mac.hexdigest()), force_bytes(signature)):
-        send_telegram_message(text=f"{PREFIX} Permission denied")
+        asyncio.run(send_telegram_message(text=f"{PREFIX} Permission denied"))
         return HttpResponseForbidden("Permission denied.")
 
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
@@ -83,9 +88,12 @@ def mainframe(request):  # noqa: C901, PLR0911
         branch_message = f"on the <b>{branch}</b> branch" if branch else ""
 
         pusher = payload.get("pusher", {}).get("name", "")
-        send_telegram_message(
-            text=f"<b>{pusher}</b> {event}ed {new_changes_link} " f"{branch_message}",
-            parse_mode=ParseMode.HTML,
+        asyncio.run(
+            send_telegram_message(
+                text=f"<b>{pusher}</b> {event}ed {new_changes_link} "
+                f"{branch_message}",
+                parse_mode=ParseMode.HTML,
+            )
         )
         return HttpResponse("pong")
 
@@ -105,5 +113,5 @@ def mainframe(request):  # noqa: C901, PLR0911
     schedule_deploy()
     message += "🎉\n🍓 Deployment scheduled 🚀"
 
-    send_telegram_message(text=message, parse_mode=ParseMode.HTML)
+    asyncio.run(send_telegram_message(text=message, parse_mode=ParseMode.HTML))
     return HttpResponse(status=204)

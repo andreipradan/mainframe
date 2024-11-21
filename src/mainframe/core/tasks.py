@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from django.conf import settings
@@ -47,15 +48,17 @@ def schedule_deploy():
 
     prefix = "[Deploy]"
     if not (output := run_cmd("git pull origin main", logger=logger).strip()):
-        send_telegram_message(text=f"{prefix} Could not git pull")
+        asyncio.run(send_telegram_message(text=f"{prefix} Could not git pull"))
         return False
 
     if output == "Already up to date.":
-        send_telegram_message(text=f"[{prefix}] {output}")
+        asyncio.run(send_telegram_message(text=f"[{prefix}] {output}"))
         return False
 
     if output.startswith("CONFLICT"):
-        send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
+        asyncio.run(
+            send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
+        )
         return False
 
     cmd_params = []
