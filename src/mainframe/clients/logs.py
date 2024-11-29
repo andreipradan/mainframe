@@ -2,7 +2,8 @@ import json
 import logging
 
 import logfire
-from django.conf import settings
+
+# from django.conf import settings
 
 FORMAT = "%(asctime)s - %(levelname)s - %(module)s.%(name)s - %(msg)s"
 logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -36,6 +37,6 @@ class LogfireHandler(logfire.LogfireLoggingHandler):
 
 def get_default_logger(name):
     logger = logging.getLogger(name)
-    if settings.ENV in ("prod", "rpi") and not logger.handlers:
-        logger.addHandler(LogfireHandler(name.split(".")[-1]))
+    # if settings.ENV in ("prod", "rpi") and not logger.handlers:
+    #     logger.addHandler(LogfireHandler(name.split(".")[-1]))
     return logger

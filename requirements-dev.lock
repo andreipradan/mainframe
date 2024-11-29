@@ -27,6 +27,8 @@ attrs==23.2.0
     # via aiohttp
 beautifulsoup4==4.11.1
 black==24.4.2
+bytecode==0.16.0
+    # via ddtrace
 cachetools==4.2.2
     # via google-auth
 certifi==2024.2.2
@@ -47,6 +49,7 @@ coverage==7.5.0
     # via pytest-cov
 cryptography==42.0.5
     # via pyjwt
+ddtrace==2.17.2
 decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
@@ -67,6 +70,8 @@ django-environ==0.9.0
 django-extensions==3.2.1
 djangorestframework==3.14.0
 dnspython==2.6.1
+envier==0.6.1
+    # via ddtrace
 et-xmlfile==1.1.0
     # via openpyxl
 exceptiongroup==1.2.1
@@ -167,6 +172,7 @@ nodeenv==1.9.0
     # via pre-commit
 openpyxl==3.1.2
 opentelemetry-api==1.24.0
+    # via ddtrace
     # via opentelemetry-exporter-otlp-proto-http
     # via opentelemetry-instrumentation
     # via opentelemetry-instrumentation-django
@@ -225,6 +231,7 @@ proto-plus==1.23.0
     # via google-ai-generativelanguage
     # via google-api-core
 protobuf==4.25.3
+    # via ddtrace
     # via google-ai-generativelanguage
     # via google-api-core
     # via google-generativeai
@@ -325,6 +332,7 @@ typing-extensions==4.11.0
     # via anyio
     # via asgiref
     # via black
+    # via ddtrace
     # via google-generativeai
     # via ipython
     # via logfire
@@ -343,8 +351,11 @@ virtualenv==20.26.2
 wcwidth==0.2.13
     # via prompt-toolkit
 wrapt==1.16.0
+    # via ddtrace
     # via deprecated
     # via opentelemetry-instrumentation
+xmltodict==0.14.2
+    # via ddtrace
 yarl==1.9.4
     # via aiohttp
 yeelight==0.7.10

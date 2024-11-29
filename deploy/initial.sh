@@ -25,6 +25,7 @@ if [ "$1" == "--continue" ]; then
 fi
 
 echo "[Power save] Turning power_save off to keep wifi from disconnecting" && sudo iw dev wlan0 set power_save off
+echo "[Power managerment] Turning iwconfig power management off to keep wifi from disconnecting" && sudo iwconfig wlan0 power off
 
 echo "[homebridge] Installing homebridge"
 curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
