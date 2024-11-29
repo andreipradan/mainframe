@@ -9,6 +9,7 @@ from tests.factories.crons import CronFactory
 from tests.factories.watchers import WatcherFactory
 
 
+@pytest.mark.asyncio
 @pytest.mark.django_db
 class TestCommand:
     path = "mainframe.api.huey_tasks.management.commands.set_tasks"
