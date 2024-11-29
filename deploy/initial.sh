@@ -19,7 +19,8 @@ if [ "$1" == "--continue" ]; then
   echo "[redis] Done."
 
   echo "=== Initial setup Done! ==="
-  echo "Please fill out the env vars inside mainframe/backend/.env"
+  echo "[datadog] please create an api key and follow the instructions here https://app.datadoghq.eu/account/settings/agent/latest?platform=debian"
+  echo "[env] Please fill out the env vars inside mainframe/backend/.env"
   echo "then do '~/projects/mainframe/deploy/setup.sh requirements restart'"
   exit 0
 fi

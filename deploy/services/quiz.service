@@ -3,12 +3,16 @@ Description=quiz bot polling service
 
 [Service]
 User=rpi
-WorkingDirectory=/home/rpi/projects/mainframe/src
-ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_quiz_bot_polling
+Environment=DD_ENV=raspberry
+Environment=DD_LOGS_INJECTION=true
+Environment=DD_SERVICE=mainframe
+Environment=DD_TRACE_DJANGO_ENABLED=true
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/ddtrace-run /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_quiz_bot_polling
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[quiz]] up
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[quiz]] down
 Restart=on-success
 TimeoutSec=900
+WorkingDirectory=/home/rpi/projects/mainframe/src
 
 [Install]
 WantedBy=multi-user.target

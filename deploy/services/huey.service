@@ -3,11 +3,15 @@ Description=huey task queue service
 
 [Service]
 User=rpi
-WorkingDirectory=/home/rpi/projects/mainframe/src
-ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_huey -w 4
-ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_tasks
+Environment=DD_ENV=raspberry
+Environment=DD_LOGS_INJECTION=true
+Environment=DD_SERVICE=mainframe
+Environment=DD_TRACE_DJANGO_ENABLED=true
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/ddtrace-run /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py run_huey -w 4
+ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/ddtrace-run /home/rpi/projects/.virtualenvs/mainframe/bin/python manage.py set_tasks
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[huey]] down
 Restart=on-success
+WorkingDirectory=/home/rpi/projects/mainframe/src
 TimeoutSec=900
 
 [Install]
