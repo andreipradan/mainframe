@@ -5,9 +5,6 @@ from mainframe.clients import healthchecks
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import GoogleCloudStorageClient
 from mainframe.clients.system import run_cmd
-from opentelemetry import trace
-
-tracer = trace.get_tracer(__name__)
 
 
 class Command(BaseCommand):
