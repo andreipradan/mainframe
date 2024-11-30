@@ -25,6 +25,7 @@ async-timeout==4.0.3
     # via redis
 attrs==23.2.0
     # via aiohttp
+axiom-py==0.8.1
 beautifulsoup4==4.11.1
 black==24.4.2
 cachetools==4.2.2
@@ -47,12 +48,15 @@ coverage==7.5.0
     # via pytest-cov
 cryptography==42.0.5
     # via pyjwt
+dacite==1.8.1
+    # via axiom-py
 decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
 deprecated==1.2.14
     # via opentelemetry-api
     # via opentelemetry-exporter-otlp-proto-http
+    # via opentelemetry-semantic-conventions
     # via pygithub
 distlib==0.3.8
     # via virtualenv
@@ -74,7 +78,6 @@ exceptiongroup==1.2.1
     # via ipython
     # via pytest
 executing==2.0.1
-    # via logfire
     # via stack-data
 factory-boy==3.3.0
 faker==24.14.1
@@ -86,9 +89,9 @@ frozenlist==1.4.1
     # via aiosignal
 future==1.0.0
     # via yeelight
-google-ai-generativelanguage==0.6.6
+google-ai-generativelanguage==0.6.10
     # via google-generativeai
-google-api-core==2.18.0
+google-api-core==2.23.0
     # via google-ai-generativelanguage
     # via google-api-python-client
     # via google-cloud-core
@@ -111,10 +114,10 @@ google-cloud-core==2.4.1
 google-cloud-storage==2.9.0
 google-crc32c==1.5.0
     # via google-resumable-media
-google-generativeai==0.7.2
+google-generativeai==0.8.3
 google-resumable-media==2.7.0
     # via google-cloud-storage
-googleapis-common-protos==1.63.0
+googleapis-common-protos==1.66.0
     # via google-api-core
     # via grpcio-status
     # via opentelemetry-exporter-otlp-proto-http
@@ -148,63 +151,56 @@ importlib-metadata==7.0.0
 iniconfig==2.0.0
     # via pytest
 ipython==8.24.0
+iso8601==2.1.0
+    # via axiom-py
 jedi==0.19.1
     # via ipython
-logfire==0.37.0
 lxml==5.2.2
-markdown-it-py==3.0.0
-    # via rich
 matplotlib-inline==0.1.7
     # via ipython
-mdurl==0.1.2
-    # via markdown-it-py
 multidict==6.0.5
     # via aiohttp
     # via yarl
 mypy-extensions==1.0.0
     # via black
+ndjson==0.3.1
+    # via axiom-py
 nodeenv==1.9.0
     # via pre-commit
 openpyxl==3.1.2
-opentelemetry-api==1.24.0
+opentelemetry-api==1.28.2
     # via opentelemetry-exporter-otlp-proto-http
     # via opentelemetry-instrumentation
     # via opentelemetry-instrumentation-django
-    # via opentelemetry-instrumentation-system-metrics
     # via opentelemetry-instrumentation-wsgi
     # via opentelemetry-sdk
-opentelemetry-exporter-otlp-proto-common==1.24.0
+    # via opentelemetry-semantic-conventions
+opentelemetry-exporter-otlp-proto-common==1.28.2
     # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-exporter-otlp-proto-http==1.24.0
-    # via logfire
-opentelemetry-instrumentation==0.45b0
-    # via logfire
+opentelemetry-exporter-otlp-proto-http==1.28.2
+opentelemetry-instrumentation==0.49b2
     # via opentelemetry-instrumentation-django
-    # via opentelemetry-instrumentation-system-metrics
     # via opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-django==0.45b0
-    # via logfire
-opentelemetry-instrumentation-system-metrics==0.45b0
-    # via logfire
-opentelemetry-instrumentation-wsgi==0.45b0
+opentelemetry-instrumentation-django==0.49b2
+opentelemetry-instrumentation-wsgi==0.49b2
     # via opentelemetry-instrumentation-django
-opentelemetry-proto==1.24.0
+opentelemetry-proto==1.28.2
     # via opentelemetry-exporter-otlp-proto-common
     # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-sdk==1.24.0
-    # via logfire
+opentelemetry-sdk==1.28.2
     # via opentelemetry-exporter-otlp-proto-http
-    # via opentelemetry-instrumentation-system-metrics
-opentelemetry-semantic-conventions==0.45b0
+opentelemetry-semantic-conventions==0.49b2
+    # via opentelemetry-instrumentation
     # via opentelemetry-instrumentation-django
     # via opentelemetry-instrumentation-wsgi
     # via opentelemetry-sdk
-opentelemetry-util-http==0.45b0
+opentelemetry-util-http==0.49b2
     # via opentelemetry-instrumentation-django
     # via opentelemetry-instrumentation-wsgi
 packaging==24.0
     # via black
     # via gunicorn
+    # via opentelemetry-instrumentation
     # via pytest
 parso==0.8.4
     # via jedi
@@ -221,20 +217,18 @@ pluggy==1.5.0
 pre-commit==3.7.1
 prompt-toolkit==3.0.43
     # via ipython
-proto-plus==1.23.0
+proto-plus==1.25.0
     # via google-ai-generativelanguage
     # via google-api-core
-protobuf==4.25.3
+protobuf==5.29.0
     # via google-ai-generativelanguage
     # via google-api-core
     # via google-generativeai
     # via googleapis-common-protos
     # via grpcio-status
-    # via logfire
     # via opentelemetry-proto
     # via proto-plus
 psutil==5.9.5
-    # via opentelemetry-instrumentation-system-metrics
 psycopg2-binary==2.9.5
 ptyprocess==0.7.0
     # via pexpect
@@ -254,7 +248,8 @@ pydantic-core==2.20.1
 pygithub==2.3.0
 pygments==2.17.2
     # via ipython
-    # via rich
+pyhumps==3.8.0
+    # via axiom-py
 pyjwt==2.6.0
     # via pygithub
 pynacl==1.5.0
@@ -284,18 +279,19 @@ pytz==2024.1
 pyyaml==6.0.1
     # via pre-commit
 redis==5.0.0
-requests==2.31.0
+requests==2.32.3
+    # via axiom-py
     # via google-api-core
     # via google-cloud-storage
     # via opentelemetry-exporter-otlp-proto-http
     # via pygithub
-rich==13.7.1
-    # via logfire
+    # via requests-toolbelt
+requests-toolbelt==1.0.0
+    # via axiom-py
 rsa==4.9
     # via google-auth
 sentry-sdk==2.0.0
 setuptools==69.5.1
-    # via opentelemetry-instrumentation
 six==1.16.0
     # via asttokens
     # via python-dateutil
@@ -312,7 +308,6 @@ stack-data==0.6.3
 tomli==2.0.1
     # via black
     # via coverage
-    # via logfire
     # via pytest
     # via pytest-env
 tornado==6.4
@@ -327,11 +322,12 @@ typing-extensions==4.11.0
     # via black
     # via google-generativeai
     # via ipython
-    # via logfire
     # via opentelemetry-sdk
     # via pydantic
     # via pydantic-core
     # via pygithub
+ujson==5.10.0
+    # via axiom-py
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.18

@@ -1,4 +1,3 @@
-import logfire
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -6,6 +5,9 @@ from mainframe.clients import healthchecks
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import GoogleCloudStorageClient
 from mainframe.clients.system import run_cmd
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
 
 
 class Command(BaseCommand):
@@ -23,15 +25,11 @@ class Command(BaseCommand):
 
         model = options["model"]
         source = app if not model else f"{app}.{model.title()}"
-        with logfire.span(f"[backup] Dumping {source}", output=file_name):
-            call_command("dumpdata", source, output=file_name, verbosity=2)
+        call_command("dumpdata", source, output=file_name, verbosity=2)
 
         destination = f"{app}_{f'{model.lower()}_' if model else ''}{file_name}"
-        with logfire.span(
-            "[backup] Uploading to gcs", file_name=file_name, destination=destination
-        ):
-            client = GoogleCloudStorageClient(logger)
-            client.upload_blob_from_file(file_name, destination)
+        client = GoogleCloudStorageClient(logger)
+        client.upload_blob_from_file(file_name, destination)
         run_cmd(f"rm {file_name}", logger=logger)
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))

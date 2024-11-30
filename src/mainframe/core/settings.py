@@ -14,8 +14,8 @@ import os
 from pathlib import Path
 
 import environ
-import logfire
 import sentry_sdk
+from mainframe.core.otel_config import configure_opentelemetry
 from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env(
@@ -28,6 +28,8 @@ env = environ.Env(
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+configure_opentelemetry()
 
 ENV = env("ENV", default=None)
 DEBUG = int(env("DEBUG", default=0))
@@ -211,7 +213,6 @@ LOGGING = {
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
-        "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
     },
     "loggers": {
         "django": {
@@ -251,9 +252,6 @@ if ENV in ["local", "prod", "rpi"]:
         }
     }
     if ENV in ("prod", "rpi"):
-        logfire.configure(send_to_logfire="if-token-present")
-        logfire.instrument_django()
-        LOGGING["loggers"]["django"]["handlers"].append("logfire")
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
             environment=ENV,

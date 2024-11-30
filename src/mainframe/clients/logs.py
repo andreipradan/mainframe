@@ -1,9 +1,9 @@
 import json
 import logging
 
-import logfire
-
-# from django.conf import settings
+import axiom_py
+from axiom_py.logging import AxiomHandler
+from django.conf import settings
 
 FORMAT = "%(asctime)s - %(levelname)s - %(module)s.%(name)s - %(msg)s"
 logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -25,18 +25,9 @@ def parse_record(record: logging.LogRecord) -> dict:
     return record
 
 
-class LogfireHandler(logfire.LogfireLoggingHandler):
-    def __init__(self, prefix):
-        self.prefix = prefix
-        super().__init__()
-
-    def emit(self, record: logging.LogRecord) -> None:
-        record.msg = f"[{self.prefix}] {record.msg}"
-        return super().emit(record)
-
-
 def get_default_logger(name):
     logger = logging.getLogger(name)
-    # if settings.ENV in ("prod", "rpi") and not logger.handlers:
-    #     logger.addHandler(LogfireHandler(name.split(".")[-1]))
+    if settings.ENV in ("prod", "rpi") and not logger.handlers:
+        client = axiom_py.Client()
+        logger.addHandler(AxiomHandler(client, "mainframe"))
     return logger

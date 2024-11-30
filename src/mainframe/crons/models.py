@@ -1,4 +1,3 @@
-import logfire
 from django.core.management import call_command
 from django.db import models
 from django.db.models import signals
@@ -6,8 +5,10 @@ from django.dispatch import receiver
 from mainframe.clients.logs import get_default_logger
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
+from opentelemetry import trace
 
 logger = get_default_logger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 class Cron(TimeStampedModel):
@@ -30,11 +31,11 @@ class Cron(TimeStampedModel):
         display += f" {self.expression}"
         return display
 
-    @logfire.instrument("{self}")
     def run(self):
-        if not isinstance(self.args, list):
-            return call_command(self.command, **self.kwargs)
-        return call_command(self.command, *self.args, **self.kwargs)
+        with tracer.start_as_current_span(self):
+            if not isinstance(self.args, list):
+                return call_command(self.command, **self.kwargs)
+            return call_command(self.command, *self.args, **self.kwargs)
 
 
 @receiver(signals.post_delete, sender=Cron)
