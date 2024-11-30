@@ -250,7 +250,8 @@ if ENV in ["local", "prod", "rpi"]:
         }
     }
     if ENV in ("prod", "rpi"):
-        configure_opentelemetry()
+        if env("HUEY", default=False):
+            configure_opentelemetry()
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
             environment=ENV,
