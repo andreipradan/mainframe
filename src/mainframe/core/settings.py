@@ -29,6 +29,7 @@ env = environ.Env(
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+ENV = env("ENV", default=None)
 DEBUG = int(env("DEBUG", default=0))
 
 # Quick-start development settings - unsuitable for production
@@ -231,7 +232,7 @@ DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
     "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
 )
 
-if (ENV := env("ENV", default=None)) in ["local", "prod", "rpi"]:
+if ENV in ["local", "prod", "rpi"]:
     if ENV == "local":
         INSTALLED_APPS += ["debug_toolbar"]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]

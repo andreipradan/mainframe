@@ -3,11 +3,7 @@ Description=django backend server
 
 [Service]
 User=rpi
-Environment=DD_ENV=raspberry
-Environment=DD_LOGS_INJECTION=true
-Environment=DD_SERVICE=mainframe
-Environment=DD_TRACE_DJANGO_ENABLED=true
-ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/ddtrace-run /home/rpi/projects/.virtualenvs/mainframe/bin/gunicorn -b 0:7777 --workers 3 mainframe.core.wsgi
+ExecStart=/home/rpi/projects/.virtualenvs/mainframe/bin/gunicorn -b 0:7777 --workers 3 mainframe.core.wsgi
 ExecStartPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[backend]] up
 ExecStopPost=/home/rpi/projects/.virtualenvs/mainframe/bin/python mainframe/clients/chat.py [[backend]] down
 Restart=on-success
