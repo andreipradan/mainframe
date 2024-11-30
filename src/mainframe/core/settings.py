@@ -15,6 +15,7 @@ from pathlib import Path
 
 import environ
 import sentry_sdk
+from mainframe.clients.logs import get_default_logger
 from mainframe.core.otel_config import configure_opentelemetry
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -250,7 +251,9 @@ if ENV in ["local", "prod", "rpi"]:
         }
     }
     if ENV in ("prod", "rpi"):
-        if env("HUEY", default=False):
+        if not env("HUEY", default=False):
+            logger = get_default_logger(__name__)
+            logger.info("Configuring open telemetry", extra={"ENV": ENV})
             configure_opentelemetry()
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
