@@ -110,8 +110,7 @@ def mainframe(request):  # noqa: C901, PLR0911
         f"<a href='{wf_data['html_url']}'><b>{name}</b></a> {action}"
         f" {f'({conclusion.title()})' if conclusion else ''} "
     )
-    schedule_deploy()
-    message += "🎉\n🍓 Deployment scheduled 🚀"
+    message += f"🎉\n🍓 Deployment scheduled 🚀\n{schedule_deploy()}"
 
     asyncio.run(send_telegram_message(text=message, parse_mode=ParseMode.HTML))
     return HttpResponse(status=204)

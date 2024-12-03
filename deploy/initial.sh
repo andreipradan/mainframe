@@ -54,6 +54,16 @@ else
   cat "${PROJECT_DIR}/deploy/.env" >> "$ENV_FILE";
 fi
 
+LOGS_DIR=/var/log/mainframe
+echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path"
+if [ -d "${LOGS_DIR}" ]; then
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path already exists";
+else
+  sudo mkdir -p "${LOGS_DIR}";
+  sudo chown -R rpi:rpi ${LOGS_DIR}
+  echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path created"
+fi
+
 VIRTUALENV_DIR=${HOME}/projects/.virtualenvs/mainframe
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Creating venv"
 if [ -d "${VIRTUALENV_DIR}" ]; then
