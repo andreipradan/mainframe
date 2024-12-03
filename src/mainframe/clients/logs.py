@@ -7,7 +7,9 @@ from django.conf import settings
 
 class MainframeHandler(AxiomHandler):
     def emit(self, record: logging.LogRecord) -> None:
-        record.msg = record.msg % record.args
+        if record.args:
+            record.msg = record.msg % record.args
+            record.args = []
         record.env = settings.ENV
         super().emit(record)
 
