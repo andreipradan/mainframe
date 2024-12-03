@@ -17,7 +17,7 @@ class MainframeHandler(AxiomHandler):
 
 def get_default_logger(name):
     logger = logging.getLogger(name)
-    if settings.ENV in ("local",) and not logger.handlers:
+    if settings.ENV in ("prod", "rpi") and not logger.handlers:
         client = axiom_py.Client()
         logger.addHandler(MainframeHandler(client, "mainframe"))
     return logger
