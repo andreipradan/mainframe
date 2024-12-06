@@ -2,6 +2,7 @@ from mainframe.finance.models import (
     Account,
     Category,
     Credit,
+    CryptoTransaction,
     Payment,
     PnL,
     StockTransaction,
@@ -43,6 +44,18 @@ class CreditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Credit
         fields = "__all__"
+
+
+class CryptoTransactionSerializer(serializers.ModelSerializer):
+    type = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = "__all__"
+        model = CryptoTransaction
+
+    @staticmethod
+    def get_type(instance: CryptoTransaction):
+        return instance.get_type_display()
 
 
 class PaymentSerializer(serializers.ModelSerializer):
