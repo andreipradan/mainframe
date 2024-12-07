@@ -83,7 +83,7 @@ const Crons = () =>  {
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
                                   {cron.name}
                                 </td>
-                                <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{cron.expression}</td>
+                                <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{cron.cron_description}</td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
                                   <i className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`} />
                                 </td>

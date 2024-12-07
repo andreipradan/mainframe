@@ -154,7 +154,6 @@ const Watchers = () =>  {
                       <th> Cron </th>
                       <th> Is Active? </th>
                       <th> URL </th>
-                      <th> Last check </th>
                       <th> Last status </th>
                       <th> Last update </th>
                       <th> Actions </th>
@@ -169,19 +168,12 @@ const Watchers = () =>  {
                               ? <tr key={i}>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{i + 1}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.name}</td>
-                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron}</td>
+                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron_description}</td>
                                 <td onClick={() => dispatch(selectedItem(cron.id))} className="cursor-pointer">
                                   <i
                                     className={`mdi mdi-${watcher.is_active ? 'check text-success' : 'alert text-danger'}`} />
                                 </td>
                                 <td><a href={watcher.url} target="_blank" rel="noopener noreferrer">{watcher.url}</a></td>
-                                <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>
-                                  {
-                                    watcher.redis.history?.[0]?.timestamp
-                                      ? new Date(watcher.redis.history[0].timestamp).toLocaleString()
-                                      : "-"
-                                  }
-                                </td>
                                 <td
                                   className={
                                     `text-${
