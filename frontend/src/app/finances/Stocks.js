@@ -10,7 +10,7 @@ import Errors from "../shared/Errors";
 import Form from "react-bootstrap/Form";
 import ListItem from "../shared/ListItem";
 import Select from "react-select";
-import { PnlApi, StocksApi } from "../../api/finance";
+import { FinanceApi, PnlApi, StocksApi } from '../../api/finance';
 import { capitalize } from "../utils";
 import { calculateSum } from "./utils";
 import { setKwargs as setPnlKwargs } from "../../redux/pnlSlice";
@@ -22,6 +22,8 @@ const Stocks = () => {
   const pnl = useSelector(state => state.pnl)
   const stocks = useSelector(state => state.stocks)
   const token = useSelector((state) => state.auth.token)
+
+  const financeApi = new FinanceApi(stocks, token)
 
   const [selectedPnlFile, setSelectedPnlFile] = useState(null)
   const [uploadPnlOpen, setUploadPnlOpen] = useState(false)
@@ -409,7 +411,7 @@ const Stocks = () => {
                     <h6 className="text-secondary">
                       Transactions: {stocks.count}
                       <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                              onClick={() => dispatch(StocksApi.getList(token, stocks.kwargs))}>
+                              onClick={() => dispatch(financeApi.getList(stocks.kwargs))}>
                         <i className="mdi mdi-refresh" />
                       </button>
                     </h6>
@@ -427,7 +429,7 @@ const Stocks = () => {
                       className="row float-right"
                       onSubmit={e => {
                         e.preventDefault();
-                        dispatch(StocksApi.getList(token, stocks.kwargs));
+                        dispatch(financeApi.getList(stocks.kwargs));
                       }}
                     >
                       <Form.Group className="col-md-4">

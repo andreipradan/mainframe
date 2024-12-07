@@ -461,6 +461,12 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
+              <li className={isPathActive('/finances/crypto') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <Link className="nav-link" to="/finances/crypto">
+                  <span className="menu-icon"><i className="mdi mdi-bitcoin" /></span>
+                  <span className="menu-title">Crypto</span>
+                </Link>
+              </li>
               <li className={isPathActive('/stocks') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <Link className="nav-link" to="/stocks">
                   <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>

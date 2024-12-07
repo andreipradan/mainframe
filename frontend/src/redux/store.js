@@ -6,6 +6,7 @@ import categoriesReducer from "./categoriesSlice";
 import creditReducer from "../redux/creditSlice"
 import commandsReducer from "../redux/commandsSlice"
 import cronsReducer from "../redux/cronsSlice"
+import cryptoReducer from "../redux/cryptoSlice"
 import devicesReducer from "../redux/devicesSlice"
 import expensesReducer from "../redux/expensesSlice"
 import exchangeReducer from "../redux/exchangeSlice"
@@ -36,6 +37,7 @@ export default configureStore({
     commands: commandsReducer,
     credit: creditReducer,
     crons: cronsReducer,
+    crypto: cryptoReducer,
     devices: devicesReducer,
     exchange: exchangeReducer,
     expenses: expensesReducer,

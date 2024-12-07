@@ -8,6 +8,7 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Commands = lazy(() => import('./commands/Commands'));
 const Crons = lazy(() => import('./commands/crons/Crons'));
+const Crypto = lazy(() => import('./finances/Crypto'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
@@ -83,6 +84,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
         {user?.is_staff && <Route exact path="/finances/accounts/:id?" component={ FinancesAccountsTransactions } />}
         {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
+        {user?.is_staff && <Route exact path="/finances/crypto" component={ Crypto } />}
         {user?.is_staff && <Route exact path="/sources" component={ Sources } />}
         {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
 
