@@ -12,7 +12,7 @@ logger = get_default_logger(__name__)
 
 
 class WatcherViewSet(viewsets.ModelViewSet):
-    queryset = Watcher.objects.order_by("cron", "name")
+    queryset = Watcher.objects.order_by("-is_active", "name")
     serializer_class = WatcherSerializer
     permission_classes = (IsAdminUser,)
 
