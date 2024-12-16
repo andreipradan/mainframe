@@ -53,7 +53,9 @@ class Watcher(TimeStampedModel):
 
         elements = get_elements(retry=True)
         found = elements[0 if self.top else -1]
-        if self.latest.get("title") == (title := found.text.strip()):
+        if self.latest.get("title") == (
+            title := (found.text.strip() or found.attrs.get("title"))
+        ):
             logger.info("No new items")
             return False
         url = (
