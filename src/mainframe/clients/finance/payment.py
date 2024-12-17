@@ -39,10 +39,11 @@ def parse_installment(rows):
     payment_type = "Rata credit"
     row = rows.pop(0).replace(f"{payment_type} ", "")
     day, month, year, total, remaining = row.split()
-    principal = validate_starts_with(rows.pop(0), payment_type, "Principal", 1)
-    interest = validate_starts_with(rows.pop(0), payment_type, "Dobanda", 2)
+    validate_starts_with(rows.pop(0), payment_type, "Data", 1)
+    principal = validate_starts_with(rows.pop(0), payment_type, "Principal", 2)
+    interest = validate_starts_with(rows.pop(0), payment_type, "Dobanda", 3)
     additional_data = {
-        "from": validate_starts_with(rows.pop(0), payment_type, "Din contul", 3)
+        "from": validate_starts_with(rows.pop(0), payment_type, "Din contul", 4)
     }
     return Payment(
         additional_data=additional_data,
@@ -111,11 +112,12 @@ class PaymentsImporter:
         row = rows.pop(0).replace(f"{payment_type} ", "")
         day, month, year, total, remaining = row.split()
         date = parse_date(day, month, year)
+        validate_starts_with(rows.pop(0), payment_type, "Data", 1)
         additional_data = {
-            "from": validate_starts_with(rows.pop(0), payment_type, "Din contul", 1),
-            "details": validate_starts_with(rows.pop(0), payment_type, "Detalii", 2),
+            "from": validate_starts_with(rows.pop(0), payment_type, "Din contul", 2),
+            "details": validate_starts_with(rows.pop(0), payment_type, "Detalii", 3),
         }
-        reference = validate_starts_with(rows.pop(0), payment_type, "Referinta", 3)
+        reference = validate_starts_with(rows.pop(0), payment_type, "Referinta", 4)
         total = normalize_amount(total)
         return Payment(
             additional_data=additional_data,
@@ -162,9 +164,9 @@ class PaymentsImporter:
 
 
 def validate_starts_with(row, payment_type, expected_field, line_no):
-    if not row.startswith(f"{expected_field}: "):
+    if not row.startswith(f"{expected_field}:"):
         raise PaymentImportError(
             f"Expected <{payment_type}> line #{line_no} to be <{expected_field}...>."
             f" Found <{row}> instead"
         )
-    return row.replace(f"{expected_field}: ", "")
+    return row.replace(f"{expected_field}:", "").strip()
