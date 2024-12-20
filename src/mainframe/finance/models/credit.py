@@ -114,15 +114,12 @@ class Timetable(TimeStampedModel):
     amortization_table = models.JSONField(validators=[validate_amortization_table])
     credit = models.ForeignKey(on_delete=models.CASCADE, to="finance.Credit")
     date = models.DateField()
+    interest = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     ircc = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
     margin = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
 
     class Meta:
         ordering = ("-date", "-created_at")
-
-    @property
-    def interest(self):
-        return self.margin + self.ircc
 
     @property
     def number_of_months(self):

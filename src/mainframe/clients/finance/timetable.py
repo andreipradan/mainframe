@@ -1,6 +1,6 @@
 import io
+import re
 from datetime import datetime
-from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -70,6 +70,7 @@ def extract_first_page(first_page, logger):
     return Timetable(
         credit_id=credit.id,
         date=datetime.strptime(date, "%d.%m.%Y").date(),
+        interest=summary["interest"],
         ircc=summary["ircc"],
         margin=summary["margin"],
         amortization_table=extract_rows(rows),
@@ -93,77 +94,41 @@ def extract_rows(rows):
 
 
 def extract_summary(summary):
-    (
-        client_code,
-        full_name,
-        account_number,
-        credit_number_and_date,
-        credit_date,
-        interest,
-        margin_and_ircc,
-        credit_total_and_currency,
-        _,
-        no_of_months,
-    ) = filter(bool, summary.split("\n"))
-    if not client_code.startswith("Cod Client"):
-        raise TimetableImportError("Invalid client code format")
-    client_code = client_code.replace("Cod Client ", "")
-    last_name_str, last_name, first_name_str, first_name = full_name.split()
-    if (
-        last_name_str != "Numele"
-        or first_name_str != "Prenumele"
-        or not account_number.startswith("Număr cont ")
-    ):
-        raise TimetableImportError("Invalid full name format")
-    account_number = account_number.replace("Număr cont ", "")
-    if not credit_number_and_date.startswith("Număr şi data contract credit"):
-        raise TimetableImportError("Invalid account number and contract date format")
-    credit_number = credit_number_and_date.replace(
-        "Număr şi data contract credit", ""
-    ).replace(" -", "")
-    if not interest.startswith("Rata dobânzii ") or not interest.endswith(
-        " compusă din:"
-    ):
-        raise TimetableImportError("Invalid interest rate format")
-    interest = (
-        interest.replace("Rata dobânzii ", "")
-        .replace(" compusă din:", "")
-        .replace(",", ".")
-    )
-    if (
-        not margin_and_ircc.startswith("Marjă: ")
-        or " şi Indice  IRCC : " not in margin_and_ircc
-    ):
-        raise TimetableImportError("Invalid interest margin format")
-    margin, *_, ircc = margin_and_ircc.replace("Marjă: ", "").split()
-    if not credit_total_and_currency.startswith("Valoare credit "):
-        raise TimetableImportError("Invalid credit amount format")
-    credit_total, currency_str, currency = credit_total_and_currency.replace(
-        "Valoare credit ", ""
-    ).split()
-    if currency_str != "Moneda":
-        raise TimetableImportError("Invalid currency format")
-    credit_total = credit_total.replace(".", "").replace(",", ".")
-    if not no_of_months.startswith("perioadă de") or not no_of_months.endswith(" luni"):
-        raise TimetableImportError("Invalid period format")
-    no_of_months = no_of_months.replace("perioadă de", "").replace(" luni", "")
-    if Decimal(interest) != Decimal(margin) + Decimal(ircc):
-        raise TimetableImportError(
-            "Invalid total interest (not equal to margin + ircc)"
-        )
+    expected = [
+        r"Cod Client (\d+)",
+        r"Numele ([^>]+) Prenumele ([^>]+)",
+        r"Număr cont (\d+)",
+        r"Număr şi data contract credit(\d+) -",
+        r"(\d{2}\.\d{2}\.\d{4})Rata dobânzii fixă in",
+        r"primii 5 ani:(\d+\,\d+)",
+        r"Rata dobânzii  variabilă folosită",
+        r"începând cu al 6\xadlea an al duratei",
+        r"creditului(\d+\.\d+) compusă din:",
+        r"Marjă: \+(\d+\.\d+)\s+şi\s+Indice\s+IRCC\s*:\s*(\d+\.\d+)",
+        r"Valoare credit (\d+\.\d+\,\d+) Moneda ([^>]{3})",
+        r"Scadenţarul este generat pentru o",
+        r"perioadă de(\d+) luni",
+    ]
+    extracted_values = []
+
+    for line, pattern in zip(summary.split("\n"), expected, strict=False):
+        match = re.match(pattern, line)
+        if not match:
+            raise ValueError(f"Line does not match expected format: {pattern}")
+        extracted_values.extend(match.groups())
+
     return {
-        "account__client_code": client_code,
-        "account__first_name": first_name,
-        "account__last_name": last_name,
-        "account__number": account_number,
-        "credit__currency": currency,
-        "credit__date": credit_date,
-        "credit__number": credit_number,
-        "credit__total": credit_total,
-        "margin": margin,
-        "ircc": ircc,
-        "credit_total": credit_total,
-        "no_of_months": no_of_months,
+        "account__client_code": extracted_values[0],
+        "account__last_name": extracted_values[1],
+        "account__first_name": extracted_values[2],
+        "account__number": extracted_values[3],
+        "credit__currency": extracted_values[11],
+        "credit__date": extracted_values[5],
+        "credit__number": extracted_values[4],
+        "credit__total": extracted_values[10].replace(".", "").replace(",", "."),
+        "margin": extracted_values[8],
+        "interest": extracted_values[6].replace(",", "."),
+        "ircc": extracted_values[9],
     }
 
 
