@@ -4,55 +4,30 @@ import {
   set,
   setErrors,
   setLoading,
-  setLoadingItems as setLoadingBots,
+  setLoadingItems,
   update,
 } from "../redux/botsSlice";
 
 import {handleErrors} from "./errors";
+import { Api } from './shared';
 
 
-class BotsApi {
-  static create = (token, data) => dispatch => {
-    dispatch(setLoading(true))
+class BotsApi extends Api {
+  baseUrl = "telegram/bots"
+  createMethod = create
+  set = set
+  setErrors = setErrors
+  setLoading = setLoading
+  setLoadingItems = setLoadingItems
+  updateMethod = update
+
+  sync = botId => dispatch => {
+    dispatch(setLoadingItems(botId));
     axios
-      .post(`${base}/`, data, { headers: {Authorization: token} })
-      .then(response => {
-        dispatch(create(response.data))
-      })
-      .catch(err => handleErrors(err, dispatch, setErrors))
-  }
-  static getList = token => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static getItem = (token, botId) => dispatch => {
-    dispatch(setLoadingBots(botId));
-    axios
-      .get(`${base}/${botId}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(update(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static updateBot = (token, botId, data) => dispatch => {
-    dispatch(setLoadingBots(botId));
-    axios
-      .patch(`${base}/${botId}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update(response.data));
-      })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static sync = (token, botId) => dispatch => {
-    dispatch(setLoadingBots(botId));
-    axios
-      .put(`${base}/${botId}/sync/`, {}, { headers: { Authorization: token } })
+      .put(`${this.baseUrl}/${botId}/sync/`, {}, { headers: { Authorization: this.token } })
       .then((response) => dispatch(update(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }
-
-const base = "telegram/bots";
 
 export default BotsApi;

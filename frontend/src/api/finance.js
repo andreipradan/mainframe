@@ -15,15 +15,20 @@ import {
   setLoading as setCryptoLoading,
 } from '../redux/cryptoSlice'
 import {
-  set as setPnl,
-  setErrors as setPnlErrors,
-  setLoading as setPnlLoading,
-} from "../redux/pnlSlice";
+  set as setCryptoPnl,
+  setLoading as setCryptoPnlLoading,
+  setErrors as setCryptoPnlErrors,
+} from "../redux/cryptoPnlSlice";
 import {
   set as setStocks,
   setErrors as setStocksErrors,
   setLoading as setStocksLoading,
 } from "../redux/stocksSlice";
+import {
+  set as setStocksPnl,
+  setErrors as setStocksPnlErrors,
+  setLoading as setStocksPnlLoading,
+} from "../redux/pnlSlice";
 import {
   create as createTimetable,
   deleteItem as deleteTimetable,
@@ -43,61 +48,37 @@ import {
 import {handleErrors} from "./errors";
 import { toast } from 'react-toastify';
 import { toastParams } from './auth';
+import { Api } from './shared';
 
-export const createSearchParams = params => {
-  if (params === null) return ""
-  return new URLSearchParams(
-    Object.entries(params).flatMap(([key, values]) =>
-      Array.isArray(values)
-        ? values.map((value) => [key, value])
-        : [[key, values]]
-    )
-  )
+export class CryptoApi extends Api {
+  baseUrl = "finance/crypto"
+  set = setCrypto;
+  setLoading = setCryptoLoading;
+  setErrors = setCryptoErrors;
+}
+
+export class CryptoPnlApi extends Api {
+  baseUrl = "finance/crypto/pnl"
+  set = setCryptoPnl;
+  setLoading = setCryptoPnlLoading;
+  setErrors = setCryptoPnlErrors;
+}
+
+export class StocksApi extends Api {
+  baseUrl = "finance/stocks"
+  set = setStocks;
+  setLoading = setStocksLoading;
+  setErrors = setStocksErrors;
+}
+
+export class StocksPnlApi extends Api {
+  baseUrl = "finance/stocks/pnl"
+  set = setStocksPnl;
+  setLoading = setStocksPnlLoading;
+  setErrors = setStocksPnlErrors;
 }
 
 export class FinanceApi {
-  constructor(resource, token) {
-    this.resource = resource
-    this.setErrors = this._get_method("errors")
-    this.token = token
-  }
-
-  _get_method = name => {
-    return {
-      errors: { crypto: setCryptoErrors, stocks: setStocksErrors },
-      loading: { crypto: setCryptoLoading, stocks: setStocksLoading },
-      set: { crypto: setCrypto, stocks: setStocks },
-    }[name][this.resource]
-  }
-
-  set = (data) => this._get_method("set")(data)
-  setLoading = (isLoading = true) => this._get_method("loading")(isLoading)
-
-  getList = (kwargs = null) => (dispatch) => {
-    dispatch(this.setLoading());
-    axios
-      .get(
-        `${base}/${this.resource}/?${createSearchParams(kwargs)}`,
-        {headers: { Authorization: this.token }})
-      .then(response =>
-        dispatch(this.set(response.data)))
-      .catch(err => handleErrors(err, dispatch, this.setErrors));
-  };
-
-  upload = (token, data) => dispatch => {
-    dispatch(this.setLoading());
-    axios
-      .post(
-        `${base}/${this.resource}/`,
-        data,
-        {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}})
-      .then(response=> {
-        dispatch(this.set(response.data));
-        toast.success(`${this.resource.charAt(0).toUpperCase() + this.resource.slice(1)} uploaded successfully!`, toastParams);
-      })
-      .catch(err => handleErrors(err, dispatch, this.setErrors));
-  };
-
   static getExpenses = (token, accountId, year) => dispatch => {
     dispatch(setAccountsLoading(true));
     const url = `${base}/accounts/${accountId}/expenses/?year=${year}`
@@ -144,55 +125,6 @@ export class PredictionApi {
       .put(`${base}/prediction/start-training/`, {}, {headers: {Authorization: token}})
       .then(response => dispatch(setTask({type: "train", data: response.data})))
       .catch(err => handleErrors(err, dispatch, setPredictionErrors))
-  }
-}
-
-export class PnlApi {
-  static getList = (token, kwargs = null) => dispatch => {
-    dispatch(setPnlLoading(true));
-    axios
-      .get(`${base}/pnl/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setPnl(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setPnlErrors));
-  };
-
-  static upload = (token, data) => dispatch => {
-    dispatch(setPnlLoading(true))
-    axios.post(
-      `${base}/pnl/`,
-      data,
-      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
-    )
-    .then((response) => {
-      dispatch(setPnl(response.data));
-      toast.success("PnL uploaded successfully!", toastParams)
-
-    })
-    .catch((err) => handleErrors(err, dispatch, setPnlErrors));
-  }
-}
-
-export class StocksApi {
-  static getList = (token, kwargs = null) => dispatch => {
-    dispatch(setStocksLoading(true));
-    axios
-      .get(`${base}/stocks/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setStocks(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setStocksErrors));
-  };
-  static upload = (token, data) => dispatch => {
-    dispatch(setStocksLoading(true))
-    axios.post(
-      `${base}/stocks/`,
-      data,
-      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
-    )
-    .then((response) => {
-      dispatch(setStocks(response.data));
-      toast.success("Stock transactions uploaded successfully!", toastParams)
-
-    })
-    .catch((err) => handleErrors(err, dispatch, setStocksErrors));
   }
 }
 

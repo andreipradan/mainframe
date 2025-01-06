@@ -5,7 +5,7 @@ import {
   setLoading,
 } from "../redux/earthquakesSlice";
 import { handleErrors } from "./errors";
-import { createSearchParams } from "./finance";
+import { createSearchParams } from "./shared";
 
 
 class EarthquakesApi {

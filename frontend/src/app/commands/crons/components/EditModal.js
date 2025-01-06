@@ -55,7 +55,7 @@ const EditModal = () => {
       setRedis(JSON.stringify(cron.redis, null, "\t"))
       setName(cron.name)
     }
-    if (!commands.results) dispatch(CommandsApi.getList(token))
+    if (!commands.results) dispatch(new CommandsApi(token).getList())
   }, [allCommands, commands.results, cron, dispatch, token]);
 
   const clearModal = () => {

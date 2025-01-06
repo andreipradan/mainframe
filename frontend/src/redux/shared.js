@@ -86,7 +86,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.results = state.results.map(r => r.id !== action.payload.id ? r : action.payload)
       state.selectedItem = action.payload
     },
-    setLoading: (state, action) => {state.loading = action.payload},
+    setLoading: (state, action) => {state.loading = action.payload || true},
     setLoadingItems: (state, action) => {
       state.loadingItems = !state.loadingItems
         ? [action.payload]

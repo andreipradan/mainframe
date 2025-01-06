@@ -14,9 +14,8 @@ const Bots = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {results: bots, errors, loading, loadingItems: loadingBots} = useSelector(state => state.bots)
 
-  useEffect(() => {
-    !bots && dispatch(BotsApi.getList(token));
-  }, []);
+  const api = new BotsApi(token)
+  useEffect(() => {!bots && dispatch(api.getList(token))}, []);
 
 
   const parseURL = str => {
@@ -44,7 +43,7 @@ const Bots = () =>  {
             <div className="card-body">
               <h4 className="card-title">
                 Available bots
-                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getList(token))}>
+                <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(api.getList())}>
                   <i className="mdi mdi-refresh" />
                 </button>
                 <button
@@ -92,7 +91,7 @@ const Bots = () =>  {
                                     <button
                                         type="button"
                                         className="btn btn-outline-secondary"
-                                        onClick={() => dispatch(BotsApi.sync(token, bot.id))}
+                                        onClick={() => dispatch(api.sync(bot.id))}
                                     >
                                       <i className="mdi mdi-refresh" />
                                     </button>

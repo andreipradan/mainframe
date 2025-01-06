@@ -6,7 +6,7 @@ import {
 } from "../redux/messagesSlice"
 
 import { handleErrors } from "./errors";
-import {createSearchParams} from "./finance";
+import {createSearchParams} from "./shared";
 
 class MessagesApi {
   static getList = (token, kwargs) => dispatch => {

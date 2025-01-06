@@ -2,7 +2,7 @@ import axios from '../index';
 import { handleErrors } from '../errors';
 import { toast } from 'react-toastify';
 import { toastParams } from '../auth';
-import { createSearchParams } from '../finance';
+import { createSearchParams } from '../shared';
 
 import {
   deleteItem as deleteTransaction,

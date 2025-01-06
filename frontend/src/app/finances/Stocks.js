@@ -10,12 +10,12 @@ import Errors from "../shared/Errors";
 import Form from "react-bootstrap/Form";
 import ListItem from "../shared/ListItem";
 import Select from "react-select";
-import { FinanceApi, PnlApi, StocksApi } from '../../api/finance';
 import { capitalize } from "../utils";
 import { calculateSum } from "./utils";
 import { setKwargs as setPnlKwargs } from "../../redux/pnlSlice";
 import { setKwargs } from "../../redux/stocksSlice";
 import { selectStyles } from "./Accounts/Categorize/EditModal";
+import { StocksApi, StocksPnlApi } from '../../api/finance';
 
 const Stocks = () => {
   const dispatch = useDispatch();
@@ -23,7 +23,8 @@ const Stocks = () => {
   const stocks = useSelector(state => state.stocks)
   const token = useSelector((state) => state.auth.token)
 
-  const financeApi = new FinanceApi(stocks, token)
+  const pnlApi = new StocksPnlApi(token)
+  const stocksApi = new StocksApi(token)
 
   const [selectedPnlFile, setSelectedPnlFile] = useState(null)
   const [uploadPnlOpen, setUploadPnlOpen] = useState(false)
@@ -41,7 +42,7 @@ const Stocks = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedPnlFile);
-    dispatch(PnlApi.upload(token, formData))
+    dispatch(pnlApi.upload(formData))
     setUploadPnlOpen(false)
     setSelectedPnlFile(null)
   };
@@ -62,7 +63,7 @@ const Stocks = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedTransactionsFile);
-    dispatch(StocksApi.upload(token, formData))
+    dispatch(stocksApi.upload(formData))
     setUploadTransactionsOpen(false)
     setSelectedTransactionsFile(null)
   };
@@ -100,7 +101,7 @@ const Stocks = () => {
         Stocks
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(StocksApi.getList(token))}
+          onClick={() => dispatch(stocksApi.getList(stocks.kwargs))}
         >
           <i className="mdi mdi-refresh" />
         </button>
@@ -228,7 +229,7 @@ const Stocks = () => {
                         onChange={handlePnlFileChange}
                       />
                       <label className="custom-file-label" htmlFor="customFileLang">
-                        {selectedPnlFile ? selectedPnlFile.name : 'Select a file'}
+                        {selectedPnlFile ? selectedPnlFile.name : 'Select a CSV file'}
                       </label>
                     </div>
                   </Form.Group>
@@ -250,7 +251,7 @@ const Stocks = () => {
                     <h6 className="text-secondary">
                       Profit and Loss ({pnl.count})
                       <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                              onClick={() => dispatch(PnlApi.getList(token))}>
+                              onClick={() => dispatch(pnlApi.getList(pnl.kwargs))}>
                         <i className="mdi mdi-refresh" />
                       </button>
                       {
@@ -280,7 +281,7 @@ const Stocks = () => {
                       className="row"
                       onSubmit={e => {
                         e.preventDefault();
-                        dispatch(StocksApi.getList(token, pnl.kwargs));
+                        dispatch(pnlApi.getList(pnl.kwargs));
                       }}
                     >
                       <Form.Group className="col-md-6">
@@ -355,7 +356,7 @@ const Stocks = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={pnl} fetchMethod={PnlApi.getList} setKwargs={setPnlKwargs} />
+            <BottomPagination items={pnl} fetchMethod={pnlApi.getList} newApi={true} setKwargs={setPnlKwargs} />
 
           </div>
         </div>
@@ -389,7 +390,7 @@ const Stocks = () => {
                         onChange={handleTransactionsFileChange}
                       />
                       <label className="custom-file-label" htmlFor="transactionsFile">
-                        {selectedTransactionsFile ? selectedTransactionsFile.name : 'Select a file'}
+                        {selectedTransactionsFile ? selectedTransactionsFile.name : 'Select a CSV file'}
                       </label>
                     </div>
                   </Form.Group>
@@ -410,8 +411,11 @@ const Stocks = () => {
                   <div className="col-sm-6">
                     <h6 className="text-secondary">
                       Transactions: {stocks.count}
-                      <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                              onClick={() => dispatch(financeApi.getList(stocks.kwargs))}>
+                      <button
+                        type="button"
+                        className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                        onClick={() => dispatch(stocksApi.getList(stocks.kwargs))}
+                      >
                         <i className="mdi mdi-refresh" />
                       </button>
                     </h6>
@@ -429,7 +433,7 @@ const Stocks = () => {
                       className="row float-right"
                       onSubmit={e => {
                         e.preventDefault();
-                        dispatch(financeApi.getList(stocks.kwargs));
+                        dispatch(stocksApi.getList(stocks.kwargs));
                       }}
                     >
                       <Form.Group className="col-md-4">
@@ -520,7 +524,7 @@ const Stocks = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={stocks} fetchMethod={StocksApi.getList} setKwargs={setKwargs} />
+            <BottomPagination items={stocks} fetchMethod={stocksApi.getList} newApi={true} setKwargs={setKwargs} />
 
           </div>
         </div>

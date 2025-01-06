@@ -21,6 +21,8 @@ const EditModal = () => {
   const token = useSelector((state) => state.auth.token)
   const loadingBots = useSelector(state => state.bots.loadingItems)
 
+  const api = new BotsApi(token)
+
   const [webhook, setWebhook] = useState("");
   const [whitelist, setWhitelist] = useState(null);
   const [additionalData, setAdditionalData] = useState(null);
@@ -51,7 +53,7 @@ const EditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
             Edit {bot?.full_name}
-            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(BotsApi.getItem(token, bot?.id))}>
+            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(api.getItem(bot?.id))}>
               <i className="mdi mdi-refresh" />
             </button>
           </div>
@@ -115,7 +117,7 @@ const EditModal = () => {
         Close
       </Button>
       <Button variant="primary" disabled={Boolean(annotations)} onClick={() => {
-        dispatch(BotsApi.updateBot(token, bot.id, {
+        dispatch(api.update(bot.id, {
           additional_data: JSON.parse(additionalData.replace(/[\r\n\t]/g, "")),
           webhook,
           whitelist: whitelist ? whitelist.split("\n") : [],

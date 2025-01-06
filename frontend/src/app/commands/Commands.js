@@ -17,6 +17,8 @@ const Commands = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {results, errors, loading } = useSelector(state => state.commands)
 
+  const api = new CommandsApi(token)
+
   const [appOpen, setAppOpen] = useState(null)
   const [commandArguments, setCommandArguments] = useState("")
   const [cron, setCron] = useState("")
@@ -38,7 +40,7 @@ const Commands = () =>  {
     clearForm()
   }
 
-  useEffect(() => {!results && dispatch(CommandsApi.getList(token))}, []);
+  useEffect(() => {!results && dispatch(api.getList(token))}, []);
   useEffect(() => {
     if (selectedCommand) {
       commandArgumentsRef.current?.focus()
@@ -66,7 +68,7 @@ const Commands = () =>  {
                 <button
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(CommandsApi.getList(token))}
+                    onClick={() => dispatch(api.getList(token))}
                 >
                   <i className="mdi mdi-refresh" />
                 </button>

@@ -48,8 +48,8 @@ const Dashboard = () => {
   const [lightNameOpened, setLightNameOpened] = useState(false)
 
   useEffect(() => {
-    !bots.results && dispatch(BotsApi.getList(token));
-    !crons.results && dispatch(CronsApi.getList(token))
+    !bots.results && dispatch(new BotsApi(token).getList(token));
+    !crons.results && dispatch(new CronsApi(token).getList())
     !devices.results && dispatch(DevicesApi.getList(token))
     !lights.results && dispatch(LightsApi.getList(token));
     !watchers.results && dispatch(WatchersApi.getList(token))

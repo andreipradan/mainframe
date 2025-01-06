@@ -7,9 +7,15 @@ import {
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
 import { toastParams } from "./auth";
+import { Api } from './shared';
 
 
-class CommandsApi {
+class CommandsApi extends Api {
+  baseUrl = "commands"
+  set = set
+  setErrors = setErrors
+  setLoading = setLoading
+
   static deleteCron = (token, command, cronId = null) => dispatch => {
     dispatch(setLoading(true));
     const data = {}
@@ -21,13 +27,6 @@ class CommandsApi {
         dispatch(set(response.data))
       })
       .catch((err) => handleErrors(err, dispatch, setErrors))
-  };
-  static getList = token => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static run = (token, command, commandArguments = null) => dispatch => {
     dispatch(setLoading(true));

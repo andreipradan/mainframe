@@ -18,6 +18,8 @@ const AddModal = () => {
   const { loadingItems: loadingBots, modalOpen, selectedItem: bot } = useSelector(state => state.bots)
   const token = useSelector((state) => state.auth.token)
 
+  const api = new BotsApi(token)
+
   const [telegramToken, setTelegramToken] = useState("");
 
   const onCloseModal = useCallback(() => {
@@ -26,29 +28,14 @@ const AddModal = () => {
   }, [dispatch])
   const onSave = () => {
     onCloseModal()
-    dispatch(BotsApi.create(token, {token: telegramToken}))
+    dispatch(api.create({token: telegramToken}))
   }
   return <Modal centered show={Boolean(bot) || modalOpen} onHide={() => dispatch(onCloseModal)}>
     <Modal.Header closeButton>
       <Modal.Title>
         <div className="row">
-          <div className="col-lg-12 grid-margin stretch-card">
-            {bot ? `Edit ${bot.full_name}`: 'Add new bot'}
-            {
-              bot
-                ? <button
-                    type="button"
-                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(BotsApi.getItem(token, bot?.id))}
-                  >
-                    <i className="mdi mdi-refresh" />
-                  </button>
-                : null
-            }
-          </div>
+          <div className="col-lg-12 grid-margin stretch-card">Add new bot</div>
         </div>
-        {bot ? <p className="text-muted m-0">{bot?.token}</p> : null}
-
       </Modal.Title>
     </Modal.Header>
     {

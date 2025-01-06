@@ -1,6 +1,6 @@
 import axios from '../index';
 import { handleErrors } from '../errors';
-import { createSearchParams } from '../finance';
+import { createSearchParams } from '../shared';
 
 import {
   set,

@@ -16,7 +16,7 @@ import {
   setLoading as setGroupsLoading,
 } from "../redux/groupsSlice";
 import { handleErrors } from "./errors";
-import { createSearchParams } from "./finance";
+import { createSearchParams } from "./shared";
 import { toast } from "react-toastify";
 import { toastParams } from "./auth";
 

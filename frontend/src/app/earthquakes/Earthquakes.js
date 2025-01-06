@@ -235,7 +235,7 @@ const Earthquakes = () => {
                 onClick={
                   () => {
                     dispatch(EarthquakesApi.getList(token, earthquakes.kwargs))
-                    dispatch(BotsApi.getList(token))
+                    dispatch(new BotsApi(token).getList())
                   }
                 }>
                 <i className="mdi mdi-refresh" />
