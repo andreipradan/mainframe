@@ -2,6 +2,32 @@ from django.db import models
 from mainframe.core.models import TimeStampedModel
 
 
+class CryptoPnL(TimeStampedModel):
+    amount = models.DecimalField(decimal_places=2, max_digits=7)
+    cost_basis = models.DecimalField(decimal_places=2, max_digits=6)
+    currency = models.CharField(max_length=3)
+    date_acquired = models.DateField()
+    date_sold = models.DateField()
+    fees = models.DecimalField(decimal_places=2, max_digits=7, default=0)
+    gross_pnl = models.DecimalField(decimal_places=2, max_digits=7)
+    net_pnl = models.DecimalField(decimal_places=2, max_digits=7)
+    quantity = models.DecimalField(decimal_places=8, max_digits=15)
+    ticker = models.CharField(blank=True, max_length=10, help_text="Symbol")
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_"
+                "date_acquired_date_sold_ticker_quantity_currency_uniq",
+                fields=("date_acquired", "date_sold", "ticker", "quantity", "currency"),
+            ),
+        )
+        ordering = ["-date_sold", "-date_acquired", "ticker"]
+
+    def __str__(self):
+        return f"{self.amount} {self.ticker} {self.date_acquired} - {self.date_sold}"
+
+
 class CryptoTransaction(TimeStampedModel):
     TYPE_BUY = 1
     TYPE_SELL = 2

@@ -45,12 +45,14 @@ class BotSerializer(serializers.ModelSerializer):
     def validate(self, attrs):  # noqa: C901, PLR0912
         action = self.context["view"].action
         if action == "sync":
+            raise serializers.ValidationError("TBA")
             token = self.instance.token
             attrs = {"token": token, "additional_data": self.instance.additional_data}
             return sync(self.instance.telegram_bot, attrs)
 
         if action == "create":
             if list(attrs) == ["token"]:
+                raise serializers.ValidationError("TBA")
                 try:
                     bot = telegram.Bot(attrs["token"])
                 except telegram.error.InvalidToken as e:

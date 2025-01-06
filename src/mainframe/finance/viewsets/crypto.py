@@ -1,18 +1,27 @@
 from django.db.models import Count, Q, Sum
 from mainframe.clients.finance.crypto import (
     CryptoImportError,
+    CryptoPnLImporter,
     CryptoTransactionsImporter,
 )
 from mainframe.clients.logs import get_default_logger
-from mainframe.finance.models import CryptoTransaction
-from mainframe.finance.serializers import CryptoTransactionSerializer
-from rest_framework import status, viewsets
+from mainframe.finance.models import CryptoPnL, CryptoTransaction
+from mainframe.finance.serializers import (
+    CryptoPnLSerializer,
+    CryptoTransactionSerializer,
+)
+from mainframe.finance.viewsets.mixins import PnlActionModelViewSet
+from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 
-class CryptoViewSet(viewsets.ModelViewSet):
+class CryptoViewSet(PnlActionModelViewSet):
     permission_classes = (IsAdminUser,)
+    pnl_importer_class = CryptoPnLImporter
+    pnl_importer_error_class = CryptoImportError
+    pnl_model_class = CryptoPnL
+    pnl_serializer_class = CryptoPnLSerializer
     queryset = CryptoTransaction.objects.all()
     serializer_class = CryptoTransactionSerializer
 

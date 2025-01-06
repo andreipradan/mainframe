@@ -7,63 +7,18 @@ from mainframe.clients.finance.stocks import (
 from mainframe.clients.logs import get_default_logger
 from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
-from rest_framework import status, viewsets
+from mainframe.finance.viewsets.mixins import PnlActionModelViewSet
+from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 
-class PnLViewSet(viewsets.ModelViewSet):
+class StocksViewSet(PnlActionModelViewSet):
     permission_classes = (IsAdminUser,)
-    queryset = PnL.objects.all()
-    serializer_class = PnLSerializer
-
-    def create(self, request, *args, **kwargs):
-        file = request.FILES["file"]
-        logger = get_default_logger(__name__)
-        try:
-            StockPnLImporter(file, logger).run()
-        except StockImportError as e:
-            logger.error("Could not process file: %s - error: %s", file, e)
-            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
-        return self.list(request, *args, **kwargs)
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if currency := self.request.query_params.getlist("currency"):
-            queryset = queryset.filter(currency__in=currency)
-        if ticker := self.request.query_params.getlist("ticker"):
-            queryset = queryset.filter(ticker__in=ticker)
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        response = super().list(request, *args, **kwargs)
-        currencies = (
-            PnL.objects.values_list("currency", flat=True)
-            .distinct("currency")
-            .order_by("currency")
-        )
-        tickers = (
-            PnL.objects.filter(ticker__isnull=False)
-            .values_list("ticker", flat=True)
-            .distinct("ticker")
-            .order_by("ticker")
-        )
-        response.data["currencies"] = currencies
-        response.data["tickers"] = tickers
-        aggregations = self.get_queryset().aggregate(
-            **{
-                f"total_{currency}": Sum("pnl", filter=Q(currency=currency))
-                for currency in currencies
-            }
-        )
-        response.data["total"] = {
-            currency: aggregations[f"total_{currency}"] for currency in currencies
-        }
-        return response
-
-
-class StocksViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAdminUser,)
+    pnl_importer_class = StockPnLImporter
+    pnl_importer_error_class = StockImportError
+    pnl_model_class = PnL
+    pnl_serializer_class = PnLSerializer
     queryset = StockTransaction.objects.all()
     serializer_class = StockTransactionSerializer
 

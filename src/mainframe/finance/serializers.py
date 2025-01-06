@@ -2,6 +2,7 @@ from mainframe.finance.models import (
     Account,
     Category,
     Credit,
+    CryptoPnL,
     CryptoTransaction,
     Payment,
     PnL,
@@ -44,6 +45,12 @@ class CreditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Credit
         fields = "__all__"
+
+
+class CryptoPnLSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = CryptoPnL
 
 
 class CryptoTransactionSerializer(serializers.ModelSerializer):

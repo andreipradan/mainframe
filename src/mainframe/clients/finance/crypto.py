@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from mainframe.finance.models import CryptoTransaction
+from mainframe.finance.models import CryptoPnL, CryptoTransaction
 from mainframe.finance.tasks import backup_finance_model
 
 
@@ -31,6 +31,71 @@ def normalize_type(transaction_type):
             f"Unexpected crypto transaction type: {transaction_type}"
         )
     return list(types).index(transaction_type) + 1
+
+
+class CryptoPnLImporter:
+    header = [
+        "Date acquired",
+        "Date sold",
+        "Symbol",
+        "Quantity",
+        "Cost basis",
+        "Gross proceeds",
+        "Gross PnL",
+        "Fees",
+        "Net PnL",
+        "Currency",
+    ]
+
+    def __init__(self, file, logger):
+        self.file = io.TextIOWrapper(file)
+        self.logger = logger
+
+    def parse_pnl(self):
+        def normalize_key(key):
+            key = key.lower().replace(" ", "_")
+            if key == "gross_proceeds":
+                return "amount"
+            if key == "symbol":
+                return "ticker"
+            return key
+
+        reader = csv.reader(self.file)
+        if (header := next(reader)) != self.header:
+            raise CryptoImportError(f"Unexpected sells header: {header}")
+
+        pnl = [dict(zip(self.header, line, strict=False)) for line in reader]
+        return [
+            CryptoPnL(**{normalize_key(k): v for (k, v) in row.items()}) for row in pnl
+        ]
+
+    def run(self):
+        try:
+            results = CryptoPnL.objects.bulk_create(
+                self.parse_pnl(),
+                update_conflicts=True,
+                update_fields=[
+                    "amount",
+                    "cost_basis",
+                    "fees",
+                    "gross_pnl",
+                    "net_pnl",
+                ],
+                unique_fields=[
+                    "currency",
+                    "date_acquired",
+                    "date_sold",
+                    "ticker",
+                    "quantity",
+                ],
+            )
+        except (IntegrityError, ValidationError) as e:
+            self.logger.error(str(e))
+            raise CryptoImportError(e) from e
+        else:
+            self.logger.info("Imported '%d' stock pnl records", len(results))
+
+        backup_finance_model(model="CryptoPnL")
 
 
 class CryptoTransactionsImporter:
