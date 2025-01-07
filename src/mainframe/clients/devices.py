@@ -5,13 +5,14 @@ from operator import attrgetter
 
 import requests
 from django.db import IntegrityError
+from mainframe.core.exceptions import MainframeError
 from mainframe.devices.models import Device
 from mainframe.sources.models import Source
 from rest_framework import status
 
 
-class DevicesException(Exception):
-    pass
+class DevicesException(MainframeError):
+    ...
 
 
 class DevicesClient:

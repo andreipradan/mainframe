@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 from bs4 import BeautifulSoup
 from mainframe.clients.logs import get_default_logger
-from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
+from mainframe.earthquakes.management.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 
 

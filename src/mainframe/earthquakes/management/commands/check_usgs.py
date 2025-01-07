@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pytz
 from django.conf import settings
 from mainframe.clients.logs import get_default_logger
-from mainframe.earthquakes.management.commands.base_check import BaseEarthquakeCommand
+from mainframe.earthquakes.management.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 
 

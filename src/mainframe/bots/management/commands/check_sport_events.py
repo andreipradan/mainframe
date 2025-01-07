@@ -6,6 +6,7 @@ from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import aiohttp
+import environ
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
@@ -18,15 +19,16 @@ logger = get_default_logger(__name__)
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument("--chat_id", type=str, required=True)
+        parser.add_argument("--chat_id", type=str)
         parser.add_argument("--categories", type=list, required=True, nargs="+")
 
     def handle(self, *_, **options):
         chat_id = options["chat_id"]
-        categories = options["categories"]
+        if not chat_id:
+            chat_id = environ.Env()("TELEGRAM_CHAT_ID")
 
         logger.info("Checking today's sport events")
-        results = fetch_all(categories)
+        results = fetch_all(options["categories"])
 
         results_size = len(results)
         max_size = 2000

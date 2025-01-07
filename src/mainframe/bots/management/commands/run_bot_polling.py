@@ -16,7 +16,7 @@ from mainframe.clients import dexonline
 from mainframe.clients.gemini import GeminiError, generate_content
 from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import RedisClient
-from mainframe.earthquakes.management.commands.base_check import parse_event
+from mainframe.earthquakes.management.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode

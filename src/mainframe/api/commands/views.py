@@ -2,9 +2,16 @@ import itertools
 import operator
 
 from django.core.exceptions import ImproperlyConfigured
-from django.core.management import CommandError, call_command, get_commands
+from django.core.management import (
+    BaseCommand,
+    CommandError,
+    call_command,
+    get_commands,
+    load_command_class,
+)
 from django.http import JsonResponse
 from mainframe.clients.logs import get_default_logger
+from mainframe.core.exceptions import MainframeError
 from mainframe.crons.models import Cron
 from mainframe.crons.serializers import CronSerializer
 from rest_framework import status, viewsets
@@ -12,6 +19,31 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
 logger = get_default_logger(__name__)
+
+
+def get_custom_arguments(app_name, command_name):
+    command_class = load_command_class(app_name, command_name)
+
+    parser = command_class.create_parser("manage.py", command_name)
+
+    base_command = BaseCommand()
+    base_parser = base_command.create_parser("manage.py", "base")
+    default_options = {action.dest for action in base_parser._actions}
+
+    return [
+        {
+            "choices": o.choices,
+            "default": o.default,
+            "dest": o.dest,
+            "help": o.help,
+            "nargs": o.nargs,
+            "option_strings": o.option_strings,
+            "required": o.required,
+            "type": o.type.__name__ if o.type else None,
+        }
+        for o in parser._actions
+        if o.dest not in default_options
+    ]
 
 
 class CommandsViewSet(viewsets.GenericViewSet):
@@ -29,19 +61,13 @@ class CommandsViewSet(viewsets.GenericViewSet):
         commands = sorted(
             filter(filter_out, get_commands().items()), key=operator.itemgetter(1)
         )
-        crons = {
-            c.command: CronSerializer(c).data
-            for c in Cron.objects.filter(
-                command__in=map(operator.itemgetter(0), commands)
-            )
-        }
         results = [
             {
                 "app": app,
                 "commands": [
                     {
                         "name": cmd[0],
-                        "cron": crons.get(cmd[0]),
+                        "args": get_custom_arguments(app, cmd[0]),
                     }
                     for cmd in cmds
                 ],
@@ -53,10 +79,11 @@ class CommandsViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["put"])
     def run(self, request, pk, **kwargs):
-        args = request.data.get("args", "").split()
+        args = request.data.get("args") or []
+        kwargs = request.data.get("kwargs") or {}
         try:
-            call_command(pk, *args)
-        except CommandError as e:
+            call_command(pk, *args, **kwargs)
+        except (CommandError, MainframeError) as e:
             return JsonResponse(
                 data={"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
