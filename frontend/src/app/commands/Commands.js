@@ -1,14 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { ColorRing } from "react-loader-spinner";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
 import CommandsApi from "../../api/commands";
-import EditModal from "./crons/components/EditModal";
 import Errors from "../shared/Errors";
-import {Col, Collapse, Row} from "react-bootstrap";
+import { Collapse } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
+import AceEditor from 'react-ace';
 
 
 const Commands = () =>  {
@@ -20,31 +20,63 @@ const Commands = () =>  {
   const api = new CommandsApi(token)
 
   const [appOpen, setAppOpen] = useState(null)
-  const [commandArguments, setCommandArguments] = useState("")
-  const [cron, setCron] = useState("")
+  const [commandArguments, setCommandArguments] = useState(null)
+  const [kwargs, setKwargs] = useState(null);
   const [selectedCommand, setSelectedCommand] = useState(null)
 
+  const [annotations, setAnnotations] = useState(null);
+
   const clearForm = () => {
-    setCommandArguments("")
-    setCron("")
+    setCommandArguments(null)
+    setKwargs(null);
     setSelectedCommand(null)
   }
-  const onSubmit = (e, operation = "run") => {
+  const onKwargsChange = useCallback((e, i) => {
+    setKwargs(e)
+    try {
+      JSON.parse(e)
+      setAnnotations(null)
+    }
+    catch (error) {
+      const annotation = {...i.end, text: error.message, type: 'error'}
+      setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
+    }
+  }, [annotations])
+  const onSubmit = e => {
     e.preventDefault()
-    if (operation === "run")
-      dispatch(CommandsApi.run(token, selectedCommand.name, commandArguments))
-    else if (operation === "set-cron")
-      dispatch(CommandsApi.setCron(token, selectedCommand.name, cron, selectedCommand?.cron?.id))
-    else if (operation === "delete-cron")
-      dispatch(CommandsApi.deleteCron(token, selectedCommand.name, selectedCommand?.cron?.id))
+    const data = {}
+    if (commandArguments)
+      data.args = commandArguments.split(" ")
+    if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ""))
+
+    dispatch(api.run(selectedCommand.name, data))
     clearForm()
   }
 
-  useEffect(() => {!results && dispatch(api.getList(token))}, []);
+  useEffect(() => {!results && dispatch(api.getList())}, []);
   useEffect(() => {
     if (selectedCommand) {
       commandArgumentsRef.current?.focus()
-      setCron(selectedCommand.cron?.expression)
+      const placeholders = {
+        str: "<placeholder str>",
+        bool: false,
+        int: 0,
+        float: 0.0,
+        dict: {},
+        list: [],
+      }
+      if (selectedCommand.args) {
+        const kw = selectedCommand.args.reduce((result, item) => {
+          if (item.required) {
+            result[item.dest] = item.default !== null && item.default !== undefined
+              ? item.default
+              : placeholders[item.type] ?? null;
+
+          }
+          return result;
+        }, {});
+        setKwargs(JSON.stringify(kw, null, "\t"));
+      }
     }
   }, [selectedCommand]);
 
@@ -120,75 +152,73 @@ const Commands = () =>  {
           </div>
         </div>
       </div>
-      <EditModal />
       <Modal centered show={Boolean(selectedCommand)} onHide={clearForm}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">
               <div className="col-lg-12 grid-margin stretch-card">
-                {selectedCommand?.name}
+                Run {selectedCommand?.name}?
               </div>
             </div>
-            <p className="text-muted mb-0">
-              Run / Set cron for <b>{selectedCommand?.name}</b>
-            </p>
+            {
+              selectedCommand?.args?.length
+                ? <p className="text-muted mb-0">
+                    Params:
+                    <ul>
+                      {selectedCommand.args.map(arg =>
+                        <li>
+                          {arg.dest}
+                          <ul>
+                            <li>required: {arg.required.toString()}</li>
+                            {arg.type ? <li>type: {arg.type}</li> : null}
+                            {arg.choices ? <li>choices: {arg.choices.join(', ')}</li> : null}
+                            {arg.default ? <li>default: {arg.default}</li> : null}
+                            {arg.help ? <li>description: {arg.help}</li> : null}
+                          </ul>
+                        </li>)}
+                    </ul>
+                  </p>
+                : null
+            }
+
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form onSubmit={onSubmit}>
             <Form.Group className="mb-3">
-              <Row>
-                <Col md={6}>
-                  <Form.Control
-                    type="text"
-                    value={cron}
-                    onChange={e => setCron(e.target.value)}
-                    placeholder={"Cron"}
-                  />
-                </Col>
-                <Col md={3}>
-                  <Button
-                    disabled={!cron}
-                    variant="warning"
-                    className="h-100 w-100"
-                    onClick={evt => {onSubmit(evt, "set-cron")}}
-                  >
-                    Set
-                  </Button>
-                </Col>
-                <Col md={3}>
-                  <Button
-                    disabled={!selectedCommand?.cron}
-                    variant="outline-danger"
-                    className="h-100 w-100"
-                    onClick={evt => {onSubmit(evt, "delete-cron")}}
-                  >
-                    <i className="mdi mdi-trash-can-outline" />
-                  </Button>
-                </Col>
-              </Row>
+              <Form.Label>Args</Form.Label>
+              <Form.Control
+                ref={commandArgumentsRef}
+                type="text"
+                value={commandArguments}
+                onChange={e => setCommandArguments(e.target.value)}
+                placeholder={'Command arguments'}
+              />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Row>
-                <Col md={9}>
-                  <Form.Control
-                    ref={commandArgumentsRef}
-                    type="text"
-                    value={commandArguments}
-                    onChange={e => setCommandArguments(e.target.value)}
-                    placeholder={"Command arguments"}
-                  />
-                </Col>
-                <Col md={3}>
-                  <Button
-                    variant="primary"
-                    className="float-left h-100 w-100"
-                    onClick={evt => {onSubmit(evt)}}
-                  >
-                    Run
-                  </Button>
-                </Col>
-              </Row>
+              <Form.Label>Kwargs</Form.Label>
+              <AceEditor
+                className={(annotations) ? "form-control is-invalid" : ""}
+                annotations={annotations}
+                placeholder="Kwargs"
+                mode="python"
+                theme="monokai"
+                onChange={onKwargsChange}
+                fontSize={12}
+                showGutter={false}
+                highlightActiveLine
+                value={kwargs}
+                setOptions={{
+                  enableBasicAutocompletion: false,
+                  enableLiveAutocompletion: false,
+                  enableSnippets: false,
+                  showLineNumbers: true,
+                  tabSize: 2,
+                }}
+                width="100%"
+                height="150px"
+              />
+
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -197,7 +227,9 @@ const Commands = () =>  {
             e.preventDefault()
             clearForm()
           }}>Close</Button>
-
+          <Button variant="primary" onClick={evt => {onSubmit(evt)}}>
+            Run
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

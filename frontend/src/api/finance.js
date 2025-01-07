@@ -30,13 +30,12 @@ import {
   setLoading as setStocksPnlLoading,
 } from "../redux/pnlSlice";
 import {
-  create as createTimetable,
   deleteItem as deleteTimetable,
   set as setTimetables,
   setErrors as setTimetableErrors,
-  setItem as setTimetable,
   setLoading as setTimetablesLoading,
-  setLoadingItems as setTimetableLoading
+  setLoadingItems as setTimetablesLoadingItems,
+  update as updateTimetable,
 } from "../redux/timetableSlice";
 import {
   set as setPredictionResults,
@@ -45,37 +44,43 @@ import {
   setLoadingTask,
   setTask,
 } from "../redux/predictionSlice"
-import {handleErrors} from "./errors";
-import { toast } from 'react-toastify';
-import { toastParams } from './auth';
-import { Api } from './shared';
+import { handleErrors } from "./errors";
+import { DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi, UploadApi } from './shared';
 
-export class CryptoApi extends Api {
-  baseUrl = "finance/crypto"
-  set = setCrypto;
-  setLoading = setCryptoLoading;
-  setErrors = setCryptoErrors;
+export class CryptoApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "finance/crypto"
+  static methods = {
+    set: setCrypto,
+    setErrors: setCryptoErrors,
+    setLoading: setCryptoLoading,
+  }
 }
 
-export class CryptoPnlApi extends Api {
-  baseUrl = "finance/crypto/pnl"
-  set = setCryptoPnl;
-  setLoading = setCryptoPnlLoading;
-  setErrors = setCryptoPnlErrors;
+export class CryptoPnlApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "finance/crypto/pnl"
+  static methods = {
+    set: setCryptoPnl,
+    setErrors: setCryptoPnlErrors,
+    setLoading: setCryptoPnlLoading,
+  }
 }
 
-export class StocksApi extends Api {
-  baseUrl = "finance/stocks"
-  set = setStocks;
-  setLoading = setStocksLoading;
-  setErrors = setStocksErrors;
+export class StocksApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "finance/stocks"
+  static methods = {
+    set: setStocks,
+    setErrors: setStocksErrors,
+    setLoading: setStocksLoading,
+  }
 }
 
-export class StocksPnlApi extends Api {
-  baseUrl = "finance/stocks/pnl"
-  set = setStocksPnl;
-  setLoading = setStocksPnlLoading;
-  setErrors = setStocksPnlErrors;
+export class StocksPnlApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "finance/stocks/pnl"
+  static methods = {
+    set: setStocksPnl,
+    setErrors: setStocksPnlErrors,
+    setLoading: setStocksPnlLoading,
+  }
 }
 
 export class FinanceApi {
@@ -128,42 +133,15 @@ export class PredictionApi {
   }
 }
 
-export class TimetableApi {
-  static deleteTimetable = (token, timetableId) => (dispatch) => {
-    dispatch(setTimetableLoading(true));
-    axios
-      .delete(`${base}/timetables/${timetableId}/`, { headers: { Authorization: token } })
-      .then(() => {dispatch(deleteTimetable(timetableId))})
-      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  };
-  static get = (token, id) => dispatch => {
-    dispatch(setTimetableLoading(id));
-    axios
-      .get(`${base}/timetables/${id}/`, { headers: { Authorization: token } })
-      .then(response => dispatch(setTimetable(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  };
-  static getTimetables = (token, page = null) => (dispatch) => {
-    dispatch(setTimetablesLoading(true));
-    axios
-      .get(`${base}/timetables/?page=${page || 1}`, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(setTimetables(response.data))
-      })
-      .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
-  };
-  static upload = (token, data) => dispatch => {
-    dispatch(setTimetablesLoading(true))
-    axios.post(
-      `${base}/timetables/`,
-      data,
-      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
-    )
-    .then((response) => {
-      dispatch(createTimetable(response.data))
-      toast.success("Timetable uploaded successfully!", toastParams)
-    })
-    .catch((err) => handleErrors(err, dispatch, setTimetableErrors));
+export class TimetableApi extends mix(DeleteApi, DetailApi, ListApi, TokenMixin, UpdateApi, UploadApi) {
+  static baseUrl = "finance/timetables"
+  static methods = {
+    delete: deleteTimetable,
+    set: setTimetables,
+    setErrors: setTimetableErrors,
+    setLoading: setTimetablesLoading,
+    setLoadingItems: setTimetablesLoadingItems,
+    update: updateTimetable,
   }
 }
 

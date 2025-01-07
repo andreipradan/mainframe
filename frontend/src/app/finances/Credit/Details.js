@@ -25,6 +25,8 @@ const Details = () => {
   const latestTimetable = overview.latest_timetable?.amortization_table
   const timetable = useSelector(state => state.timetable)
 
+  const timetableApi = new TimetableApi(token)
+
   const payment = useSelector(state => state.payment)
   const saved = overview.payment_stats?.saved
 
@@ -44,7 +46,7 @@ const Details = () => {
   useEffect(() => {
     {
       !payment.results && dispatch(PaymentsApi.getList(token));
-      !timetable.results && dispatch(TimetableApi.getTimetables(token))
+      !timetable.results && dispatch(timetableApi.getList())
     }}, []);
   useEffect(() => {
     if (!overview.credit) dispatch(FinanceApi.getCredit(token))
@@ -560,21 +562,25 @@ const Details = () => {
               <button
                 type={'button'}
                 className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
-                onClick={() => dispatch(TimetableApi.getTimetables(token))}
+                onClick={() => dispatch(timetableApi.getList())}
               >
                 <i className={'mdi mdi-refresh'} />
               </button>
             </h6>
-            <Line data={interestData} options={{
-              scales: {
-                yAxes: [{
-                  ticks: {beginAtZero: true, precision: 0.1},
-                  gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                }],
-                xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
-              },
-              legend: {display: true},
-            }}/>
+            {
+              timetable.loading
+                ? <Circles/>
+                : <Line data={interestData} options={{
+                    scales: {
+                      yAxes: [{
+                        ticks: {beginAtZero: true, precision: 0.1},
+                        gridLines: {color: "rgba(204, 204, 204,0.1)"},
+                      }],
+                      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                    },
+                    legend: {display: true},
+                  }}/>
+            }
           </div>
         </div>
       </div>

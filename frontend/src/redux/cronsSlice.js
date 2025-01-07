@@ -49,7 +49,7 @@ export const cronsSlice = createSlice({
     setModalOpen: (state, action) => {
       state.modalOpen = action.payload
     },
-    setLoading: (state, action) => {state.loading = action.payload},
+    setLoading: (state, action) => {state.loading = action.payload || true},
     setLoadingCron: (state, action) => {
       state.loadingCrons = !state.loadingCrons
         ? [action.payload]
@@ -64,7 +64,12 @@ export const cronsSlice = createSlice({
             ? a.command > b.command ? 1 : -1
             : b.is_active > a.is_active ? 1 : -1
       );
-      state.selectedCron = null;
+      state.selectedCron =
+        action.payload.dontClearSelectedItem === true
+          ? state.selectedCron
+          : action.payload.setSelected === true
+            ? state.results.find(item => item.id === action.payload.id)
+            : null;
       state.modalOpen = false;
     },
   },

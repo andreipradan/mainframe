@@ -15,11 +15,13 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import DevicesApi from "../../api/devices";
 import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 import { Tooltip } from 'react-tooltip';
+import Errors from '../shared/Errors';
 
 const EditModal = () => {
   const dispatch = useDispatch();
-  const { selectedItem: device, modalOpen, loadingItems: loadingDevices } = useSelector(state => state.devices)
+  const { selectedItem: device, modalOpen, loadingItems: loadingDevices, errors } = useSelector(state => state.devices)
   const token = useSelector((state) => state.auth.token)
+  const api = new DevicesApi(token)
 
   const [additionalData, setAdditionalData] = useState(null);
   const [alias, setAlias] = useState("");
@@ -70,12 +72,11 @@ const EditModal = () => {
     if (additionalData)
       data.additional_data = JSON.parse(additionalData.replace(/[\r\n\t]/g, ""))
     if (device) {
-      dispatch(DevicesApi.updateDevice(token, device.id, data));
+      dispatch(api.update(device.id, data));
     } else {
       data.mac = mac
-      dispatch(DevicesApi.create(token, data))
+      dispatch(api.create(data))
     }
-    closeModal()
   }
   useEffect(() => {
     if (device) {
@@ -105,6 +106,8 @@ const EditModal = () => {
               </p>
             : null
         }
+        {modalOpen ? <Errors errors={errors} /> : null}
+
       </Modal.Title>
     </Modal.Header>
     {
@@ -207,7 +210,7 @@ const EditModal = () => {
     }
     <Modal.Footer>
       {
-        Boolean(device) && <Button variant="danger" className="float-left" onClick={() => dispatch(DevicesApi.delete(token, device.id))}>
+        Boolean(device) && <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(device.id))}>
           Delete
         </Button>
       }

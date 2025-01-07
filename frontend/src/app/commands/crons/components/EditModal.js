@@ -25,6 +25,8 @@ const EditModal = () => {
   const commands = useSelector(state => state.commands)
   const { selectedCron: cron, loadingCrons, errors, modalOpen } = useSelector(state => state.crons)
 
+  const api = new CronsApi(token)
+
   const [annotations, setAnnotations] = useState(null);
   const [args, setArgs] = useState("");
   const [allCommands, setAllCommands] = useState(null)
@@ -78,7 +80,7 @@ const EditModal = () => {
     allCommands && setCommand({ label: allCommands.find(c => c.value === e.value).label, value: e.value }),
     [allCommands]
   )
-  const onDelete = useCallback(() => dispatch(CronsApi.delete(token, cron.id)), [dispatch, token, cron])
+  const onDelete = useCallback(() => dispatch(api.delete(cron.id)), [dispatch, cron])
   const onExpressionChange = useCallback(e => setExpression(e.target.value), [])
   const onIsActiveChange = useCallback(() => {setIsActive(!isActive)}, [isActive])
   const onKwargsChange = useCallback((e, i) => {
@@ -102,10 +104,9 @@ const EditModal = () => {
     }
     if (args) data.args = args.split("\n")
     if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ""))
-    if (cron) dispatch(CronsApi.updateCron(token, cron.id, data))
-    else dispatch(CronsApi.create(token, data))
-    clearModal()
-  }, [args, command, cron, dispatch, expression, isActive, kwargs, name, token])
+    if (cron) dispatch(api.update(cron.id, data))
+    else dispatch(api.create(data))
+  }, [args, command, cron, dispatch, expression, isActive, kwargs, name])
 
   return <Modal centered show={Boolean(cron) || modalOpen} onHide={onCloseModal}>
     <Modal.Header closeButton>
@@ -113,6 +114,16 @@ const EditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card">
             {cron ? 'Edit' : 'Add new cron'} { cron?.name }
+            {
+              cron
+                ? <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                    onClick={() => dispatch(api.getItem(cron.id))}>
+                    <i className="mdi mdi-refresh" />
+                  </button>
+                : null
+            }
           </div>
         </div>
         {cron && <p className="text-muted mb-0">{cron?.description}</p>}
@@ -120,7 +131,7 @@ const EditModal = () => {
     </Modal.Header>
     {
       loadingCrons?.includes(cron?.id)
-      ? <ColorRing
+        ? <ColorRing
           width = "100%"
           height = "50"
           wrapperStyle={{width: "100%"}}

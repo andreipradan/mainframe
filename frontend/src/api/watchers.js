@@ -5,37 +5,12 @@ import {
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
 import { toastParams } from "./auth";
+import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi } from './shared';
 
 
-class WatchersApi {
-  static create = (token, data) => dispatch => {
-    dispatch(setLoading());
-    axios
-      .post(base, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(create(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static delete = (token, id) => dispatch => {
-    dispatch(setLoadingItems(id));
-    axios
-      .delete(`${base}${id}/`, { headers: { Authorization: token } })
-      .then(() => dispatch(deleteItem(id)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static getItem = (token, id) => dispatch => {
-    dispatch(setLoadingItems(id));
-    axios
-      .get(`${base}${id}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setItem(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static getList = (token) => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .get(base, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
+class WatchersApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "watchers";
+  static methods = {create, delete: deleteItem, set, setErrors, setLoading, setLoadingItems, update}
   static run = (token, id) => dispatch => {
     dispatch(setLoadingItems(id));
     axios
@@ -57,15 +32,6 @@ class WatchersApi {
       .then(response => toast.success(response.data.result, toastParams))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   }
-  static update = (token, id, data) => dispatch => {
-    dispatch(setLoadingItems(id));
-    axios
-      .patch(`${base}${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update(response.data));
-      })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
 }
 
 const base = "watchers/";

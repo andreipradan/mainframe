@@ -1,24 +1,8 @@
-import axios from "./index";
-import {
-  set,
-  setErrors,
-  setLoading,
-} from "../redux/earthquakesSlice";
-import { handleErrors } from "./errors";
-import { createSearchParams } from "./shared";
+import { set, setErrors, setLoading } from "../redux/earthquakesSlice";
+import { ListApi, mix, TokenMixin } from './shared';
 
-
-class EarthquakesApi {
-  static getList = (token, kwargs) => (dispatch) => {
-    dispatch(setLoading(true));
-    kwargs = kwargs || {};
-    axios
-      .get(base + `?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
+class EarthquakesApi extends mix(ListApi, TokenMixin){
+  static baseUrl = "earthquakes"
+  static methods = {set, setErrors, setLoading}
 }
-
-let base = "earthquakes/";
-
 export default EarthquakesApi;

@@ -12,17 +12,15 @@ import {
   turn_on,
   unsetLoadingLight,
 } from "../redux/lightsSlice";
-import {handleErrors} from "./errors";
+import { handleErrors } from "./errors";
+import { ListApi, mix, TokenMixin } from './shared';
 
 
-class LightsApi {
-  static getList = (token) => (dispatch) => {
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
+class LightsApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "lights"
+  static methods = {set, setErrors, setLoading}
+  static ngrokAxios = ["getList"]
+
   static setBrightness = (token, lightIp, brightness) => (dispatch) => {
     dispatch(setLoadingItems(lightIp));
     axios

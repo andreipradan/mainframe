@@ -17,12 +17,12 @@ const Crons = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {selectedCron, results: crons, errors, loading, loadingCrons, modalOpen } = useSelector(state => state.crons)
 
+  const api = new CronsApi(token)
+
   const [selectedAction, setSelectedAction] = useState("")
   const [selectedActionCron, setSelectedActionCron] = useState(null)
 
-  useEffect(() => {
-    !crons && dispatch(CronsApi.getList(token));
-  }, []);
+  useEffect(() => {!crons && dispatch(api.getList())}, []);
 
   return (
     <div>
@@ -44,7 +44,7 @@ const Crons = () =>  {
                 <button
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(CronsApi.getList(token))}
+                    onClick={() => dispatch(api.getList())}
                 >
                   <i className="mdi mdi-refresh" />
                 </button>

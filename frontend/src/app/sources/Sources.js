@@ -23,6 +23,8 @@ const Sources = () =>  {
   const sources = useSelector(state => state.sources)
   const token = useSelector(state => state.auth.token)
 
+  const api = new SourcesApi(token)
+
   const [config, setConfig] = useState(null);
   const [isDefault, setIsDefault] = useState(false);
   const [headers, setHeaders] = useState(null);
@@ -76,9 +78,8 @@ const Sources = () =>  {
     if (headers)
       data.headers = JSON.parse(headers.replace(/[\r\n\t]/g, ""))
     if (sources.selectedItem)
-      dispatch(SourcesApi.update(token, sources.selectedItem.id, data))
-    else dispatch(SourcesApi.create(token, data))
-    clearModal()
+      dispatch(api.update(sources.selectedItem.id, data))
+    else dispatch(api.create(data))
   }
   useEffect(() => {
     if (sources.selectedItem) {
@@ -114,7 +115,7 @@ const Sources = () =>  {
                         <button
                           type="button"
                           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                          onClick={() => dispatch(SourcesApi.getList(token, sources.kwargs))}
+                          onClick={() => dispatch(api.getList(sources.kwargs))}
                         >
                           <i className="mdi mdi-refresh" />
                         </button>
@@ -173,7 +174,7 @@ const Sources = () =>  {
                     }
                   </tbody>
                 </table>
-                <BottomPagination items={sources} fetchMethod={SourcesApi.getList} setKwargs={setKwargs} />
+                <BottomPagination items={sources} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
 
               </div>
             </div>
@@ -281,7 +282,7 @@ const Sources = () =>  {
         }
         <Modal.Footer>
           {
-            sources.selectedItem && <Button variant="danger" className="float-left" onClick={() => dispatch(SourcesApi.delete(token, sources.selectedItem))}>
+            sources.selectedItem && <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(sources.selectedItem.id))}>
               Delete
             </Button>
           }

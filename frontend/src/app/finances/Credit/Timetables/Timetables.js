@@ -18,6 +18,8 @@ const Timetables = () => {
   const token = useSelector((state) => state.auth.token)
   const timetable = useSelector(state => state.timetable)
 
+  const api = new TimetableApi(token)
+
   const [fileError, setFileError] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -35,14 +37,14 @@ const Timetables = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedFile);
-    dispatch(TimetableApi.upload(token, formData))
+    dispatch(api.upload(formData))
     setUploadOpen(false)
     setSelectedFile(null)
   };
 
   useEffect(() => setUploadOpen(Boolean(timetable.errors)), [timetable.errors]);
 
-  useEffect(() => {!timetable.results && dispatch(TimetableApi.getTimetables(token))}, []);
+  useEffect(() => {!timetable.results && dispatch(api.getList())}, []);
 
   return <div>
     <div className="page-header mb-0">
@@ -51,7 +53,7 @@ const Timetables = () => {
         <button
           type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(TimetableApi.getTimetables(token))}
+          onClick={() => dispatch(api.getList())}
         >
           <i className="mdi mdi-refresh" />
         </button>

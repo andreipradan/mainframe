@@ -21,6 +21,8 @@ const Watchers = () =>  {
   const token = useSelector((state) => state.auth.token)
   const {results, errors, loading, loadingItems, modalOpen, selectedItem } = useSelector(state => state.watchers)
 
+  const api = new WatchersApi(token)
+
   const [chatId, setChatId] = useState("");
   const [cron, setCron] = useState("");
   const [isActive, setIsActive] = useState(false)
@@ -38,7 +40,7 @@ const Watchers = () =>  {
   const [taskErrorsOpen, setTaskErrorsOpen] = useState(false)
   const [taskHistoryOpen, setTaskHistoryOpen] = useState(false)
 
-  useEffect(() => {!results && dispatch(WatchersApi.getList(token))}, []);
+  useEffect(() => {!results && dispatch(api.getList())}, []);
   useEffect(() => {
     if (selectedItem) {
       setChatId(selectedItem.chat_id || "")
@@ -128,7 +130,7 @@ const Watchers = () =>  {
                 <button
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(WatchersApi.getList(token))}
+                    onClick={() => dispatch(api.getList())}
                 >
                   <i className="mdi mdi-refresh" />
                 </button>
@@ -242,7 +244,7 @@ const Watchers = () =>  {
                     ? <button
                         type="button"
                         className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                        onClick={() => dispatch(WatchersApi.getItem(token, selectedItem?.id))}
+                        onClick={() => dispatch(api.getItem(selectedItem?.id))}
                       >
                         <i className="mdi mdi-refresh" />
                       </button>
@@ -439,7 +441,7 @@ const Watchers = () =>  {
         <Modal.Footer>
           {
             selectedItem
-              ? <Button variant="danger" onClick={() => dispatch(WatchersApi.delete(token, selectedItem.id))}>
+              ? <Button variant="danger" onClick={() => dispatch(api.delete(selectedItem.id))}>
                   Delete
                 </Button>
               : null
@@ -461,7 +463,7 @@ const Watchers = () =>  {
                   <Button variant="primary"
                     disabled={Boolean(requestAnnotations) || Boolean(latestAnnotations)}
                     onClick={() => {
-                      dispatch(WatchersApi.update(token, selectedItem?.id, {
+                      dispatch(api.update(selectedItem?.id, {
                         chat_id: chatId || null,
                         cron,
                         is_active: isActive,
@@ -479,7 +481,7 @@ const Watchers = () =>  {
               : <Button variant="primary"
                   disabled={Boolean(requestAnnotations) || Boolean(latestAnnotations)}
                   onClick={() => {
-                    dispatch(WatchersApi.create(token, {
+                    dispatch(api.create({
                       chat_id: chatId || null,
                       cron,
                       is_active: isActive,

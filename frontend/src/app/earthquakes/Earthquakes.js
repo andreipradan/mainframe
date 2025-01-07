@@ -34,6 +34,9 @@ const Earthquakes = () => {
   const token = useSelector((state) => state.auth.token)
   const earthquakes = useSelector(state => state.earthquakes)
   const earthquakesList = earthquakes.results ? [...earthquakes.results].reverse() : null
+
+  const api = new EarthquakesApi(token)
+
   const [alertOpen, setAlertOpen] = useState(false)
   useEffect(() => {setAlertOpen(!!earthquakes.errors)}, [earthquakes.errors])
 
@@ -234,7 +237,7 @@ const Earthquakes = () => {
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={
                   () => {
-                    dispatch(EarthquakesApi.getList(token, earthquakes.kwargs))
+                    dispatch(api.getList(earthquakes.kwargs))
                     dispatch(new BotsApi(token).getList())
                   }
                 }>
@@ -343,7 +346,7 @@ const Earthquakes = () => {
                     </tbody>
                   </table>
                 </div>
-                <BottomPagination items={earthquakes} fetchMethod={EarthquakesApi.getList} setKwargs={setKwargs} />
+                <BottomPagination items={earthquakes} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
 
               </div>
               <div className="col-md-5">

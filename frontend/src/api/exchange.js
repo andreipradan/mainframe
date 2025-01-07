@@ -1,16 +1,8 @@
-import axios from "./index";
-import { handleErrors } from "./errors";
-import { createSearchParams } from "./shared";
 import { set, setErrors, setLoading } from "../redux/exchangeSlice";
+import { ListApi, mix, TokenMixin } from './shared';
 
-export class ExchangeApi {
-  static getRates = (token, kwargs = null) => (dispatch) => {
-    dispatch(setLoading(true));
-    kwargs = kwargs || {};
-    axios
-      .get(`${base}/rates/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
+export class ExchangeApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "exchange"
+  static methods = {set, setErrors, setLoading};
 }
-const base = "exchange"
+export default ExchangeApi;

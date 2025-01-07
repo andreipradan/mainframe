@@ -18,6 +18,8 @@ const TimetableEditModal = () => {
   const timetable = useSelector(state => state.timetable.selectedItem)
   const token = useSelector((state) => state.auth.token)
 
+  const api = new TimetableApi(token);
+
   return <Modal
     centered
     show={Boolean(timetable)}
@@ -29,7 +31,7 @@ const TimetableEditModal = () => {
         <div className="row">
           <div className="col-lg-12 grid-margin stretch-card mb-1">
             Amortization Table
-            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(TimetableApi.get(token, timetable?.id))}>
+            <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent" onClick={() => dispatch(api.getItem(timetable?.id))}>
               <i className="mdi mdi-refresh" />
             </button>
           </div>
@@ -76,7 +78,7 @@ const TimetableEditModal = () => {
       </div>
     </Modal.Body>
     <Modal.Footer>
-      <Button variant="danger" onClick={() => dispatch(TimetableApi.deleteTimetable(token, timetable.id))}>
+      <Button variant="danger" onClick={() => dispatch(api.delete(timetable.id))}>
         Delete
       </Button>
       <Button variant="secondary" onClick={() => dispatch(selectTimetable())}>

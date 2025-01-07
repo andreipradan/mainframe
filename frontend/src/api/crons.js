@@ -1,4 +1,4 @@
-import { axios, ngrokAxios } from "./index";
+import { ngrokAxios } from "./index";
 import {
   create,
   deleteCron,
@@ -11,36 +11,18 @@ import {
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
 import { toastParams } from "./auth";
+import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi } from './shared';
 
 
-class CronsApi {
-  static create = (token, data) => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .post(`${base}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(create(response.data));
-      })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static delete = (token, cronId) => dispatch => {
-    dispatch(setLoadingCron(cronId));
-    axios
-      .delete(`${base}/${cronId}/`, { headers: { Authorization: token } })
-      .then(() => dispatch(deleteCron(cronId)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static getList = (token, page = null) => (dispatch) => {
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/?page=${page || 1}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
+class CronsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "crons"
+  static methods = {create, delete: deleteCron, set, setErrors, setLoading, setLoadingItems: setLoadingCron, update}
+  static displayField = "name"
+
   static kill = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));
     ngrokAxios
-      .put(`${base}/${cronId}/kill/`, {}, { headers: { Authorization: token } })
+      .put(`crons/${cronId}/kill/`, {}, { headers: { Authorization: token } })
       .then(() => dispatch(setErrors([`Process ${cronCommand} killed`])))
       .catch((err) => {
         if (err.response?.status === 404)
@@ -51,7 +33,7 @@ class CronsApi {
   static run = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));
     ngrokAxios
-      .put(`${base}/${cronId}/run/`, {}, { headers: { Authorization: token } })
+      .put(`crons/${cronId}/run/`, {}, { headers: { Authorization: token } })
       .then(() => {
         toast.success(`"${cronCommand}" executed successfully!`, toastParams)
         dispatch(setLoading(false))
@@ -61,18 +43,7 @@ class CronsApi {
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
         return handleErrors(err, dispatch, setErrors)
       });
-  };
-  static updateCron = (token, cronId, data) => dispatch => {
-    dispatch(setLoadingCron(cronId));
-    axios
-      .patch(`${base}/${cronId}/`, data, { headers: { Authorization: token } })
-      .then((response) => {
-        dispatch(update(response.data));
-      })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
+  }
 }
-
-const base = "crons";
 
 export default CronsApi;

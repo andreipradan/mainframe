@@ -12,7 +12,9 @@ import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 const Devices = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {results, errors, loading, loadingItems, count } = useSelector(state => state.devices)
+  const {results, errors, loading, loadingItems, count, modalOpen } = useSelector(state => state.devices)
+
+  const api = new DevicesApi(token)
 
   const [devices, setDevices] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -58,7 +60,7 @@ const Devices = () =>  {
     </>
   }
 
-  useEffect(() => {!devices && dispatch(DevicesApi.getList(token))}, []);
+  useEffect(() => {!devices && dispatch(api.getList())}, []);
   useEffect(() => {if (results) setDevices(results)}, [results])
 
   useEffect(() => {
@@ -96,7 +98,7 @@ const Devices = () =>  {
               <h4 className="card-title">
                 Available devices
                 <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                        onClick={() => dispatch(DevicesApi.getList(token))}>
+                        onClick={() => dispatch(api.getList())}>
                   <i className="mdi mdi-refresh" />
                 </button>
                 <button type="button" className="btn btn-outline-primary btn-sm p-0 border-0 bg-transparent"
@@ -120,7 +122,7 @@ const Devices = () =>  {
                 <p className="text-small text-muted">Total: {count}</p>
 
               </h4>
-              <Errors errors={errors} />
+              {modalOpen ? null : <Errors errors={errors} />}
               <Collapse in={searchOpen}>
               <ul className="navbar-nav w-100 rounded">
                 <li className="nav-item w-100">

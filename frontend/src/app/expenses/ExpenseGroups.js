@@ -23,6 +23,8 @@ const ExpenseGroups = () => {
   const {token, user: currentUser} = useSelector((state) => state.auth)
   const groups = useSelector(state => state.groups)
 
+  const api = new GroupsApi(token)
+
   const [emailOpen, setEmailOpen] = useState(null)
 
   const [addGroupOpen, setAddGroupOpen] = useState(false)
@@ -60,7 +62,7 @@ const ExpenseGroups = () => {
               type="button"
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
               onClick={() => {
-                dispatch(GroupsApi.getList(token))
+                dispatch(api.getList())
               }}
             >
               <i className="mdi mdi-refresh" />
@@ -162,7 +164,7 @@ const ExpenseGroups = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={groups} fetchMethod={GroupsApi.getList} setKwargs={setKwargs} />
+            <BottomPagination items={groups} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
 
           </div>
         </div>
@@ -185,7 +187,7 @@ const ExpenseGroups = () => {
           className="nav-link mt-2"
           onSubmit={e => {
             e.preventDefault()
-            dispatch(GroupsApi.create(token, groupName))
+            dispatch(api.create({ name: groupName }))
             setGroupName("")
             setAddGroupOpen(false)
           }}
@@ -217,7 +219,7 @@ const ExpenseGroups = () => {
           variant="primary"
           onClick={e => {
             e.preventDefault()
-            dispatch(GroupsApi.create(token, groupName))
+            dispatch(api.create({ name: groupName }))
             setGroupName("")
             setAddGroupOpen(false)
           }}
@@ -264,7 +266,7 @@ const ExpenseGroups = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(GroupsApi.deleteGroup(token, groupToRemove?.id))
+            dispatch(api.delete(groupToRemove?.id))
             setGroupToRemove(null)
           }}
         >

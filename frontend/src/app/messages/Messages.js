@@ -17,6 +17,8 @@ const Messages = () =>  {
   const messages = useSelector(state => state.messages)
   const token = useSelector(state => state.auth.token)
 
+  const api = new MessagesApi(token)
+
   const onAuthorChange = newValue => {
     const newTypes = newValue.map(v => v.value)
     dispatch(setKwargs({author: newTypes, page: 1}))
@@ -52,7 +54,7 @@ const Messages = () =>  {
                         <button
                             type="button"
                             className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                            onClick={() => dispatch(MessagesApi.getList(token, messages.kwargs))}
+                            onClick={() => dispatch(api.getList(messages.kwargs))}
                         >
                           <i className="mdi mdi-refresh" />
                         </button>
@@ -62,7 +64,7 @@ const Messages = () =>  {
                     <div className="col-sm-6">
                       <Form
                         className="row"
-                        onSubmit={e => {e.preventDefault(); dispatch(MessagesApi.getList(token, messages.kwargs))}}
+                        onSubmit={e => {e.preventDefault(); dispatch(api.getList(messages.kwargs))}}
                       >
                         <Form.Group className="col-md-6">
                           <Form.Label>Author</Form.Label>&nbsp;
@@ -139,7 +141,7 @@ const Messages = () =>  {
                     }
                   </tbody>
                 </table>
-                <BottomPagination items={messages} fetchMethod={MessagesApi.getList} setKwargs={setKwargs} />
+                <BottomPagination items={messages} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
 
               </div>
             </div>

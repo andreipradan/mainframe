@@ -1,4 +1,3 @@
-import axios from "./index";
 import {
   create,
   deleteItem,
@@ -8,46 +7,11 @@ import {
   setLoadingItems,
   update,
 } from '../redux/sourcesSlice';
-import { handleErrors } from "./errors";
-import { toast } from 'react-toastify';
-import { toastParams } from './auth';
+import { CreateApi, DeleteApi, ListApi, mix, TokenMixin, UpdateApi } from './shared';
 
 
-class SourcesApi {
-  static create = (token, data) => dispatch => {
-    dispatch(setLoading(true))
-    axios
-      .post(`${base}/`, data, { headers: { Authorization: token} })
-      .then(response => dispatch(create(response.data)))
-      .catch(err => handleErrors(err, dispatch, setErrors))
-  }
-  static delete = (token, source) => dispatch => {
-    dispatch(setLoading(true))
-    axios
-      .delete(`${base}/${source.id}/`, { headers: { Authorization: token }})
-      .then(() => {
-        dispatch(deleteItem(source.id));
-        toast.warning(`Source '${source.name} (${source.url})' deleted`, toastParams)
-
-      })
-      .catch(err => handleErrors(err, dispatch, setErrors))
-  }
-  static getList = token => dispatch => {
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/`, { headers: { Authorization: token } })
-      .then(response => dispatch(set(response.data)))
-      .catch(err => handleErrors(err, dispatch, setErrors));
-  };
-  static update = (token, id, data) => dispatch => {
-    dispatch(setLoadingItems(id))
-    axios
-      .put(`${base}/${id}/`, data, { headers: { Authorization: token}})
-      .then(response => dispatch(update(response.data)))
-      .catch(err => handleErrors(err, dispatch, setErrors))
-  }
+class SourcesApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "sources"
+  static methods = {create, delete: deleteItem, set, setErrors, setLoading, setLoadingItems, update}
 }
-
-const base = "sources";
-
 export default SourcesApi;

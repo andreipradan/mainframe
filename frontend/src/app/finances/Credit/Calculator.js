@@ -10,7 +10,6 @@ import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import { TimetableApi } from "../../../api/finance";
 import Errors from "../../shared/Errors";
-import { Tooltip } from 'react-tooltip';
 
 const PMT = (ir, np, pv, fv, type) => {
     fv || (fv = 0);
@@ -29,7 +28,9 @@ const Calculator = () => {
   const token = useSelector((state) => state.auth.token)
   const timetable = useSelector(state => state.timetable)
 
-  useEffect(() => {!timetable.selectedItem && dispatch(TimetableApi.getTimetables(token))}, [timetable.selectedItem])
+  const timetableApi = new TimetableApi(token)
+
+  useEffect(() => {!timetable.selectedItem && dispatch(timetableApi.getList())}, [timetable.selectedItem])
   useEffect(() => {!timetable.selectedItem && timetable.results?.length && dispatch(selectTimetable(timetable.results[0].id))}, [timetable.results])
 
   const latestTimetable = timetable.selectedItem?.amortization_table
@@ -138,7 +139,7 @@ const Calculator = () => {
             ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
             : <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(TimetableApi.getTimetables(token))}
+                onClick={() => dispatch(timetableApi.getList())}
               >
                 <i className="mdi mdi-refresh" />
               </button>

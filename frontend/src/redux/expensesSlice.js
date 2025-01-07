@@ -4,6 +4,7 @@ import {getBaseSliceOptions} from "./shared";
 export const expensesSlice = createSlice(getBaseSliceOptions("expenses"));
 export const {
   create,
+  loadingItems,
   selectItem,
   set,
   setErrors,

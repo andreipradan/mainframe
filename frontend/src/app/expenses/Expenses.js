@@ -13,8 +13,10 @@ const Accounts = () => {
   const token = useSelector((state) => state.auth.token)
   const expenses = useSelector(state => state.expenses)
 
+  const api = new ExpensesApi(token)
+
   useEffect(() => {
-    !expenses.results?.length && dispatch(ExpensesApi.getList(token))
+    !expenses.results?.length && dispatch(api.getList())
   }, []);
 
   return <div>
@@ -23,7 +25,7 @@ const Accounts = () => {
         Expenses
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(ExpensesApi.getList(token))}
+          onClick={() => dispatch(api.getList())}
         >
           <i className="mdi mdi-refresh" />
         </button>

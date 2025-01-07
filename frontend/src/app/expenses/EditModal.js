@@ -23,6 +23,8 @@ const EditModal = () => {
   const user = useSelector((state) => state.auth.user)
   const expenses = useSelector(state => state.expenses)
 
+  const api = new ExpensesApi(token)
+
   const [amount, setAmount] = useState(0);
   const [currency, setCurrency] = useState("");
   const [date, setDate] = useState(new Date())
@@ -45,12 +47,11 @@ const EditModal = () => {
     event.preventDefault()
     const data = {amount, currency, date: date.toISOString().split("T")[0], description, payer_id: payer.id}
     if (expenses.selectedItem) {
-      dispatch(ExpensesApi.update(token, expenses.selectedItem.id, data))
+      dispatch(api.update(expenses.selectedItem.id, data))
     }
     else {
-      dispatch(ExpensesApi.create(token, data))
+      dispatch(api.create(data))
     }
-    clearModal()
   }
 
   const clearModal = () => {
@@ -82,7 +83,7 @@ const EditModal = () => {
               <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(ExpensesApi.get(token, expenses.selectedItem?.id))}
+                onClick={() => dispatch(api.getItem(expenses.selectedItem?.id))}
               >
                 <i className="mdi mdi-refresh" />
               </button>

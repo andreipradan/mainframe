@@ -9,7 +9,7 @@ import { Circles } from "react-loader-spinner";
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { ExchangeApi } from "../../api/exchange";
+import ExchangeApi from "../../api/exchange";
 import { selectStyles } from "../finances/Accounts/Categorize/EditModal";
 import { setKwargs } from "../../redux/exchangeSlice";
 import BottomPagination from "../shared/BottomPagination";
@@ -22,6 +22,8 @@ const ExchangeRates = () => {
 
   const token = useSelector((state) => state.auth.token)
   const exchange = useSelector(state => state.exchange)
+
+  const api = new ExchangeApi(token);
 
   const onFromCurrencyChange = newValue => {
     const kwargs = {...exchange.kwargs  || {}}
@@ -92,7 +94,7 @@ const ExchangeRates = () => {
             : <button
               type="button"
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
-              onClick={() => dispatch(ExchangeApi.getRates(token, exchange.kwargs))}
+              onClick={() => dispatch(api.getList(exchange.kwargs))}
             >
                 <i className="mdi mdi-refresh" />
               </button>
@@ -175,7 +177,7 @@ const ExchangeRates = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={exchange} fetchMethod={ExchangeApi.getRates} setKwargs={setKwargs} perPage={31}/>
+            <BottomPagination items={exchange} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} perPage={31}/>
           </div>
         </div>
       </div>
@@ -185,7 +187,7 @@ const ExchangeRates = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault()
-              dispatch(ExchangeApi.getRates(token, exchange.kwargs))
+              dispatch(api.getList(exchange.kwargs))
             }}>
               <Form.Group>
                 <Form.Label>From Currency</Form.Label>&nbsp;

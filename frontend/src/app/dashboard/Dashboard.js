@@ -20,7 +20,6 @@ import {
 } from "./chartsData";
 import DevicesApi from '../../api/devices';
 import CronsApi from '../../api/crons';
-import WatchersApi from '../../api/watchers';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -31,7 +30,8 @@ const Dashboard = () => {
   const crons = useSelector(state => state.crons)
   const devices = useSelector(state => state.devices)
   const lights = useSelector(state => state.lights)
-  const watchers = useSelector(state => state.watchers)
+
+  const lightsApi = new LightsApi(token)
 
   const lightsOnCount = lights.results?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.results?.filter(b => b.capabilities.power === "off").length
@@ -50,9 +50,8 @@ const Dashboard = () => {
   useEffect(() => {
     !bots.results && dispatch(new BotsApi(token).getList(token));
     !crons.results && dispatch(new CronsApi(token).getList())
-    !devices.results && dispatch(DevicesApi.getList(token))
-    !lights.results && dispatch(LightsApi.getList(token));
-    !watchers.results && dispatch(WatchersApi.getList(token))
+    !devices.results && dispatch(new DevicesApi(token).getList())
+    !lights.results && dispatch(lightsApi.getList());
   }, []);
 
   useEffect(() => {
@@ -131,7 +130,7 @@ const Dashboard = () => {
             <h4 className="card-title mb-1">
               Lights
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                      onClick={() => dispatch(LightsApi.getList(token))}>
+                      onClick={() => dispatch(lightsApi.getList())}>
                 <i className="mdi mdi-refresh" />
               </button>
               <div className="mr-auto text-sm-right pt-2 pt-sm-0">
@@ -284,7 +283,7 @@ const Dashboard = () => {
             <h5 className="card-title">
               Lights
               <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                      onClick={() => dispatch(LightsApi.getList(token))}>
+                      onClick={() => dispatch(lightsApi.getList())}>
                 <i className="mdi mdi-refresh" />
               </button>
             </h5>
