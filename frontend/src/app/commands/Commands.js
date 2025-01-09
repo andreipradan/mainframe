@@ -100,7 +100,7 @@ const Commands = () =>  {
                 <button
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                    onClick={() => dispatch(api.getList(token))}
+                    onClick={() => dispatch(api.getList())}
                 >
                   <i className="mdi mdi-refresh" />
                 </button>

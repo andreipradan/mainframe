@@ -15,7 +15,7 @@ const Bots = () =>  {
   const {results: bots, errors, loading, loadingItems: loadingBots} = useSelector(state => state.bots)
 
   const api = new BotsApi(token)
-  useEffect(() => {!bots && dispatch(api.getList(token))}, []);
+  useEffect(() => {!bots && dispatch(api.getList())}, []);
 
 
   const parseURL = str => {

@@ -150,7 +150,7 @@ const Devices = () =>  {
                     <th>Is Active? {getSortingComponent("is_active")}</th>
                     <th>IP {getSortingComponent("ip")}</th>
                     <th>Mac Address {getSortingComponent("mac")}</th>
-                    <th>Last updated {getSortingComponent("updated_at")}</th>
+                    <th>Last seen {getSortingComponent("last_seen")}</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -186,7 +186,7 @@ const Devices = () =>  {
                               <td className="center-content"><i className={`mdi mdi-${device.is_active ? "check text-success" : "alert text-danger"}`} /></td>
                               <td>{device.ip }</td>
                               <td className={devices.filter(d => d.id !== device.id).map(d => d.mac.toLowerCase()).includes(device.mac.toLowerCase()) ? "text-danger" : "text-primary"}>{device.mac}</td>
-                              <td>{new Date(device.updated_at).toLocaleString()}</td>
+                              <td>{new Date(device.last_seen).toLocaleString()}</td>
                             </tr>
                             )
                           : <tr><td colSpan={6}>No devices available</td></tr>
