@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+import time
 
 import dotenv
 import telegram
@@ -22,7 +23,7 @@ async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
         return e.message
 
 
-def send_telegram_message(text, **kwargs):
+def send_telegram_message(text, retries_on_network_error=3, **kwargs):
     logger = kwargs.pop("logger", logging)
     config = dotenv.dotenv_values()
     if not (chat_id := config.get("TELEGRAM_CHAT_ID")):
@@ -42,7 +43,17 @@ def send_telegram_message(text, **kwargs):
     bot = telegram.Bot(token)
     try:
         return bot.send_message(text=text, **bot_kwargs)
-    except telegram.error.BadRequest as e:
+    except telegram.error.NetworkError as e:
+        if not isinstance(e, telegram.error.BadRequest):
+            if "[Errno -3] Temporary failure in name resolution" not in str(e):
+                raise e
+            time.sleep(5)
+            return send_telegram_message(
+                text,
+                retries_on_network_error=retries_on_network_error - 1,
+                **bot_kwargs,
+            )
+
         if "can't find end of the entity" in str(e):
             location = int(e.message.split()[-1])
             logger.warning("Error parsing markdown - skipping '%s'", text[location])
@@ -53,8 +64,6 @@ def send_telegram_message(text, **kwargs):
             return bot.send_message(text=text, **{**bot_kwargs, "parse_mode": None})
         except telegram.error.BadRequest as e:
             logger.exception("Error sending unformatted message. (%s)", e)
-
-    return None
 
 
 if __name__ == "__main__":
