@@ -95,7 +95,13 @@ class DevicesClient:
                 Device.objects.bulk_create(
                     devices,
                     update_conflicts=True,
-                    update_fields=["additional_data", "is_active", "ip", "name"],
+                    update_fields=[
+                        "additional_data",
+                        "is_active",
+                        "ip",
+                        "name",
+                        "last_seen",
+                    ],
                     unique_fields=["mac"],
                 )
             except IntegrityError as e:
