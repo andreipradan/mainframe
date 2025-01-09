@@ -17,7 +17,6 @@ import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi } 
 class CronsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
   static baseUrl = "crons"
   static methods = {create, delete: deleteCron, set, setErrors, setLoading, setLoadingItems: setLoadingCron, update}
-  static displayField = "name"
 
   static kill = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));

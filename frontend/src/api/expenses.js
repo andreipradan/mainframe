@@ -35,7 +35,6 @@ export class ExpensesApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, 
 
 export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin) {
   static baseUrl = "split/groups"
-  static displayField = "name"
   static methods = {
     create: createGroup,
     delete: deleteGroup,

@@ -3,7 +3,6 @@ import { ListApi, mix, RunApi, TokenMixin } from './shared';
 
 class CommandsApi extends mix(ListApi, RunApi, TokenMixin) {
   static baseUrl = "commands"
-  static displayField = "name"
   static methods = { set, setErrors, setLoading }
 }
 

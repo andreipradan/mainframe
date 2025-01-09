@@ -19,9 +19,9 @@ const getAxios = (method, ngrokAxiosList) => ngrokAxiosList?.includes(method) ? 
 
 const getDisplayName = (constructor, data) => {
   if (constructor.displayField)
-    return data[constructor.displayField] || data.id
+    return data[constructor.displayField] || data.name || data.id
 
-  if (!constructor.displayFields?.length) return data.id
+  if (!constructor.displayFields?.length) return data.name || data.id
   for (const field of constructor.displayFields) {
     if (data[field]) return data[field]
   }
