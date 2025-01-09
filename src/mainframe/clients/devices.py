@@ -5,6 +5,7 @@ from operator import attrgetter
 
 import requests
 from django.db import IntegrityError
+from django.utils import timezone
 from mainframe.core.exceptions import MainframeError
 from mainframe.devices.models import Device
 from mainframe.sources.models import Source
@@ -118,4 +119,5 @@ def parse_device(device):
         is_active=True,
         mac=device.pop("mac").upper(),
         name=device.pop("name"),
+        last_seen=timezone.now(),
     )
