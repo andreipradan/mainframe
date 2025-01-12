@@ -180,7 +180,7 @@ class TestHandleDex:
             )
         ]
 
-    @mock.patch("requests.get", side_effect=DexOnlineError("foo"))
+    @mock.patch("requests.request", side_effect=DexOnlineError("foo"))
     async def test_3rd_party_error(self, _, update, logger, __):
         update = prepare_update(update, text="/dex 1", mock_class=AsyncMock)
         update.message.reply_text = AsyncMock()
@@ -201,7 +201,7 @@ class TestHandleDex:
             mock.call("Couldn't find definition for '1'", **DEFAULT_REPLY_KWARGS)
         ]
 
-    @mock.patch("requests.get")
+    @mock.patch("requests.request")
     async def test_success(self, get_mock, update, logger, __):
         get_mock.return_value = MagicMock(
             status_code=200,

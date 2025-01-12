@@ -8,7 +8,12 @@ def fetch(
 ) -> tuple[BeautifulSoup | Response | None, Exception | None]:
     logger.info("Fetching: %s", url)
     try:
-        response = requests.get(url, timeout=timeout, **kwargs)
+        response = requests.request(
+            kwargs.pop("method", "GET"),
+            url,
+            timeout=timeout,
+            **kwargs,
+        )
         response.raise_for_status()
     except (
         requests.exceptions.ConnectionError,

@@ -52,7 +52,8 @@ class PnlActionModelViewSet(viewsets.ModelViewSet):
                 currency: aggregations[f"total_{currency}"] for currency in currencies
             }
             return response
-        elif request.method == "POST":
+
+        if request.method == "POST":
             file = request.FILES["file"]
             logger = get_default_logger(__name__)
             try:
