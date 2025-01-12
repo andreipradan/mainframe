@@ -28,6 +28,7 @@ const Sidebar = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [currentModal, setCurrentModal] = useState("")
 
+  const [accountsMenuOpen, setAccountsMenuOpen] = useState(false)
   const [appsMenuOpen, setAppsMenuOpen] = useState(false)
   const [authMenuOpen, setAuthMenuOpen] = useState(false)
   const [basicUiMenuOpen, setBasicUiMenuOpen] = useState(false)
@@ -35,7 +36,6 @@ const Sidebar = () => {
   const [commandsMenuOpen, setCommandsMenuOpen] = useState(false)
   const [documentationMenuOpen, setDocumentationMenuOpen] = useState(false)
   const [expensesMenuOpen, setExpensesMenuOpen] = useState(false)
-  const [financesMenuOpen, setFinancesMenuOpen] = useState(false)
   const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false)
   const [tablesMenuOpen, setTablesMenuOpen] = useState(false)
   const [iconsMenuOpen, setIconsMenuOpen] = useState(false)
@@ -67,13 +67,13 @@ const Sidebar = () => {
   useEffect(() => {onRouteChanged()}, [location])
 
   const closeAllMenus = () => {
+    setAccountsMenuOpen(false)
     setAppsMenuOpen(false)
     setAuthMenuOpen(false)
     setBasicUiMenuOpen(false)
     setCreditMenuOpen(false)
     setCommandsMenuOpen(false)
     setExpensesMenuOpen(false)
-    setFinancesMenuOpen(false)
     setFormElementsMenuOpen(false)
     setTablesMenuOpen(false)
     setIconsMenuOpen(false)
@@ -93,7 +93,7 @@ const Sidebar = () => {
       {path:'/credit', setState: setCreditMenuOpen},
       {path:'/commands', setState: setCommandsMenuOpen},
       {path:'/expenses', setState: setExpensesMenuOpen},
-      {path:'/finances', setState: setFinancesMenuOpen},
+      {path:'/finances/accounts', setState: setAccountsMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
       {path:'/tables', setState: setTablesMenuOpen},
       {path:'/icons', setState: setIconsMenuOpen},
@@ -388,30 +388,30 @@ const Sidebar = () => {
                 </Link>
               </li>
               <li className="nav-item nav-category"><span className="nav-link">Finance</span></li>
-              <li className={isPathActive('/finances') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+              <li className={isPathActive('/finances/accounts') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
                 <div className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
-                     onClick={() => setFinancesMenuOpen(!financesMenuOpen)} data-toggle="collapse">
+                     onClick={() => setAccountsMenuOpen(!accountsMenuOpen)} data-toggle="collapse">
                   <span className="menu-icon">
                     <i className="mdi mdi-credit-card-outline" />
                   </span>
                   <span className="menu-title">Accounts</span>
                   <i className="menu-arrow" />
                 </div>
-                <Collapse in={financesMenuOpen}>
+                <Collapse in={accountsMenuOpen}>
                   <div>
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
                         <Link
-                          className={isPathActive('/finances/categorize') ? 'nav-link active' : 'nav-link'}
-                          to="/finances/categorize"
+                          className={isPathActive('/finances/accounts/categorize') ? 'nav-link active' : 'nav-link'}
+                          to="/finances/accounts/categorize"
                         >
                           Categorize
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link
-                          className={isPathActive('/finances/accounts') ? 'nav-link active' : 'nav-link'}
-                          to="/finances/accounts"
+                          className={isPathActive('/finances/accounts/transactions') ? 'nav-link active' : 'nav-link'}
+                          to="/finances/accounts/transactions"
                         >
                           Transactions
                         </Link>
@@ -471,6 +471,12 @@ const Sidebar = () => {
                 <Link className="nav-link" to="/stocks">
                   <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>
                   <span className="menu-title">Stocks</span>
+                </Link>
+              </li>
+              <li className={isPathActive('/finances/pension') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <Link className="nav-link" to="/finances/pension">
+                  <span className="menu-icon"><i className="mdi mdi-gold" /></span>
+                  <span className="menu-title">Pension</span>
                 </Link>
               </li>
             </>

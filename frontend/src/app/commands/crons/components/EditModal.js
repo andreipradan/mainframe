@@ -42,7 +42,7 @@ const EditModal = () => {
       const allCommands = []
       for (const app of commands.results) {
         for (const cmd of app.commands)
-          allCommands.push({ label: `${app.app}.${cmd.name}`, value: cmd.name})
+          allCommands.push({ label: `${app.app}.${cmd.name}`, value: cmd.name, args: cmd.args });
       }
       setAllCommands(allCommands)
     }
@@ -76,9 +76,34 @@ const EditModal = () => {
     dispatch(setModalOpen(false))
     clearModal()
   }, [dispatch])
-  const onCommandChange = useCallback(e =>
-    allCommands && setCommand({ label: allCommands.find(c => c.value === e.value).label, value: e.value }),
-    [allCommands]
+  const onCommandChange = useCallback(e => {
+      const cmd = allCommands.find(c => c.value === e.value)
+      allCommands && setCommand({ label: cmd.label, value: e.value })
+      if (!cron) {
+        const placeholders = {
+          str: "<placeholder str>",
+          bool: false,
+          int: 0,
+          float: 0.0,
+          dict: {},
+          list: [],
+        }
+        setName(cmd.label.split('.').reverse()[0].replaceAll('_', ' '));
+        if (cmd.args) {
+          const kw = cmd.args.reduce((result, item) => {
+            if (item.required) {
+              result[item.dest] = item.default !== null && item.default !== undefined
+                ? item.default
+                : placeholders[item.type] ?? null;
+
+            }
+            return result;
+          }, {});
+          setKwargs(JSON.stringify(kw, null, "\t"));
+        }
+      }
+    },
+    [allCommands, cron]
   )
   const onDelete = useCallback(() => dispatch(api.delete(cron.id)), [dispatch, cron])
   const onExpressionChange = useCallback(e => setExpression(e.target.value), [])
@@ -127,6 +152,28 @@ const EditModal = () => {
           </div>
         </div>
         {cron && <p className="text-muted mb-0">{cron?.description}</p>}
+        {
+          command
+            ? allCommands.find(c => c.value === command.value)?.args?.length
+              ? <p className="text-muted mb-0">
+                  Params:
+                  <ul>
+                    {allCommands.find(c => c.value === command.value)?.args.map(arg =>
+                      <li>
+                        {arg.dest}
+                        <ul>
+                          <li>required: {arg.required.toString()}</li>
+                          {arg.type ? <li>type: {arg.type}</li> : null}
+                          {arg.choices ? <li>choices: {arg.choices.join(', ')}</li> : null}
+                          {arg.default ? <li>default: {arg.default}</li> : null}
+                          {arg.help ? <li>description: {arg.help}</li> : null}
+                        </ul>
+                      </li>)}
+                  </ul>
+                </p>
+              : null
+            : null
+        }
       </Modal.Title>
     </Modal.Header>
     {
@@ -140,14 +187,6 @@ const EditModal = () => {
       <Form onSubmit={onSubmit}>
         <Errors errors={errors}/>
         <Form.Group className="mb-3">
-          <Form.Label>Name</Form.Label>
-          <Form.Control type="text" value={name} onChange={onNameChange} />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Is Active?</Form.Label>
-          <Form.Check checked={isActive} type="switch" id="checkbox" label="" onChange={onIsActiveChange} />
-        </Form.Group>
-        <Form.Group className="mb-3">
           <Form.Label>Management Command</Form.Label>
           <Select
             isDisabled={commands.loading}
@@ -157,6 +196,14 @@ const EditModal = () => {
             styles={selectStyles}
             value={command}
           />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Name</Form.Label>
+          <Form.Control type="text" value={name} onChange={onNameChange} />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Is Active?</Form.Label>
+          <Form.Check checked={isActive} type="switch" id="checkbox" label="" onChange={onIsActiveChange} />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Expression</Form.Label>
@@ -230,7 +277,7 @@ const EditModal = () => {
         </Button>
       }
       <Button variant="secondary" onClick={onCloseModal}>Close</Button>
-      <Button variant="primary" onClick={onSubmit}>Save Changes</Button>
+      <Button variant="primary" onClick={onSubmit} disabled={!name || !command || !expression}>Save Changes</Button>
     </Modal.Footer>
   </Modal>
 }

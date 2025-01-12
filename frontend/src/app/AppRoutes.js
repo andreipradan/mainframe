@@ -19,6 +19,7 @@ const FinancesCategorize = lazy(() => import ("./finances/Accounts/Categorize/Ca
 const FinancesCreditDetails = lazy(() => import ("./finances/Credit/Details"));
 const FinancesCalculator = lazy(() => import ("./finances/Credit/Calculator"));
 const FinancesPayments = lazy(() => import ("./finances/Credit/Payments/Payments"));
+const FinancesPension = lazy(() => import ("./finances/Pension"));
 const FinancesStocks = lazy(() => import ("./finances/Stocks"));
 const FinancesTimetables = lazy(() => import ("./finances/Credit/Timetables/Timetables"));
 const Logs = lazy(() => import('./apps/Logs'));
@@ -82,9 +83,10 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/credit/timetables" component={ FinancesTimetables } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
-        {user?.is_staff && <Route exact path="/finances/accounts/:id?" component={ FinancesAccountsTransactions } />}
-        {user?.is_staff && <Route exact path="/finances/categorize" component={ FinancesCategorize } />}
+        {user?.is_staff && <Route exact path="/finances/accounts/transactions/:id?" component={ FinancesAccountsTransactions } />}
+        {user?.is_staff && <Route exact path="/finances/accounts/categorize" component={ FinancesCategorize } />}
         {user?.is_staff && <Route exact path="/finances/crypto" component={ Crypto } />}
+        {user?.is_staff && <Route exact path="/finances/pension" component={ FinancesPension } />}
         {user?.is_staff && <Route exact path="/sources" component={ Sources } />}
         {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
 

@@ -9,6 +9,11 @@ import Errors from "../shared/Errors";
 import { Collapse } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import AceEditor from 'react-ace';
+import 'ace-builds'
+import 'ace-builds/webpack-resolver'
+import "ace-builds/src-noconflict/mode-json";
+import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 
 const Commands = () =>  {

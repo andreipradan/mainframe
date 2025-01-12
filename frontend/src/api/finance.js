@@ -20,6 +20,14 @@ import {
   setErrors as setCryptoPnlErrors,
 } from "../redux/cryptoPnlSlice";
 import {
+  create as createPension,
+  set as setPension,
+  setErrors as setPensionErrors,
+  setLoading as setPensionLoading,
+  setLoadingItems as setPensionLoadingItems,
+  update as updatePension,
+} from "../redux/pensionSlice";
+import {
   set as setStocks,
   setErrors as setStocksErrors,
   setLoading as setStocksLoading,
@@ -45,7 +53,9 @@ import {
   setTask,
 } from "../redux/predictionSlice"
 import { handleErrors } from "./errors";
-import { DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi, UploadApi } from './shared';
+import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi, UploadApi } from './shared';
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
 
 export class CryptoApi extends mix(ListApi, TokenMixin) {
   static baseUrl = "finance/crypto"
@@ -62,6 +72,56 @@ export class CryptoPnlApi extends mix(ListApi, TokenMixin) {
     set: setCryptoPnl,
     setErrors: setCryptoPnlErrors,
     setLoading: setCryptoPnlLoading,
+  }
+}
+
+export class PensionApi extends mix(CreateApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "finance/pension"
+  static methods = {
+    create: createPension,
+    set: setPension,
+    setErrors: setPensionErrors,
+    setLoading: setPensionLoading,
+    setLoadingItems: setPensionLoadingItems,
+    update: updatePension,
+  }
+  createContribution = (pensionId, data) => dispatch => {
+    dispatch(this.constructor.methods.setLoading(true))
+    axios
+      .post(`${this.constructor.baseUrl}/${pensionId}/contributions/`, data, { headers: { Authorization: this.token } })
+      .then(response => {
+        dispatch(this.constructor.methods.create(response.data))
+        toast.success(`Contribution for '${data.date}' created successfully!`, toastParams);
+      })
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+  }
+  updateContributionUnits = (pensionId, contributionId, units) => dispatch => {
+    dispatch(this.constructor.methods.setLoading())
+    axios
+      .patch(
+        `${this.constructor.baseUrl}/${pensionId}/update-units/`,
+        {units, contribution_id: contributionId},
+        {headers: { Authorization: this.token } }
+      )
+    .then(response => {
+      dispatch(this.constructor.methods.update(response.data))
+      toast.success(`Contribution updated successfully!`, toastParams);
+    })
+    .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+  }
+  syncContributionUnits = (pensionId, contributionId) => dispatch => {
+    dispatch(this.constructor.methods.setLoading())
+    axios
+      .patch(
+        `${this.constructor.baseUrl}/${pensionId}/sync-units/`,
+        {contribution_id: contributionId},
+        {headers: { Authorization: this.token } }
+      )
+    .then(response => {
+      dispatch(this.constructor.methods.update(response.data))
+      toast.success(`Contribution units calculated successfully!`, toastParams);
+    })
+    .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
   }
 }
 
