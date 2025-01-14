@@ -26,10 +26,13 @@ class WatchersApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMix
       .catch((err) => handleErrors(err, dispatch, setErrors));
   }
   static test = (token, url, selector) => dispatch => {
-    dispatch(setLoading());
+    dispatch(setLoading(true));
     axios
       .put(`${base}test/`, {url, selector}, { headers: { Authorization: token } })
-      .then(response => toast.success(response.data.result, toastParams))
+      .then(response => {
+        toast.success(response.data.result, toastParams);
+        dispatch(setLoading(false))
+      })
       .catch((err) => handleErrors(err, dispatch, setErrors));
   }
 }
