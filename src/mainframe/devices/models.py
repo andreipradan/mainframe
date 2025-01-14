@@ -13,7 +13,7 @@ class Device(TimeStampedModel):
     name = models.CharField(blank=True, max_length=32)
     should_notify_presence = models.BooleanField(default=True)
 
-    def __repr__(self):
+    def __str__(self):
         return self.alias or self.name or self.ip or self.mac
 
     def save(self, **kwargs):
