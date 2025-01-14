@@ -71,9 +71,9 @@ const ExpenseGroups = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="/expenses" onClick={event => {
+          <li className="breadcrumb-item"><a href="/expenses/my" onClick={event => {
             event.preventDefault()
-            history.push("/expenses")
+            history.push("/expenses/my")
           }}>Expenses</a>
           </li>
           <li className="breadcrumb-item active" aria-current="page">Groups</li>

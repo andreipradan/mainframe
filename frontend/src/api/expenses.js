@@ -1,5 +1,14 @@
 import axios from "./index";
 import {
+  create as createCars,
+  deleteItem as deleteCars,
+  set as setCars,
+  setErrors as setCarsErrors,
+  setLoading as setCarsLoading,
+  setLoadingItems as setCarsLoadingItems,
+  update as updateCars,
+} from "../redux/carSlice"
+import {
   create as createExpense,
   set as setExpenses,
   setErrors as setExpensesErrors,
@@ -21,8 +30,49 @@ import { toast } from "react-toastify";
 import { toastParams } from "./auth";
 
 
+export class CarApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "/expenses/cars";
+  static methods = {
+    create: createCars,
+    delete: deleteCars,
+    set: setCars,
+    setErrors: setCarsErrors,
+    setLoading: setCarsLoading,
+    setLoadingItems: setCarsLoadingItems,
+    update: updateCars,
+  }
+  createServiceEntry = (parentId, data) => dispatch => {
+    dispatch(this.constructor.methods.setLoading(true))
+    axios
+      .post(
+        `${this.constructor.baseUrl}/${parentId}/service-entries/`,
+        data,
+        { headers: { Authorization: this.token } },
+      )
+      .then(response => {
+        dispatch(this.constructor.methods.create(response.data))
+        toast.success(`Service entry for '${response.data.name}' on '${data.date}' created successfully!`, toastParams);
+      })
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+  }
+  deleteServiceEntry = (parentId, id) => dispatch => {
+    dispatch(this.constructor.methods.setLoadingItems(parentId))
+    axios
+      .patch(
+        `${this.constructor.baseUrl}/${parentId}/service-entries/`,
+        {service_entry_id: id},
+         {headers: { Authorization: this.token } },
+      )
+    .then(response => {
+      dispatch(this.constructor.methods.create(response.data))
+      toast.warning(`Service entry for ${response.data.name} deleted successfully!`, toastParams);
+    })
+    .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+  }
+}
+
 export class ExpensesApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
-  static baseUrl = "split/expenses"
+  static baseUrl = "/expenses/my"
   static methods = {
     create: createExpense,
     set: setExpenses,
@@ -34,7 +84,7 @@ export class ExpensesApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, 
 }
 
 export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin) {
-  static baseUrl = "split/groups"
+  static baseUrl = "/expenses/groups"
   static methods = {
     create: createGroup,
     delete: deleteGroup,

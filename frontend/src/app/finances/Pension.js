@@ -134,9 +134,6 @@ const Pension = () => {
                                 </p>
                               : ''
                           }
-                          <p className={"text-muted"}>
-
-                          </p>
                           <button
                             type="button"
                             className="float-right btn btn-xs btn-outline-warning btn-icon pl-1 border-0"
@@ -144,7 +141,6 @@ const Pension = () => {
                           >
                             <i className="mdi mdi-pencil" />
                           </button>
-
                         </h6>
                         <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
                           <ListItem

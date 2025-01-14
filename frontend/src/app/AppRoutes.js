@@ -12,8 +12,9 @@ const Crypto = lazy(() => import('./finances/Crypto'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
-const Expenses = lazy(() => import('./expenses/Expenses'));
-const ExpenseGroups = lazy(() => import("./expenses/ExpenseGroups"));
+const ExpensesCar = lazy(() => import('./expenses/Car'));
+const ExpensesTravel = lazy(() => import('./expenses/Travel'));
+const ExpenseTravelGroups = lazy(() => import("./expenses/ExpenseGroups"));
 const FinancesAccountsTransactions = lazy(() => import ("./finances/Accounts/Transactions/Transactions"));
 const FinancesCategorize = lazy(() => import ("./finances/Accounts/Categorize/Categorize"));
 const FinancesCreditDetails = lazy(() => import ("./finances/Credit/Details"));
@@ -61,8 +62,8 @@ const AppRoutes = () => {
       <Switch>
         <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
         <Route exact path="/exchange-rates" component={ ExchangeRates } />
-        <Route exact path="/expenses" component={ Expenses } />
-        <Route exact path="/expenses/groups" component={ ExpenseGroups } />
+        <Route exact path="/expenses/travel/groups" component={ ExpenseTravelGroups } />
+        <Route exact path="/expenses/travel/my" component={ ExpensesTravel } />
         <Route exact path="/earthquakes" component={ Earthquakes } />
         <Route exact path="/meals" component={ Meals } />
         <Route exact path="/profile" component={ Profile } />
@@ -83,6 +84,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/credit/payments" component={ FinancesPayments } />}
         {user?.is_staff && <Route exact path="/credit/timetables" component={ FinancesTimetables } />}
         {user?.is_staff && <Route exact path="/devices" component={ Devices } />}
+        {user?.is_staff && <Route exact path="/expenses/car" component={ ExpensesCar } />}
         {user?.is_staff && <Route exact path="/finances/accounts/transactions/:id?" component={ FinancesAccountsTransactions } />}
         {user?.is_staff && <Route exact path="/finances/accounts/categorize" component={ FinancesCategorize } />}
         {user?.is_staff && <Route exact path="/finances/crypto" component={ Crypto } />}
