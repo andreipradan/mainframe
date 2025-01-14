@@ -17,10 +17,11 @@ def get_redis_client():
 
 
 def log_status(key, error=None, **kwargs):
+    stamp = {"timestamp": timezone.now().isoformat()}
     redis_client = get_redis_client()
     key = f"tasks.{key}"
-    new_event = {"timestamp": timezone.now().isoformat(), **kwargs}
-    errors = [error] if error else []
+    new_event = {**stamp, **kwargs}
+    errors = [{**stamp, "msg": error}] if error else []
 
     details = json.loads(redis_client.get(key) or "{}")
     if not details:
@@ -37,9 +38,7 @@ def log_status(key, error=None, **kwargs):
 
 @HUEY.signal()
 def signal_handler(signal, t, exc=None):
-    now = timezone.now().isoformat()
-    kwargs = {"id": t.id, "status": signal, "timestamp": now}
-    log_status(t.name, {"timestamp": now, "msg": str(exc)} if exc else None, **kwargs)
+    log_status(key=t.name, error=str(exc) if exc else None, id=t.id, status=signal)
 
 
 @task(expires=10)

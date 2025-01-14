@@ -4,6 +4,7 @@ import json
 from operator import attrgetter
 
 import requests
+from actstream.models import Action
 from django.db import IntegrityError
 from django.utils import timezone
 from mainframe.core.exceptions import MainframeError
@@ -86,6 +87,24 @@ class DevicesClient:
                     "went_offline": went_offline,
                 },
             )
+
+            Action.objects.bulk_create(
+                [
+                    *[
+                        Action(actor=device, verb="was created")
+                        for device in new_devices
+                    ],
+                    *[
+                        Action(actor=device, verb="went offline")
+                        for device in went_offline
+                    ],
+                    *[
+                        Action(actor=device, verb="went online")
+                        for device in went_online
+                    ],
+                ]
+            )
+
             if went_offline:
                 Device.objects.filter(
                     mac__in=map(attrgetter("mac"), went_offline)

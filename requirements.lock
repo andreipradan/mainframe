@@ -49,9 +49,11 @@ deprecated==1.2.14
     # via opentelemetry-semantic-conventions
     # via pygithub
 django==5.0.4
+    # via django-activity-stream
     # via django-cors-headers
     # via django-extensions
     # via djangorestframework
+django-activity-stream==2.0.0
 django-cors-headers==3.13.0
 django-environ==0.9.0
 django-extensions==3.2.1

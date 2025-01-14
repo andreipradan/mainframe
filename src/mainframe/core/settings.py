@@ -46,11 +46,15 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.sites",
     "django.contrib.staticfiles",
+    # third-party libraries
+    "actstream",
     "corsheaders",
     "rest_framework",
     "django_extensions",
     "huey.contrib.djhuey",
+    # custom apps
     "mainframe.api",
     "mainframe.api.user",
     "mainframe.api.authentication",
@@ -305,3 +309,4 @@ HUEY = {
         "health_check_interval": 1,  # Check worker health every second.
     },
 }
+ACTSTREAM_SETTINGS = {"USE_JSONFIELD": True}
