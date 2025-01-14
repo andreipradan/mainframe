@@ -1,11 +1,61 @@
+from django.db import IntegrityError
+from django.http import JsonResponse
 from mainframe.api.user.models import User
 from mainframe.api.user.serializers import UserSerializer
-from mainframe.expenses.models import Expense, ExpenseGroup
-from mainframe.expenses.serializers import ExpenseGroupSerializer, ExpenseSerializer
+from mainframe.expenses.models import Car, Expense, ExpenseGroup, ServiceEntry
+from mainframe.expenses.serializers import (
+    CarSerializer,
+    ExpenseGroupSerializer,
+    ExpenseSerializer,
+    ServiceEntrySerializer,
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+
+
+class CarViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = Car.objects.prefetch_related("service_entries")
+    serializer_class = CarSerializer
+
+    @action(methods=["patch", "post"], detail=True, url_path="service-entries")
+    def service_entries(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if request.method == "POST":
+            serializer = ServiceEntrySerializer(data={"car": obj.id, **request.data})
+            serializer.is_valid(raise_exception=True)
+            try:
+                obj = serializer.save()
+            except IntegrityError:
+                return JsonResponse(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={
+                        "message": f"{obj.name} service entry for "
+                        f"{request.data.get('date')} already exists"
+                    },
+                )
+        else:
+            if not (service_entry_id := request.data.get("service_entry_id")):
+                return JsonResponse(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"message": "service_entry_id is required"},
+                )
+            try:
+                service_entry = obj.service_entries.get(id=service_entry_id)
+            except ServiceEntry.DoesNotExist:
+                return JsonResponse(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={
+                        "message": f"Service entry with id "
+                        f"'{service_entry_id}' does not exist"
+                    },
+                )
+            service_entry.delete()
+        return Response(
+            CarSerializer(self.get_object()).data, status=status.HTTP_201_CREATED
+        )
 
 
 class ExpenseViewSet(viewsets.ModelViewSet):

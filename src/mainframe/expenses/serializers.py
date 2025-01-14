@@ -1,5 +1,5 @@
 from mainframe.api.user.serializers import UserSerializer
-from mainframe.expenses.models import Debt, Expense, ExpenseGroup
+from mainframe.expenses.models import Car, Debt, Expense, ExpenseGroup, ServiceEntry
 from rest_framework import serializers
 
 
@@ -25,3 +25,18 @@ class ExpenseGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenseGroup
         fields = "__all__"
+
+
+class ServiceEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceEntry
+        fields = "__all__"
+
+
+class CarSerializer(serializers.ModelSerializer):
+    service_entries = ServiceEntrySerializer(many=True, read_only=True)
+
+    class Meta:
+        depth = 1
+        fields = "__all__"
+        model = Car

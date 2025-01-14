@@ -18,6 +18,10 @@ urlpatterns = [
         include(("mainframe.exchange.routers", "api"), namespace="exchange"),
     ),
     path(
+        "expenses/",
+        include(("mainframe.expenses.routers", "api"), namespace="expenses"),
+    ),
+    path(
         "finance/", include(("mainframe.finance.routers", "api"), namespace="finance")
     ),
     path(
@@ -33,9 +37,6 @@ urlpatterns = [
     path(
         "sources/",
         include(("mainframe.sources.routers", "api"), namespace="sources"),
-    ),
-    path(
-        "split/", include(("mainframe.expenses.routers", "api"), namespace="expenses")
     ),
     path(
         "tasks/",

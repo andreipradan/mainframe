@@ -3,6 +3,16 @@ from mainframe.core.models import TimeStampedModel
 from mainframe.finance.models import DECIMAL_DEFAULT_KWARGS
 
 
+class Car(TimeStampedModel):
+    name = models.CharField(max_length=64, unique=True)
+
+    class Meta:
+        ordering = ("name",)
+
+    def __str__(self):
+        return self.name
+
+
 class Debt(models.Model):
     amount = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
     currency = models.CharField(max_length=3)
@@ -44,3 +54,25 @@ class ExpenseGroup(TimeStampedModel):
         blank=True,
         related_name="expense_groups",
     )
+
+
+class ServiceEntry(TimeStampedModel):
+    car = models.ForeignKey(
+        Car, on_delete=models.CASCADE, related_name="service_entries"
+    )
+    currency = models.CharField(max_length=3, blank=True, default="RON")
+    date = models.DateTimeField()
+    description = models.TextField()
+    price = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
+
+    class Meta:
+        ordering = ("-date",)
+        constraints = (
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_car_date_uniq",
+                fields=("car", "date", "description"),
+            ),
+        )
+
+    def __str__(self):
+        return f"{self.car} - {self.date} {self.description}"
