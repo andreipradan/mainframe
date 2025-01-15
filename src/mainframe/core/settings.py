@@ -310,3 +310,4 @@ HUEY = {
     },
 }
 ACTSTREAM_SETTINGS = {"USE_JSONFIELD": True}
+SITE_ID = 1

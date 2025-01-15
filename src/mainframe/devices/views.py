@@ -1,3 +1,4 @@
+from actstream.registry import registry
 from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
 from mainframe.clients.devices import DevicesClient, DevicesException
@@ -41,3 +42,6 @@ class DeviceViewSet(viewsets.ModelViewSet):
             logger.exception(ex)
             return JsonResponse({"error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
         return super().list(request, **kwargs)
+
+
+registry.register(Device)
