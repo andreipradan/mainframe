@@ -26,6 +26,8 @@ const Pension = () => {
   const [startDate, setStartDate] = useState(new Date())
   const [totalUnits, setTotalUnits] = useState(0)
 
+  const [pensionContributionsOpen, setPensionContributionsOpen] = useState(null)
+
   const [contribModalOpen, setContribModalOpen] = useState(null)
 
   const [contribAmount, setContribAmount] = useState(0)
@@ -184,6 +186,7 @@ const Pension = () => {
     </div>
 
     {pension.modalOpen ? null : <Errors errors={pension.errors}/>}
+
     {/* Transactions */}
     <div className="row">
     {
@@ -211,10 +214,22 @@ const Pension = () => {
                           >
                             <i className="mdi mdi-plus" />
                           </button>
+                          <small
+                            className="cursor-pointer ml-4 text-muted"
+                            onClick={() =>
+                              setPensionContributionsOpen(pensionContributionsOpen === p.id ? null : p.id)
+                            }
+                          >
+                            Click to {
+                              pensionContributionsOpen !== p.id
+                              ? "expand"
+                              : "collapse"
+                          }...
+                          </small>
                           <p className={'text-muted'}>Total: {p.contributions?.length}</p>
                         </h6>
                         <Collapse in={contribModalOpen === p.id}>
-                          <ul className="navbar-nav w-100 rounded">
+                        <ul className="navbar-nav w-100 rounded">
                             <li className="nav-item w-100">
                               <Form onSubmit={e => onSubmitContrib(e, p.id)}>
                                 <div className="row">
@@ -277,61 +292,68 @@ const Pension = () => {
                       </div>
                     </div>
                   </div>
-                  <table className="table table-hover">
-                    <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Units</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {
-                      pension.loading
-                        ? <Circles
-                          visible
-                          width="100%"
-                          ariaLabel="ball-triangle-loading"
-                          wrapperStyle={{ float: 'right' }}
-                          color="orange"
-                        />
-                        : p.contributions?.length
-                          ? p.contributions.map(c => <tr key={`pension-${p.id}-${c.id}`}>
-                            <td> {new Date(c.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })} </td>
-                            <td> {c.amount} {c.currency}</td>
-                            <td onClick={() => setEditing(c.id)}>
-                              {
-                                editing === c.id
-                                  ? <input
-                                      type="text"
-                                      value={contribUnits}
-                                      onChange={(e) => setContribUnits(e.target.value)}
-                                      onBlur={() => onUpdateUnits(p.id, c.id)}
-                                      onKeyDown={e => e.key === "Enter" ? onUpdateUnits(p.id, c.id) : null}
-                                      autoFocus
-                                    />
-                                  : c.units
-                              }
-                            </td>
-                            <td>
-                              <i
-                                className="cursor-pointer mdi mdi-sync-alert text-warning"
-                                onClick={() => dispatch(api.syncContributionUnits(p.id, c.id))}
-                              />
-                            </td>
-                          </tr>)
-                          : <tr>
-                            <td colSpan={6}><span>No contributions found</span></td>
-                          </tr>
-                    }
-                    </tbody>
-                  </table>
+                  {
+                    <Collapse in={pensionContributionsOpen === p.id}>
+                      <table className="table table-hover">
+                        <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Amount</th>
+                          <th>Units</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {
+                          pension.loading
+                            ? <Circles
+                              visible
+                              width="100%"
+                              ariaLabel="ball-triangle-loading"
+                              wrapperStyle={{ float: 'right' }}
+                              color="orange"
+                            />
+                            : p.contributions?.length
+                              ? p.contributions.map(c => <tr key={`pension-${p.id}-${c.id}`}>
+                                <td> {new Date(c.date).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                })} </td>
+                                <td> {c.amount} {c.currency}</td>
+                                <td onClick={() => setEditing(c.id)}>
+                                  {
+                                    editing === c.id
+                                      ? <input
+                                        type="text"
+                                        value={contribUnits}
+                                        onChange={(e) => setContribUnits(e.target.value)}
+                                        onBlur={() => onUpdateUnits(p.id, c.id)}
+                                        onKeyDown={e => e.key === 'Enter' ? onUpdateUnits(p.id, c.id) : null}
+                                        autoFocus
+                                      />
+                                      : c.units
+                                  }
+                                </td>
+                                <td>
+                                  <i
+                                    className="cursor-pointer mdi mdi-sync-alert text-warning"
+                                    onClick={() => dispatch(api.syncContributionUnits(p.id, c.id))}
+                                  />
+                                </td>
+                              </tr>)
+                              : <tr>
+                                <td colSpan={6}><span>No contributions found</span></td>
+                              </tr>
+                        }
+                        </tbody>
+                      </table>
+                    </Collapse>
+                  }
                 </div>
                 <BottomPagination items={pension} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
 
               </div>
             </div>
-        </div>,
+          </div>,
       )
     }
     </div>

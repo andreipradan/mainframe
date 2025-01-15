@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Nouislider from 'nouislider-react';
 import Slider from "react-slick";
+import { Collapse, Form } from "react-bootstrap";
 import { ColorRing, InfinitySpin, LineWave } from "react-loader-spinner";
 import { Doughnut } from 'react-chartjs-2';
 import { SliderPicker } from 'react-color';
@@ -11,47 +12,57 @@ import "nouislider/distribute/nouislider.css";
 
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
-import {Collapse, Form} from "react-bootstrap";
 import Errors from "../shared/Errors";
-import {
-  doughnutPieOptions,
-  getLightsData,
-  sliderSettings
-} from "./chartsData";
+import ActivityApi from '../../api/activity';
 import DevicesApi from '../../api/devices';
 import CronsApi from '../../api/crons';
+import {doughnutPieOptions, getLightsData, sliderSettings } from "./chartsData";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
 
   const token = useSelector((state) => state.auth.token)
 
+  const activity = useSelector(state => state.activity)
   const bots = useSelector(state => state.bots)
   const crons = useSelector(state => state.crons)
   const devices = useSelector(state => state.devices)
   const lights = useSelector(state => state.lights)
 
+  const activityApi = new ActivityApi(token)
+  const botsApi = new BotsApi(token)
+  const devicesApi = new DevicesApi(token)
   const lightsApi = new LightsApi(token)
+
+  const [lightName, setLightName] = useState("")
+  const [lightNameOpened, setLightNameOpened] = useState(false)
+  const [lightsExpanded, setLightsExpanded] = useState(null)
+  const [lightColors, setLightColors] = useState(null)
+
+  const [isPolling, setIsPolling] = useState(false)
+  const [lastPollTime, setLastPollTime] = useState(null)
 
   const lightsOnCount = lights.results?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.results?.filter(b => b.capabilities.power === "off").length
-
-  const [lightsExpanded, setLightsExpanded] = useState(null)
-  const [lightColors, setLightColors] = useState(null)
+  const lightsChartData = getLightsData(lightsOnCount, lightsOffCount)
 
   const getExpanded = ip => lightsExpanded?.find(l => l.ip === ip)?.expanded
   const toggleLightExpanded = ip => setLightsExpanded(
     lightsExpanded?.map(l => l.ip === ip ? { ...l, expanded: !l.expanded } : l)
   )
 
-  const [lightName, setLightName] = useState("")
-  const [lightNameOpened, setLightNameOpened] = useState(false)
+  const onSlide = (i, isDisplayed) => () => {
+    const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
+    if (tooltip)
+      tooltip.style.display = isDisplayed ? "block" : "none"
+  }
 
   useEffect(() => {
-    !bots.results && dispatch(new BotsApi(token).getList());
+    !bots.results && dispatch(botsApi.getList());
     !crons.results && dispatch(new CronsApi(token).getList())
-    !devices.results && dispatch(new DevicesApi(token).getList())
+    !devices.results && dispatch(devicesApi.getList())
     !lights.results && dispatch(lightsApi.getList());
+    !activity.results && dispatch(activityApi.getList())
   }, []);
 
   useEffect(() => {
@@ -62,26 +73,35 @@ const Dashboard = () => {
     }
   }, [lights.results])
 
-  const onSlide = (i, isDisplayed) => () => {
-    const tooltip = document.querySelector(`#slider-${i} .noUi-tooltip`)
-    if (tooltip)
-      tooltip.style.display = isDisplayed ? "block" : "none"
-  }
-
-  const lightsChartData = getLightsData(lightsOnCount, lightsOffCount)
+  useEffect(() => {
+    let intervalId;
+    if (isPolling) {
+      intervalId = setInterval(async () => {
+        dispatch(activityApi.getList())
+        setLastPollTime(new Date().toLocaleDateString("en-UK", {hour: "2-digit", minute: "2-digit", second: "2-digit"}))
+      }, 5000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isPolling]);
 
   const DashboardCard = props => <div className="col-sm-4 grid-margin">
     <div className="card">
       <div className="card-body">
-        <h5>{props.name[0].toUpperCase() + props.name.slice(1)}</h5>
+        <h5>
+          {props.name[0].toUpperCase() + props.name.slice(1)}
+          <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                  onClick={() => dispatch(props.refresh())}>
+            <i className="mdi mdi-refresh" />
+          </button>
+        </h5>
         <div className="row">
           <div className="col-8 col-sm-12 col-xl-8 my-auto">
             {
               props.loading
                 ? <ColorRing
-                    width="100%"
-                    height="50"
-                    wrapperStyle={{ width: "100%" }}
+                  width="100%"
+                  height="50"
+                  wrapperStyle={{ width: "100%" }}
                   />
                 : <>
                   <div className="d-flex d-sm-block d-md-flex align-items-center">
@@ -103,207 +123,266 @@ const Dashboard = () => {
 
   return <div>
     <div className="row">
-      <DashboardCard count={bots.count} icon="robot" iconVariant="primary" loading={bots.loading} name="bots"/>
-      <DashboardCard
-        activeCount={devices.results?.filter(b => b.is_active).length}
-        count={devices.count}
-        icon="monitor"
-        iconVariant="success"
-        inactiveCount={devices.results?.filter(b => !b.is_active).length}
-        loading={devices.loading}
-        name="devices"
-      />
-      <DashboardCard
-        activeCount={lightsOnCount}
-        count={lights.count}
-        icon="lightbulb"
-        iconVariant="warning"
-        inactiveCount={lightsOffCount}
-        loading={lights.loading}
-        name="ligths"
-      />
-    </div>
-    <div className="row">
-      <div className="col-md-6 grid-margin stretch-card">
-        <div className="card">
-          <div className="card-body">
-            <h4 className="card-title mb-1">
-              Lights
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                      onClick={() => dispatch(lightsApi.getList())}>
-                <i className="mdi mdi-refresh" />
-              </button>
-              <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                <Form.Check
-                  checked={Boolean(lights?.results?.some(l => l.capabilities.power === 'on'))}
-                  disabled={lights.loading}
-                  type="switch"
-                  id="checkbox-toggle"
-                  label=""
-                  onChange={() => {
-                    const state =
-                      lights?.results?.some(l => l.capabilities.power === 'on')
-                        ? 'off'
-                        : 'on';
-                    dispatch(LightsApi.turn_all(token, state));
-                  }}
-                />
-                <p className="text-muted mb-0">All lights</p>
-              </div>
-            </h4>
-            <div className="row">
-              <div className="col-12">
-                <Errors errors={lights.errors} />
-                <div className="preview-list">
-                  {
-                    lights.loading
-                      ? <InfinitySpin
-                        visible
-                        width="100%"
-                        ariaLabel="InfinitySpin-loading"
-                        wrapperStyle={{}}
-                        wrapperClass="InfinitySpin-wrapper"
-                        glassColor="#c0efff"
-                        color="#e15b64"
-                      />
-                      : lights.results?.length
-                        ? lights.results.map((light, i) =>
-                          <div key={light.ip}>
-                            <div className="preview-item border-bottom">
-                              <div className="preview-thumbnail">
-                                <p className={`text-${light.capabilities.power === 'off' ? 'danger' : 'success'}`}>
-                                  <i
-                                    className={`mdi mdi-lightbulb${light.capabilities.power === 'off' ? '-outline' : ''}`} />
-                                </p>
-                              </div>
-                              <div className="preview-item-content d-sm-flex flex-grow"
-                                   onClick={() => toggleLightExpanded(light.ip)} style={{ cursor: 'pointer' }}>
+      <div className="col-lg-12 col-xl-9">
+        <div className="row">
+          <DashboardCard
+            count={bots.count}
+            icon="robot"
+            iconVariant="primary"
+            loading={bots.loading}
+            name="bots"
+            refresh={botsApi.getList}
+          />
+          <DashboardCard
+            activeCount={devices.results?.filter(b => b.is_active).length}
+            count={devices.count}
+            icon="monitor"
+            iconVariant="success"
+            inactiveCount={devices.results?.filter(b => !b.is_active).length}
+            loading={devices.loading}
+            name="devices"
+            refresh={devicesApi.getList}
+          />
+          <DashboardCard
+            activeCount={lightsOnCount}
+            count={lights.count}
+            icon="lightbulb"
+            iconVariant="warning"
+            inactiveCount={lightsOffCount}
+            loading={lights.loading}
+            name="ligths"
+            refresh={lightsApi.getList}
+          />
+          <div className="col-md-9 grid-margin stretch-card">
+            <div className="card">
+              <div className="card-body">
+                <h4 className="card-title mb-1">
+                  Lights
+                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                          onClick={() => dispatch(lightsApi.getList())}>
+                    <i className="mdi mdi-refresh" />
+                  </button>
+                  <div className="mr-auto text-sm-right pt-2 pt-sm-0">
+                    <Form.Check
+                      checked={Boolean(lights?.results?.some(l => l.capabilities.power === 'on'))}
+                      disabled={lights.loading}
+                      type="switch"
+                      id="checkbox-toggle"
+                      label=""
+                      onChange={() => {
+                        const state =
+                          lights?.results?.some(l => l.capabilities.power === 'on')
+                            ? 'off'
+                            : 'on';
+                        dispatch(LightsApi.turn_all(token, state));
+                      }}
+                    />
+                    <p className="text-muted mb-0">All lights</p>
+                  </div>
+                </h4>
+                <div className="row">
+                  <div className="col-12">
+                    <Errors errors={lights.errors} />
+                    <div className="preview-list">
+                      {
+                        lights.loading
+                          ? <InfinitySpin
+                            visible
+                            width="100%"
+                            ariaLabel="InfinitySpin-loading"
+                            wrapperStyle={{}}
+                            wrapperClass="InfinitySpin-wrapper"
+                            glassColor="#c0efff"
+                            color="#e15b64"
+                          />
+                          : lights.results?.length
+                            ? lights.results.map((light, i) =>
+                              <div key={light.ip}>
+                                <div className="preview-item border-bottom">
+                                  <div className="preview-thumbnail">
+                                    <p className={`text-${light.capabilities.power === 'off' ? 'danger' : 'success'}`}>
+                                      <i
+                                        className={`mdi mdi-lightbulb${light.capabilities.power === 'off' ? '-outline' : ''}`} />
+                                    </p>
+                                  </div>
+                                  <div className="preview-item-content d-sm-flex flex-grow"
+                                       onClick={() => toggleLightExpanded(light.ip)} style={{ cursor: 'pointer' }}>
+                                    <div className="flex-grow">
+                                      <h6 className="preview-subject">{light.capabilities.name} <i
+                                        className="mdi mdi-menu-down" /></h6>
+                                      <p className="text-muted mb-0">{light.ip}</p>
+                                    </div>
+                                    <div className="mr-auto text-sm-right pt-2 pt-sm-0">
+                                      <Form.Check
+                                        checked={light.capabilities.power === 'on'}
+                                        disabled={lights.loadingItems?.includes(light.ip)}
+                                        type="switch"
+                                        id={`checkbox-${i}`}
+                                        label=""
+                                        onChange={() => {
+                                          const action = light.capabilities.power === 'on' ? LightsApi.turn_off : LightsApi.turn_on;
+                                          dispatch(action(token, light.ip));
+                                        }}
+                                      />
+                                      <p className="text-muted mb-0">Brightness: {light.capabilities.bright}%</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Collapse in={getExpanded(light.ip)}>
+                                  <div className="slider" id={`slider-${i}`}>
+                                    <button onClick={() => {
+                                      setLightNameOpened(light);
+                                      setLightName(light.capabilities.name);
+                                    }} className="btn btn-outline-secondary btn-sm">Change name?
+                                    </button>
+                                    <br /><br />
+                                    {lights.loadingItems?.includes(light.ip)
+                                      ? <LineWave
+                                        visible
+                                        width="100%"
+                                        ariaLabel="line-wave-loading"
+                                        wrapperStyle={{}}
+                                        wrapperClass="LineWave-wrapper"
+                                        glassColor="#c0efff"
+                                        color="#e15b64"
+                                      />
+                                      : <>
+                                        <Nouislider
+                                          className="brightness-slider"
+                                          id={light.ip}
+                                          connect="lower"
+                                          step={1}
+                                          start={light.capabilities.bright}
+                                          range={{ min: 0, max: 100 }}
+                                          onSet={onSlide(i)}
+                                          onChange={(render, handle, value, un, percent) => {
+                                            dispatch(LightsApi.setBrightness(token, light.ip, percent[0]));
+                                          }}
+                                          onSlide={onSlide(i, true)}
+                                          tooltips
+                                        />
+                                        <SliderPicker
+                                          className="mt-4"
+                                          color={lightColors?.find(c => c.ip === light.ip)?.color}
+                                          onChange={color =>
+                                            setLightColors(lightColors.map(c => c.ip !== light.ip ? c : {
+                                              ip: c.ip,
+                                              color: color.hex,
+                                            }))
+                                          }
+                                          onChangeComplete={color => {
+                                            dispatch(LightsApi.setRgb(token, light.ip, [color.rgb.r || 1, color.rgb.g || 1, color.rgb.b || 1]));
+                                          }}
+                                        />
+                                        <Nouislider
+                                          className="temp-slider mt-4"
+                                          id={`temp-slider-${i}`}
+                                          connect="lower"
+                                          step={1}
+                                          start={light.capabilities.ct}
+                                          range={{ min: 1700, max: 6500 }}
+                                          onChange={(render, handle, value) => {
+                                            dispatch(LightsApi.setColorTemp(token, light.ip, value[0]));
+                                          }}
+                                          tooltips
+                                        />
+                                      </>
+                                    }
+                                  </div>
+                                </Collapse>
+                              </div>)
+                            : <div className="preview-item">
+                              <div className="preview-thumbnail" />
+                              <div className="preview-item-content d-sm-flex flex-grow">
                                 <div className="flex-grow">
-                                  <h6 className="preview-subject">{light.capabilities.name} <i
-                                    className="mdi mdi-menu-down" /></h6>
-                                  <p className="text-muted mb-0">{light.ip}</p>
-                                </div>
-                                <div className="mr-auto text-sm-right pt-2 pt-sm-0">
-                                  <Form.Check
-                                    checked={light.capabilities.power === 'on'}
-                                    disabled={lights.loadingItems?.includes(light.ip)}
-                                    type="switch"
-                                    id={`checkbox-${i}`}
-                                    label=""
-                                    onChange={() => {
-                                      const action = light.capabilities.power === 'on' ? LightsApi.turn_off : LightsApi.turn_on;
-                                      dispatch(action(token, light.ip));
-                                    }}
-                                  />
-                                  <p className="text-muted mb-0">Brightness: {light.capabilities.bright}%</p>
+                                  <h6 className="preview-subject">No lights available</h6>
                                 </div>
                               </div>
                             </div>
-                            <Collapse in={getExpanded(light.ip)}>
-                              <div className="slider" id={`slider-${i}`}>
-                                <button onClick={() => {
-                                  setLightNameOpened(light);
-                                  setLightName(light.capabilities.name);
-                                }} className="btn btn-outline-secondary btn-sm">Change name?
-                                </button>
-                                <br /><br />
-                                {lights.loadingItems?.includes(light.ip)
-                                  ? <LineWave
-                                    visible
-                                    width="100%"
-                                    ariaLabel="line-wave-loading"
-                                    wrapperStyle={{}}
-                                    wrapperClass="LineWave-wrapper"
-                                    glassColor="#c0efff"
-                                    color="#e15b64"
-                                  />
-                                  : <>
-                                    <Nouislider
-                                      className="brightness-slider"
-                                      id={light.ip}
-                                      connect="lower"
-                                      step={1}
-                                      start={light.capabilities.bright}
-                                      range={{ min: 0, max: 100 }}
-                                      onSet={onSlide(i)}
-                                      onChange={(render, handle, value, un, percent) => {
-                                        dispatch(LightsApi.setBrightness(token, light.ip, percent[0]));
-                                      }}
-                                      onSlide={onSlide(i, true)}
-                                      tooltips
-                                    />
-                                    <SliderPicker
-                                      className="mt-4"
-                                      color={lightColors?.find(c => c.ip === light.ip)?.color}
-                                      onChange={color =>
-                                        setLightColors(lightColors.map(c => c.ip !== light.ip ? c : {
-                                          ip: c.ip,
-                                          color: color.hex,
-                                        }))
-                                      }
-                                      onChangeComplete={color => {
-                                        dispatch(LightsApi.setRgb(token, light.ip, [color.rgb.r || 1, color.rgb.g || 1, color.rgb.b || 1]));
-                                      }}
-                                    />
-                                    <Nouislider
-                                      className="temp-slider mt-4"
-                                      id={`temp-slider-${i}`}
-                                      connect="lower"
-                                      step={1}
-                                      start={light.capabilities.ct}
-                                      range={{ min: 1700, max: 6500 }}
-                                      onChange={(render, handle, value) => {
-                                        dispatch(LightsApi.setColorTemp(token, light.ip, value[0]));
-                                      }}
-                                      tooltips
-                                    />
-                                  </>
-                                }
-                              </div>
-                            </Collapse>
-                          </div>)
-                        : <div className="preview-item">
-                          <div className="preview-thumbnail" />
-                          <div className="preview-item-content d-sm-flex flex-grow">
-                            <div className="flex-grow">
-                              <h6 className="preview-subject">No lights available</h6>
-                            </div>
-                          </div>
-                        </div>
-                  }
+                      }
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-3 col-xl-3 grid-margin stretch-card">
+            <div className="card">
+              <div className="card-body">
+                <h5 className="card-title">
+                  Lights
+                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                          onClick={() => dispatch(lightsApi.getList())}>
+                    <i className="mdi mdi-refresh" />
+                  </button>
+                </h5>
+                {
+                  lights.loading
+                    ? <InfinitySpin
+                      visible
+                      width="100%"
+                      ariaLabel="infinity-spin-loading"
+                      wrapperStyle={{}}
+                      wrapperClass={{}}
+                      glassColor="#c0efff"
+                      color="#e15b64"
+                    />
+                    : <>
+                      <div className="aligner-wrapper">
+                        <Doughnut data={lightsChartData} options={doughnutPieOptions} />
+                      </div>
+                    </>
+                }
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="col-md-6 col-xl-6 grid-margin stretch-card">
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title">
-              Lights
-              <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                      onClick={() => dispatch(lightsApi.getList())}>
-                <i className="mdi mdi-refresh" />
-              </button>
-            </h5>
-            {
-              lights.loading
-                ? <InfinitySpin
-                  visible
-                  width="100%"
-                  ariaLabel="infinity-spin-loading"
-                  wrapperStyle={{}}
-                  wrapperClass={{}}
-                  glassColor="#c0efff"
-                  color="#e15b64"
-                />
-                : <>
-                  <div className="aligner-wrapper">
-                    <Doughnut data={lightsChartData} options={doughnutPieOptions} />
-                  </div>
-                </>
-            }
+      <div className="col-sm-12 col-xl-3">
+        <div className="col-sm-12 col-xl-12 grid-margin stretch-card">
+          <div className="card">
+            <div className="card-body">
+              <div className="d-flex flex-row justify-content-between">
+                <h4 className="card-title">
+                  Activity
+                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                          onClick={() => dispatch(activityApi.getList())}>
+                    <i className="mdi mdi-refresh" />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                    onClick={() => setIsPolling(!isPolling)}
+                    disabled={activity.loading}
+                  >
+                    <i className={`mdi mdi-toggle-switch${isPolling ? '' : '-off text-danger'}`} />
+                  </button>
+                  <Errors errors={activity.errors} />
+                </h4>
+                <p className="text-muted mb-1 small">
+                  Live <i className={`mdi mdi-circle ${isPolling ? 'text-success' : 'text-danger'}`} />
+                </p>
+
+              </div>
+              <p className="text-muted mt-0">Last call: {lastPollTime}</p>
+              <div className="preview-list" style={{ maxHeight: '41.2vh', overflowY: 'scroll' }}>
+                {
+                  activity.loading
+                    ? <ColorRing
+                      width="100%"
+                      height="50"
+                      wrapperStyle={{ width: '100%' }}
+                    />
+                    : activity.results?.length
+                      ? activity.results.map(item => <div key={item.id} className="preview-item border-bottom">
+                        <div className="preview-item-content d-flex flex-grow">
+                          <div className="flex-grow"><small className="text-muted">{item.title}</small></div>
+                        </div>
+                      </div>)
+                      : 'No activity'
+                }
+              </div>
+            </div>
           </div>
         </div>
       </div>

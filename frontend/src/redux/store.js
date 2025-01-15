@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import activityReducer from "../redux/activitySlice";
 import accountsReducer from "../redux/accountsSlice";
 import authReducer from "../redux/authSlice";
 import botReducer from "../redux/botsSlice";
@@ -34,6 +35,7 @@ import watchersSlice from "../redux/watchersSlice";
 export default configureStore({
   reducer: {
     accounts: accountsReducer,
+    activity: activityReducer,
     auth: authReducer,
     bots: botReducer,
     car: carReducer,
