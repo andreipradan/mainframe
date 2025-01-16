@@ -17,23 +17,24 @@ class ExtraContextFilter(logging.Filter):
 
 def get_default_logger(name):
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-    logger.handlers.clear()
+    if settings.LOGTAIL_SOURCE_TOKEN:
+        logger.setLevel(logging.INFO)
+        logger.handlers.clear()
 
-    handler = LogtailHandler(source_token=settings.LOGTAIL_SOURCE_TOKEN)
-    context = {"env": settings.ENV}
-    logger.addHandler(handler)
-    logger.addFilter(ExtraContextFilter(extra_context=context))
+        handler = LogtailHandler(source_token=settings.LOGTAIL_SOURCE_TOKEN)
+        context = {"env": settings.ENV}
+        logger.addHandler(handler)
+        logger.addFilter(ExtraContextFilter(extra_context=context))
 
-    django_logger = logging.getLogger("django.server")
-    if not django_logger.handlers:
-        django_logger.addHandler(handler)
-        django_logger.addFilter(
-            ExtraContextFilter(extra_context={"is_request": True, **context})
-        )
+        django_logger = logging.getLogger("django.server")
+        if not django_logger.handlers:
+            django_logger.addHandler(handler)
+            django_logger.addFilter(
+                ExtraContextFilter(extra_context={"is_request": True, **context})
+            )
 
-    huey_logger = logging.getLogger("huey.consumer")
-    if not huey_logger.handlers:
-        huey_logger.addHandler(handler)
-        huey_logger.addFilter(ExtraContextFilter(extra_context={"is_huey": True}))
+        huey_logger = logging.getLogger("huey.consumer")
+        if not huey_logger.handlers:
+            huey_logger.addHandler(handler)
+            huey_logger.addFilter(ExtraContextFilter(extra_context={"is_huey": True}))
     return logger
