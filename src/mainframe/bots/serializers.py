@@ -1,6 +1,6 @@
 import telegram
 from mainframe.bots.models import Bot, Message
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from rest_framework import serializers
 
 logger = get_default_logger(__name__)

@@ -3,7 +3,7 @@ from pathlib import Path
 import environ
 import google.api_core.exceptions
 import google.generativeai as genai
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 logger = get_default_logger(__name__)
 

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import environ
 from crontab import CronTab
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 config = environ.Env()
 logger = get_default_logger(__name__)

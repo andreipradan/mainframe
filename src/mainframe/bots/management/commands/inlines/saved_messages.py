@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.bots.models import Message
 from mainframe.clients.chat import edit_message
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 

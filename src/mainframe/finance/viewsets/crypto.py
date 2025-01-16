@@ -4,7 +4,7 @@ from mainframe.clients.finance.crypto import (
     CryptoPnLImporter,
     CryptoTransactionsImporter,
 )
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import CryptoPnL, CryptoTransaction
 from mainframe.finance.serializers import (
     CryptoPnLSerializer,

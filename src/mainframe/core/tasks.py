@@ -6,8 +6,8 @@ from django.utils import timezone
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task, task
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.system import run_cmd
+from mainframe.core.logs import get_default_logger
 
 logger = get_default_logger(__name__)
 

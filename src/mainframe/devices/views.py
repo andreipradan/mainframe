@@ -2,7 +2,7 @@ from actstream.registry import registry
 from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
 from mainframe.clients.devices import DevicesClient, DevicesException
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.devices.models import Device
 from mainframe.devices.serializers import DeviceSerializer
 from mainframe.sources.models import Source

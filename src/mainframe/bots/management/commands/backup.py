@@ -2,9 +2,9 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from mainframe.clients import healthchecks
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import GoogleCloudStorageClient
 from mainframe.clients.system import run_cmd
+from mainframe.core.logs import get_default_logger
 
 
 class Command(BaseCommand):

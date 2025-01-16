@@ -6,8 +6,8 @@ from django.db.models import signals
 from django.dispatch import receiver
 from django.utils import timezone
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.scraper import fetch
+from mainframe.core.logs import get_default_logger
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
 from telegram.constants import ParseMode

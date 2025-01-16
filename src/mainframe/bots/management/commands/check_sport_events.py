@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from rest_framework import status
 
 logger = get_default_logger(__name__)

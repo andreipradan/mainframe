@@ -4,8 +4,8 @@ from typing import Callable
 import telegram
 from asgiref.sync import sync_to_async
 from mainframe.bots.models import Bot
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import RedisClient
+from mainframe.core.logs import get_default_logger
 from telegram.constants import ParseMode
 
 

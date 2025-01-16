@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.scraper import fetch
+from mainframe.core.logs import get_default_logger
 from mainframe.watchers.models import Watcher, WatcherError
 from mainframe.watchers.serializers import WatcherSerializer
 from rest_framework import viewsets

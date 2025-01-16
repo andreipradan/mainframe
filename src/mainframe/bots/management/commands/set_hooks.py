@@ -6,7 +6,7 @@ import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients.chat import send_telegram_message
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 logger = get_default_logger(__name__)
 

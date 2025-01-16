@@ -4,7 +4,7 @@ import zlib
 import environ
 import redis
 from google.cloud import storage
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 config = environ.Env()
 

@@ -14,8 +14,8 @@ from mainframe.bots.management.commands.rotate_whos_next import whos_next
 from mainframe.bots.models import Bot, Message
 from mainframe.clients import dexonline
 from mainframe.clients.gemini import GeminiError, generate_content
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.storage import RedisClient
+from mainframe.core.logs import get_default_logger
 from mainframe.earthquakes.management.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update

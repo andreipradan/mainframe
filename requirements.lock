@@ -44,9 +44,6 @@ dacite==1.8.1
     # via axiom-py
 defusedxml==0.7.1
 deprecated==1.2.14
-    # via opentelemetry-api
-    # via opentelemetry-exporter-otlp-proto-http
-    # via opentelemetry-semantic-conventions
     # via pygithub
 django==5.0.4
     # via django-activity-stream
@@ -99,7 +96,6 @@ google-resumable-media==2.7.0
 googleapis-common-protos==1.66.0
     # via google-api-core
     # via grpcio-status
-    # via opentelemetry-exporter-otlp-proto-http
 grpcio==1.65.5
     # via google-api-core
     # via grpcio-status
@@ -123,49 +119,20 @@ idna==3.7
     # via yarl
 ifaddr==0.2.0
     # via yeelight
-importlib-metadata==7.0.0
-    # via opentelemetry-api
 iso8601==2.1.0
     # via axiom-py
+logtail-python==0.3.2
 lxml==5.2.2
+msgpack==1.1.0
+    # via logtail-python
 multidict==6.0.5
     # via aiohttp
     # via yarl
 ndjson==0.3.1
     # via axiom-py
 openpyxl==3.1.2
-opentelemetry-api==1.28.2
-    # via opentelemetry-exporter-otlp-proto-http
-    # via opentelemetry-instrumentation
-    # via opentelemetry-instrumentation-django
-    # via opentelemetry-instrumentation-wsgi
-    # via opentelemetry-sdk
-    # via opentelemetry-semantic-conventions
-opentelemetry-exporter-otlp-proto-common==1.28.2
-    # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-exporter-otlp-proto-http==1.28.2
-opentelemetry-instrumentation==0.49b2
-    # via opentelemetry-instrumentation-django
-    # via opentelemetry-instrumentation-wsgi
-opentelemetry-instrumentation-django==0.49b2
-opentelemetry-instrumentation-wsgi==0.49b2
-    # via opentelemetry-instrumentation-django
-opentelemetry-proto==1.28.2
-    # via opentelemetry-exporter-otlp-proto-common
-    # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-sdk==1.28.2
-    # via opentelemetry-exporter-otlp-proto-http
-opentelemetry-semantic-conventions==0.49b2
-    # via opentelemetry-instrumentation
-    # via opentelemetry-instrumentation-django
-    # via opentelemetry-instrumentation-wsgi
-    # via opentelemetry-sdk
-opentelemetry-util-http==0.49b2
-    # via opentelemetry-instrumentation-django
-    # via opentelemetry-instrumentation-wsgi
 packaging==24.0
     # via gunicorn
-    # via opentelemetry-instrumentation
 pillow==10.0.1
 proto-plus==1.25.0
     # via google-ai-generativelanguage
@@ -176,7 +143,6 @@ protobuf==5.29.0
     # via google-generativeai
     # via googleapis-common-protos
     # via grpcio-status
-    # via opentelemetry-proto
     # via proto-plus
 psutil==5.9.5
 psycopg2-binary==2.9.5
@@ -213,7 +179,7 @@ requests==2.32.3
     # via axiom-py
     # via google-api-core
     # via google-cloud-storage
-    # via opentelemetry-exporter-otlp-proto-http
+    # via logtail-python
     # via pygithub
     # via requests-toolbelt
 requests-toolbelt==1.0.0
@@ -238,7 +204,6 @@ typing-extensions==4.11.0
     # via anyio
     # via asgiref
     # via google-generativeai
-    # via opentelemetry-sdk
     # via pydantic
     # via pydantic-core
     # via pygithub
@@ -252,9 +217,6 @@ urllib3==1.26.18
     # via sentry-sdk
 wrapt==1.16.0
     # via deprecated
-    # via opentelemetry-instrumentation
 yarl==1.9.4
     # via aiohttp
 yeelight==0.7.10
-zipp==3.19.0
-    # via importlib-metadata

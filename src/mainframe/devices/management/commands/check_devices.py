@@ -4,7 +4,7 @@ from operator import attrgetter
 from django.core.management import BaseCommand
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.devices import DevicesClient
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.sources.models import Source
 from telegram.constants import ParseMode
 

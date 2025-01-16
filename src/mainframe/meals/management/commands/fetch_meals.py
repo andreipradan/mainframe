@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.meals import FetchMealsException, MealsClient
+from mainframe.core.logs import get_default_logger
 
 
 class Command(BaseCommand):

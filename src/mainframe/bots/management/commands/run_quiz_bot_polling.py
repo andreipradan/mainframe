@@ -9,7 +9,7 @@ import telegram
 from django.core.management import BaseCommand
 from mainframe.clients.bot import BaseBotClient
 from mainframe.clients.gemini import GeminiError, generate_content
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,

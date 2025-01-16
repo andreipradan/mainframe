@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.exchange.management.clients import BNR, ECB, FetchExchangeRatesException
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}

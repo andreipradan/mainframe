@@ -8,7 +8,7 @@ from django.conf import settings
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.transit_lines.models import Schedule, TransitLine
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard

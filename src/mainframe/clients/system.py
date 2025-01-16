@@ -2,7 +2,7 @@ import subprocess
 from operator import itemgetter
 from pathlib import Path
 
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 
 def get_folder_contents(folder):

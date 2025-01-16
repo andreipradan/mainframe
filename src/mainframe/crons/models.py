@@ -2,7 +2,7 @@ from django.core.management import call_command
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
 

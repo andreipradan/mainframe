@@ -3,8 +3,8 @@ from collections import deque
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.bots.models import Bot
 from mainframe.clients import dexonline
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.scraper import fetch
+from mainframe.core.logs import get_default_logger
 
 logger = get_default_logger(__name__)
 

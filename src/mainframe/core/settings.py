@@ -15,8 +15,6 @@ from pathlib import Path
 
 import environ
 import sentry_sdk
-from mainframe.clients.logs import get_default_logger
-from mainframe.core.otel_config import configure_opentelemetry
 from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env(
@@ -214,21 +212,11 @@ LOGGING = {
             "style": "{",
         },
     },
-    "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
-    },
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "verbose"}},
     "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "propagate": False,
-            "level": "INFO",
-        },
+        "django": {"handlers": ["console"], "propagate": False, "level": "INFO"},
         "huey": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "root": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
+        "root": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
 
@@ -255,10 +243,6 @@ if ENV in ["local", "prod", "rpi"]:
         }
     }
     if ENV in ("prod", "rpi"):
-        if not env("HUEY", default=False):
-            logger = get_default_logger(__name__)
-            logger.info("Configuring open telemetry", extra={"ENV": ENV})
-            configure_opentelemetry()
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
             environment=ENV,
@@ -311,3 +295,4 @@ HUEY = {
 }
 ACTSTREAM_SETTINGS = {"USE_JSONFIELD": True}
 SITE_ID = 1
+LOGTAIL_SOURCE_TOKEN = env("LOGTAIL_SOURCE_TOKEN")

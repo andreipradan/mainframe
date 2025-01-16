@@ -6,7 +6,7 @@ from typing import List
 import aiohttp
 from bs4 import BeautifulSoup
 from django.core.signing import Signer
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.meals.models import Meal
 from rest_framework import status
 

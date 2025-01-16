@@ -1,6 +1,6 @@
 import environ
 import requests
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 
 def ping(logger, service_name="URL"):

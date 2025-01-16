@@ -11,7 +11,7 @@ from huey.signals import (
     SIGNAL_LOCKED,
     SIGNAL_REVOKED,
 )
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.core.tasks import get_redis_client, log_status
 from mainframe.finance.models import Category, Transaction
 from mainframe.finance.tasks import predict, train

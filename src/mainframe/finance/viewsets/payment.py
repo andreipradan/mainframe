@@ -1,5 +1,5 @@
 from mainframe.clients.finance.payment import PaymentImportError, PaymentsImporter
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import Payment
 from mainframe.finance.serializers import PaymentSerializer
 from rest_framework import status, viewsets

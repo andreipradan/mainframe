@@ -4,8 +4,8 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.scraper import fetch
+from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import Pension, UnitValue
 
 logger = get_default_logger(__name__)

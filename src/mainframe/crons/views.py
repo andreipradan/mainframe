@@ -2,7 +2,7 @@ import psutil
 from django.core.exceptions import ValidationError
 from django.core.management import CommandError
 from django.http import JsonResponse
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.crons.models import Cron
 from mainframe.crons.serializers import CronSerializer
 from rest_framework import status, viewsets

@@ -4,7 +4,7 @@ from mainframe.clients.finance.stocks import (
     StockPnLImporter,
     StockTransactionsImporter,
 )
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
 from mainframe.finance.viewsets.mixins import PnlActionModelViewSet

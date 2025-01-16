@@ -2,8 +2,8 @@ import random
 
 from bs4 import BeautifulSoup
 from django.conf import settings
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.scraper import fetch
+from mainframe.core.logs import get_default_logger
 
 logger = get_default_logger(__name__)
 

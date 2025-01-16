@@ -2,7 +2,7 @@ from django.conf import settings
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task
 from mainframe.clients import healthchecks
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 
 
 @periodic_task(crontab(minute="*/5"))

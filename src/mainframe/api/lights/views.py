@@ -2,7 +2,7 @@ import json
 
 from django.http import JsonResponse
 from mainframe.clients.lights import LightsClient, LightsException
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser

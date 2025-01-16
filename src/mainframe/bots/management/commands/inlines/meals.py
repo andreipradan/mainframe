@@ -3,8 +3,8 @@ import math
 from asgiref.sync import sync_to_async
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
-from mainframe.clients.logs import get_default_logger
 from mainframe.clients.meals import MealsClient
+from mainframe.core.logs import get_default_logger
 from mainframe.meals.models import Meal
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 

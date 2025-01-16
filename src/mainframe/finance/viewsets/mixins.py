@@ -1,5 +1,5 @@
 from django.db.models import Q, Sum
-from mainframe.clients.logs import get_default_logger
+from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import CryptoPnL
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
