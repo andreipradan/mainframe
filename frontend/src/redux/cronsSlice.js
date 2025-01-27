@@ -49,7 +49,7 @@ export const cronsSlice = createSlice({
     setModalOpen: (state, action) => {
       state.modalOpen = action.payload
     },
-    setLoading: (state, action) => {state.loading = action.payload || true},
+    setLoading: (state, action) => {state.loading = action.payload !== undefined ? action.payload : true},
     setLoadingCron: (state, action) => {
       state.loadingCrons = !state.loadingCrons
         ? [action.payload]
