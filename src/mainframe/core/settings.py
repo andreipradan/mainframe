@@ -275,8 +275,6 @@ if ENV in ["local", "prod", "rpi"]:
     if ENV in ("prod", "rpi", "local"):
         logfire.configure(environment=ENV, send_to_logfire="if-token-present")
         logfire.instrument_django()
-        LOGGING["loggers"]["django"]["handlers"] = ["logfire"]
-        LOGGING["loggers"]["huey"]["handlers"] = ["logfire"]
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
             environment=ENV,
