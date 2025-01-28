@@ -55,6 +55,9 @@ decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
 deprecated==1.2.14
+    # via opentelemetry-api
+    # via opentelemetry-exporter-otlp-proto-http
+    # via opentelemetry-semantic-conventions
     # via pygithub
 distlib==0.3.8
     # via virtualenv
@@ -78,6 +81,7 @@ exceptiongroup==1.2.1
     # via ipython
     # via pytest
 executing==2.0.1
+    # via logfire
     # via stack-data
 factory-boy==3.3.0
 faker==24.14.1
@@ -120,6 +124,7 @@ google-resumable-media==2.7.0
 googleapis-common-protos==1.66.0
     # via google-api-core
     # via grpcio-status
+    # via opentelemetry-exporter-otlp-proto-http
 grpcio==1.65.5
     # via google-api-core
     # via grpcio-status
@@ -145,6 +150,8 @@ idna==3.7
     # via yarl
 ifaddr==0.2.0
     # via yeelight
+importlib-metadata==8.5.0
+    # via opentelemetry-api
 iniconfig==2.0.0
     # via pytest
 ipython==8.24.0
@@ -152,10 +159,15 @@ iso8601==2.1.0
     # via axiom-py
 jedi==0.19.1
     # via ipython
+logfire==3.4.0
 logtail-python==0.3.2
 lxml==5.2.2
+markdown-it-py==3.0.0
+    # via rich
 matplotlib-inline==0.1.7
     # via ipython
+mdurl==0.1.2
+    # via markdown-it-py
 msgpack==1.1.0
     # via logtail-python
 multidict==6.0.5
@@ -168,9 +180,53 @@ ndjson==0.3.1
 nodeenv==1.9.0
     # via pre-commit
 openpyxl==3.1.2
+opentelemetry-api==1.29.0
+    # via opentelemetry-exporter-otlp-proto-http
+    # via opentelemetry-instrumentation
+    # via opentelemetry-instrumentation-dbapi
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-psycopg2
+    # via opentelemetry-instrumentation-wsgi
+    # via opentelemetry-sdk
+    # via opentelemetry-semantic-conventions
+opentelemetry-exporter-otlp-proto-common==1.29.0
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-http==1.29.0
+    # via logfire
+opentelemetry-instrumentation==0.50b0
+    # via logfire
+    # via opentelemetry-instrumentation-dbapi
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-psycopg2
+    # via opentelemetry-instrumentation-wsgi
+opentelemetry-instrumentation-dbapi==0.50b0
+    # via opentelemetry-instrumentation-psycopg2
+opentelemetry-instrumentation-django==0.50b0
+    # via logfire
+opentelemetry-instrumentation-psycopg2==0.50b0
+    # via logfire
+opentelemetry-instrumentation-wsgi==0.50b0
+    # via opentelemetry-instrumentation-django
+opentelemetry-proto==1.29.0
+    # via opentelemetry-exporter-otlp-proto-common
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-sdk==1.29.0
+    # via logfire
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions==0.50b0
+    # via opentelemetry-instrumentation
+    # via opentelemetry-instrumentation-dbapi
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-wsgi
+    # via opentelemetry-sdk
+opentelemetry-util-http==0.50b0
+    # via opentelemetry-instrumentation-django
+    # via opentelemetry-instrumentation-wsgi
 packaging==24.0
     # via black
     # via gunicorn
+    # via logfire
+    # via opentelemetry-instrumentation
     # via pytest
 parso==0.8.4
     # via jedi
@@ -196,6 +252,8 @@ protobuf==5.29.0
     # via google-generativeai
     # via googleapis-common-protos
     # via grpcio-status
+    # via logfire
+    # via opentelemetry-proto
     # via proto-plus
 psutil==5.9.5
 psycopg2-binary==2.9.5
@@ -217,6 +275,7 @@ pydantic-core==2.20.1
 pygithub==2.3.0
 pygments==2.17.2
     # via ipython
+    # via rich
 pyhumps==3.8.0
     # via axiom-py
 pyjwt==2.6.0
@@ -253,10 +312,13 @@ requests==2.32.3
     # via google-api-core
     # via google-cloud-storage
     # via logtail-python
+    # via opentelemetry-exporter-otlp-proto-http
     # via pygithub
     # via requests-toolbelt
 requests-toolbelt==1.0.0
     # via axiom-py
+rich==13.9.4
+    # via logfire
 rsa==4.9
     # via google-auth
 sentry-sdk==2.0.0
@@ -277,6 +339,7 @@ stack-data==0.6.3
 tomli==2.0.1
     # via black
     # via coverage
+    # via logfire
     # via pytest
     # via pytest-env
 tornado==6.4
@@ -291,9 +354,12 @@ typing-extensions==4.11.0
     # via black
     # via google-generativeai
     # via ipython
+    # via logfire
+    # via opentelemetry-sdk
     # via pydantic
     # via pydantic-core
     # via pygithub
+    # via rich
 ujson==5.10.0
     # via axiom-py
 uritemplate==4.1.1
@@ -308,6 +374,10 @@ wcwidth==0.2.13
     # via prompt-toolkit
 wrapt==1.16.0
     # via deprecated
+    # via opentelemetry-instrumentation
+    # via opentelemetry-instrumentation-dbapi
 yarl==1.9.4
     # via aiohttp
 yeelight==0.7.10
+zipp==3.21.0
+    # via importlib-metadata

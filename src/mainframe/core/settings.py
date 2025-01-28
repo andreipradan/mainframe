@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 import environ
+import logfire
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -212,7 +213,10 @@ LOGGING = {
             "style": "{",
         },
     },
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "verbose"}},
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+        "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
+    },
     "loggers": {
         "django": {"handlers": ["console"], "propagate": False, "level": "INFO"},
         "huey": {"handlers": ["console"], "level": "INFO", "propagate": False},
@@ -223,49 +227,6 @@ LOGGING = {
 DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
     "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
 )
-
-if ENV in ["local", "prod", "rpi"]:
-    if ENV == "local":
-        INSTALLED_APPS += ["debug_toolbar"]
-        MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-        INTERNAL_IPS = ["127.0.0.1"]
-        DEBUG_TOOLBAR_CONFIG = {
-            "SHOW_TOOLBAR_CALLBACK": lambda request: True,
-        }
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("DB_DATABASE"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
-        }
-    }
-    if ENV in ("prod", "rpi"):
-        sentry_sdk.init(
-            dsn=env("SENTRY_DSN"),
-            environment=ENV,
-            integrations=[DjangoIntegration()],
-            traces_sample_rate=1.0,
-            send_default_pii=False,
-            profiles_sample_rate=1.0,
-        )
-elif ENV in ["ci", "test"]:
-    DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "test_db",
-            "USER": "test_user",
-            "PASSWORD": "test_pass",
-            "HOST": "localhost",
-            "PORT": 5432,
-        }
-    }
-else:
-    raise ValueError(f"Invalid ENV variable set: {ENV}")
-
 
 HUEY = {
     "huey_class": "huey.RedisHuey",  # Huey's implementation to use.
@@ -293,6 +254,52 @@ HUEY = {
         "health_check_interval": 1,  # Check worker health every second.
     },
 }
+if ENV in ["local", "prod", "rpi"]:
+    if ENV == "local":
+        INSTALLED_APPS += ["debug_toolbar"]
+        MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+        INTERNAL_IPS = ["127.0.0.1"]
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+        }
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DB_DATABASE"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
+        }
+    }
+    if ENV in ("prod", "rpi", "local"):
+        logfire.configure(environment=ENV, send_to_logfire="if-token-present")
+        logfire.instrument_django()
+        LOGGING["loggers"]["django"]["handlers"] = ["logfire"]
+        LOGGING["loggers"]["huey"]["handlers"] = ["logfire"]
+        sentry_sdk.init(
+            dsn=env("SENTRY_DSN"),
+            environment=ENV,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=1.0,
+            send_default_pii=False,
+            profiles_sample_rate=1.0,
+        )
+elif ENV in ["ci", "test"]:
+    DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "test_db",
+            "USER": "test_user",
+            "PASSWORD": "test_pass",
+            "HOST": "localhost",
+            "PORT": 5432,
+        }
+    }
+else:
+    raise ValueError(f"Invalid ENV variable set: {ENV}")
+
+
 ACTSTREAM_SETTINGS = {"USE_JSONFIELD": True}
 SITE_ID = 1
-LOGTAIL_SOURCE_TOKEN = env("LOGTAIL_SOURCE_TOKEN", default=None)
