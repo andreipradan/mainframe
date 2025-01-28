@@ -273,7 +273,11 @@ if ENV in ["local", "prod", "rpi"]:
         }
     }
     if ENV in ("prod", "rpi", "local"):
-        logfire.configure(environment=ENV, send_to_logfire="if-token-present")
+        logfire.configure(
+            environment=ENV,
+            distributed_tracing=True,
+            send_to_logfire="if-token-present",
+        )
         logfire.instrument_django()
         sentry_sdk.init(
             dsn=env("SENTRY_DSN"),
