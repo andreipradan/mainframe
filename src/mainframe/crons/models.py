@@ -62,7 +62,7 @@ class Cron(TimeStampedModel):
             ):
                 with logfire.span(f"{self}"):
                     for log in logs:
-                        logfire_handler.emit(log)
+                        logfire_handler.handle(log)
 
             # add back all handlers
             logger.handlers.clear()
