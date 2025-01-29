@@ -46,4 +46,3 @@ class Command(BaseCommand):
             )
 
         logger.info("Done")
-        self.stdout.write(self.style.SUCCESS("Done"))

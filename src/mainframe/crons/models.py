@@ -5,11 +5,8 @@ from django.core.management import call_command
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
-from mainframe.core.logs import get_default_logger
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
-
-logger = get_default_logger(__name__)
 
 
 class LogCaptureHandler(logging.Handler):
@@ -40,28 +37,25 @@ class Cron(TimeStampedModel):
         return display
 
     def run(self) -> None:
+        logger = logging.getLogger("mainframe")
+        all_handlers = logger.handlers[:]
+        logfire_handler = next((h for h in all_handlers if h.name == "logfire"), None)
+
         handler = LogCaptureHandler()
-
-        mainframe_logger = logging.getLogger("mainframe")
-        original_handlers = mainframe_logger.handlers[:]
-        original_level = mainframe_logger.getEffectiveLevel()
-
-        mainframe_logger.handlers.clear()
-        mainframe_logger.addHandler(handler)
-
-        mainframe_logger.setLevel(self.log_level)
+        logger.handlers = [h for h in logger.handlers if h != logfire_handler]
+        logger.addHandler(handler)
 
         try:
             call_command(self.command, **self.kwargs)
         finally:
-            mainframe_logger.handlers.clear()
-            mainframe_logger.handlers.extend(original_handlers)
-            if handler.captured_logs:
+            logger.handlers.clear()
+            logger.handlers.extend(all_handlers)
+            if logs := [
+                log for log in handler.captured_logs if log.levelno >= self.log_level
+            ]:
                 with logfire.span(f"{self}"):
-                    for log in handler.captured_logs:
-                        mainframe_logger.log(level=log.levelno, msg=log.getMessage())
-
-            mainframe_logger.setLevel(original_level)
+                    for log in logs:
+                        logfire_handler.emit(log)
 
 
 @receiver(signals.post_delete, sender=Cron)
