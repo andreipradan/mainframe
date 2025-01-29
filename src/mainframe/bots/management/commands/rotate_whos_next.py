@@ -2,6 +2,7 @@ import logging
 from collections import deque
 
 from django.core.management.base import BaseCommand, CommandError
+
 from mainframe.bots.models import Bot
 from mainframe.clients import dexonline
 from mainframe.clients.scraper import fetch

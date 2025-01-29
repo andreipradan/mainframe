@@ -2,10 +2,11 @@ import json
 import logging
 
 from django.http import JsonResponse
-from mainframe.clients.lights import LightsClient, LightsException
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
+
+from mainframe.clients.lights import LightsClient, LightsException
 
 logger = logging.getLogger(__name__)
 

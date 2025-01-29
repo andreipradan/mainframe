@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 from django.core.management import call_command
+
 from mainframe.crons.models import Cron
 
 

@@ -1,6 +1,7 @@
 from django.core.management import call_command
 from huey.contrib.djhuey import db_task
 from huey.signals import SIGNAL_ERROR
+
 from mainframe.core.tasks import log_status
 from mainframe.finance.models import Category, Transaction
 
@@ -18,6 +19,7 @@ def finance_import(doc_type, **kwargs):
 @db_task()
 def predict(queryset, logger):
     import pandas as pd
+
     from mainframe.clients.prediction import SKLearn
 
     total = queryset.count()
@@ -49,6 +51,7 @@ def predict(queryset, logger):
 @db_task(expires=10)
 def train(logger):
     import pandas as pd
+
     from mainframe.clients.prediction import SKLearn
 
     qs = (

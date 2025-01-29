@@ -3,6 +3,7 @@ import logging
 
 from asgiref.sync import sync_to_async
 from django.core.management.base import BaseCommand, CommandError
+
 from mainframe.clients import healthchecks
 from mainframe.clients.ctp import CTPClient, FetchTransitLinesException
 from mainframe.transit_lines.models import TransitLine

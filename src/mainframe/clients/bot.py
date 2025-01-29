@@ -4,9 +4,10 @@ from typing import Callable
 
 import telegram
 from asgiref.sync import sync_to_async
+from telegram.constants import ParseMode
+
 from mainframe.bots.models import Bot
 from mainframe.clients.storage import RedisClient
-from telegram.constants import ParseMode
 
 
 def is_whitelisted(func):

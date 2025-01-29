@@ -8,8 +8,7 @@ import google.generativeai as genai
 logger = logging.getLogger(__name__)
 
 
-class GeminiError(Exception):
-    ...
+class GeminiError(Exception): ...
 
 
 def generate_content(

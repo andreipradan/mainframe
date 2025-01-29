@@ -1,5 +1,6 @@
-from mainframe.api.earthquakes.views import EarthquakeViewSet
 from rest_framework import routers
+
+from mainframe.api.earthquakes.views import EarthquakeViewSet
 
 router = routers.SimpleRouter()
 

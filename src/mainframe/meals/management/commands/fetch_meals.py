@@ -1,6 +1,7 @@
 import logging
 
 from django.core.management.base import BaseCommand, CommandError
+
 from mainframe.clients import healthchecks
 from mainframe.clients.meals import FetchMealsException, MealsClient
 

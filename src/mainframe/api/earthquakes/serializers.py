@@ -1,5 +1,6 @@
-from mainframe.earthquakes.models import Earthquake
 from rest_framework import serializers
+
+from mainframe.earthquakes.models import Earthquake
 
 
 class EarthquakeSerializer(serializers.ModelSerializer):

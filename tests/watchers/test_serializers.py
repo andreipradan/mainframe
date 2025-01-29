@@ -1,8 +1,8 @@
 from unittest import mock
 
 import pytest
-from mainframe.watchers.serializers import WatcherSerializer
 
+from mainframe.watchers.serializers import WatcherSerializer
 from tests.factories.watchers import WatcherFactory
 
 

@@ -3,12 +3,12 @@ import io
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+
 from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.tasks import backup_finance_model
 
 
-class StockImportError(Exception):
-    ...
+class StockImportError(Exception): ...
 
 
 class StockPnLImporter:

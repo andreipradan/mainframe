@@ -74,6 +74,7 @@ addopts = """\
            --disable-socket \
            -v
 """
+asyncio_default_fixture_loop_scope = "function"
 python_files = ["test_*.py"]
 pythonpath = "src"
 

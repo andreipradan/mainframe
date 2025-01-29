@@ -3,10 +3,10 @@ from unittest import mock
 
 import pytest
 from jwt.exceptions import ExpiredSignatureError
-from mainframe.api.authentication.serializers import _generate_jwt_token
-from mainframe.api.user.models import User
 from rest_framework import status
 
+from mainframe.api.authentication.serializers import _generate_jwt_token
+from mainframe.api.user.models import User
 from tests.factories.user import UserFactory
 
 

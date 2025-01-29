@@ -3,11 +3,12 @@ import logging
 from operator import attrgetter
 
 from django.core.management import BaseCommand
+from telegram.constants import ParseMode
+
 from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.devices import DevicesClient
 from mainframe.sources.models import Source
-from telegram.constants import ParseMode
 
 
 def should_notify(devices):

@@ -1,10 +1,11 @@
 import logging
 
 from django.db.models import Q, Sum
-from mainframe.finance.models import CryptoPnL
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from mainframe.finance.models import CryptoPnL
 
 
 class PnlActionModelViewSet(viewsets.ModelViewSet):

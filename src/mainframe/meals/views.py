@@ -1,10 +1,11 @@
-from mainframe.clients.meals import MealsClient
-from mainframe.meals.models import Meal
-from mainframe.meals.serializers import MealSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
+
+from mainframe.clients.meals import MealsClient
+from mainframe.meals.models import Meal
+from mainframe.meals.serializers import MealSerializer
 
 
 class MealsPagination(PageNumberPagination):

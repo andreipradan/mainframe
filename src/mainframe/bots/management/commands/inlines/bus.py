@@ -6,12 +6,13 @@ from typing import List
 import pytz
 from asgiref.sync import sync_to_async
 from django.conf import settings
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
+
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
 from mainframe.transit_lines.models import Schedule, TransitLine
-from telegram import InlineKeyboardButton as Button
-from telegram import InlineKeyboardMarkup as Keyboard
 
 logger = logging.getLogger(__name__)
 

@@ -12,12 +12,13 @@ from huey.signals import (
     SIGNAL_LOCKED,
     SIGNAL_REVOKED,
 )
-from mainframe.core.tasks import get_redis_client, log_status
-from mainframe.finance.models import Category, Transaction
-from mainframe.finance.tasks import predict, train
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
+
+from mainframe.core.tasks import get_redis_client, log_status
+from mainframe.finance.models import Category, Transaction
+from mainframe.finance.tasks import predict, train
 
 logger = logging.getLogger(__name__)
 

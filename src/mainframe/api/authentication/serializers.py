@@ -5,10 +5,11 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from jwt import InvalidSignatureError
+from rest_framework import exceptions, serializers
+
 from mainframe.api.authentication.models import ActiveSession
 from mainframe.api.user.models import User
 from mainframe.api.user.serializers import UserSerializer
-from rest_framework import exceptions, serializers
 
 
 def _generate_jwt_token(user):

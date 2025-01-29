@@ -5,11 +5,12 @@ from typing import Literal
 from django.http import JsonResponse
 from django.utils.module_loading import autodiscover_modules
 from huey.contrib.djhuey import HUEY
-from mainframe.core.tasks import get_redis_client
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAdminUser
+
+from mainframe.core.tasks import get_redis_client
 
 
 def is_revoked(task):

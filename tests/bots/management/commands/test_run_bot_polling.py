@@ -7,6 +7,8 @@ from asgiref.sync import sync_to_async
 from django.core.management import CommandError
 from django.utils import timezone
 from future.backports.datetime import datetime
+from telegram.constants import ParseMode
+
 from mainframe.bots.management.commands.run_bot_polling import (
     handle_chat_id,
     handle_dex,
@@ -22,8 +24,6 @@ from mainframe.bots.management.commands.run_bot_polling import (
 from mainframe.bots.models import Bot
 from mainframe.clients.dexonline import DexOnlineError
 from mainframe.earthquakes.models import Earthquake
-from telegram.constants import ParseMode
-
 from tests.factories.bots import BotFactory
 from tests.factories.earthquakes import EarthquakeFactory
 

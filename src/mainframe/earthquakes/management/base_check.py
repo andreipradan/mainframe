@@ -5,12 +5,13 @@ import pytz
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.db import OperationalError
+from telegram.constants import ParseMode
+
 from mainframe.bots.models import Bot
 from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.scraper import fetch
 from mainframe.earthquakes.models import Earthquake
-from telegram.constants import ParseMode
 
 DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
 

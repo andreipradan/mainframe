@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pytz
 from bs4 import BeautifulSoup
+
 from mainframe.earthquakes.management.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 

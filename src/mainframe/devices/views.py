@@ -3,14 +3,15 @@ import logging
 from actstream.registry import registry
 from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
-from mainframe.clients.devices import DevicesClient, DevicesException
-from mainframe.devices.models import Device
-from mainframe.devices.serializers import DeviceSerializer
-from mainframe.sources.models import Source
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
+
+from mainframe.clients.devices import DevicesClient, DevicesException
+from mainframe.devices.models import Device
+from mainframe.devices.serializers import DeviceSerializer
+from mainframe.sources.models import Source
 
 logger = logging.getLogger(__name__)
 

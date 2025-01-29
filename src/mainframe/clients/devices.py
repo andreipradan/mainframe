@@ -7,14 +7,14 @@ import requests
 from actstream.models import Action
 from django.db import IntegrityError
 from django.utils import timezone
+from rest_framework import status
+
 from mainframe.core.exceptions import MainframeError
 from mainframe.devices.models import Device
 from mainframe.sources.models import Source
-from rest_framework import status
 
 
-class DevicesException(MainframeError):
-    ...
+class DevicesException(MainframeError): ...
 
 
 class DevicesClient:

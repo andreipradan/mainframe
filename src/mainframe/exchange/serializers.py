@@ -1,5 +1,6 @@
-from mainframe.exchange.models import ExchangeRate
 from rest_framework import serializers
+
+from mainframe.exchange.models import ExchangeRate
 
 
 class ExchangeRateSerializer(serializers.ModelSerializer):

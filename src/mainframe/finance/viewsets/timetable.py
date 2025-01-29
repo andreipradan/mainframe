@@ -1,11 +1,12 @@
 import logging
 
-from mainframe.clients.finance.timetable import TimetableImportError, import_timetable
-from mainframe.finance.models import Timetable
-from mainframe.finance.serializers import TimetableSerializer
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+
+from mainframe.clients.finance.timetable import TimetableImportError, import_timetable
+from mainframe.finance.models import Timetable
+from mainframe.finance.serializers import TimetableSerializer
 
 
 class TimetableViewSet(viewsets.ModelViewSet):

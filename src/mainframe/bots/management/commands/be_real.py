@@ -7,6 +7,7 @@ from random import randrange
 import environ
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
 from mainframe.clients.chat import send_telegram_message
 from mainframe.crons.models import Cron
 

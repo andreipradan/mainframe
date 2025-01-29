@@ -1,9 +1,10 @@
 import jwt
 from django.conf import settings
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
+from rest_framework import authentication, exceptions
+
 from mainframe.api.authentication.models import ActiveSession
 from mainframe.api.user.models import User
-from rest_framework import authentication, exceptions
 
 
 class ActiveSessionAuthentication(authentication.BaseAuthentication):

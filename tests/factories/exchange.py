@@ -1,4 +1,5 @@
 import factory
+
 from mainframe.exchange.models import Currency
 
 

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+
 from mainframe.core.models import TimeStampedModel
 
 DECIMAL_DEFAULT_KWARGS = {"decimal_places": 2, "max_digits": 8}

@@ -1,4 +1,5 @@
 import factory.django
+
 from mainframe.earthquakes.models import Earthquake
 
 

@@ -1,5 +1,6 @@
-from mainframe.finance.models import Account
 from rest_framework import serializers
+
+from mainframe.finance.models import Account
 
 
 class AccountSerializer(serializers.ModelSerializer):

@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from mainframe.finance.models import (
     Category,
     Credit,
@@ -6,7 +8,6 @@ from mainframe.finance.models import (
     Transaction,
 )
 from mainframe.finance.serializers import AccountSerializer
-from rest_framework import serializers
 
 
 class CategorySerializer(serializers.ModelSerializer):

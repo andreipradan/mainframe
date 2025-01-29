@@ -1,5 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+
 from mainframe.core.models import TimeStampedModel
 
 

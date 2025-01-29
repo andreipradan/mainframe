@@ -2,11 +2,12 @@ import logging
 import math
 
 from asgiref.sync import sync_to_async
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.meals import MealsClient
 from mainframe.meals.models import Meal
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 logger = logging.getLogger(__name__)
 

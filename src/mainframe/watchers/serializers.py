@@ -1,10 +1,11 @@
 import json
 
 from cron_descriptor import get_description
+from rest_framework import serializers
+
 from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.watchers.models import Watcher
-from rest_framework import serializers
 
 
 class WatcherSerializer(ScheduleTaskIsRenamedSerializer):

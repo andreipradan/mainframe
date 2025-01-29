@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group
-from mainframe.api.user.serializers import UserSerializer
 from rest_framework import serializers
+
+from mainframe.api.user.serializers import UserSerializer
 
 
 class GroupSerializer(serializers.ModelSerializer):

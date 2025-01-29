@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from mainframe.devices.models import Device
 
 

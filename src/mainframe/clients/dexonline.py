@@ -3,17 +3,16 @@ import random
 
 from bs4 import BeautifulSoup
 from django.conf import settings
+
 from mainframe.clients.scraper import fetch
 
 logger = logging.getLogger(__name__)
 
 
-class DexOnlineError(Exception):
-    ...
+class DexOnlineError(Exception): ...
 
 
-class DexOnlineNotFoundError(DexOnlineError):
-    ...
+class DexOnlineNotFoundError(DexOnlineError): ...
 
 
 def fetch_definition(word=None):

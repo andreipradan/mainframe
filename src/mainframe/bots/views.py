@@ -1,11 +1,12 @@
 import logging
 
 from django.http import JsonResponse
-from mainframe.bots.models import Bot, Message
-from mainframe.bots.serializers import BotSerializer, MessageSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
+
+from mainframe.bots.models import Bot, Message
+from mainframe.bots.serializers import BotSerializer, MessageSerializer
 
 logger = logging.getLogger(__name__)
 

@@ -4,13 +4,13 @@ from functools import cached_property
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from mainframe.finance.models import Payment, Timetable
-from mainframe.finance.tasks import backup_finance_model
 from PyPDF2 import PdfReader
 
+from mainframe.finance.models import Payment, Timetable
+from mainframe.finance.tasks import backup_finance_model
 
-class PaymentImportError(Exception):
-    ...
+
+class PaymentImportError(Exception): ...
 
 
 def normalize_amount(amount):

@@ -1,5 +1,6 @@
-from mainframe.watchers.views import WatcherViewSet
 from rest_framework import routers
+
+from mainframe.watchers.views import WatcherViewSet
 
 router = routers.SimpleRouter()
 

@@ -2,8 +2,9 @@ import logging
 
 import six
 import telegram
-from mainframe.clients.chat import edit_message
 from telegram.constants import ParseMode
+
+from mainframe.clients.chat import edit_message
 
 logger = logging.getLogger(__name__)
 

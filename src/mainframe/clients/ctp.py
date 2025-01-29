@@ -6,9 +6,10 @@ from typing import List, Optional
 
 import aiohttp
 from asgiref.sync import sync_to_async
+from rest_framework import status
+
 from mainframe.clients import scraper
 from mainframe.transit_lines.models import Schedule, TransitLine
-from rest_framework import status
 
 
 class FetchTransitLinesException(Exception):

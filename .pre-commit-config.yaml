@@ -9,12 +9,18 @@ repos:
     -   id: detect-private-key
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.1
+-   repo: local
     hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
+      - id: rye fmt
+        entry: sh -c "rye fmt"
+        language: system
+        name: rye fmt
+-   repo: local
+    hooks:
+      - id: rye lint fix
+        entry: sh -c "rye lint --fix"
+        language: system
+        name: rye lint fix
 -   repo: local
     hooks:
       - id: migrations-check
@@ -22,11 +28,4 @@ repos:
         name: check for uncreated migrations
         entry: sh -c "python src/manage.py makemigrations --check --dry-run"
         files: "models\\.py$"
-        stages: [commit]
--   repo: local
-    hooks:
-      - id: pytest
-        language: system
-        name: pytest
-        entry: sh -c "pytest tests src --ds=mainframe.core.settings --nomigrations"
         stages: [commit]

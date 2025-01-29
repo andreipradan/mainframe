@@ -1,5 +1,6 @@
-from mainframe.crons.views import CronViewSet
 from rest_framework import routers
+
+from mainframe.crons.views import CronViewSet
 
 router = routers.SimpleRouter()
 

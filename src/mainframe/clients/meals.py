@@ -7,8 +7,9 @@ from typing import List
 import aiohttp
 from bs4 import BeautifulSoup
 from django.core.signing import Signer
-from mainframe.meals.models import Meal
 from rest_framework import status
+
+from mainframe.meals.models import Meal
 
 logger = logging.getLogger(__name__)
 

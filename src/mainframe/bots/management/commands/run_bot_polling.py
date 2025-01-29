@@ -5,6 +5,17 @@ import environ
 import telegram
 from asgiref.sync import sync_to_async
 from django.core.management import BaseCommand, CommandError
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.constants import ParseMode
+from telegram.ext import (
+    Application,
+    CallbackContext,
+    CallbackQueryHandler,
+    CommandHandler,
+    MessageHandler,
+    filters,
+)
+
 from mainframe.bots.management.commands.inlines.bus import BusInline
 from mainframe.bots.management.commands.inlines.lights import LightsInline
 from mainframe.bots.management.commands.inlines.meals import MealsInline
@@ -18,16 +29,6 @@ from mainframe.clients.gemini import GeminiError, generate_content
 from mainframe.clients.storage import RedisClient
 from mainframe.earthquakes.management.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.constants import ParseMode
-from telegram.ext import (
-    Application,
-    CallbackContext,
-    CallbackQueryHandler,
-    CommandHandler,
-    MessageHandler,
-    filters,
-)
 
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)

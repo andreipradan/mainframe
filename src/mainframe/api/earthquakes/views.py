@@ -3,12 +3,13 @@ import json
 from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse
-from mainframe.api.earthquakes.serializers import EarthquakeSerializer
-from mainframe.bots.models import Bot
-from mainframe.earthquakes.models import Earthquake
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from mainframe.api.earthquakes.serializers import EarthquakeSerializer
+from mainframe.bots.models import Bot
+from mainframe.earthquakes.models import Earthquake
 
 
 class EarthquakeViewSet(viewsets.ModelViewSet):

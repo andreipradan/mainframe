@@ -7,13 +7,13 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
+
 from mainframe.bots.management.commands.inlines.shared import chunks
 from mainframe.finance.models import Account, Transaction
 from mainframe.finance.tasks import backup_finance_model
 
 
-class StatementImportError(Exception):
-    ...
+class StatementImportError(Exception): ...
 
 
 class StatementParser:

@@ -1,5 +1,6 @@
-from mainframe.finance.models import Contribution, Pension, UnitValue
 from rest_framework import serializers
+
+from mainframe.finance.models import Contribution, Pension, UnitValue
 
 
 class ContributionSerializer(serializers.ModelSerializer):

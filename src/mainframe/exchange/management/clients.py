@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from bs4 import BeautifulSoup
 from defusedxml import ElementTree
+
 from mainframe.clients.scraper import fetch
 from mainframe.exchange.models import ExchangeRate
 

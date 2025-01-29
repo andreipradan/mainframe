@@ -1,8 +1,9 @@
 import logging
 
 import telegram
-from mainframe.bots.models import Bot, Message
 from rest_framework import serializers
+
+from mainframe.bots.models import Bot, Message
 
 logger = logging.getLogger(__name__)
 

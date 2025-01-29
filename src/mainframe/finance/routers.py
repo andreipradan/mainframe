@@ -1,3 +1,5 @@
+from rest_framework import routers
+
 from mainframe.finance.viewsets.account import AccountViewSet
 from mainframe.finance.viewsets.category import CategoryViewSet
 from mainframe.finance.viewsets.credit import CreditViewSet
@@ -8,7 +10,6 @@ from mainframe.finance.viewsets.prediction import PredictionViewSet
 from mainframe.finance.viewsets.stocks import StocksViewSet
 from mainframe.finance.viewsets.timetable import TimetableViewSet
 from mainframe.finance.viewsets.transaction import TransactionViewSet
-from rest_framework import routers
 
 router = routers.SimpleRouter()
 

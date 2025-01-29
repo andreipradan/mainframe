@@ -3,11 +3,12 @@ import math
 
 import telegram.error
 from asgiref.sync import sync_to_async
+from telegram import InlineKeyboardButton as Button
+from telegram import InlineKeyboardMarkup as Keyboard
+
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.bots.models import Message
 from mainframe.clients.chat import edit_message
-from telegram import InlineKeyboardButton as Button
-from telegram import InlineKeyboardMarkup as Keyboard
 
 logger = logging.getLogger(__name__)
 

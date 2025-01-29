@@ -1,7 +1,8 @@
 from django.db.utils import IntegrityError
-from mainframe.devices.models import Device
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from mainframe.devices.models import Device
 
 
 class DeviceSerializer(serializers.ModelSerializer):

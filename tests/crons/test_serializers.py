@@ -1,8 +1,8 @@
 from unittest import mock
 
 import pytest
-from mainframe.crons.serializers import CronSerializer
 
+from mainframe.crons.serializers import CronSerializer
 from tests.factories.crons import CronFactory
 
 

@@ -3,8 +3,9 @@ from functools import cached_property
 import telegram
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from mainframe.core.models import TimeStampedModel
 from telegram.constants import ParseMode
+
+from mainframe.core.models import TimeStampedModel
 
 
 class Bot(TimeStampedModel):

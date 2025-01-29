@@ -1,6 +1,7 @@
+from rest_framework import serializers
+
 from mainframe.api.user.serializers import UserSerializer
 from mainframe.expenses.models import Car, Debt, Expense, ExpenseGroup, ServiceEntry
-from rest_framework import serializers
 
 
 class DebtSerializer(serializers.ModelSerializer):

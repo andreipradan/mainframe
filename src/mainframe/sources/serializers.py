@@ -1,7 +1,8 @@
 from django.db import IntegrityError
-from mainframe.sources.models import Source
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from mainframe.sources.models import Source
 
 
 class SourceSerializer(serializers.ModelSerializer):

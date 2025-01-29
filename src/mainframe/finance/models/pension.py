@@ -1,4 +1,5 @@
 from django.db import models
+
 from mainframe.core.models import TimeStampedModel
 from mainframe.finance.models import DECIMAL_DEFAULT_KWARGS
 

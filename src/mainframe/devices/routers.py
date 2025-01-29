@@ -1,5 +1,6 @@
-from mainframe.devices.views import DeviceViewSet
 from rest_framework import routers
+
+from mainframe.devices.views import DeviceViewSet
 
 router = routers.SimpleRouter()
 

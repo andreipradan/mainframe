@@ -1,5 +1,6 @@
-from mainframe.bots.views import BotViewSet, MessageViewSet
 from rest_framework import routers
+
+from mainframe.bots.views import BotViewSet, MessageViewSet
 
 router = routers.SimpleRouter()
 

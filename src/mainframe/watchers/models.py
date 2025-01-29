@@ -6,21 +6,20 @@ from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
 from django.utils import timezone
+from telegram.constants import ParseMode
+
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.scraper import fetch
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
-from telegram.constants import ParseMode
 
 logger = logging.getLogger(__name__)
 
 
-class WatcherError(Exception):
-    ...
+class WatcherError(Exception): ...
 
 
-class WatcherElementsNotFound(WatcherError):
-    ...
+class WatcherElementsNotFound(WatcherError): ...
 
 
 class Watcher(TimeStampedModel):

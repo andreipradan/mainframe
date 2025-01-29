@@ -4,12 +4,12 @@ from datetime import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+
 from mainframe.finance.models import CryptoPnL, CryptoTransaction
 from mainframe.finance.tasks import backup_finance_model
 
 
-class CryptoImportError(Exception):
-    ...
+class CryptoImportError(Exception): ...
 
 
 def normalize_price(price):

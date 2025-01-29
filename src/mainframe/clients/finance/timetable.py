@@ -4,13 +4,13 @@ from datetime import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from mainframe.finance.models import Account, Credit, Timetable
-from mainframe.finance.tasks import backup_finance_model
 from PyPDF2 import PdfReader
 
+from mainframe.finance.models import Account, Credit, Timetable
+from mainframe.finance.tasks import backup_finance_model
 
-class TimetableImportError(Exception):
-    ...
+
+class TimetableImportError(Exception): ...
 
 
 def extract_amortization_table(pages):

@@ -2,10 +2,11 @@ import json
 
 from cron_descriptor import get_description
 from crontab import CronTab
+from rest_framework import serializers
+
 from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.crons.models import Cron
-from rest_framework import serializers
 
 
 class CronSerializer(ScheduleTaskIsRenamedSerializer):

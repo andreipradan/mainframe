@@ -6,6 +6,7 @@ import github
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+
 from mainframe.clients.chat import send_telegram_message
 
 logger = logging.getLogger(__name__)

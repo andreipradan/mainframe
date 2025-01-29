@@ -1,13 +1,14 @@
 import logging
 
 from django.http import JsonResponse
-from mainframe.clients.scraper import fetch
-from mainframe.watchers.models import Watcher, WatcherError
-from mainframe.watchers.serializers import WatcherSerializer
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAdminUser
+
+from mainframe.clients.scraper import fetch
+from mainframe.watchers.models import Watcher, WatcherError
+from mainframe.watchers.serializers import WatcherSerializer
 
 logger = logging.getLogger(__name__)
 

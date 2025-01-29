@@ -2,9 +2,10 @@ import logging
 from datetime import datetime
 
 import telegram
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.clients.lights import LightsClient, LightsException
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 logger = logging.getLogger(__name__)
 

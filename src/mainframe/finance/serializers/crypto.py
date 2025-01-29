@@ -1,5 +1,6 @@
-from mainframe.finance.models import CryptoPnL, CryptoTransaction
 from rest_framework import serializers
+
+from mainframe.finance.models import CryptoPnL, CryptoTransaction
 
 
 class CryptoPnLSerializer(serializers.ModelSerializer):

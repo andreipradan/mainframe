@@ -11,8 +11,9 @@ import environ
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
-from mainframe.clients.chat import send_telegram_message
 from rest_framework import status
+
+from mainframe.clients.chat import send_telegram_message
 
 logger = logging.getLogger(__name__)
 

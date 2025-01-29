@@ -7,8 +7,6 @@ import logging
 import environ
 import telegram
 from django.core.management import BaseCommand
-from mainframe.clients.bot import BaseBotClient
-from mainframe.clients.gemini import GeminiError, generate_content
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -23,6 +21,9 @@ from telegram.ext import (
     ContextTypes,
     PollAnswerHandler,
 )
+
+from mainframe.clients.bot import BaseBotClient
+from mainframe.clients.gemini import GeminiError, generate_content
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO

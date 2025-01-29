@@ -1,5 +1,6 @@
-from mainframe.finance.models import PnL, StockTransaction
 from rest_framework import serializers
+
+from mainframe.finance.models import PnL, StockTransaction
 
 
 class PnLSerializer(serializers.ModelSerializer):
