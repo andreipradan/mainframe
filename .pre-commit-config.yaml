@@ -9,18 +9,12 @@ repos:
     -   id: detect-private-key
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
--   repo: local
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.3
     hooks:
-      - id: rye fmt
-        entry: sh -c "rye fmt"
-        language: system
-        name: rye fmt
--   repo: local
-    hooks:
-      - id: rye lint fix
-        entry: sh -c "rye lint --fix"
-        language: system
-        name: rye lint fix
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
 -   repo: local
     hooks:
       - id: migrations-check
