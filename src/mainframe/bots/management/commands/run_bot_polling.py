@@ -30,6 +30,7 @@ from telegram.ext import (
 )
 
 logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 def is_whitelisted(func):

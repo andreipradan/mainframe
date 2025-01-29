@@ -28,6 +28,6 @@ class Command(BaseCommand):
         destination = f"{app}_{f'{model.lower()}_' if model else ''}{file_name}"
         client = GoogleCloudStorageClient(logger)
         client.upload_blob_from_file(file_name, destination)
-        run_cmd(f"rm {file_name}", logger=logger)
+        run_cmd(f"rm {file_name}")
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))

@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from asgiref.sync import sync_to_async
 from django.core.management import CommandError
+from django.utils import timezone
 from future.backports.datetime import datetime
 from mainframe.bots.management.commands.run_bot_polling import (
     handle_chat_id,
@@ -267,7 +268,7 @@ class TestEarthquakes:
             whitelist=["foo_username"],
             additional_data={"earthquake": {"foo": 1}},
         )
-        await sync_to_async(EarthquakeFactory)(timestamp=datetime.now())
+        await sync_to_async(EarthquakeFactory)(timestamp=timezone.now())
 
         _ = await handle_earthquake(
             update, mock.MagicMock(args=["set_min_magnitude", "3"]), bot

@@ -10,12 +10,12 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.exceptions import MethodNotAllowed
 from telegram.constants import ParseMode
 
 from mainframe.clients.chat import send_telegram_message
 from mainframe.core.tasks import schedule_deploy
-from rest_framework import status
-from rest_framework.exceptions import MethodNotAllowed
 
 PREFIX = "[[GitHub]]"
 

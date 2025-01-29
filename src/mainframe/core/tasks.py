@@ -46,7 +46,7 @@ def schedule_deploy():
     from mainframe.clients import cron
 
     prefix = "[Deploy]"
-    if not (output := run_cmd("git pull origin main", logger=logger).strip()):
+    if not (output := run_cmd("git pull origin main").strip()):
         asyncio.run(send_telegram_message(text=f"{prefix} Could not git pull"))
         return False
 

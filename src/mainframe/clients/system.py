@@ -3,6 +3,8 @@ import subprocess
 from operator import itemgetter
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 
 def get_folder_contents(folder):
     return sorted(
@@ -17,9 +19,8 @@ def get_folder_contents(folder):
     )
 
 
-def run_cmd(cmd, prefix=None, logger=None, **kwargs) -> str:
+def run_cmd(cmd, prefix=None, **kwargs) -> str:
     prefix = prefix.upper() if prefix else cmd
-    logger = logger or logging.getLogger(__name__)
     logger.info("[%s] Starting", prefix)
     p = subprocess.Popen(  # noqa: S603
         cmd.split(),  # noqa: S603
