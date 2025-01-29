@@ -43,7 +43,7 @@ class RaiffeisenParser(StatementParser):
             return Transaction.TYPE_ATM
         for key in (
             "PLATA LUNA ",
-            "revolut  " "revolutie Dublin ",
+            "revolut  revolutie Dublin ",
             "www.revolutieinternal Dublin",
             "Revolut ",
             "Revolut*",

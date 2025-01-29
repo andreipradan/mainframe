@@ -67,7 +67,7 @@ class CryptoTransaction(TimeStampedModel):
         ordering = ("-date",)
         constraints = (
             models.UniqueConstraint(
-                name="%(app_label)s_%(class)s_" "date_quantity_symbol_type_uniq",
+                name="%(app_label)s_%(class)s_date_quantity_symbol_type_uniq",
                 fields=("date", "quantity", "symbol", "type"),
             ),
         )

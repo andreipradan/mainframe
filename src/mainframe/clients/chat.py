@@ -57,7 +57,7 @@ def send_telegram_message(text, retries_on_network_error=3, **kwargs):
         if "can't find end of the entity" in str(e):
             location = int(e.message.split()[-1])
             logger.warning("Error parsing markdown - skipping '%s'", text[location])
-            text = f"{text[location:]}{text[location+1:]}"
+            text = f"{text[location:]}{text[location + 1 :]}"
             return send_telegram_message(text, chat_id=chat_id, logger=logger)
         logger.warning("Error sending message. Trying unformatted. (%s)", e)
         try:

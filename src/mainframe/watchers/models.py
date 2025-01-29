@@ -71,8 +71,7 @@ class Watcher(TimeStampedModel):
 
         logger.info("Found new item!")
         text = (
-            f"<a href='{url}'>{title}</a>\n"
-            f"More articles: <a href='{self.url}'>here</a>"
+            f"<a href='{url}'>{title}</a>\nMore articles: <a href='{self.url}'>here</a>"
         )
         kwargs = {"parse_mode": ParseMode.HTML}
         if self.chat_id:

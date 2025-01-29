@@ -60,7 +60,8 @@ class BaseBotClient(metaclass=BaseBotMeta):
                     "Error parsing markdown - skipping '%s'", text[location]
                 )
                 return await self.reply(
-                    message, f"{text[:location]}\\{text[location]}{text[location + 1:]}"
+                    message,
+                    f"{text[:location]}\\{text[location]}{text[location + 1 :]}",
                 )
             self.logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
             try:

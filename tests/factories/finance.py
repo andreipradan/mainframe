@@ -41,7 +41,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
         model = Payment
 
     credit = factory.SubFactory("tests.factories.finance.CreditFactory")
-    date = factory.Sequence(lambda x: f"2000-01-0{x+1:>1}")
+    date = factory.Sequence(lambda x: f"2000-01-0{x + 1:>1}")
     remaining = 0
 
 

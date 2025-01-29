@@ -215,7 +215,7 @@ class Handler:
                 prompt=f"""
                     Genereaza un quiz standard cu intrebari noi {old_qs_text} pentru
                     urmatoarele categorii:
-                    {', '.join(categories)}
+                    {", ".join(categories)}
                     Fiecare categorie continand cate 6 intrebari.
                     Pentru fiecare intrebare vreau cate 4 variante de raspuns
                     din care doar 1 singura corecta

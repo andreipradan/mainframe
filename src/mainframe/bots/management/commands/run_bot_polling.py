@@ -244,8 +244,7 @@ async def handle_save(update: Update, context: CallbackContext, **__) -> None:
     if not message:
         return await reply(
             update,
-            text="This command must be sent as a reply to the "
-            "message you want to save",
+            text="This command must be sent as a reply to the message you want to save",
         )
     if message.text:
         await save_to_db(
@@ -286,7 +285,7 @@ async def reply(update: Update, text: str, **kwargs):
             location = int(e.message.split()[-1])
             logger.warning("Error parsing markdown - skipping '%s'", text[location])
             return reply(
-                update, f"{text[:location]}\\{text[location]}{text[location + 1:]}"
+                update, f"{text[:location]}\\{text[location]}{text[location + 1 :]}"
             )
         logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
         try:
