@@ -12,6 +12,22 @@ import { capitalize } from '../../utils';
 import { selectItem } from '../../../redux/watchersSlice';
 
 
+const NOTSET = 0
+const DEBUG = 10
+const INFO = 20
+const WARNING = 30
+const ERROR = 40
+const CRITICAL = 50
+
+export const logLevels = {
+  [NOTSET]: {label: "NOTSET", value: NOTSET},
+  [DEBUG]: {label: "DEBUG", value: DEBUG},
+  [INFO]: {label: "INFO", value: INFO},
+  [WARNING]: {label: "WARNING", value: WARNING},
+  [ERROR]: {label: "ERROR", value: ERROR},
+  [CRITICAL]: {label: "CRITICAL", value: CRITICAL},
+}
+
 const Crons = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
@@ -67,6 +83,7 @@ const Crons = () =>  {
                       <th> Name </th>
                       <th> Expression </th>
                       <th> Is Active? </th>
+                      <th> Log level </th>
                       <th> Last run </th>
                       <th> Status </th>
                       <th> Run </th>
@@ -86,6 +103,24 @@ const Crons = () =>  {
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{cron.cron_description}</td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
                                   <i className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`} />
+                                </td>
+                                <td
+                                  className={
+                                    `cursor-pointer text-${
+                                      cron.log_level === DEBUG
+                                        ? 'info'
+                                        : cron.log_level === INFO
+                                          ? 'primary'
+                                          : cron.log_level === WARNING
+                                            ? 'warning'
+                                            : [CRITICAL, ERROR].includes(cron.log_level)
+                                              ? 'danger'
+                                              : 'secondary'
+                                    }`
+                                  }
+                                  onClick={() => dispatch(select(cron.id))}
+                                >
+                                  {logLevels[cron.log_level].label}
                                 </td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">
                                   {

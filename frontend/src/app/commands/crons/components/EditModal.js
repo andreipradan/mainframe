@@ -18,6 +18,8 @@ import CronsApi from "../../../../api/crons";
 import Errors from "../../../shared/Errors";
 import { select, setModalOpen } from "../../../../redux/cronsSlice";
 import { selectStyles } from '../../../finances/Accounts/Categorize/EditModal';
+import { logLevels } from '../Crons';
+
 
 const EditModal = () => {
   const dispatch = useDispatch();
@@ -28,12 +30,12 @@ const EditModal = () => {
   const api = new CronsApi(token)
 
   const [annotations, setAnnotations] = useState(null);
-  const [args, setArgs] = useState("");
   const [allCommands, setAllCommands] = useState(null)
   const [command, setCommand] = useState(null);
   const [expression, setExpression] = useState("");
   const [isActive, setIsActive] = useState(false);
   const [kwargs, setKwargs] = useState(null);
+  const [logLevel, setLogLevel] = useState(null);
   const [redis, setRedis] = useState(null);
   const [name, setName] = useState("");
 
@@ -49,11 +51,11 @@ const EditModal = () => {
   }, [commands.results]);
   useEffect(() => {
     if (cron) {
-      setArgs(cron.args?.length ? cron.args.join("\n") : "")
-      setCommand(allCommands.find(c => c.value === cron.command) || null)
+      setCommand(allCommands?.find(c => c.value === cron.command) || null)
       setExpression(cron.expression)
       setIsActive(cron.is_active)
       setKwargs(JSON.stringify(cron.kwargs, null, "\t"))
+      setLogLevel(logLevels[cron.log_level])
       setRedis(JSON.stringify(cron.redis, null, "\t"))
       setName(cron.name)
     }
@@ -61,23 +63,22 @@ const EditModal = () => {
   }, [allCommands, commands.results, cron, dispatch, token]);
 
   const clearModal = () => {
-    setArgs("")
     setCommand(null)
     setExpression("")
     setIsActive(false)
     setKwargs(null)
+    setLogLevel(logLevels[0])
     setRedis(null)
     setName("")
   }
 
-  const onArgsChange = useCallback(e => setArgs(e.target.value), [])
   const onCloseModal = useCallback(() => {
     dispatch(select())
     dispatch(setModalOpen(false))
     clearModal()
   }, [dispatch])
   const onCommandChange = useCallback(e => {
-      const cmd = allCommands.find(c => c.value === e.value)
+      const cmd = allCommands?.find(c => c.value === e.value)
       allCommands && setCommand({ label: cmd.label, value: e.value })
       if (!cron) {
         const placeholders = {
@@ -119,19 +120,35 @@ const EditModal = () => {
       setAnnotations(!annotations ? [annotation] : [...annotations, annotation])
     }
   }, [annotations])
+  const onLogLevelChange = useCallback((e) => {
+    setLogLevel(logLevels[e.value])}, []
+  )
   const onNameChange = useCallback(e => setName(e.target.value), [])
   const onSubmit = useCallback(() => {
     const data = {
       command: command.value,
       expression,
       is_active: isActive,
+      log_level: logLevel.value,
       name
     }
-    if (args) data.args = args.split("\n")
     if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ""))
     if (cron) dispatch(api.update(cron.id, data))
     else dispatch(api.create(data))
-  }, [args, command, cron, dispatch, expression, isActive, kwargs, name])
+  }, [command, cron, dispatch, expression, isActive, kwargs, logLevel, name])
+
+  const hasChanges = () => {
+    if (!cron) return false
+    return (
+      command?.value !== cron.command ||
+      expression !== cron.expression ||
+      isActive !== cron.is_active ||
+      logLevel?.value !== cron.log_level ||
+      name !== cron.name ||
+      kwargs !== JSON.stringify(cron.kwargs) ||
+      JSON.stringify(JSON.parse(redis)) !== JSON.stringify(cron.redis)
+    )
+  }
 
   return <Modal centered show={Boolean(cron) || modalOpen} onHide={onCloseModal}>
     <Modal.Header closeButton>
@@ -154,7 +171,7 @@ const EditModal = () => {
         {cron && <p className="text-muted mb-0">{cron?.description}</p>}
         {
           command
-            ? allCommands.find(c => c.value === command.value)?.args?.length
+            ? allCommands?.find(c => c.value === command.value)?.args?.length
               ? <p className="text-muted mb-0">
                   Params:
                   <ul>
@@ -206,6 +223,17 @@ const EditModal = () => {
           <Form.Check checked={isActive} type="switch" id="checkbox" label="" onChange={onIsActiveChange} />
         </Form.Group>
         <Form.Group className="mb-3">
+          <Form.Label>Log level</Form.Label>
+          <Select
+            isDisabled={commands.loading}
+            isLoading={commands.loading}
+            onChange={onLogLevelChange}
+            options={Object.values(logLevels)}
+            styles={selectStyles}
+            value={logLevel}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
           <Form.Label>Expression</Form.Label>
           <Form.Control
             type="text"
@@ -213,10 +241,6 @@ const EditModal = () => {
             onChange={onExpressionChange}
             required
           />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Args</Form.Label>
-          <Form.Control as="textarea" rows={3} value={args || ""} placeholder={"args"} onChange={onArgsChange} />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Kwargs</Form.Label>
@@ -278,6 +302,17 @@ const EditModal = () => {
       }
       <Button variant="secondary" onClick={onCloseModal}>Close</Button>
       <Button variant="primary" onClick={onSubmit} disabled={!name || !command || !expression}>Save Changes</Button>
+      <Button
+        disabled={hasChanges()}
+        variant="success"
+        onClick={evt => {
+          evt.preventDefault()
+          dispatch(CronsApi.run(token, cron?.id, cron?.command))
+          }
+      }
+      >
+        Run
+      </Button>
     </Modal.Footer>
   </Modal>
 }
