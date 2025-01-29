@@ -41,6 +41,7 @@ class Cron(TimeStampedModel):
         logger = logging.getLogger("mainframe")
         all_handlers = logger.handlers[:]
         logfire_handler = next((h for h in all_handlers if h.name == "logfire"), None)
+        console_handler = next((h for h in all_handlers if h.name == "console"), None)
 
         # remove logfire handler
         logger.handlers.clear()
@@ -54,12 +55,18 @@ class Cron(TimeStampedModel):
             # this logs everything except logfire logs
             call_command(self.command, **self.kwargs)
         finally:
-            # check if any logs were captured
-            logs = capture_handler.captured_logs
-            if (
-                logs := [log for log in logs if log.levelno >= self.log_level]
-                and logfire_handler
-            ):
+            if not logfire_handler:
+                console_handler.handle(
+                    logging.makeLogRecord(
+                        {"msg": "Logfire handler missing", "levelno": logging.ERROR}
+                    )
+                )
+            # check if logs were captured
+            elif logs := [
+                log
+                for log in capture_handler.captured_logs
+                if log.levelno >= self.log_level
+            ]:
                 with logfire.span(f"{self}"):
                     for log in logs:
                         logfire_handler.handle(log)
