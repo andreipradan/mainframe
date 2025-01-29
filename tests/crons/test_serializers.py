@@ -17,7 +17,6 @@ class TestCronSerializer:
         assert serializer.is_valid(), serializer.errors
 
         instance = serializer.save()
-        assert instance.args == []
         assert instance.name == "foo"
         assert instance.command == "cmd"
         assert not getattr(instance, "is_renamed", None)

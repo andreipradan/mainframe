@@ -6,19 +6,16 @@ from requests import Response
 def fetch(
     url, logger, retries=0, soup=True, timeout=45, **kwargs
 ) -> tuple[BeautifulSoup | Response | None, Exception | None]:
-    logger.info("Fetching: %s", url)
+    method = kwargs.pop("method", "GET")
+    logger.info("Sending '%s' request to '%s'", method, url)
     try:
-        response = requests.request(
-            kwargs.pop("method", "GET"),
-            url,
-            timeout=timeout,
-            **kwargs,
-        )
+        response = requests.request(method, url, timeout=timeout, **kwargs)
         response.raise_for_status()
     except (
         requests.exceptions.ConnectionError,
         requests.exceptions.HTTPError,
         requests.exceptions.ReadTimeout,
+        requests.exceptions.TooManyRedirects,
     ) as e:
         if retries > 0:
             return fetch(url, logger, retries - 1, soup, timeout, **kwargs)

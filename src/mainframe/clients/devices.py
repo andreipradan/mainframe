@@ -88,23 +88,6 @@ class DevicesClient:
                 },
             )
 
-            Action.objects.bulk_create(
-                [
-                    *[
-                        Action(actor=device, verb="was created")
-                        for device in new_devices
-                    ],
-                    *[
-                        Action(actor=device, verb="went offline")
-                        for device in went_offline
-                    ],
-                    *[
-                        Action(actor=device, verb="went online")
-                        for device in went_online
-                    ],
-                ]
-            )
-
             if went_offline:
                 Device.objects.filter(
                     mac__in=map(attrgetter("mac"), went_offline)
@@ -132,6 +115,23 @@ class DevicesClient:
                 raise DevicesException(
                     "Error while trying to store devices. Check the logs"
                 ) from e
+
+            Action.objects.bulk_create(
+                [
+                    *[
+                        Action(actor=device, verb="was created")
+                        for device in new_devices
+                    ],
+                    *[
+                        Action(actor=device, verb="went offline")
+                        for device in went_offline
+                    ],
+                    *[
+                        Action(actor=device, verb="went online")
+                        for device in went_online
+                    ],
+                ]
+            )
             return new_devices, went_online, went_offline
         self.logger.warning("Got no devices.")
         return []
