@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 
 import logfire
 from django.core.management import call_command
@@ -8,6 +9,31 @@ from django.dispatch import receiver
 
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
+
+
+@contextmanager
+def capture_logs(logger_name):
+    logger = logging.getLogger(logger_name)
+    all_handlers = logger.handlers[:]
+
+    logfire_handler = next((h for h in all_handlers if h.name == "logfire"), None)
+    if not logfire_handler:
+        logger.warning("Logfire handler missing")
+        yield None, None  # No logfire, just execute normally
+        return
+
+    capture_handler = LogCaptureHandler()
+
+    # Swap handlers: Remove Logfire, add Capture
+    logger.removeHandler(logfire_handler)
+    logger.addHandler(capture_handler)
+
+    try:
+        yield capture_handler, logfire_handler
+    finally:
+        # Restore handlers
+        logger.removeHandler(capture_handler)
+        logger.addHandler(logfire_handler)
 
 
 class LogCaptureHandler(logging.Handler):
@@ -38,36 +64,22 @@ class Cron(TimeStampedModel):
         return display
 
     def run(self) -> None:
-        logger = logging.getLogger("mainframe")
-        all_handlers = logger.handlers[:]
-        logfire_handler = next((h for h in all_handlers if h.name == "logfire"), None)
-        if not logfire_handler:
-            logger.warning("Logfire handler missing")
+        with capture_logs("mainframe") as (capture_handler, logfire_handler):
             call_command(self.command, **self.kwargs)
-            return
+            if capture_handler is None:
+                return
 
-        capture_handler = LogCaptureHandler()
-
-        logger.removeHandler(logfire_handler)
-        logger.addHandler(capture_handler)
-
-        try:
-            call_command(self.command, **self.kwargs)
-        finally:
             logs = [
                 log
                 for log in capture_handler.captured_logs
                 if log.levelno >= self.log_level
             ]
             if not logs:
-                logger.info("No captured logs")
+                logging.getLogger("mainframe").info("No captured logs")
             else:
                 with logfire.span(f"{self}"):
                     for log in logs:
                         logfire_handler.handle(log)
-
-            logger.removeHandler(capture_handler)
-            logger.handlers.append(logfire_handler)
 
 
 @receiver(signals.post_delete, sender=Cron)
