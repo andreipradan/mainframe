@@ -220,6 +220,7 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": ["console"], "propagate": False, "level": "INFO"},
         "huey": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "httpx": {"handlers": ["console"], "level": "WARNING", "propagate": False},
         "mainframe": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "root": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
@@ -264,6 +265,7 @@ if ENV in ["local", "prod", "rpi"]:
     )
     logfire.instrument_django()
     LOGGING["loggers"]["mainframe"]["handlers"].append("logfire")
+
 elif ENV in ["ci", "test"]:
     DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
     DATABASES = {

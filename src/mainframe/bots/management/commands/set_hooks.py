@@ -3,6 +3,7 @@ import logging
 
 import environ
 import github
+import logfire
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -45,6 +46,7 @@ def set_github_hook(ngrok_url):
 
 
 class Command(BaseCommand):
+    @logfire.instrument("set_hooks")
     def handle(self, *_, **__):
         try:
             ngrok_url = get_ngrok_url()
@@ -54,6 +56,5 @@ class Command(BaseCommand):
             raise CommandError("Tunnel 'mainframe' not found")
 
         set_github_hook(ngrok_url)
-        logger.info("[Hooks] Done")
         asyncio.run(send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}"))
-        self.stdout.write(self.style.SUCCESS("[Hooks] Done."))
+        logger.info("[Hooks] Done")
