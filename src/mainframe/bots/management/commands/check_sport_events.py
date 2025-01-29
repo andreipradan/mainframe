@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import math
 from datetime import datetime
 from unicodedata import normalize
@@ -11,10 +12,9 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 from mainframe.clients.chat import send_telegram_message
-from mainframe.core.logs import get_default_logger
 from rest_framework import status
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

@@ -1,10 +1,11 @@
+import logging
+
 import six
 import telegram
 from mainframe.clients.chat import edit_message
-from mainframe.core.logs import get_default_logger
 from telegram.constants import ParseMode
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseInlines:

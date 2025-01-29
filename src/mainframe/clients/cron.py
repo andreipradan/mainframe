@@ -1,11 +1,11 @@
+import logging
 from datetime import datetime, timedelta
 
 import environ
 from crontab import CronTab
-from mainframe.core.logs import get_default_logger
 
 config = environ.Env()
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def delay(command):

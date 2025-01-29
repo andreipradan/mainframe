@@ -9,7 +9,6 @@ import telegram
 from django.core.management import BaseCommand
 from mainframe.clients.bot import BaseBotClient
 from mainframe.clients.gemini import GeminiError, generate_content
-from mainframe.core.logs import get_default_logger
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -28,7 +27,7 @@ from telegram.ext import (
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 DEFAULT_CATEGORIES = [

@@ -1,10 +1,10 @@
+import logging
 from operator import itemgetter
 
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Count, F, Sum
 from django.http import JsonResponse
 from mainframe.clients.finance.statement import StatementImportError, import_statement
-from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import Account, Category, Transaction
 from mainframe.finance.serializers import TransactionSerializer
 from rest_framework import status, viewsets
@@ -62,7 +62,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
     @action(methods=["post"], detail=False, url_path="upload")
     def upload(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = get_default_logger(__name__)
+        logger = logging.getLogger(__name__)
         try:
             import_statement(file, logger)
         except StatementImportError as e:

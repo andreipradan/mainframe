@@ -1,5 +1,6 @@
+import logging
+
 from django.db.models import Q, Sum
-from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import CryptoPnL
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -55,7 +56,7 @@ class PnlActionModelViewSet(viewsets.ModelViewSet):
 
         if request.method == "POST":
             file = request.FILES["file"]
-            logger = get_default_logger(__name__)
+            logger = logging.getLogger(__name__)
             try:
                 self.pnl_importer_class(file, logger).run()
             except self.pnl_importer_error_class as e:

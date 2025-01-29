@@ -1,14 +1,14 @@
+import logging
 from datetime import datetime
 
 import pytz
 from bs4 import BeautifulSoup
-from mainframe.core.logs import get_default_logger
 from mainframe.earthquakes.management.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand):
-    logger = get_default_logger(__name__)
+    logger = logging.getLogger(__name__)
 
     source = Earthquake.SOURCE_INFP
     url = "http://n1.infp.ro/"

@@ -14,3 +14,4 @@ class UserFactory(factory.django.DjangoModelFactory):
         if create:
             password = extracted or "password"
             self.set_password(password)
+            self.save()

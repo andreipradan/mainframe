@@ -1,10 +1,11 @@
+import logging
+
 from django.db.models import Count, Q, Sum
 from mainframe.clients.finance.crypto import (
     CryptoImportError,
     CryptoPnLImporter,
     CryptoTransactionsImporter,
 )
-from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import CryptoPnL, CryptoTransaction
 from mainframe.finance.serializers import (
     CryptoPnLSerializer,
@@ -27,7 +28,7 @@ class CryptoViewSet(PnlActionModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = get_default_logger(__name__)
+        logger = logging.getLogger(__name__)
         try:
             CryptoTransactionsImporter(file, logger).run()
         except CryptoImportError as e:

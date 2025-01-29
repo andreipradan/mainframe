@@ -1,6 +1,7 @@
+import logging
+
 import environ
 import requests
-from mainframe.core.logs import get_default_logger
 
 
 def ping(logger, service_name="URL"):
@@ -13,5 +14,5 @@ def ping(logger, service_name="URL"):
     try:
         requests.post(url=url, timeout=20)
     except requests.exceptions.HTTPError as e:
-        logger = logger or get_default_logger(__name__)
+        logger = logger or logging.getLogger(__name__)
         logger.warning(str(e))

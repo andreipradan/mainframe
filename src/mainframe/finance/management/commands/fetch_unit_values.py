@@ -1,14 +1,14 @@
 import json
+import logging
 from datetime import datetime
 
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients import healthchecks
 from mainframe.clients.scraper import fetch
-from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import Pension, UnitValue
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def extract_azt(response, pensions):

@@ -1,10 +1,11 @@
+import logging
+
 from django.db.models import Count, Q, Sum
 from mainframe.clients.finance.stocks import (
     StockImportError,
     StockPnLImporter,
     StockTransactionsImporter,
 )
-from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
 from mainframe.finance.viewsets.mixins import PnlActionModelViewSet
@@ -24,7 +25,7 @@ class StocksViewSet(PnlActionModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = get_default_logger(__name__)
+        logger = logging.getLogger(__name__)
         try:
             StockTransactionsImporter(file, logger).run()
         except StockImportError as e:

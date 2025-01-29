@@ -1,8 +1,7 @@
+import logging
 import subprocess
 from operator import itemgetter
 from pathlib import Path
-
-from mainframe.core.logs import get_default_logger
 
 
 def get_folder_contents(folder):
@@ -20,7 +19,7 @@ def get_folder_contents(folder):
 
 def run_cmd(cmd, prefix=None, logger=None, **kwargs) -> str:
     prefix = prefix.upper() if prefix else cmd
-    logger = logger or get_default_logger(__name__)
+    logger = logger or logging.getLogger(__name__)
     logger.info("[%s] Starting", prefix)
     p = subprocess.Popen(  # noqa: S603
         cmd.split(),  # noqa: S603

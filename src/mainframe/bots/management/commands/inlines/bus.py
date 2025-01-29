@@ -1,3 +1,4 @@
+import logging
 import math
 from datetime import datetime
 from typing import List
@@ -8,12 +9,11 @@ from django.conf import settings
 from mainframe.bots.management.commands.inlines.shared import BaseInlines, chunks
 from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
-from mainframe.core.logs import get_default_logger
 from mainframe.transit_lines.models import Schedule, TransitLine
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_next_time(times: List[str], now):

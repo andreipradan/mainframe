@@ -1,12 +1,12 @@
+import logging
 from datetime import datetime
 
 import telegram
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.clients.lights import LightsClient, LightsException
-from mainframe.core.logs import get_default_logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LightsInline(BaseInlines):

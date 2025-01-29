@@ -40,6 +40,9 @@ class Cron(TimeStampedModel):
         logger = logging.getLogger("mainframe")
         all_handlers = logger.handlers[:]
         logfire_handler = next((h for h in all_handlers if h.name == "logfire"), None)
+        if not logfire_handler:
+            call_command(self.command, **self.kwargs)
+            return
 
         handler = LogCaptureHandler()
         logger.handlers = [h for h in logger.handlers if h != logfire_handler]

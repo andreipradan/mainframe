@@ -1,5 +1,6 @@
+import logging
+
 from mainframe.clients.finance.timetable import TimetableImportError, import_timetable
-from mainframe.core.logs import get_default_logger
 from mainframe.finance.models import Timetable
 from mainframe.finance.serializers import TimetableSerializer
 from rest_framework import status, viewsets
@@ -14,7 +15,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = get_default_logger(__name__)
+        logger = logging.getLogger(__name__)
         try:
             timetable = import_timetable(file, logger)
         except TimetableImportError as e:

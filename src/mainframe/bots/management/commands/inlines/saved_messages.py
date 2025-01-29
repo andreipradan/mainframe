@@ -1,3 +1,4 @@
+import logging
 import math
 
 import telegram.error
@@ -5,11 +6,10 @@ from asgiref.sync import sync_to_async
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.bots.models import Message
 from mainframe.clients.chat import edit_message
-from mainframe.core.logs import get_default_logger
 from telegram import InlineKeyboardButton as Button
 from telegram import InlineKeyboardMarkup as Keyboard
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SavedMessagesInlines(BaseInlines):

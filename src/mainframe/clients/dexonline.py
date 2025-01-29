@@ -1,11 +1,11 @@
+import logging
 import random
 
 from bs4 import BeautifulSoup
 from django.conf import settings
 from mainframe.clients.scraper import fetch
-from mainframe.core.logs import get_default_logger
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DexOnlineError(Exception):

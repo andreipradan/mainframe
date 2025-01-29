@@ -1,10 +1,10 @@
 import ast
+import logging
 import zlib
 
 import environ
 import redis
 from google.cloud import storage
-from mainframe.core.logs import get_default_logger
 
 config = environ.Env()
 
@@ -12,7 +12,7 @@ config = environ.Env()
 class GoogleCloudStorageClient:
     def __init__(self, logger=None):
         self.client = storage.Client()
-        self.logger = logger or get_default_logger(__name__)
+        self.logger = logger or logging.getLogger(__name__)
 
     def download_blob(self, blob_name, destination_path):
         bucket = self.client.bucket(config("GOOGLE_STORAGE_BUCKET"))
@@ -57,7 +57,7 @@ class GoogleCloudStorageClient:
 class RedisClient:
     def __init__(self, logger=None):
         self.client = redis.Redis(host="localhost", port=6379)
-        self.logger = logger or get_default_logger(__name__)
+        self.logger = logger or logging.getLogger(__name__)
 
     def delete(self, key):
         self.client.delete(key)

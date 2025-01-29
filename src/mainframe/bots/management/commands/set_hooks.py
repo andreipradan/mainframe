@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 import environ
 import github
@@ -6,9 +7,8 @@ import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from mainframe.clients.chat import send_telegram_message
-from mainframe.core.logs import get_default_logger
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_ngrok_url(name="mainframe"):

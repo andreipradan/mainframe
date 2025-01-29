@@ -1,11 +1,11 @@
+import logging
 from pathlib import Path
 
 import environ
 import google.api_core.exceptions
 import google.generativeai as genai
-from mainframe.core.logs import get_default_logger
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class GeminiError(Exception):

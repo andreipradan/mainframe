@@ -1,13 +1,13 @@
 import json
+import logging
 
 from django.http import JsonResponse
 from mainframe.clients.lights import LightsClient, LightsException
-from mainframe.core.logs import get_default_logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 IP_REGEX = (

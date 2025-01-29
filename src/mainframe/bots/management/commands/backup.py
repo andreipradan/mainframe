@@ -1,10 +1,11 @@
+import logging
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from mainframe.clients import healthchecks
 from mainframe.clients.storage import GoogleCloudStorageClient
 from mainframe.clients.system import run_cmd
-from mainframe.core.logs import get_default_logger
 
 
 class Command(BaseCommand):
@@ -13,7 +14,7 @@ class Command(BaseCommand):
         parser.add_argument("--model", type=str, default="")
 
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__)
+        logger = logging.getLogger(__name__)
 
         app = options["app"]
         healthchecks.ping(logger, f"{app.upper()}_BACKUP")

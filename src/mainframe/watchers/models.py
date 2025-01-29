@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from urllib.parse import urljoin
 
 from django.db import models
@@ -7,12 +8,11 @@ from django.dispatch import receiver
 from django.utils import timezone
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.scraper import fetch
-from mainframe.core.logs import get_default_logger
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
 from telegram.constants import ParseMode
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WatcherError(Exception):

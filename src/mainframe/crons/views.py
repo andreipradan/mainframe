@@ -1,15 +1,16 @@
+import logging
+
 import psutil
 from django.core.exceptions import ValidationError
 from django.core.management import CommandError
 from django.http import JsonResponse
-from mainframe.core.logs import get_default_logger
 from mainframe.crons.models import Cron
 from mainframe.crons.serializers import CronSerializer
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class CronViewSet(viewsets.ModelViewSet):

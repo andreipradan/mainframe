@@ -1,11 +1,11 @@
 import asyncio
+import logging
 from typing import Callable
 
 import telegram
 from asgiref.sync import sync_to_async
 from mainframe.bots.models import Bot
 from mainframe.clients.storage import RedisClient
-from mainframe.core.logs import get_default_logger
 from telegram.constants import ParseMode
 
 
@@ -37,7 +37,7 @@ class BaseBotMeta(type):
 
 class BaseBotClient(metaclass=BaseBotMeta):
     def __init__(self, logger=None):
-        self.logger = logger or get_default_logger(__name__)
+        self.logger = logger or logging.getLogger(__name__)
         self.redis = RedisClient(self.logger)
 
     async def reply(self, message: telegram.Message, text: str, **kwargs):

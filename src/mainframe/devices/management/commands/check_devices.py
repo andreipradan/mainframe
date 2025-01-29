@@ -1,11 +1,11 @@
 import asyncio
+import logging
 from operator import attrgetter
 
 from django.core.management import BaseCommand
 from mainframe.clients import healthchecks
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.devices import DevicesClient
-from mainframe.core.logs import get_default_logger
 from mainframe.sources.models import Source
 from telegram.constants import ParseMode
 
@@ -16,7 +16,7 @@ def should_notify(devices):
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        logger = get_default_logger(__name__)
+        logger = logging.getLogger(__name__)
         healthchecks.ping(logger, "devices")
 
         client = DevicesClient(Source.objects.default(), logger=logger)

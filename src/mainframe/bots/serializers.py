@@ -1,9 +1,10 @@
+import logging
+
 import telegram
 from mainframe.bots.models import Bot, Message
-from mainframe.core.logs import get_default_logger
 from rest_framework import serializers
 
-logger = get_default_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def sync(bot, attrs):
