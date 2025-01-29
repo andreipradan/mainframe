@@ -46,10 +46,9 @@ class Cron(TimeStampedModel):
             call_command(self.command, **self.kwargs)
             return
 
-        logger.handlers.clear()
-        logger.handlers = [h for h in all_handlers if h != logfire_handler]
-
         capture_handler = LogCaptureHandler()
+
+        logger.removeHandler(logfire_handler)
         logger.addHandler(capture_handler)
 
         try:
@@ -67,8 +66,7 @@ class Cron(TimeStampedModel):
                     for log in logs:
                         logfire_handler.handle(log)
 
-            logger.handlers.clear()
-            logger.handlers = [h for h in logger.handlers if h != capture_handler]
+            logger.removeHandler(capture_handler)
             logger.handlers.append(logfire_handler)
 
 
