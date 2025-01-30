@@ -1,3 +1,4 @@
+import logging
 from unittest import mock
 
 import pytest
@@ -29,6 +30,7 @@ class TestWatcherViews:
             "id": mock.ANY,
             "is_active": False,
             "latest": {},
+            "log_level": logging.INFO,
             "name": "foo",
             "redis": {},
             "request": {},
@@ -54,6 +56,7 @@ class TestWatcherViews:
             "id": watcher.id,
             "is_active": False,
             "latest": {},
+            "log_level": logging.INFO,
             "name": mock.ANY,
             "redis": {},
             "request": {},
@@ -85,6 +88,7 @@ class TestWatcherViews:
                     "id": watcher.id,
                     "is_active": False,
                     "latest": {},
+                    "log_level": logging.INFO,
                     "name": mock.ANY,
                     "redis": {},
                     "request": {},
