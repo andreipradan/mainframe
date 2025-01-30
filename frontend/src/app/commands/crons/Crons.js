@@ -12,12 +12,12 @@ import { capitalize } from '../../utils';
 import { selectItem } from '../../../redux/watchersSlice';
 
 
-const NOTSET = 0
-const DEBUG = 10
-const INFO = 20
-const WARNING = 30
-const ERROR = 40
-const CRITICAL = 50
+export const NOTSET = 0
+export const DEBUG = 10
+export const INFO = 20
+export const WARNING = 30
+export const ERROR = 40
+export const CRITICAL = 50
 
 export const logLevels = {
   [NOTSET]: {label: "NOTSET", value: NOTSET},

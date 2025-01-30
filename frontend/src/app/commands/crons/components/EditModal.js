@@ -67,7 +67,7 @@ const EditModal = () => {
     setExpression("")
     setIsActive(false)
     setKwargs(null)
-    setLogLevel(logLevels[0])
+    setLogLevel(logLevels[3])
     setRedis(null)
     setName("")
   }

@@ -14,6 +14,10 @@ import WatchersApi from "../../api/watchers";
 import { capitalize } from "../utils";
 import { parseStatus } from "./Tasks";
 import { selectItem, setModalOpen } from "../../redux/watchersSlice";
+import { CRITICAL, DEBUG, ERROR, INFO, logLevels, WARNING } from './crons/Crons';
+import Select from 'react-select';
+import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
+import { select } from '../../redux/cronsSlice';
 
 
 const Watchers = () =>  {
@@ -26,6 +30,7 @@ const Watchers = () =>  {
   const [chatId, setChatId] = useState("");
   const [cron, setCron] = useState("");
   const [isActive, setIsActive] = useState(false)
+  const [logLevel, setLogLevel] = useState(null);
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
   const [top, setTop] = useState(selectedItem?.top || true);
@@ -47,6 +52,7 @@ const Watchers = () =>  {
       setCron(selectedItem.cron)
       setIsActive(selectedItem.is_active)
       setLatest(JSON.stringify(selectedItem.latest, null, "\t"))
+      setLogLevel(logLevels[selectedItem.log_level])
       setName(selectedItem.name)
       setRequest(JSON.stringify(selectedItem.request, null, "\t"))
       setSelector(selectedItem.selector)
@@ -66,6 +72,9 @@ const Watchers = () =>  {
       setLatestAnnotations(!latestAnnotations ? [annotation] : [...latestAnnotations, annotation])
     }
   }
+  const onLogLevelChange = useCallback(e => {
+    setLogLevel(logLevels[e.value])
+  }, [])
   const onRequestChange = (e, i) => {
     setRequest(e)
     try {
@@ -83,6 +92,7 @@ const Watchers = () =>  {
     setCron("* * * * *")
     setIsActive(false)
     setLatest("{}")
+    setLogLevel(logLevels[3])
     setName("")
     setRequest("{}")
     setSelector("")
@@ -99,6 +109,7 @@ const Watchers = () =>  {
     setCron(watcher.cron)
     setIsActive(watcher.is_active)
     setLatest(JSON.stringify(watcher.latest, null, "\t"))
+    setLogLevel(logLevels[watcher.log_level])
     setName(watcher.name)
     setRequest(JSON.stringify(watcher.request, null, "\t"))
     setSelector(watcher.selector)
@@ -171,9 +182,27 @@ const Watchers = () =>  {
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{i + 1}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.name}</td>
                                 <td className="cursor-pointer" onClick={() => dispatch(selectItem(watcher.id))}>{watcher.cron_description}</td>
-                                <td onClick={() => dispatch(selectedItem(cron.id))} className="cursor-pointer">
+                                <td onClick={() => dispatch(selectItem(watcher.id))} className="cursor-pointer">
                                   <i
                                     className={`mdi mdi-${watcher.is_active ? 'check text-success' : 'alert text-danger'}`} />
+                                </td>
+                                <td
+                                  className={
+                                    `cursor-pointer text-${
+                                      watcher.log_level === DEBUG
+                                        ? 'info'
+                                        : watcher.log_level === INFO
+                                          ? 'primary'
+                                          : watcher.log_level === WARNING
+                                            ? 'warning'
+                                            : [CRITICAL, ERROR].includes(watcher.log_level)
+                                              ? 'danger'
+                                              : 'secondary'
+                                    }`
+                                  }
+                                  onClick={() => dispatch(select(watcher.id))}
+                                >
+                                  {logLevels[watcher.log_level].label}
                                 </td>
                                 <td><a href={watcher.url} target="_blank" rel="noopener noreferrer">{watcher.url}</a></td>
                                 <td
@@ -343,6 +372,17 @@ const Watchers = () =>  {
                 <Form.Check checked={isActive} type="switch" id="checkbox" label="" onChange={onIsActiveChange} />
               </Form.Group>
               <Form.Group className="mb-3">
+                <Form.Label>Log level</Form.Label>
+                <Select
+                  isDisabled={loading}
+                  isLoading={loading}
+                  onChange={onLogLevelChange}
+                  options={Object.values(logLevels)}
+                  styles={selectStyles}
+                  value={logLevel}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
                 <Form.Label>Chat Id</Form.Label>
                 <Form.Control
                   type="text"
@@ -468,6 +508,7 @@ const Watchers = () =>  {
                         cron,
                         is_active: isActive,
                         latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
+                        log_level: logLevel.value,
                         name,
                         request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
                         selector,
@@ -486,6 +527,7 @@ const Watchers = () =>  {
                       cron,
                       is_active: isActive,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
+                      log_level: logLevel.value,
                       name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
                       selector,
