@@ -6,7 +6,7 @@ from mainframe.devices.models import Device
 
 
 class DeviceSerializer(serializers.ModelSerializer):
-    display_name = serializers.CharField(source="__repr__", read_only=True)
+    display_name = serializers.CharField(source="__str__", read_only=True)
 
     class Meta:
         model = Device

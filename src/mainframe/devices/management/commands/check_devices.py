@@ -10,20 +10,21 @@ from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.devices import DevicesClient
 from mainframe.sources.models import Source
 
+logger = logging.getLogger(__name__)
+
 
 def should_notify(devices):
-    return list(map(repr, filter(attrgetter("should_notify_presence"), devices)))
+    return list(map(str, filter(attrgetter("should_notify_presence"), devices)))
 
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        logger = logging.getLogger(__name__)
         healthchecks.ping(logger, "devices")
 
         client = DevicesClient(Source.objects.default(), logger=logger)
         new_devices, went_online, went_offline = client.run()
         msg = ""
-        if new_devices := list(map(repr, new_devices)):
+        if new_devices:
             msg += (
                 f"⚠️ {len(new_devices)} new device{'s' if len(new_devices) > 1 else ''} "
                 f"joined: {', '.join(new_devices)}"
