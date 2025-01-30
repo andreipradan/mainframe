@@ -38,7 +38,7 @@ class Watcher(TimeStampedModel):
     cron = models.CharField(blank=True, max_length=32)
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
-    log_level = models.IntegerField(default=logging.INFO)
+    log_level = models.IntegerField(default=logging.WARNING)
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
     selector = models.CharField(max_length=128)
@@ -56,7 +56,7 @@ class Watcher(TimeStampedModel):
             if self.latest.get("title") == (
                 title := (found.text.strip() or found.attrs.get("title"))
             ):
-                logger.debug("No new items")
+                logger.info("No new items")
                 return False
             url = (
                 urljoin(self.url, found.attrs["href"])
@@ -70,7 +70,7 @@ class Watcher(TimeStampedModel):
             }
             self.save()
 
-            logger.debug("Found new item!")
+            logger.info("Found new item!")
             text = (
                 f"<a href='{url}'>{title}</a>"
                 f"\nMore articles: <a href='{self.url}'>here</a>"
@@ -81,7 +81,7 @@ class Watcher(TimeStampedModel):
             else:
                 text = f"📣 <b>{self.name}</b> 📣\n{text}"
             asyncio.run(send_telegram_message(text, **kwargs))
-            logger.debug("Done")
+            logger.info("Done")
             return self
 
 

@@ -79,7 +79,7 @@ class BaseEarthquakeCommand(BaseCommand):
             events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
-            self.logger.debug("Done")
+            self.logger.info("Done")
             return
 
         Earthquake.objects.bulk_create(
@@ -121,7 +121,7 @@ class BaseEarthquakeCommand(BaseCommand):
             )
 
         self.set_last_check(instance)
-        self.logger.debug("Done")
+        self.logger.info("Done")
 
     def get_kwargs(self) -> dict:
         raise NotImplementedError

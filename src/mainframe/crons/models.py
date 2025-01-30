@@ -15,7 +15,7 @@ class Cron(TimeStampedModel):
     expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
     kwargs = models.JSONField(default=dict)
-    log_level = models.IntegerField(default=logging.INFO)
+    log_level = models.IntegerField(default=logging.WARNING)
     name = models.CharField(max_length=255, unique=True)
 
     class Meta:
