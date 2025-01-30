@@ -51,9 +51,7 @@ class Cron(TimeStampedModel):
         call_command(self.command, **self.kwargs)
         logger.removeHandler(capture_handler)
 
-        if not capture_handler.captured_logs:
-            logger.info("No captured logs")
-        else:
+        if capture_handler.captured_logs:
             with logfire.span(f"{self}"):
                 for log in capture_handler.captured_logs:
                     logging.getLogger("logfire").handle(log)
