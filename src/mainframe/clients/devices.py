@@ -77,7 +77,7 @@ class DevicesClient:
                 for device in existing_devices
                 if device.is_active and device.mac not in active_macs
             ]
-            self.logger.info(
+            self.logger.debug(
                 "Got %d devices%s",
                 len(devices),
                 f" ({len(new_devices)} new ones)" if new_devices else "",

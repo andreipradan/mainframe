@@ -1,24 +1,13 @@
 import logging
 
-import logfire
 from django.core.management import call_command, get_commands
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
 
+from mainframe.core.logs import capture_command_logs
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
-
-
-class LogCaptureHandler(logging.Handler):
-    def __init__(self, log_level):
-        super().__init__()
-        self.captured_logs = []
-        self.log_level = log_level
-
-    def emit(self, record):
-        if record.levelno >= self.log_level:
-            self.captured_logs.append(record)
 
 
 class Cron(TimeStampedModel):
@@ -45,16 +34,8 @@ class Cron(TimeStampedModel):
         ]
         logger = logging.getLogger(f"{app}.management.commands.{self.command}")
 
-        capture_handler = LogCaptureHandler(self.log_level)
-
-        logger.addHandler(capture_handler)
-        call_command(self.command, **self.kwargs)
-        logger.removeHandler(capture_handler)
-
-        if capture_handler.captured_logs:
-            with logfire.span(f"{self}"):
-                for log in capture_handler.captured_logs:
-                    logging.getLogger("logfire").handle(log)
+        with capture_command_logs(logger, self.log_level, span_name=str(self)):
+            call_command(self.command, **self.kwargs)
 
 
 @receiver(signals.post_delete, sender=Cron)

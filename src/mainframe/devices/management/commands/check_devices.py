@@ -47,4 +47,4 @@ class Command(BaseCommand):
                 send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
             )
 
-        logger.info("Done")
+        logger.debug("Done")

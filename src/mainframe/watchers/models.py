@@ -10,10 +10,9 @@ from telegram.constants import ParseMode
 
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.scraper import fetch
+from mainframe.core.logs import capture_command_logs
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
-
-logger = logging.getLogger(__name__)
 
 
 class WatcherError(Exception): ...
@@ -22,11 +21,24 @@ class WatcherError(Exception): ...
 class WatcherElementsNotFound(WatcherError): ...
 
 
+def get_elements(watcher, logger, retry=False):
+    soup, error = fetch(watcher.url, logger, retries=1, timeout=10, **watcher.request)
+    if soup and (items := soup.select(watcher.selector)):
+        return items
+    if retry:
+        logger.warning("No elements found - retrying")
+        return get_elements(watcher, logger, retry=False)
+    if error:
+        raise WatcherError(error)
+    raise WatcherElementsNotFound(f"[{watcher.name}] No elements found")
+
+
 class Watcher(TimeStampedModel):
     chat_id = models.BigIntegerField(blank=True, null=True)
     cron = models.CharField(blank=True, max_length=32)
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
+    log_level = models.IntegerField(default=logging.INFO)
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
     selector = models.CharField(max_length=128)
@@ -37,50 +49,40 @@ class Watcher(TimeStampedModel):
         return self.name
 
     def run(self):
-        def get_elements(retry=False):
-            soup, error = fetch(
-                self.url, logger=logger, retries=1, timeout=10, **self.request
+        logger = logging.getLogger(__name__)
+        with capture_command_logs(logger, self.log_level, span_name=str(self)):
+            elements = get_elements(self, logger, retry=True)
+            found = elements[0 if self.top else -1]
+            if self.latest.get("title") == (
+                title := (found.text.strip() or found.attrs.get("title"))
+            ):
+                logger.debug("No new items")
+                return False
+            url = (
+                urljoin(self.url, found.attrs["href"])
+                if not found.attrs["href"].startswith("http")
+                else found.attrs["href"]
             )
-            if soup and (items := soup.select(self.selector)):
-                return items
-            if retry:
-                logger.warning("No elements found - retrying")
-                return get_elements(retry=False)
-            if error:
-                raise WatcherError(error)
-            raise WatcherElementsNotFound(f"[{self.name}] No elements found")
+            self.latest = {
+                "title": title,
+                "url": url,
+                "timestamp": timezone.now().isoformat(),
+            }
+            self.save()
 
-        elements = get_elements(retry=True)
-        found = elements[0 if self.top else -1]
-        if self.latest.get("title") == (
-            title := (found.text.strip() or found.attrs.get("title"))
-        ):
-            logger.info("No new items")
-            return False
-        url = (
-            urljoin(self.url, found.attrs["href"])
-            if not found.attrs["href"].startswith("http")
-            else found.attrs["href"]
-        )
-        self.latest = {
-            "title": title,
-            "url": url,
-            "timestamp": timezone.now().isoformat(),
-        }
-        self.save()
-
-        logger.info("Found new item!")
-        text = (
-            f"<a href='{url}'>{title}</a>\nMore articles: <a href='{self.url}'>here</a>"
-        )
-        kwargs = {"parse_mode": ParseMode.HTML}
-        if self.chat_id:
-            kwargs["chat_id"] = self.chat_id
-        else:
-            text = f"📣 <b>{self.name}</b> 📣\n{text}"
-        asyncio.run(send_telegram_message(text, **kwargs))
-        logger.info("Done")
-        return self
+            logger.debug("Found new item!")
+            text = (
+                f"<a href='{url}'>{title}</a>"
+                f"\nMore articles: <a href='{self.url}'>here</a>"
+            )
+            kwargs = {"parse_mode": ParseMode.HTML}
+            if self.chat_id:
+                kwargs["chat_id"] = self.chat_id
+            else:
+                text = f"📣 <b>{self.name}</b> 📣\n{text}"
+            asyncio.run(send_telegram_message(text, **kwargs))
+            logger.debug("Done")
+            return self
 
 
 @receiver(signals.post_delete, sender=Watcher)

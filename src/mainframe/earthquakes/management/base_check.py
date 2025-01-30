@@ -79,7 +79,7 @@ class BaseEarthquakeCommand(BaseCommand):
             events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
-            self.logger.info("Done")
+            self.logger.debug("Done")
             return
 
         Earthquake.objects.bulk_create(
@@ -110,7 +110,7 @@ class BaseEarthquakeCommand(BaseCommand):
         ]
 
         if len(events):
-            self.logger.info(
+            self.logger.warning(
                 "Got %s events (with mag >= %s)", len(events), min_magnitude
             )
             asyncio.run(
@@ -121,7 +121,7 @@ class BaseEarthquakeCommand(BaseCommand):
             )
 
         self.set_last_check(instance)
-        self.logger.info("Done")
+        self.logger.debug("Done")
 
     def get_kwargs(self) -> dict:
         raise NotImplementedError
