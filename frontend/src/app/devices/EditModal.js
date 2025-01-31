@@ -210,7 +210,7 @@ const EditModal = () => {
     }
     <Modal.Footer>
       {
-        Boolean(device) && <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(device.id))}>
+        Boolean(device) && <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(device.id, device.display_name))}>
           Delete
         </Button>
       }

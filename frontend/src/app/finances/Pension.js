@@ -423,7 +423,7 @@ const Pension = () => {
       <Modal.Footer>
         {
           Boolean(pension.selectedItem) &&
-          <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(pension.selectedItem.id))}>
+          <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(pension.selectedItem.id, pension.selectedItem.name))}>
             Delete
           </Button>
         }

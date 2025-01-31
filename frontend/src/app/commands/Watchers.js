@@ -481,7 +481,7 @@ const Watchers = () =>  {
         <Modal.Footer>
           {
             selectedItem
-              ? <Button variant="danger" onClick={() => dispatch(api.delete(selectedItem.id))}>
+              ? <Button variant="danger" onClick={() => dispatch(api.delete(selectedItem.id, selectedItem.name))}>
                   Delete
                 </Button>
               : null

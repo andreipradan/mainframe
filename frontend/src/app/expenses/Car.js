@@ -337,7 +337,7 @@ const Car = () => {
           <Button
             variant="danger"
             className="float-left"
-            onClick={() => dispatch(api.delete(store.selectedItem.id))}
+            onClick={() => dispatch(api.delete(store.selectedItem.id, store.selectedItem.name))}
           >
             Delete
           </Button>

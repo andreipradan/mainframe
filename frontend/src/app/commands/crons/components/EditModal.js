@@ -106,7 +106,7 @@ const EditModal = () => {
     },
     [allCommands, cron]
   )
-  const onDelete = useCallback(() => dispatch(api.delete(cron.id)), [dispatch, cron])
+  const onDelete = useCallback(() => dispatch(api.delete(cron.id, cron.name)), [dispatch, cron])
   const onExpressionChange = useCallback(e => setExpression(e.target.value), [])
   const onIsActiveChange = useCallback(() => {setIsActive(!isActive)}, [isActive])
   const onKwargsChange = useCallback((e, i) => {

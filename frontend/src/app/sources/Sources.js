@@ -282,7 +282,7 @@ const Sources = () =>  {
         }
         <Modal.Footer>
           {
-            sources.selectedItem && <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(sources.selectedItem.id))}>
+            sources.selectedItem && <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(sources.selectedItem.id, sources.selectedItem.name))}>
               Delete
             </Button>
           }

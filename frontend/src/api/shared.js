@@ -90,13 +90,19 @@ export const DeleteApi = Base => class extends Base {
     }
   }
 
-  delete = id => dispatch => {
+  delete = (id, verbose = "") => dispatch => {
     dispatch(this.constructor.methods.setLoadingItems(id));
     axios
-      .delete(`${this.constructor.baseUrl}/${id}/`, { headers: { Authorization: this.token } })
+      .delete(
+        `${this.constructor.baseUrl}/${id}/`,
+        { headers: { Authorization: this.token } }
+      )
       .then(() => {
         dispatch(this.constructor.methods.delete(id));
-        toast.error(`${getResource(this.constructor.baseUrl)} ${id} deleted successfully!`, toastParams);
+        toast.error(
+          `${getResource(this.constructor.baseUrl)} ${verbose || id} deleted successfully!`,
+          toastParams,
+          );
       })
       .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors));
   }

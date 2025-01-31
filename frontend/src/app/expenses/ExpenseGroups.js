@@ -266,7 +266,7 @@ const ExpenseGroups = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(api.delete(groupToRemove?.id))
+            dispatch(api.delete(groupToRemove?.id, groupToRemove?.name))
             setGroupToRemove(null)
           }}
         >
