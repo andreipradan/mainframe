@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/timeout 60 sh -c \
-    'while ping -c1 -W1 8.8.8.8 > /dev/null 2>&1; do \
+    'while ! ping -c1 -W1 8.8.8.8 > /dev/null 2>&1; do \
         sleep 2; \
         echo "No Internet connection. Retrying..."; \
     done; \
