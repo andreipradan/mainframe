@@ -28,12 +28,33 @@ fi
 echo "[Power save] Turning power_save off to keep wifi from disconnecting" && sudo iw dev wlan0 set power_save off
 echo "[Power managerment] Turning iwconfig power management off to keep wifi from disconnecting" && sudo iwconfig wlan0 power off
 
-echo "[homebridge] Installing homebridge"
-curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo tee /usr/share/keyrings/homebridge.gpg  > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
-echo "sudo apt-get update" && sudo apt-get update
-sudo apt-get install -y homebridge
-echo "[homebridge] Done."
+echo "[homeassistant] Docker setup"
+echo "[homeassistant][docker] Add Docker's official GPG key:"
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo "[homeassistant][docker] Add the repository to Apt sources:"
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+echo "[homeassistant][docker] Installing latest Docker"
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+echo "[homeassistant][docker] Done."
+echo "[homeassistant] running docker" && \
+  sudo docker run -d \
+    --name homeassistant \
+    --privileged \
+    --restart=unless-stopped \
+    -e TZ=MY_TIME_ZONE \
+    -v /PATH_TO_YOUR_CONFIG:/config \
+    -v /run/dbus:/run/dbus:ro \
+    --network=host \
+    ghcr.io/home-assistant/home-assistant:stable
 
 if [ -d "${HOME}/.oh-my-zsh" ]; then
   echo "[zsh] ${HOME}/.oh-my-zsh - path already exists - skipping installation"

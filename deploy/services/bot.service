@@ -1,5 +1,7 @@
 [Unit]
+After=network-online-check.service
 Description=telegram bot polling service
+Requires=network-online-check.service
 
 [Service]
 User=rpi

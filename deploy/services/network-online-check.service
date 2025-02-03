@@ -1,0 +1,16 @@
+[Unit]
+After=network-online.target
+Description=Wait for Internet Connectivity
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/timeout 60 sh -c \
+    while ping -c1 -W1 8.8.8.8 > /dev/null 2>&1; do \
+        do sleep 2; \
+        echo "No Internet connection. Retrying..."; \
+    done; \
+    echo "Internet connection established."'
+
+[Install]
+WantedBy=multi-user.target

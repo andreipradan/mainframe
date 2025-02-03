@@ -1,5 +1,7 @@
 [Unit]
+After=network-online-check.service
 Description=huey task queue service
+Requires=network-online-check.service
 
 [Service]
 User=rpi

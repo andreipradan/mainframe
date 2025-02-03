@@ -24,7 +24,7 @@ class Command(BaseCommand):
         client = DevicesClient(Source.objects.default(), logger=logger)
         new_devices, went_online, went_offline = client.run()
         msg = ""
-        if new_devices:
+        if new_devices := should_notify(new_devices):
             msg += (
                 f"⚠️ {len(new_devices)} new device{'s' if len(new_devices) > 1 else ''} "
                 f"joined: {', '.join(new_devices)}"

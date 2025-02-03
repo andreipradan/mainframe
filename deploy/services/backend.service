@@ -1,5 +1,7 @@
 [Unit]
+After=network-online-check.service
 Description=django backend server
+Requires=network-online-check.service
 
 [Service]
 User=rpi
