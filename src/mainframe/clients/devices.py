@@ -53,6 +53,9 @@ class DevicesClient:
         if response.status_code != status.HTTP_200_OK:
             raise DevicesException(f"Unexpected response {response.status_code}")
         response = response.json()
+        if response.get("ret") == -1 and (error := response.get("errMsg")):
+            self.logger.warning(error)
+            return [], [], []
         if set(response) != {"ret", "topo"}:
             raise DevicesException(f"Unexpected top level keys in response: {response}")
         if len(response["topo"]) != 1:

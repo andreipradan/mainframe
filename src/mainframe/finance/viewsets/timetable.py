@@ -11,7 +11,9 @@ from mainframe.finance.serializers import TimetableSerializer
 
 class TimetableViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
-    queryset = Timetable.objects.select_related("credit")
+    queryset = Timetable.objects.select_related("credit").order_by(
+        "-date", "created_at"
+    )
     serializer_class = TimetableSerializer
 
     def create(self, request, *args, **kwargs):

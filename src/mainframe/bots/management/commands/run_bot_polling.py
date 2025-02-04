@@ -115,11 +115,6 @@ async def handle_dex(update, context: CallbackContext, **__):
 
 
 async def handle_earthquake(update, context: CallbackContext, bot, **__):
-    config = bot.additional_data.get("earthquake")
-
-    if not config:
-        return await reply(update, text="No earthquake configuration found")
-
     @sync_to_async
     def fetch_latest():
         return Earthquake.objects.order_by("-timestamp").first()
@@ -134,8 +129,9 @@ async def handle_earthquake(update, context: CallbackContext, bot, **__):
         return await reply(update, text=f"Updated min magnitude to {args[1]}")
 
     msg = parse_event(latest)
-    if last_check := config.get("last_check"):
-        msg += f"\nLast check: {last_check}"
+
+    last_check = bot.additional_data.get("earthquake", {}).get("last_check")
+    msg += f"\nLast check: {last_check or '-'}"
     return await reply(update, text=msg)
 
 
