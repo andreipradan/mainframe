@@ -62,7 +62,6 @@ class Command(BaseCommand):
         payload = options["payload"]
 
         logger.info("[Pension] Fetching unit value from '%s'", url)
-        healthchecks.ping(logger, "pension")
 
         resp, error = fetch(
             url,
@@ -89,4 +88,4 @@ class Command(BaseCommand):
         )
 
         logger.info("[Pension] Done (%s records)", len(unit_values))
-        self.stdout.write(self.style.SUCCESS("Done."))
+        healthchecks.ping(logger, "pension")
