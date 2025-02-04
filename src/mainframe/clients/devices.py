@@ -39,7 +39,7 @@ class DevicesClient:
             raise DevicesException(f"Error at login - response {resp.json()}")
         return resp.json()["uuid"]
 
-    def run(self):
+    def run(self) -> tuple[list[Device], list[Device], list[Device]]:
         uuid = self.login()
         data = self.source.config["data"]["list"]
         headers = {
@@ -134,7 +134,7 @@ class DevicesClient:
             )
             return new_devices, went_online, went_offline
         self.logger.warning("Got no devices.")
-        return []
+        return [], [], []
 
 
 def parse_device(device):
