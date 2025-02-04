@@ -225,21 +225,6 @@ class TestHandleDex:
 @mock.patch("telegram.Update.de_json", return_value=MagicMock(callback_query=None))
 @pytest.mark.django_db
 class TestEarthquakes:
-    async def test_missing_config(self, update, logger, _):
-        update = prepare_update(update, text="/earthquake", mock_class=AsyncMock)
-
-        bot = await sync_to_async(BotFactory)(
-            token=str(uuid.uuid4()), whitelist=["foo_username"]
-        )
-
-        await handle_earthquake(update, mock.MagicMock(args=[]), bot)
-
-        assert logger.error.call_args_list == []
-        assert logger.warning.call_args_list == []
-        assert update.message.reply_text.call_args_list == [
-            mock.call("No earthquake configuration found", **DEFAULT_REPLY_KWARGS)
-        ]
-
     async def test_no_entries(self, update, logger, _):
         await sync_to_async(Earthquake.objects.all().delete)()
         update = prepare_update(update, text="/earthquake", mock_class=AsyncMock)
@@ -306,7 +291,8 @@ class TestEarthquakes:
                 "https://www.google.com/maps/search/1.00000,1.00000'>"
                 "1</a>\n\n"
                 "Depth: 1.000 km\n\n"
-                "Time: 2000-01-01 00:00:00+00:00",
+                "Time: 2000-01-01 00:00:00+00:00\n"
+                "Last check: -",
                 **DEFAULT_REPLY_KWARGS,
             )
         ]

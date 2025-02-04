@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import certifi
 import pytz
 from django.conf import settings
 
@@ -15,7 +16,7 @@ class Command(BaseEarthquakeCommand):
     url = "http://infp.ro/events.json"
 
     def get_kwargs(self):
-        return {"timeout": 10, "verify": False}
+        return {"timeout": 10, "verify": certifi.where()}
 
     @staticmethod
     def fetch_events(response):
