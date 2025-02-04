@@ -17,7 +17,6 @@ import { selectItem, setModalOpen } from "../../redux/watchersSlice";
 import { CRITICAL, DEBUG, ERROR, INFO, logLevels, WARNING } from './crons/Crons';
 import Select from 'react-select';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
-import { select } from '../../redux/cronsSlice';
 
 
 const Watchers = () =>  {
@@ -166,6 +165,7 @@ const Watchers = () =>  {
                       <th> Name </th>
                       <th> Cron </th>
                       <th> Is Active? </th>
+                      <th> Log level </th>
                       <th> URL </th>
                       <th> Last status </th>
                       <th> Last update </th>
@@ -200,7 +200,7 @@ const Watchers = () =>  {
                                               : 'secondary'
                                     }`
                                   }
-                                  onClick={() => dispatch(select(watcher.id))}
+                                  onClick={() => dispatch(selectItem(watcher.id))}
                                 >
                                   {logLevels[watcher.log_level].label}
                                 </td>
