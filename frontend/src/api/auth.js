@@ -2,7 +2,7 @@ import axios from "./index";
 import Cookie from 'js-cookie'
 import { login, logout, setErrors, setLoading } from "../redux/authSlice";
 import { handleErrors } from "./errors";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 export const toastParams = {pauseOnFocusLoss: true, theme: "colored"}
 
