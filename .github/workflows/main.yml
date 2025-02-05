@@ -11,6 +11,7 @@ env:
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   RUN_REGION: ${{ secrets.REGION }}
   REACT_APP_NGROK_URL: ${{ secrets.REACT_APP_NGROK_URL }}
+  REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
 
 jobs:
   notify-telegram:
@@ -252,7 +253,7 @@ jobs:
             --image "$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
             --allow-unauthenticated \
-            --set-env-vars "REACT_APP_NGROK_URL=$REACT_APP_NGROK_URL"
+            --set-env-vars "REACT_APP_NGROK_URL=$REACT_APP_NGROK_URL,REACT_APP_API_URL=$REACT_APP_API_URL"
       - name: Notify
         uses: appleboy/telegram-action@master
         with:
