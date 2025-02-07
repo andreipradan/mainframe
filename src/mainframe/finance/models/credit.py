@@ -3,9 +3,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
+from mainframe.core.defaults import DECIMAL_DEFAULT_KWARGS
 from mainframe.core.models import TimeStampedModel
 
-DECIMAL_DEFAULT_KWARGS = {"decimal_places": 2, "max_digits": 8}
 NULLABLE_KWARGS = {"blank": True, "null": True}
 
 
