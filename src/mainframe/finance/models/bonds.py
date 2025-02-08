@@ -20,6 +20,9 @@ class Bond(TimeStampedModel):
     commission = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     currency = models.ForeignKey("exchange.Currency", on_delete=models.DO_NOTHING)
     date = models.DateTimeField()
+    interest = models.DecimalField(
+        blank=True, decimal_places=2, max_digits=5, null=True
+    )
     quantity = models.DecimalField(decimal_places=2, max_digits=15)
     maturity = models.DateField(blank=True, null=True)
     net = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)

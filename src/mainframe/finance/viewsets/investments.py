@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAdminUser
 from mainframe.exchange.models import ExchangeRate
 from mainframe.exchange.serializers import ExchangeRateSerializer
 from mainframe.finance.models import Bond, Deposit, Pension, UnitValue
+from mainframe.finance.serializers import BondSerializer, DepositSerializer
 
 
 class InvestmentsViewSet(viewsets.ViewSet):
@@ -53,7 +54,10 @@ class InvestmentsViewSet(viewsets.ViewSet):
                 for currency in bond_currencies
             },
             **{
-                f"pnl_{currency}": Sum("pnl", filter=Q(currency=currency))
+                f"pnl_{currency}": Coalesce(
+                    Sum("pnl", filter=Q(currency=currency)),
+                    Value(0, output_field=DecimalField()),
+                )
                 for currency in bond_currencies
             },
             **{
@@ -78,8 +82,11 @@ class InvestmentsViewSet(viewsets.ViewSet):
                 for currency in deposit_currencies
             },
             **{
-                f"pnl_{currency}": Sum("pnl", filter=Q(currency=currency))
-                for currency in deposit_currencies
+                f"pnl_{currency}": Coalesce(
+                    Sum("pnl", filter=Q(currency=currency)),
+                    Value(0, output_field=DecimalField()),
+                )
+                for currency in bond_currencies
             },
         )
         latest_unit_value_subquery = UnitValue.objects.filter(
@@ -117,10 +124,33 @@ class InvestmentsViewSet(viewsets.ViewSet):
         )
         return JsonResponse(
             data={
-                "bonds": {**bonds, "currencies": bond_currencies},
+                "bonds": {
+                    **bonds,
+                    "currencies": bond_currencies,
+                    "next_maturity": BondSerializer(
+                        Bond.objects.filter(maturity__gt=timezone.now())
+                        .order_by("date")
+                        .first()
+                    ).data,
+                    "interest_rates": list(
+                        Bond.objects.filter(interest__isnull=False)
+                        .values("date__date", "interest")
+                        .order_by("date")
+                    ),
+                },
                 "deposits": {
                     **{k: v for k, v in deposits.items() if v},
                     "currencies": deposit_currencies,
+                    "next_maturity": DepositSerializer(
+                        Deposit.objects.filter(maturity__gt=timezone.now())
+                        .order_by("date")
+                        .first()
+                    ).data,
+                    "interest_rates": list(
+                        Deposit.objects.filter(interest__isnull=False)
+                        .values("date", "interest")
+                        .order_by("date")
+                    ),
                 },
                 "pension": {
                     **pensions,

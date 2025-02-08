@@ -27,6 +27,7 @@ class DepositsViewSet(viewsets.ModelViewSet):
         )
         aggregations = Deposit.objects.aggregate(
             pnl=Sum("pnl"),
+            tax=Sum("tax"),
             **{
                 currency: Sum("amount", filter=Q(currency=currency))
                 for currency in currencies

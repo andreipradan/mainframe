@@ -248,6 +248,12 @@ if ENV in ["local", "prod", "rpi"]:
             send_default_pii=False,
             profiles_sample_rate=1.0,
         )
+        logfire.configure(
+            environment=ENV,
+            distributed_tracing=True,
+            send_to_logfire="if-token-present",
+        )
+        logfire.instrument_django()
 
     DATABASES = {
         "default": {
@@ -259,12 +265,7 @@ if ENV in ["local", "prod", "rpi"]:
             "PORT": env("DB_PORT"),
         }
     }
-    logfire.configure(
-        environment=ENV,
-        distributed_tracing=True,
-        send_to_logfire="if-token-present",
-    )
-    logfire.instrument_django()
+
 
 elif ENV in ["ci", "test"]:
     DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
