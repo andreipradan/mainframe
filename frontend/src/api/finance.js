@@ -10,6 +10,14 @@ import {
   setLoading,
 } from "../redux/creditSlice";
 import {
+  create as createBonds,
+  set as setBonds,
+  setErrors as setBondsErrors,
+  setLoading as setBondsLoading,
+  setLoadingItems as setBondsLoadingItems,
+  update as updateBonds,
+} from '../redux/bondsSlice'
+import {
   set as setCrypto,
   setErrors as setCryptoErrors,
   setLoading as setCryptoLoading,
@@ -19,6 +27,19 @@ import {
   setLoading as setCryptoPnlLoading,
   setErrors as setCryptoPnlErrors,
 } from "../redux/cryptoPnlSlice";
+import {
+  create as createDeposits,
+  set as setDeposits,
+  setErrors as setDepositsErrors,
+  setLoading as setDepositsLoading,
+  setLoadingItems as setDepositsLoadingItems,
+  update as updateDeposits,
+} from '../redux/depositsSlice'
+import {
+  set as setInvestments,
+  setErrors as setInvestmentsErrors,
+  setLoading as setInvestmentsLoading,
+} from '../redux/investmentsSlice'
 import {
   create as createPension,
   set as setPension,
@@ -57,6 +78,18 @@ import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi, U
 import { toast } from 'react-toastify';
 import { toastParams } from './auth';
 
+export class BondsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "finance/bonds"
+  static methods = {
+    create: createBonds,
+    set: setBonds,
+    setErrors: setBondsErrors,
+    setLoading: setBondsLoading,
+    setLoadingItems: setBondsLoadingItems,
+    update: updateBonds,
+  }
+}
+
 export class CryptoApi extends mix(ListApi, TokenMixin) {
   static baseUrl = "finance/crypto"
   static methods = {
@@ -72,6 +105,27 @@ export class CryptoPnlApi extends mix(ListApi, TokenMixin) {
     set: setCryptoPnl,
     setErrors: setCryptoPnlErrors,
     setLoading: setCryptoPnlLoading,
+  }
+}
+
+export class DepositsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
+  static baseUrl = "finance/deposits"
+  static methods = {
+    create: createDeposits,
+    set: setDeposits,
+    setErrors: setDepositsErrors,
+    setLoading: setDepositsLoading,
+    setLoadingItems: setDepositsLoadingItems,
+    update: updateDeposits,
+  }
+}
+
+export class InvestmentsApi extends mix(ListApi, TokenMixin) {
+  static baseUrl = "finance/investments"
+  static methods = {
+    set: setInvestments,
+    setErrors: setInvestmentsErrors,
+    setLoading: setInvestmentsLoading,
   }
 }
 

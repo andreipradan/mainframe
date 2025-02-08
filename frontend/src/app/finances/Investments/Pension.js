@@ -3,16 +3,16 @@ import { useDispatch, useSelector } from "react-redux";
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker/es';
 import Form from "react-bootstrap/Form";
-import ListItem from "../shared/ListItem";
 import Modal from 'react-bootstrap/Modal';
 import { Circles, ColorRing } from 'react-loader-spinner';
 import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
-import BottomPagination from "../shared/BottomPagination";
-import Errors from "../shared/Errors";
-import { selectItem, setKwargs, setModalOpen } from "../../redux/pensionSlice";
-import { PensionApi } from '../../api/finance';
+import BottomPagination from "../../shared/BottomPagination";
+import Errors from "../../shared/Errors";
+import ListItem from "../../shared/ListItem";
+import { selectItem, setKwargs, setModalOpen } from "../../../redux/pensionSlice";
+import { PensionApi } from '../../../api/finance';
 import { Collapse } from 'react-bootstrap';
 
 const Pension = () => {
@@ -82,7 +82,8 @@ const Pension = () => {
   }, [pension.selectedItem])
 
   useEffect(() => {
-    if (!pension.results?.length) dispatch(api.getList(pension.kwargs))
+    if (!pension.results?.length)
+      dispatch(api.getList(pension.kwargs))
   }, [])
 
   return <div>

@@ -8,7 +8,6 @@ const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Commands = lazy(() => import('./commands/Commands'));
 const Crons = lazy(() => import('./commands/crons/Crons'));
-const Crypto = lazy(() => import('./finances/Crypto'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
@@ -20,9 +19,13 @@ const FinancesCategorize = lazy(() => import ("./finances/Accounts/Categorize/Ca
 const FinancesCreditDetails = lazy(() => import ("./finances/Credit/Details"));
 const FinancesCalculator = lazy(() => import ("./finances/Credit/Calculator"));
 const FinancesPayments = lazy(() => import ("./finances/Credit/Payments/Payments"));
-const FinancesPension = lazy(() => import ("./finances/Pension"));
-const FinancesStocks = lazy(() => import ("./finances/Stocks"));
 const FinancesTimetables = lazy(() => import ("./finances/Credit/Timetables/Timetables"));
+const InvestmentsBonds = lazy(() => import ("./finances/Investments/Bonds"));
+const InvestmentsCrypto = lazy(() => import('./finances/Investments/Crypto'));
+const InvestmentsDeposits = lazy(() => import ("./finances/Investments/Deposits"));
+const InvestmentsPension = lazy(() => import ("./finances/Investments/Pension"));
+const InvestmentsStocks = lazy(() => import ("./finances/Investments/Stocks"));
+const InvestmentsSummary = lazy(() => import('./finances/Investments/Summary'));
 const Logs = lazy(() => import('./apps/Logs'));
 const Meals = lazy(() => import('./meals/Meals'));
 const Messages = lazy(() => import('./messages/Messages'));
@@ -87,10 +90,13 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/expenses/car" component={ ExpensesCar } />}
         {user?.is_staff && <Route exact path="/finances/accounts/transactions/:id?" component={ FinancesAccountsTransactions } />}
         {user?.is_staff && <Route exact path="/finances/accounts/categorize" component={ FinancesCategorize } />}
-        {user?.is_staff && <Route exact path="/finances/crypto" component={ Crypto } />}
-        {user?.is_staff && <Route exact path="/finances/pension" component={ FinancesPension } />}
+        {user?.is_staff && <Route exact path="/investments/bonds" component={ InvestmentsBonds } />}
+        {user?.is_staff && <Route exact path="/investments/crypto" component={ InvestmentsCrypto } />}
+        {user?.is_staff && <Route exact path="/investments/deposits" component={ InvestmentsDeposits } />}
+        {user?.is_staff && <Route exact path="/investments/pension" component={ InvestmentsPension } />}
+        {user?.is_staff && <Route exact path="/investments/stocks" component={ InvestmentsStocks } />}
+        {user?.is_staff && <Route exact path="/investments/summary" component={ InvestmentsSummary } />}
         {user?.is_staff && <Route exact path="/sources" component={ Sources } />}
-        {user?.is_staff && <Route exact path="/stocks" component={ FinancesStocks } />}
 
         <Route path="/basic-ui/buttons" component={ Buttons } />
         <Route path="/basic-ui/dropdowns" component={ Dropdowns } />

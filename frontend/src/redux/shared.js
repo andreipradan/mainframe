@@ -21,10 +21,12 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.loading = false
       state.modalOpen = false
       state.results = state.results
-        ? [...state.results, action.payload].sort((a, b) =>
-            a.name > b.name
-              ? 1
-              : a.id > b.id ? 1 : -1
+        ? state.results[0].date
+          ? [...state.results, action.payload].sort((a,b) => a.date < b.date ? 1 : -1)
+          : [...state.results, action.payload].sort((a, b) =>
+              a.name > b.name
+                ? 1
+                : a.id > b.id ? 1 : -1
         )
         : [action.payload]
       state.selectedItem =

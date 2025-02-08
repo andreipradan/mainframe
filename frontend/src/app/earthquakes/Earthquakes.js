@@ -24,7 +24,10 @@ const defaultButtonProps = {
   interactiveChildren: false,
 }
 
-const formatTime = timestamp => new Date(timestamp).toLocaleDateString(
+export const formatDate = timestamp => new Date(timestamp).toLocaleDateString(
+  "ro-RO", {day: "2-digit", month: 'short', year: '2-digit'}
+)
+export const formatTime = timestamp => new Date(timestamp).toLocaleDateString(
     "ro-RO",
     {day: "2-digit", month: "short", year: "2-digit", hour: "numeric", minute: "numeric"}
 )

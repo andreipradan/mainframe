@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import Marquee from "react-fast-marquee";
-import BottomPagination from "../shared/BottomPagination";
 import Form from "react-bootstrap/Form";
+import Marquee from "react-fast-marquee";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 import { Collapse } from 'react-bootstrap';
 import "nouislider/distribute/nouislider.css";
 
-import Errors from "../shared/Errors";
-import ListItem from "../shared/ListItem";
-import { CryptoApi, CryptoPnlApi } from '../../api/finance';
-import { capitalize } from "../utils";
-import { calculateSum } from "./utils";
-import { setKwargs } from "../../redux/cryptoSlice";
-import { setKwargs as setPnlKwargs } from "../../redux/cryptoPnlSlice";
-import { selectStyles } from "./Accounts/Categorize/EditModal";
+import BottomPagination from "../../shared/BottomPagination";
+import Errors from "../../shared/Errors";
+import ListItem from "../../shared/ListItem";
+import { capitalize } from "../../utils";
+import { calculateSum } from "../utils";
+import { setKwargs as setPnlKwargs } from "../../../redux/pnlSlice";
+import { setKwargs } from "../../../redux/stocksSlice";
+import { selectStyles } from "../Accounts/Categorize/EditModal";
+import { StocksApi, StocksPnlApi } from '../../../api/finance';
 
-const Crypto = () => {
+const Stocks = () => {
   const dispatch = useDispatch();
-  const crypto = useSelector(state => state.crypto)
-  const pnl = useSelector(state => state.cryptoPnl)
+  const pnl = useSelector(state => state.pnl)
+  const stocks = useSelector(state => state.stocks)
   const token = useSelector((state) => state.auth.token)
 
-  const cryptoApi = new CryptoApi(token)
-  const pnlApi = new CryptoPnlApi(token)
+  const pnlApi = new StocksPnlApi(token)
+  const stocksApi = new StocksApi(token)
 
   const [selectedPnlFile, setSelectedPnlFile] = useState(null)
   const [uploadPnlOpen, setUploadPnlOpen] = useState(false)
@@ -63,32 +63,45 @@ const Crypto = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedTransactionsFile);
-    dispatch(cryptoApi.upload(formData))
+    dispatch(stocksApi.upload(formData))
     setUploadTransactionsOpen(false)
     setSelectedTransactionsFile(null)
   };
 
-  const onChange = (what, newValue, store) => {
-    const newTypes = newValue.map(v => v.value)
-    let setKwargsMethod
-    if (store === crypto)
-      setKwargsMethod = setKwargs
-    else if (store === pnl)
-      setKwargsMethod = setPnlKwargs
+  const onCurrencyChange = (newValue, store) => {
+    let setKwargsMethod;
+    if (store === stocks) {
+      setKwargsMethod = setKwargs;
+    }
+    else if (store === pnl) {
+      setKwargsMethod = setPnlKwargs;
+    }
     else throw Error("Invalid store")
-    dispatch(setKwargsMethod({...(store.kwargs || {}), [what]: newTypes, page: 1}))
+
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargsMethod({...(store.kwargs || {}), currency: newTypes, page: 1}))
   }
 
-  useEffect(() => setUploadPnlOpen(Boolean(pnl.errors)), [pnl.errors]);
-  useEffect(() => setUploadTransactionsOpen(Boolean(crypto.errors)), [crypto.errors]);
+  const onTickerChange = (newValue, store = stocks) => {
+    const setKwargsMethod = store === stocks ? setKwargs : setPnlKwargs;
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargsMethod({...(store.kwargs || {}), ticker: newTypes, page: 1}))
+  }
+
+  const onTypeChange = (newValue, store) => {
+    const setKwargsMethod = store === stocks ? setKwargs : setPnlKwargs;
+    const newTypes = newValue.map(v => v.value)
+    dispatch(setKwargsMethod({...(store.kwargs || {}), type: newTypes, page: 1}))
+  }
+  useEffect(() => setUploadPnlOpen(Boolean(stocks.errors)), [stocks.errors]);
 
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
-        Crypto
+        Stocks
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(cryptoApi.getList())}
+          onClick={() => dispatch(stocksApi.getList(stocks.kwargs))}
         >
           <i className="mdi mdi-refresh" />
         </button>
@@ -101,7 +114,7 @@ const Crypto = () => {
       </nav>
     </div>
 
-    <Errors errors={crypto.errors}/>
+    <Errors errors={stocks.errors}/>
 
     {/* Top cards */}
     <div className="row">
@@ -111,18 +124,18 @@ const Crypto = () => {
             <h6>
               Portfolio&nbsp;
               {
-                crypto.loading
+                stocks.loading
                   ? <Circles height={20} width={20} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
-                  : `(${crypto?.aggregations?.quantities?.length})`
+                  : `(${stocks?.aggregations?.quantities?.length})`
               }
             </h6>
             {
-              !crypto.loading && crypto.aggregations && <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                <ListItem label={'Total'} value={calculateSum(crypto.aggregations.quantities, 'value')}
+              !stocks.loading && stocks.aggregations && <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+                <ListItem label={'Total'} value={calculateSum(stocks.aggregations.quantities, 'value')}
                           textType={'warning'} className="mr-3" />
                 {
-                  crypto.aggregations?.quantities?.map(q =>
-                    <ListItem key={q.symbol} label={q.symbol} value={q.value} textType={'warning'} className="mr-3" />,
+                  stocks.aggregations?.quantities?.map(q =>
+                    <ListItem key={q.ticker} label={q.ticker} value={q.value} textType={'warning'} className="mr-3" />,
                   )
                 }
               </div>
@@ -131,25 +144,25 @@ const Crypto = () => {
         </div>
       </div>
       {
-        crypto.currencies?.map(currency =>
+        stocks.currencies?.map(currency =>
           <div className="col-sm-4 grid-margin" key={currency}>
             <div className="card">
               <div className="card-body">
                 <h6>
                   {currency}&nbsp;
                   {
-                    crypto.loading
+                    stocks.loading
                       ? <Circles height={20} width={20} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
-                      : `(${crypto.aggregations?.[currency].counts[0].value})`
+                      : `(${stocks.aggregations?.[currency].counts[0].value})`
                   }
                 </h6>
                 <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
                   {
-                    !crypto.loading && crypto.aggregations?.[currency].totals.map((item, i) =>
+                    !stocks.loading && stocks.aggregations?.[currency].totals.map((item, i) =>
                       <ListItem
                         key={item.type}
                         label={capitalize(item.type.replace('_', ' '))}
-                        value={item.value ? `${currency === 'USD' ? '$ ' : currency === "EUR" ? '€ ' : ""}${item.value} (${crypto.aggregations?.[currency].counts[i + 1].value})${["USD", "EUR"].includes(currency) ? "" : ` ${currency}`}` : '-'}
+                        value={item.value ? `${currency === 'USD' ? '$' : '€'} ${item.value} (${stocks.aggregations?.[currency].counts[i + 1].value})` : '-'}
                         textType={'warning'}
                       />,
                     )
@@ -169,17 +182,17 @@ const Crypto = () => {
           <div className="card-body">
             <h6>Last Transaction</h6>
             {
-              crypto.loading
+              stocks.loading
                 ? <Circles width="100%" height="50" />
-                : crypto.results?.length
+                : stocks.results?.length
                   ? <Marquee duration={10000} pauseOnHover >
-                    <ListItem label={"Date"} value={new Date(crypto.results[0].date).toLocaleString()} textType={"warning"} className="mr-3" />
-                    <ListItem label={"Type"} value={crypto.results[0].type} textType={"warning"} className="mr-3" />
-                    {crypto.results[0].quantity && <ListItem label={"Quantity"} value={crypto.results[0].quantity} textType={"warning"} className="mr-3" />}
-                    {crypto.results[0].symbol && <ListItem label={"Ticker"} value={crypto.results[0].symbol} textType={"warning"} className="mr-3" />}
-                    {crypto.results[0].price && <ListItem label={"Price"} value={crypto.results[0].price} textType={"warning"} className="mr-3" />}
-                    {crypto.results[0].fees && <ListItem label={"Price"} value={crypto.results[0].fees} textType={"warning"} className="mr-3" />}
-                    {crypto.results[0].value && <ListItem label={"Amount"} value={`${crypto.results[0].currency === "USD" ? "$ " : crypto.results[0].currency === "EUR" ? "€ ": ""}${crypto.results[0].value}${["USD", "EUR"].includes(crypto.results[0].currency) ? "" : ` ${crypto.results[0].currency}`}`} textType={"success"} className="mr-3" />}
+                    <ListItem label={"Date"} value={new Date(stocks.results[0].date).toLocaleString()} textType={"warning"} className="mr-3" />
+                    <ListItem label={"Type"} value={stocks.results[0].type} textType={"warning"} className="mr-3" />
+                    {stocks.results[0].quantity && <ListItem label={"Quantity"} value={stocks.results[0].quantity} textType={"warning"} className="mr-3" />}
+                    {stocks.results[0].ticker && <ListItem label={"Ticker"} value={stocks.results[0].ticker} textType={"warning"} className="mr-3" />}
+                    {stocks.results[0].price_per_share && <ListItem label={"Price / Share"} value={stocks.results[0].price_per_share} textType={"warning"} className="mr-3" />}
+                    <ListItem label={"Amount"} value={`${stocks.results[0].currency === "USD" ? "$" : "€"} ${stocks.results[0].total_amount}`} textType={"success"} className="mr-3" />
+                    <ListItem label={"FX Rate"} value={stocks.results[0].fx_rate} textType={"warning"} className="mr-3" />
                   </Marquee>
                   : "-"
             }
@@ -188,7 +201,7 @@ const Crypto = () => {
       </div>
     </div>
 
-    {/*Profit and loss*/}
+    {/* Profit and loss */}
     <div className="row">
       <div className="col-12 grid-margin">
         <div className="card">
@@ -216,7 +229,7 @@ const Crypto = () => {
                         onChange={handlePnlFileChange}
                       />
                       <label className="custom-file-label" htmlFor="customFileLang">
-                        {selectedPnlFile ? selectedPnlFile.name : 'Select a file'}
+                        {selectedPnlFile ? selectedPnlFile.name : 'Select a CSV file'}
                       </label>
                     </div>
                   </Form.Group>
@@ -234,38 +247,36 @@ const Crypto = () => {
             <div className="table-responsive">
               <div className="mb-0 text-muted">
                 <div className="row">
-                  <div className={`col-sm-${pnl.currencies?.length > 1 ? '6' : '9'}`}>
+                  <div className="col-sm-6">
                     <h6 className="text-secondary">
                       Profit and Loss ({pnl.count})
                       <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                              onClick={() => dispatch(pnlApi.getList())}>
+                              onClick={() => dispatch(pnlApi.getList(pnl.kwargs))}>
                         <i className="mdi mdi-refresh" />
                       </button>
                       {
-                        pnl.currencies?.length && pnl.total ?
-                          <div className="mb-0 text-muted">
-                            <div className="row">
-                              <div className="col-sm-6">
-                                <div className="mb-0 text-muted">
-                                  <ul className="list-arrow">
-                                    {
-                                      pnl.currencies?.map(c =>
-                                        <li key={c}
-                                            className={pnl.total[c] < 0 ? 'text-danger' : pnl.total[c] > 0 ? 'text-success' : 'text-warning'}>
-                                          {pnl.total[c] < 0 ? '-' : null} {c === 'USD' ? '$' : c}{pnl.total[c] < 0 ? -pnl.total[c] : pnl.total[c]}
-                                        </li>,
-                                      )
-                                    }
-                                  </ul>
-                                </div>
+                        pnl.currencies?.length && pnl.total && <div className="mb-0 text-muted">
+                          <div className="row">
+                            <div className="col-sm-6">
+                              <div className="mb-0 text-muted">
+                                <ul className="list-arrow">
+                                  {
+                                    pnl.currencies.map(c =>
+                                      <li key={c}
+                                          className={pnl.total[c] < 0 ? 'text-danger' : pnl.total[c] > 0 ? 'text-success' : 'text-warning'}>
+                                        {pnl.total[c] < 0 ? '-' : null} {c === 'USD' ? '$' : c}{pnl.total[c] < 0 ? -pnl.total[c] : pnl.total[c]}
+                                      </li>,
+                                    )
+                                  }
+                                </ul>
                               </div>
                             </div>
                           </div>
-                        : null
+                        </div>
                       }
                     </h6>
                   </div>
-                  <div className={`col-sm-${pnl.currencies?.length > 1 ? '6' : '3'}`}>
+                  <div className="col-sm-6">
                     <Form
                       className="row"
                       onSubmit={e => {
@@ -273,31 +284,27 @@ const Crypto = () => {
                         dispatch(pnlApi.getList(pnl.kwargs));
                       }}
                     >
-                      {
-                        pnl.currencies?.length > 1
-                          ? <Form.Group className="col-md-6">
-                              <Form.Label>Currency</Form.Label>&nbsp;
-                              <Select
-                                closeMenuOnSelect={false}
-                                isDisabled={pnl.loading}
-                                isLoading={pnl.loading}
-                                isMulti
-                                onChange={(e) => onChange('currency', e, pnl)}
-                                options={pnl.currencies?.map(t => ({ label: t, value: t }))}
-                                styles={selectStyles}
-                                value={pnl.kwargs.currency?.map(t => ({ label: t, value: t }))}
-                              />
-                            </Form.Group>
-                          : null
-                      }
-                      <Form.Group className={`col-sm-${pnl.currencies?.length > 1 ? '6' : '12'}`}>
+                      <Form.Group className="col-md-6">
+                        <Form.Label>Currency</Form.Label>&nbsp;
+                        <Select
+                          closeMenuOnSelect={false}
+                          isDisabled={pnl.loading}
+                          isLoading={pnl.loading}
+                          isMulti
+                          onChange={(e) => onCurrencyChange(e, pnl)}
+                          options={pnl.currencies?.map(t => ({ label: t, value: t }))}
+                          styles={selectStyles}
+                          value={pnl.kwargs.currency?.map(t => ({ label: t, value: t }))}
+                        />
+                      </Form.Group>
+                      <Form.Group className="col-md-6">
                         <Form.Label>Ticker</Form.Label>&nbsp;
                         <Select
                           closeMenuOnSelect={false}
                           isDisabled={pnl.loading}
                           isLoading={pnl.loading}
                           isMulti
-                          onChange={(e) => onChange('ticker', e, pnl)}
+                          onChange={(e) => onTickerChange(e, pnl)}
                           options={pnl.tickers?.map(t => ({ label: t, value: t }))}
                           styles={selectStyles}
                           value={pnl.kwargs.ticker?.map(t => ({ label: t, value: t }))}
@@ -314,12 +321,11 @@ const Crypto = () => {
                   <th>Sold on</th>
                   <th>Acquired on</th>
                   <th>Ticker</th>
+                  <th>Company</th>
                   <th>Quantity</th>
                   <th>Buy price</th>
                   <th>Sell price</th>
-                  <th>Gross PnL</th>
-                  <th>Fees</th>
-                  <th>Net PnL</th>
+                  <th>PnL</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -336,16 +342,15 @@ const Crypto = () => {
                       ? pnl.results.map(transaction => <tr key={transaction.id}>
                         <td> {new Date(transaction.date_sold).toLocaleDateString()} </td>
                         <td> {new Date(transaction.date_acquired).toLocaleDateString()} </td>
-                        <td style={{ cursor: 'pointer' }} onClick={() => onChange('ticker', [{ value: transaction.ticker }], pnl)}> {transaction.ticker}</td>
+                        <td style={{ cursor: 'pointer' }} onClick={() => onTickerChange([{ value: transaction.ticker }], pnl)}> {transaction.ticker}</td>
+                        <td style={{ cursor: 'pointer' }} onClick={() => onTickerChange([{ value: transaction.ticker }], pnl)}> {transaction.security_name}<sup>[{transaction.country}]</sup> </td>
                         <td> {parseFloat(transaction.quantity)} </td>
                         <td> {transaction.currency === 'USD' ? '$' : '€'}{transaction.cost_basis} </td>
                         <td> {transaction.currency === 'USD' ? '$' : '€'}{transaction.amount} </td>
-                        <td className={`text-${transaction.gross_pnl < 0 ? 'danger' : 'success'}`}> {transaction.currency === 'USD' ? '$' : '€'}{transaction.gross_pnl} </td>
-                        <td className={`text-${transaction.fees > 0 ? 'danger' : 'success'}`}> {transaction.currency === 'USD' ? '$' : '€'}{transaction.fees} </td>
-                        <td className={`text-${transaction.net_pnl < 0 ? 'danger' : 'success'}`}> {transaction.currency === 'USD' ? '$' : '€'}{transaction.net_pnl} </td>
+                        <td className={`text-${transaction.pnl < 0 ? 'danger' : 'success'}`}> {transaction.pnl} </td>
                       </tr>)
                       : <tr>
-                        <td colSpan={6}><span>No pnl data found</span></td>
+                        <td colSpan={6}><span>No transactions found</span></td>
                       </tr>
                 }
                 </tbody>
@@ -364,7 +369,7 @@ const Crypto = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              <Errors errors={crypto.errors}/>
+              <Errors errors={stocks.errors}/>
               <button
                 type="button"
                 className="btn btn-outline-primary btn-sm border-0 bg-transparent float-right"
@@ -385,7 +390,7 @@ const Crypto = () => {
                         onChange={handleTransactionsFileChange}
                       />
                       <label className="custom-file-label" htmlFor="transactionsFile">
-                        {selectedTransactionsFile ? selectedTransactionsFile.name : 'Select a file'}
+                        {selectedTransactionsFile ? selectedTransactionsFile.name : 'Select a CSV file'}
                       </label>
                     </div>
                   </Form.Group>
@@ -405,17 +410,20 @@ const Crypto = () => {
                 <div className="row">
                   <div className="col-sm-6">
                     <h6 className="text-secondary">
-                      Transactions: {crypto.count}
-                      <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                              onClick={() => dispatch(cryptoApi.getList(crypto.kwargs))}>
+                      Transactions: {stocks.count}
+                      <button
+                        type="button"
+                        className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                        onClick={() => dispatch(stocksApi.getList(stocks.kwargs))}
+                      >
                         <i className="mdi mdi-refresh" />
                       </button>
                     </h6>
                     {
-                      Object.keys(crypto.kwargs).length
+                      Object.keys(stocks.kwargs).length
                         ? <small className="text-warning">&nbsp;(
                           {
-                            crypto.currencies?.map(c => `${c === 'USD' ? '$' : c === "EUR" ? '€' : c} ${crypto.aggregations?.current[`total_${c}`]}`).filter(i => !i.includes(' null')).join(' | ')
+                            stocks.currencies?.map(c => `${c === 'USD' ? '$' : '€'} ${stocks.aggregations?.current[`total_${c}`]}`).filter(i => !i.includes(' null')).join(' | ')
                           })</small>
                         : null
                     }
@@ -425,34 +433,34 @@ const Crypto = () => {
                       className="row float-right"
                       onSubmit={e => {
                         e.preventDefault();
-                        dispatch(cryptoApi.getList(crypto.kwargs));
+                        dispatch(stocksApi.getList(stocks.kwargs));
                       }}
                     >
                       <Form.Group className="col-md-4">
                         <Form.Label>Currency</Form.Label>&nbsp;
                         <Select
                           closeMenuOnSelect={false}
-                          isDisabled={crypto.loading}
-                          isLoading={crypto.loading}
+                          isDisabled={stocks.loading}
+                          isLoading={stocks.loading}
                           isMulti
-                          onChange={e => onChange('currency', e, crypto)}
-                          options={crypto.currencies?.map(t => ({ label: t, value: t }))}
+                          onChange={e => onCurrencyChange(e, stocks)}
+                          options={stocks.currencies?.map(t => ({ label: t, value: t }))}
                           styles={selectStyles}
-                          value={crypto.kwargs.currency?.map(t => ({ label: t, value: t }))}
+                          value={stocks.kwargs.currency?.map(t => ({ label: t, value: t }))}
                         />
                       </Form.Group>
                       <Form.Group className="col-md-4">
                         <Form.Label>Type</Form.Label>&nbsp;
                         <Select
                           closeMenuOnSelect={false}
-                          isDisabled={crypto.loading}
-                          isLoading={crypto.loading}
+                          isDisabled={stocks.loading}
+                          isLoading={stocks.loading}
                           isMulti
-                          onChange={e => onChange('type', e, crypto)}
-                          options={crypto.types?.map(t => ({ label: t[1], value: t[0] }))}
+                          onChange={e => onTypeChange(e, stocks)}
+                          options={stocks.types?.map(t => ({ label: t[1], value: t[0] }))}
                           styles={selectStyles}
-                          value={crypto.kwargs.type?.map(t => ({
-                            label: crypto.types.find(ty => ty[0] === t)[1],
+                          value={stocks.kwargs.type?.map(t => ({
+                            label: stocks.types.find(ty => ty[0] === t)[1],
                             value: t
                           }))}
                         />
@@ -462,13 +470,13 @@ const Crypto = () => {
                         <Select
                           id={"stocksTickerSelect"}
                           closeMenuOnSelect={false}
-                          isDisabled={crypto.loading}
-                          isLoading={crypto.loading}
+                          isDisabled={stocks.loading}
+                          isLoading={stocks.loading}
                           isMulti
-                          onChange={(e) => onChange('symbol', e, crypto)}
-                          options={crypto.symbols?.map(t => ({ label: t, value: t }))}
+                          onChange={(e) => onTickerChange(e, stocks)}
+                          options={stocks.tickers?.map(t => ({ label: t, value: t }))}
                           styles={selectStyles}
-                          value={crypto.kwargs.ticker?.map(t => ({ label: t, value: t }))}
+                          value={stocks.kwargs.ticker?.map(t => ({ label: t, value: t }))}
                         />
                       </Form.Group>
                     </Form>
@@ -478,18 +486,18 @@ const Crypto = () => {
               <table className="table table-hover">
                 <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Quantity</th>
-                  <th>Symbol</th>
-                  <th>Price</th>
-                  <th>Fees</th>
-                  <th>Value</th>
+                  <th> Date</th>
+                  <th> Type</th>
+                  <th> Quantity</th>
+                  <th> Ticker</th>
+                  <th> Price / Share</th>
+                  <th> Amount</th>
+                  <th> FX Rate</th>
                 </tr>
                 </thead>
                 <tbody>
                 {
-                  crypto.loading
+                  stocks.loading
                     ? <Circles
                       visible
                       width="100%"
@@ -497,17 +505,16 @@ const Crypto = () => {
                       wrapperStyle={{ float: "right" }}
                       color='orange'
                     />
-                    : crypto.results?.length
-                      ? crypto.results.map(transaction => <tr key={transaction.id}>
+                    : stocks.results?.length
+                      ? stocks.results.map(transaction => <tr key={transaction.id}>
                         <td> {new Date(transaction.date).toLocaleString()} </td>
                         <td style={{ cursor: "pointer" }}
-                            onClick={() => onChange('type', [{ value: crypto.types.find(t => t[1] === transaction.type)[0] }])}> {transaction.type} </td>
-                        <td> {parseFloat(transaction.quantity)} </td>
+                            onClick={() => onTypeChange([{ value: stocks.types.find(t => t[1] === transaction.type)[0] }])}> {transaction.type} </td>
+                        <td> {transaction.quantity} </td>
                         <td style={{ cursor: "pointer" }}
-                            onClick={() => onChange('ticker', [{ value: transaction.symbol }])}> {transaction.symbol} </td>
-                        <td> {transaction.price} </td>
-                        <td> {transaction.fees} </td>
-                        <td> {transaction.currency === "USD" ? "$ " : transaction.currency === "EUR" ? "€ " : ""}{transaction.value}{["USD", "EUR"].includes(transaction.currency) ? "" : ` ${transaction.currency}`} </td>
+                            onClick={() => onTickerChange([{ value: transaction.ticker }])}> {transaction.ticker} </td>
+                        <td> {transaction.price_per_share} </td>
+                        <td> {transaction.currency === "USD" ? "$" : "€"} {transaction.total_amount} </td>
                         <td> {transaction.fx_rate} </td>
                       </tr>)
                       : <tr>
@@ -517,7 +524,7 @@ const Crypto = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={crypto} fetchMethod={cryptoApi.getList} newApi={true} setKwargs={setKwargs} />
+            <BottomPagination items={stocks} fetchMethod={stocksApi.getList} newApi={true} setKwargs={setKwargs} />
 
           </div>
         </div>
@@ -526,4 +533,4 @@ const Crypto = () => {
   </div>
 }
 
-export default Crypto;
+export default Stocks;

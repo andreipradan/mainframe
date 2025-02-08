@@ -39,6 +39,7 @@ const Sidebar = () => {
   const [errorPagesMenuOpen, setErrorPagesMenuOpen] = useState(false)
   const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false)
   const [iconsMenuOpen, setIconsMenuOpen] = useState(false)
+  const [investmentsMenuOpen, setInvestmentsMenuOpen] = useState(false)
   const [tablesMenuOpen, setTablesMenuOpen] = useState(false)
   const [travelMenuOpen, setTravelMenuOpen] = useState(false)
   const [userPagesMenuOpen, setUserPagesMenuOpen] = useState(false)
@@ -74,6 +75,7 @@ const Sidebar = () => {
     setChartsMenuOpen(false)
     setCommandsMenuOpen(false)
     setCreditMenuOpen(false)
+    setInvestmentsMenuOpen(false)
     setErrorPagesMenuOpen(false)
     setFormElementsMenuOpen(false)
     setIconsMenuOpen(false)
@@ -95,6 +97,7 @@ const Sidebar = () => {
       {path:'/expenses/travel', setState: setTravelMenuOpen},
       {path:'/finances/accounts', setState: setAccountsMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
+      {path:'/investments', setState: setInvestmentsMenuOpen},
       {path:'/tables', setState: setTablesMenuOpen},
       {path:'/icons', setState: setIconsMenuOpen},
       {path:'/charts', setState: setChartsMenuOpen},
@@ -461,23 +464,58 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
-              <li className={isPathActive('/finances/crypto') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-                <Link className="nav-link" to="/finances/crypto">
-                  <span className="menu-icon"><i className="mdi mdi-bitcoin" /></span>
-                  <span className="menu-title">Crypto</span>
-                </Link>
-              </li>
-              <li className={isPathActive('/stocks') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-                <Link className="nav-link" to="/stocks">
-                  <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>
-                  <span className="menu-title">Stocks</span>
-                </Link>
-              </li>
-              <li className={isPathActive('/finances/pension') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-                <Link className="nav-link" to="/finances/pension">
-                  <span className="menu-icon"><i className="mdi mdi-gold" /></span>
-                  <span className="menu-title">Pension</span>
-                </Link>
+
+              <li className={isPathActive('/investments') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div className={investmentsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                     onClick={() => setInvestmentsMenuOpen(!investmentsMenuOpen)} data-toggle="collapse">
+                  <span className="menu-icon">
+                    <i className="mdi mdi-cash-multiple" />
+                  </span>
+                  <span className="menu-title">Investments</span>
+                  <i className="menu-arrow" />
+                </div>
+                <Collapse in={investmentsMenuOpen}>
+                  <div>
+                    <ul className="nav flex-column sub-menu">
+                      <li className="nav-item">
+                        <Link className={isPathActive('/investments/summary') ? 'nav-link active' : 'nav-link'}
+                              to="/investments/summary">
+                          Summary
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className={isPathActive('/investments/bonds') ? 'nav-link active' : 'nav-link'}
+                              to="/investments/bonds">
+                          Bonds
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className={isPathActive('/investments/crypto') ? 'nav-link active' : 'nav-link'}
+                              to="/investments/crypto">
+                          Crypto
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className={isPathActive('/investments/deposits') ? 'nav-link active' : 'nav-link'}
+                              to="/investments/deposits">
+                          Deposits
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className={isPathActive('/investments/pension') ? 'nav-link active' : 'nav-link'}
+                              to="/investments/pension">
+                          Pension
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className={isPathActive('/investments/stocks') ? 'nav-link active' : 'nav-link'}
+                              to="/investments/stocks">
+                          Stocks
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </Collapse>
               </li>
             </>
             : null
