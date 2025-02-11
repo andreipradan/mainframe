@@ -235,7 +235,7 @@ const Earthquakes = () => {
         <div className="card">
           <div className="card-body">
             <h4 className="card-title">
-              Latest Earthquakes
+              Earthquakes
               <button type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
                 onClick={
@@ -268,21 +268,28 @@ const Earthquakes = () => {
                 </label>
               </div>
             </h4>
-            <p className="card-description d-flex">
-              Last check:&nbsp;
-              {earthquakes.loading
-                ? <Circles
-                    visible={true}
-                    height="15"
-                    width="100%"
-                    ariaLabel="ball-triangle-loading"
-                    wrapperStyle={{}}
-                    wrapperClass={{}}
-                    color='orange'
-                  />
-                : <span> {earthquakes.last_check || "-"}</span>
-              }
-            </p>
+            {
+              earthquakes.last_check
+                ? Object.keys(earthquakes.last_check).map(lc =>
+                  <p key={lc} className="text-muted mt-0 mb-0">
+                    Last {lc.toUpperCase()} check:&nbsp;
+                    {earthquakes.loading
+                      ? <Circles
+                          visible={true}
+                          height="15"
+                          width="100%"
+                          ariaLabel="ball-triangle-loading"
+                          wrapperStyle={{}}
+                          wrapperClass={{}}
+                          color='orange'
+                        />
+                      : <span> {earthquakes.last_check[lc] ? formatTime(earthquakes.last_check[lc]) : "-"}</span>
+                    }
+                  </p>)
+                : null
+            }
+            <p className="text-muted mb-0">Total: {earthquakes.count ? earthquakes.count : '-'}</p>
+
             <div className="row">
               <div className="col-md-12">
                 {

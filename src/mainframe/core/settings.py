@@ -249,12 +249,13 @@ if ENV in ["local", "prod", "rpi"]:
             send_default_pii=False,
             profiles_sample_rate=1.0,
         )
-        logfire.configure(
-            environment=ENV,
-            distributed_tracing=True,
-            send_to_logfire="if-token-present",
-        )
-        logfire.instrument_django()
+    logfire.configure(
+        environment=ENV,
+        distributed_tracing=True,
+        send_to_logfire="if-token-present",
+    )
+    logfire.instrument_django()
+    logfire.instrument_psycopg()
 
     DATABASES = {
         "default": {
