@@ -32,7 +32,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 ENV = env("ENV", default=None)
 DEBUG = int(env("DEBUG", default=0))
-EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -267,6 +266,7 @@ if ENV in ["local", "prod", "rpi"]:
             "PORT": env("DB_PORT"),
         }
     }
+    EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
 
 elif ENV in ["ci", "test"]:
