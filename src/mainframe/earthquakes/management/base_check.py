@@ -126,6 +126,8 @@ class BaseEarthquakeCommand(BaseCommand):
         earthquake_config = instance.additional_data["earthquake"]
         now = datetime.now().astimezone(pytz.timezone(settings.TIME_ZONE))
         parsed_now = now.strftime(DATETIME_FORMAT)
-        earthquake_config["last_check"] = parsed_now
-        earthquake_config[self.source]["last_check"] = parsed_now
+        if self.source in earthquake_config["last_check"]:
+            earthquake_config["last_check"][self.source] = parsed_now
+        else:
+            earthquake_config["last_check"] = {self.source: parsed_now}
         instance.save()

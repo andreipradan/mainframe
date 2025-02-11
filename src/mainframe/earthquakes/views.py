@@ -41,7 +41,6 @@ class EarthquakeViewSet(viewsets.ModelViewSet):
         response = super().list(request, *args, **kwargs)
         bot = Bot.objects.filter(additional_data__earthquake__isnull=False).first()
         if bot:
-            response.data["last_check"] = bot.additional_data["earthquake"].get(
-                "last_check", None
-            )
+            config = bot.additional_data["earthquake"]
+            response.data["last_check"] = config.get("last_check", {})
         return response

@@ -6,6 +6,6 @@ from mainframe.activity.serializers import ActionSerializer
 
 
 class ActionViewSet(ReadOnlyModelViewSet):
-    queryset = Action.objects.all().order_by("-timestamp")
+    queryset = Action.objects.all().order_by("-timestamp").prefetch_related("actor")
     permission_classes = (IsAdminUser,)
     serializer_class = ActionSerializer
