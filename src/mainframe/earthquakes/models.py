@@ -10,6 +10,7 @@ class Earthquake(TimeStampedModel):
     additional_data = models.JSONField(blank=True, default=dict, null=True)
     depth = models.DecimalField(decimal_places=3, max_digits=7)
     intensity = models.CharField(max_length=16, default="")
+    is_local = models.BooleanField(default=False)
     location = models.CharField(max_length=128)
     latitude = models.DecimalField(decimal_places=5, max_digits=8)
     longitude = models.DecimalField(decimal_places=5, max_digits=8)

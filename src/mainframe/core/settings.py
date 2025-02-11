@@ -24,6 +24,7 @@ env = environ.Env(
     CORS_ALLOWED_ORIGINS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
     DEBUG=(bool, False),
+    EARTHQUAKE_DEFAULT_COORDINATES=list,
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 ENV = env("ENV", default=None)
 DEBUG = int(env("DEBUG", default=0))
+EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/

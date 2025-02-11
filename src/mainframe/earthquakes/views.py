@@ -1,15 +1,14 @@
 import json
 
 from django.conf import settings
-from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from mainframe.api.earthquakes.serializers import EarthquakeSerializer
 from mainframe.bots.models import Bot
 from mainframe.earthquakes.models import Earthquake
+from mainframe.earthquakes.serializers import EarthquakeSerializer
 
 
 class EarthquakeViewSet(viewsets.ModelViewSet):
@@ -22,10 +21,7 @@ class EarthquakeViewSet(viewsets.ModelViewSet):
         if self.request.query_params.get("largest_events") == "true":
             queryset = queryset.order_by("-magnitude", "-timestamp")
         if self.request.query_params.get("local_events") == "true":
-            queryset = queryset.filter(
-                Q(additional_data__sols__primary__region__type="local")
-                | Q(additional_data={})
-            )
+            queryset = queryset.filter(is_local=True)
         if self.request.query_params.get("magnitude_gt5") == "true":
             queryset = queryset.filter(magnitude__gt=5)
         return queryset

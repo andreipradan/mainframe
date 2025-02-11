@@ -18,7 +18,7 @@ urlpatterns = [
     ),
     path(
         "earthquakes/",
-        include(("mainframe.api.earthquakes.routers", "api"), namespace="earthquakes"),
+        include(("mainframe.earthquakes.routers", "api"), namespace="earthquakes"),
     ),
     path(
         "exchange/",

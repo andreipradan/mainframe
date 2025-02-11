@@ -26,13 +26,14 @@ class Command(BaseEarthquakeCommand):
                 pytz.timezone(settings.TIME_ZONE)
             ) - timedelta(minutes=5)
 
+        lat, long = settings.EARTHQUAKE_DEFAULT_COORDINATES
         return {
             "params": {
                 "format": "geojson",
                 "starttime": since,
-                "latitude": 45.94320,
-                "longitude": 24.96680,
-                "maxradiuskm": 386.02,
+                "latitude": lat,
+                "longitude": long,
+                "maxradiuskm": self.default_max_radius,
                 "minmagnitude": 2,
             },
             "timeout": 30,
@@ -50,6 +51,7 @@ class Command(BaseEarthquakeCommand):
             timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(pytz.utc),
             depth=depth,
             intensity="",
+            is_local=True,  # see get_kwargs -> filtering only for local events
             latitude=lat,
             longitude=long,
             location=props["place"] or "N/A",

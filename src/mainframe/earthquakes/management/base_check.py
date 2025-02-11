@@ -41,6 +41,7 @@ def parse_event(event: Earthquake):
 
 
 class BaseEarthquakeCommand(BaseCommand):
+    default_max_radius = 386.02
     logger = NotImplemented
     source = NotImplemented
     url = NotImplemented
@@ -70,13 +71,6 @@ class BaseEarthquakeCommand(BaseCommand):
             return
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
-        if self.source == Earthquake.SOURCE_INFP:
-            latest = (
-                Earthquake.objects.filter(source=Earthquake.SOURCE_INFP)
-                .order_by("-timestamp")
-                .first()
-            )
-            events = [event for event in events if event.timestamp > latest.timestamp]
         if not events:
             self.set_last_check(instance)
             self.logger.info("Done")
@@ -101,12 +95,7 @@ class BaseEarthquakeCommand(BaseCommand):
         events = [
             event
             for event in events
-            if float(event.magnitude) >= float(min_magnitude)
-            and event.additional_data.get("sols", {})
-            .get("primary", {})
-            .get("region", {})
-            .get("type")
-            == "local"
+            if float(event.magnitude) >= float(min_magnitude) and event.is_local
         ]
 
         if len(events):
