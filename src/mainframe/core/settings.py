@@ -233,6 +233,27 @@ DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
 )
 
 if ENV in ["local", "prod", "rpi"]:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DB_DATABASE"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
+        }
+    }
+    EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
+
+    logfire.configure(
+        environment=ENV,
+        distributed_tracing=True,
+        send_to_logfire="if-token-present",
+    )
+    logfire.instrument_django()
+    if ENV != "rpi":
+        logfire.instrument_psycopg()
+
     if ENV == "local":
         INSTALLED_APPS += ["debug_toolbar"]
         MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
@@ -249,26 +270,6 @@ if ENV in ["local", "prod", "rpi"]:
             send_default_pii=False,
             profiles_sample_rate=1.0,
         )
-    logfire.configure(
-        environment=ENV,
-        distributed_tracing=True,
-        send_to_logfire="if-token-present",
-    )
-    logfire.instrument_django()
-    logfire.instrument_psycopg()
-
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("DB_DATABASE"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
-        }
-    }
-    EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
-
 
 elif ENV in ["ci", "test"]:
     DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
