@@ -5,7 +5,6 @@ import BottomPagination from "../../shared/BottomPagination";
 import Form from "react-bootstrap/Form";
 import Select from "react-select";
 import { Circles, ColorRing } from 'react-loader-spinner';
-import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import Errors from "../../shared/Errors";

@@ -6,7 +6,6 @@ import Form from "react-bootstrap/Form";
 import Select from "react-select";
 import { Bar } from "react-chartjs-2";
 import { Circles } from "react-loader-spinner";
-import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import ExchangeApi from "../../api/exchange";

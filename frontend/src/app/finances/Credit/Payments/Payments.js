@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Circles } from "react-loader-spinner";
 import { Collapse } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import "nouislider/distribute/nouislider.css";
 
 import { PaymentsApi } from '../../../../api/finance/payments';
 import { selectItem as selectPayment, setKwargs } from "../../../../redux/paymentSlice";

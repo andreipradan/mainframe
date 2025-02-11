@@ -5,7 +5,6 @@ import Marquee from "react-fast-marquee";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 import { Collapse } from 'react-bootstrap';
-import "nouislider/distribute/nouislider.css";
 
 import BottomPagination from "../../shared/BottomPagination";
 import Errors from "../../shared/Errors";

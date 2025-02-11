@@ -4,7 +4,6 @@ import { useHistory } from "react-router-dom";
 import { Circles } from "react-loader-spinner";
 import { Collapse } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
-import "nouislider/distribute/nouislider.css";
 
 import { TimetableApi } from "../../../../api/finance";
 import { selectItem as selectTimetable } from "../../../../redux/timetableSlice";

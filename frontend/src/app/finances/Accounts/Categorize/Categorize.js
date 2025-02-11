@@ -8,7 +8,6 @@ import Modal from "react-bootstrap/Modal";
 import Select from "react-select";
 import { Circles } from "react-loader-spinner";
 import { Collapse } from "react-bootstrap";
-import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import EditModal, { getTypeLabel, selectStyles } from "./EditModal";

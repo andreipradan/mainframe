@@ -6,7 +6,6 @@ import { Circles } from "react-loader-spinner";
 import { Form } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import "nouislider/distribute/nouislider.css";
 
 import { GroupsApi } from "../../api/expenses";
 import { selectItem, setKwargs } from "../../redux/groupsSlice";

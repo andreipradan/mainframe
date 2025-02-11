@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Line } from 'react-chartjs-2';
 import { Circles } from "react-loader-spinner";
 import Marquee from "react-fast-marquee";
-import "nouislider/distribute/nouislider.css";
 
 import { InvestmentsApi } from '../../../api/finance';
 import ListItem from "../../shared/ListItem";

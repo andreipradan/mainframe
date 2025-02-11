@@ -8,7 +8,7 @@ import { ColorRing, InfinitySpin, LineWave } from "react-loader-spinner";
 import { Doughnut } from 'react-chartjs-2';
 import { SliderPicker } from 'react-color';
 import { useDispatch, useSelector } from "react-redux";
-import "nouislider/distribute/nouislider.css";
+import "nouislider/dist/nouislider.css";
 
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";

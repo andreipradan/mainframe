@@ -2,7 +2,6 @@ import React, {useEffect, useRef, useState} from 'react';
 import { useDispatch, useSelector } from "react-redux";
 
 import { Circles } from "react-loader-spinner";
-import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { GroupsApi } from "../../api/expenses";

@@ -6,7 +6,6 @@ import { ProgressBar } from "react-bootstrap";
 import { Tooltip } from "react-tooltip";
 import Marquee from "react-fast-marquee";
 import Select from "react-select";
-import "nouislider/distribute/nouislider.css";
 
 import { FinanceApi, TimetableApi } from '../../../api/finance';
 import { PaymentsApi } from '../../../api/finance/payments';

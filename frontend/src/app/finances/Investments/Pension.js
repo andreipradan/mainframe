@@ -5,7 +5,6 @@ import DatePicker from 'react-datepicker/es';
 import Form from "react-bootstrap/Form";
 import Modal from 'react-bootstrap/Modal';
 import { Circles, ColorRing } from 'react-loader-spinner';
-import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import BottomPagination from "../../shared/BottomPagination";

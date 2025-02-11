@@ -1,4 +1,5 @@
-import {ngrokAxios as axios} from "./index";
+// import {ngrokAxios as axios} from "./index";
+import axios from "./index";
 import {
   set,
   setBrightness,
@@ -19,7 +20,7 @@ import { ListApi, mix, TokenMixin } from './shared';
 class LightsApi extends mix(ListApi, TokenMixin) {
   static baseUrl = "lights"
   static methods = {set, setErrors, setLoading}
-  static ngrokAxios = ["getList"]
+  // static ngrokAxios = ["getList"]
 
   static setBrightness = (token, lightIp, brightness) => (dispatch) => {
     dispatch(setLoadingItems(lightIp));

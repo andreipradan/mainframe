@@ -11,7 +11,6 @@ import Form from 'react-bootstrap/Form';
 import Marquee from "react-fast-marquee";
 import Modal from 'react-bootstrap/Modal';
 import Select from 'react-select';
-import "nouislider/distribute/nouislider.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { AccountsApi } from '../../../../api/finance/accounts';

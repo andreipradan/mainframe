@@ -22,18 +22,18 @@
       left: 25px;
 
       &::before {
-        content: "\F141";
+        content: "\F0141";
         .rtl & {
-          content: "\F142";
+          content: "\F0142";
         }
       }
     }
     &.slick-next {
       right: 25px;
       &::before {
-        content: "\F142";
+        content: "\F0142";
         .rtl & {
-          content: "\F141";
+          content: "\F0141";
         }
       }
     }

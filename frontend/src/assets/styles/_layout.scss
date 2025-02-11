@@ -65,14 +65,14 @@
                 right: 10px;
                 @include transform(translateY(-50%));
                 &:before {
-                  content: "\F140";
+                  content: "\F0140";
                 }
               }
             }
             &[aria-expanded="true"]{
               .menu-arrow{
                 &:before{
-                  content: "\f143";
+                  content: "\f0143";
                 }
               }
             }

@@ -3,7 +3,6 @@ import { Circles } from "react-loader-spinner";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import Select from "react-select";
-import "nouislider/distribute/nouislider.css";
 
 import { calculateSum } from "../utils";
 import { selectItem as selectTimetable } from "../../../redux/timetableSlice";
