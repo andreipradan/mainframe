@@ -162,6 +162,12 @@ const Bonds = () => {
                     state.aggregations
                       ? <>
                           <ListItem
+                            label="Active"
+                            value={`${state.aggregations.active_RON} RON`}
+                            textType={'primary'}
+                            className="mr-3"
+                          />
+                          <ListItem
                             label="Deposited"
                             value={`${state.aggregations.deposited} RON`}
                             textType={'info'}

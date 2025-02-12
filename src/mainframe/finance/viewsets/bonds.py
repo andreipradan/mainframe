@@ -1,4 +1,5 @@
 from django.db.models import Q, Sum
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
@@ -21,6 +22,11 @@ class BondsViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
+        bond_currencies = list(
+            Bond.objects.values_list("currency", flat=True)
+            .distinct("currency")
+            .order_by("currency")
+        )
         response.data.update(
             aggregations=Bond.objects.aggregate(
                 deposited=Sum("net", filter=Q(type=Bond.TYPE_DEPOSIT)),
@@ -28,6 +34,17 @@ class BondsViewSet(viewsets.ModelViewSet):
                 invested=Sum("net", filter=Q(type=Bond.TYPE_BUY)),
                 pnl=Sum("pnl"),
                 sold=Sum("net", filter=Q(type=Bond.TYPE_SELL)),
+                **{
+                    f"active_{currency}": Sum(
+                        "net",
+                        filter=Q(
+                            currency=currency,
+                            maturity__gt=timezone.now(),
+                            type=Bond.TYPE_BUY,
+                        ),
+                    )
+                    for currency in bond_currencies
+                },
             ),
             tickers=(
                 Bond.objects.values_list("ticker", flat=True)

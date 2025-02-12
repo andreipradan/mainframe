@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import JsonResponse
 from rest_framework import status
@@ -26,41 +27,53 @@ class PensionViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         try:
-            obj = serializer.save()
+            serializer.save()
         except IntegrityError:
             return JsonResponse(
                 status=status.HTTP_400_BAD_REQUEST,
                 data={
-                    "message": f"{pension.name} contribution for "
+                    "error": f"{pension.name} contribution for "
                     f"{request.data.get('date')} already exists"
                 },
             )
-        return Response(ContributionSerializer(obj).data)
+        return JsonResponse(self.serializer_class(self.get_object()).data)
 
-    @action(methods=["patch"], detail=True, url_path="update-units")
-    def update_units(self, request, *args, **kwargs):
-        pension = self.get_object()
-        if not (contribution_id := request.data.pop("contribution_id", None)):
+    @action(methods=["delete", "patch"], detail=True)
+    def contribution(self, request, *args, **kwargs):
+        if not (contribution_id := request.query_params.get("contribution_id")):
             return JsonResponse(
                 status=status.HTTP_400_BAD_REQUEST,
-                data={"message": f"'{pension.name}' contribution_id is required."},
+                data={"error": "contribution_id is required."},
             )
+
+        pension_id = self.kwargs["pk"]
         try:
-            contribution = pension.contribution_set.get(id=contribution_id)
+            contribution = Contribution.objects.get(
+                pension_id=pension_id, id=contribution_id
+            )
         except Contribution.DoesNotExist:
             return JsonResponse(
                 status=status.HTTP_400_BAD_REQUEST,
-                data={
-                    "message": f"'{pension.name}' contribution with id "
-                    f"'{contribution_id}' does not exist"
-                },
+                data={"error": f"Contribution id '{contribution_id}' does not exist"},
             )
-        if not (units := request.data.pop("units", None)):
+
+        if request.method == "DELETE":
+            try:
+                contribution.delete()
+            except ValidationError as e:
+                return JsonResponse(
+                    status=status.HTTP_400_BAD_REQUEST, data={"error": str(e)}
+                )
+            return JsonResponse(status=status.HTTP_204_NO_CONTENT, data={})
+
+        serializer = ContributionSerializer(
+            instance=contribution, data={"pension": pension_id, **request.data}
+        )
+        if not serializer.is_valid():
             return JsonResponse(
-                status=status.HTTP_400_BAD_REQUEST, data={"message": "units required"}
+                status=status.HTTP_400_BAD_REQUEST, data={"errors": serializer.errors}
             )
-        contribution.units = units
-        contribution.save()
+        serializer.save()
         return JsonResponse(self.serializer_class(self.get_object()).data)
 
     @action(methods=["patch"], detail=True, url_path="sync-units")

@@ -7,10 +7,9 @@ import Modal from 'react-bootstrap/Modal';
 import { Circles, ColorRing } from 'react-loader-spinner';
 import "react-datepicker/dist/react-datepicker.css";
 
-import BottomPagination from "../../shared/BottomPagination";
 import Errors from "../../shared/Errors";
 import ListItem from "../../shared/ListItem";
-import { selectItem, setKwargs, setModalOpen } from "../../../redux/pensionSlice";
+import { selectItem, setModalOpen } from "../../../redux/pensionSlice";
 import { PensionApi } from '../../../api/finance';
 import { Collapse } from 'react-bootstrap';
 
@@ -32,7 +31,7 @@ const Pension = () => {
   const [contribAmount, setContribAmount] = useState(0)
   const [contribDate, setContribDate] = useState(new Date())
   const [contribUnits, setContribUnits] = useState(0)
-  const [editing, setEditing] = useState(null)
+  const [editing, setEditing] = useState("")
 
   const clearModal = () => {
     setName("")
@@ -45,9 +44,24 @@ const Pension = () => {
     clearModal()
   }
 
-  const onUpdateUnits = (pensionId, contributionId) => {
-    setEditing(null);
-    dispatch(api.updateContributionUnits(pensionId, contributionId, contribUnits))
+  const onEditContribution = (c) => {
+    setContribAmount(c.amount)
+    setContribDate(new Date(c.date))
+    setContribUnits(c.units)
+    setEditing(`${c.pension}-${c.id}`);
+  }
+
+  const onUpdateContribution = (pensionId, contributionId) => {
+    dispatch(api.updateContribution(
+      pensionId,
+      contributionId,
+      {
+        amount: contribAmount,
+        date: contribDate.toISOString().split("T")[0],
+        units: contribUnits
+      }
+    ))
+    setEditing("")
   }
 
   const onSubmit = e => {
@@ -187,7 +201,7 @@ const Pension = () => {
 
     {pension.modalOpen ? null : <Errors errors={pension.errors}/>}
 
-    {/* Transactions */}
+    {/* Each pension contributions */}
     <div className="row">
     {
       pension.results?.map(p =>
@@ -200,13 +214,18 @@ const Pension = () => {
                       <div className="col-sm-12">
                         <h6 className="text-secondary">
                           {p.name}
-                          <button
-                            type="button"
-                            className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                            onClick={() => dispatch(api.getList(pension.kwargs))}
-                          >
-                            <i className="mdi mdi-refresh" />
-                          </button>
+                          {
+                            pension.loadingItems?.includes(p.id)
+                              ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
+                              : <button
+                                  type="button"
+                                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                                  onClick={() => dispatch(api.getItem(p.id))}
+                                >
+                                  <i className="mdi mdi-refresh" />
+                                </button>
+                          }
+
                           <button
                             type="button"
                             className="ml-0 p-0 btn btn-outline-primary btn-sm border-0 bg-transparent"
@@ -292,65 +311,109 @@ const Pension = () => {
                       </div>
                     </div>
                   </div>
-                  {
-                    <Collapse in={pensionContributionsOpen === p.id}>
-                      <table className="table table-hover">
-                        <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Amount</th>
-                          <th>Units</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {
-                          pension.loading
-                            ? <Circles
-                              visible
-                              width="100%"
-                              ariaLabel="ball-triangle-loading"
-                              wrapperStyle={{ float: 'right' }}
-                              color="orange"
-                            />
-                            : p.contributions?.length
-                              ? p.contributions.map(c => <tr key={`pension-${p.id}-${c.id}`}>
-                                <td> {new Date(c.date).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                })} </td>
-                                <td> {c.amount} {c.currency}</td>
-                                <td onClick={() => setEditing(c.id)}>
-                                  {
-                                    editing === c.id
-                                      ? <input
+                  <Collapse in={pensionContributionsOpen === p.id}>
+                    <table className="table table-hover">
+                      <thead><tr><th>Date</th><th>Amount</th><th>Units</th><th>Actions</th></tr></thead>
+                      <tbody>
+                      {
+                        pension.loading || pension.loadingItems?.includes(p.id)
+                          ? <Circles
+                            visible
+                            width="100%"
+                            ariaLabel="ball-triangle-loading"
+                            wrapperStyle={{ float: 'right' }}
+                            color="orange"
+                          />
+                          : p.contributions?.length
+                            ? p.contributions.map(c => <tr key={`pension-${p.id}-${c.id}`}>
+                              <td>
+                                {
+                                  editing === `${p.id}-${c.id}`
+                                    ? <div>
+                                        <DatePicker
+                                          className="btn btn-outline-secondary rounded btn-sm"
+                                          dateFormat={'MMM yyyy'}
+                                          isClearable={false}
+                                          onChange={date => setContribDate(date)}
+                                          readOnly={pension.loading}
+                                          scrollableYearDropdown
+                                          selected={contribDate}
+                                          showIcon
+                                          showYearDropdown
+                                          showMonthYearPicker
+                                          onClickOutside={() => setContribDate(null)}
+                                        />
+                                      </div>
+                                    : new Date(c.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long'})
+                                }
+
+                              </td>
+                              <td>
+                                {
+                                  editing === `${p.id}-${c.id}`
+                                    ? <input
+                                        autoFocus
+                                        onChange={(e) => setContribAmount(e.target.value)}
+                                        type="text"
+                                        value={contribAmount}
+                                      />
+                                    : <span>{c.amount} {c.currency}</span>
+                                }
+                              </td>
+                              <td>
+                                {
+                                  editing === `${p.id}-${c.id}`
+                                    ? <input
+                                        autoFocus
+                                        onChange={(e) => setContribUnits(e.target.value)}
                                         type="text"
                                         value={contribUnits}
-                                        onChange={(e) => setContribUnits(e.target.value)}
-                                        onBlur={() => onUpdateUnits(p.id, c.id)}
-                                        onKeyDown={e => e.key === 'Enter' ? onUpdateUnits(p.id, c.id) : null}
-                                        autoFocus
                                       />
-                                      : c.units
-                                  }
-                                </td>
-                                <td>
-                                  <i
-                                    className="cursor-pointer mdi mdi-sync-alert text-warning"
-                                    onClick={() => dispatch(api.syncContributionUnits(p.id, c.id))}
-                                  />
-                                </td>
-                              </tr>)
-                              : <tr>
-                                <td colSpan={6}><span>No contributions found</span></td>
-                              </tr>
-                        }
-                        </tbody>
-                      </table>
-                    </Collapse>
-                  }
+                                    : <span>{c.units}</span>
+                                }
+                              </td>
+                              <td>
+                                {
+                                  editing === `${p.id}-${c.id}`
+                                    ? <>
+                                        <i
+                                          className="cursor-pointer mdi mdi-cancel text-danger mr-2"
+                                          onClick={() => setEditing("")}
+                                        />
+                                        <i
+                                          className="cursor-pointer mdi mdi-check text-success mr-2"
+                                          onClick={() => onUpdateContribution(p.id, c.id)}
+                                        />
+                                      </>
+                                    : <i
+                                        className="cursor-pointer mdi mdi-pencil text-warning mr-2"
+                                        onClick={() => onEditContribution(c)}
+                                      />
+                                }
+                                <i
+                                  className="cursor-pointer mdi mdi-sync-alert text-danger mr-2"
+                                  onClick={() => dispatch(api.syncContributionUnits(p.id, c.id))}
+                                />
+                                <i
+                                  className="cursor-pointer mdi mdi-delete text-danger"
+                                  onClick={() => dispatch(api.deleteContribution(
+                                    p.id,
+                                    c.id,
+                                    `${p.name} for ${new Date(c.date).toLocaleDateString(
+                                      "en-US",
+                                      {month: "short", year: "numeric"}
+                                    )}`))}
+                                />
+                              </td>
+                            </tr>)
+                            : <tr>
+                              <td colSpan={6}><span>No contributions found</span></td>
+                            </tr>
+                      }
+                      </tbody>
+                    </table>
+                  </Collapse>
                 </div>
-                <BottomPagination items={pension} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
-
               </div>
             </div>
           </div>,
@@ -362,7 +425,7 @@ const Pension = () => {
         <Modal.Title>
           <div className="row">
             <div className="col-lg-12 grid-margin stretch-card">
-              {pension.selectedItem ? 'Edit' : 'Add new device'} {pension.selectedItem?.name} ?
+              {pension.selectedItem ? 'Edit' : 'Add new pension fund'} {pension.selectedItem?.name} ?
             </div>
           </div>
           {

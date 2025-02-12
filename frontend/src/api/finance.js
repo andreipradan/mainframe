@@ -42,6 +42,7 @@ import {
 } from '../redux/investmentsSlice'
 import {
   create as createPension,
+  deleteContribution,
   set as setPension,
   setErrors as setPensionErrors,
   setLoading as setPensionLoading,
@@ -129,7 +130,7 @@ export class InvestmentsApi extends mix(ListApi, TokenMixin) {
   }
 }
 
-export class PensionApi extends mix(CreateApi, ListApi, TokenMixin, UpdateApi) {
+export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
   static baseUrl = "finance/pension"
   static methods = {
     create: createPension,
@@ -144,22 +145,36 @@ export class PensionApi extends mix(CreateApi, ListApi, TokenMixin, UpdateApi) {
     axios
       .post(`${this.constructor.baseUrl}/${pensionId}/contributions/`, data, { headers: { Authorization: this.token } })
       .then(response => {
-        dispatch(this.constructor.methods.create(response.data))
+        dispatch(this.constructor.methods.update(response.data))
         toast.success(`Contribution for '${data.date}' created successfully!`, toastParams);
       })
       .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
   }
-  updateContributionUnits = (pensionId, contributionId, units) => dispatch => {
-    dispatch(this.constructor.methods.setLoading())
+  deleteContribution = (pensionId, contributionId, month=null) => dispatch => {
+    dispatch(this.constructor.methods.setLoadingItems(pensionId))
+    axios
+      .delete(
+        `${this.constructor.baseUrl}/${pensionId}/contribution/?contribution_id=${contributionId}`,
+        {headers: {Authorization: this.token}}
+      )
+      .then(response => {
+        dispatch(deleteContribution({pensionId, contributionId}))
+        const verbose = month || contributionId
+        toast.warning(`Contribution ${verbose} deleted!`, toastParams)
+      })
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+  }
+  updateContribution = (pensionId, contributionId, data) => dispatch => {
+    dispatch(this.constructor.methods.setLoadingItems(pensionId))
     axios
       .patch(
-        `${this.constructor.baseUrl}/${pensionId}/update-units/`,
-        {units, contribution_id: contributionId},
+        `${this.constructor.baseUrl}/${pensionId}/contribution/?contribution_id=${contributionId}`,
+        {...data, contribution_id: contributionId},
         {headers: { Authorization: this.token } }
       )
     .then(response => {
       dispatch(this.constructor.methods.update(response.data))
-      toast.success(`Contribution updated successfully!`, toastParams);
+      toast.success(`Contribution for ${data.date} updated!`, toastParams);
     })
     .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
   }
