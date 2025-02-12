@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Line } from 'react-chartjs-2';
 import { Circles } from "react-loader-spinner";
@@ -15,46 +15,6 @@ const Summary = () => {
   const state = useSelector(state => state.investments)
 
   const api = new InvestmentsApi(token)
-
-  const [lineChartBonds, setLineChartBonds] = useState(null)
-  const [lineChartDeposits, setLineChartDeposits] = useState(null)
-  const [lineChartBondsLabels, setLineChartBondsLabels] = useState(null)
-  const [lineChartDepositsLabels, setLineChartDepositsLabels] = useState(null)
-
-  useEffect(() => {
-    setLineChartBonds(state.bonds?.interest_rates?.map(p => p.interest));
-    setLineChartDeposits(state.deposits?.interest_rates?.map(p => p.interest))
-    setLineChartBondsLabels(state.bonds?.interest_rates?.map(p => p.date__date))
-    setLineChartDepositsLabels(state.deposits?.interest_rates?.map(p => p.date))
-
-  }, [state.bonds])
-
-  const bondsInterestData = {
-    labels: lineChartBondsLabels,
-    datasets: [
-      {
-        label: 'Bonds',
-        data: lineChartBonds,
-        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-        borderColor: 'rgb(76,255,0)',
-        borderWidth: 1,
-        fill: false
-      },
-    ]
-  };
-  const depositsInterestData = {
-    labels: lineChartDepositsLabels,
-    datasets: [
-      {
-        label: 'Deposits',
-        data: lineChartDeposits,
-        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-        borderColor: 'rgb(0,60,255)',
-        borderWidth: 1,
-        fill: false
-      },
-    ]
-  };
 
   useEffect(() => {
     dispatch(api.getList())
@@ -92,7 +52,7 @@ const Summary = () => {
                 ? <Circles />
                 : state.totals
                   ? state.currencies?.map(currency =>
-                    <>
+                    <div key={`summary-${currency}`}>
                       {
                         state.totals[currency]?.active
                           ? <ListItem
@@ -133,14 +93,14 @@ const Summary = () => {
                           />
                           : null
                       }
-                    </>)
+                    </div>)
                 : null
             }
             </div>
           </div>
       </div>
       {
-        ["bonds", "deposits", "pension"].map(entry => <div className="col-sm-12 col-lg-3 grid-margin">
+        ["bonds", "deposits", "pension"].map(entry => <div key={entry} className="col-sm-12 col-lg-3 grid-margin">
         <div className="card">
           <div className="card-body">
             <h5>{entry[0].toUpperCase() + entry.slice(1)}</h5>
@@ -150,7 +110,7 @@ const Summary = () => {
                 : <>
                   {
                     state[entry]?.currencies?.map(currency =>
-                      <>
+                      <div key={`${entry}-${currency}`}>
                         {
                           state[entry]?.[`active_${currency}`]
                             ? <ListItem
@@ -221,7 +181,7 @@ const Summary = () => {
                             : null
                         }
                         <hr className="mt-0 mb-0"/>
-                      </>
+                      </div>
                     )
                   }
                 </>
@@ -302,68 +262,103 @@ const Summary = () => {
       </div>
     </div>
 
-    {/* Line chart - Interest rate */}
+    {/* Line charts - Bonds, Deposits, Pensions */}
     <div className="row">
-      <div className="col-sm-6 grid-margin stretch-card">
-        <div className="card">
-          <div className="card-body">
-            <h6 className="card-title">
-              Bonds interest rates
-              <button
-                type={'button'}
-                className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
-                onClick={() => dispatch(api.getList())}
-              >
-                <i className={'mdi mdi-refresh'} />
-              </button>
-            </h6>
-            {
-              state.loading
-                ? <Circles/>
-                : <Line data={bondsInterestData} options={{
-                    scales: {
-                      yAxes: [{
-                        ticks: {beginAtZero: true, precision: 0.1},
-                        gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                      }],
-                      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
-                    },
-                    legend: {display: false},
-                  }}/>
-            }
+      {
+        ["bonds", "deposits"].map(entity => state[entity]?.currencies?.map(currency => <div key={`${entity}-rates-${currency}`} className="col-sm-4 grid-margin stretch-card">
+          <div className="card">
+            <div className="card-body">
+              <h6 className="card-title">
+                {entity[0].toUpperCase() + entity.slice(1)} - {currency} interest
+                <button
+                  type={'button'}
+                  className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
+                  onClick={() => dispatch(api.getList())}
+                >
+                  <i className={'mdi mdi-refresh'} />
+                </button>
+              </h6>
+              {
+                state.loading
+                  ? <Circles/>
+                  : <Line
+                      data={{
+                        labels: state[entity]?.[`interest_rates_${currency}`]?.map(rate => rate.date),
+                        datasets: [
+                          {
+                            label: entity,
+                            data: state[entity]?.[`interest_rates_${currency}`].map(rate => rate.interest),
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderColor: 'rgb(76,255,0)',
+                            borderWidth: 1,
+                            fill: false
+                          },
+                        ]
+                      }}
+                      options={{
+                        scales: {
+                          yAxes: [{
+                            ticks: {beginAtZero: true, precision: 0.1},
+                            gridLines: {color: "rgba(204, 204, 204,0.1)"},
+                          }],
+                          xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                        },
+                        legend: {display: false},
+                      }}
+                  />
+              }
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="col-sm-6 grid-margin stretch-card">
-        <div className="card">
-          <div className="card-body">
-            <h6 className="card-title">
-              Deposit interest rates
-              <button
-                type={'button'}
-                className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
-                onClick={() => dispatch(api.getList())}
-              >
-                <i className={'mdi mdi-refresh'} />
-              </button>
-            </h6>
-            {
-              state.loading
-                ? <Circles/>
-                : <Line data={depositsInterestData} options={{
-                    scales: {
-                      yAxes: [{
-                        ticks: {beginAtZero: true, precision: 0.1},
-                        gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                      }],
-                      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
-                    },
-                    legend: {display: false},
-                  }}/>
-            }
-          </div>
-        </div>
-      </div>
+        </div>)
+        )
+
+      }
+      {
+        state.pension?.unit_values
+          ? Object.keys(state.pension.unit_values).map(pensionName => <div key={pensionName} className="col-sm-6 grid-margin stretch-card">
+            <div className="card">
+              <div className="card-body">
+                <h6 className="card-title">
+                  {pensionName} unit values
+                  <button
+                    type={'button'}
+                    className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
+                    onClick={() => dispatch(api.getList())}
+                  >
+                    <i className={'mdi mdi-refresh'} />
+                  </button>
+                </h6>
+                {
+                  state.loading
+                    ? <Circles/>
+                    : <Line data={{
+                        labels: state.pension.unit_values[pensionName]?.map(rate => rate.date),
+                        datasets: [
+                          {
+                            data: state.pension.unit_values[pensionName]?.map(rate => rate.value),
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderColor: 'rgb(76,255,0)',
+                            borderWidth: 1,
+                            fill: false
+                          },
+                        ]
+                      }} options={{
+                        scales: {
+                          yAxes: [{
+                            ticks: {beginAtZero: true, precision: 0.1},
+                            gridLines: {color: "rgba(204, 204, 204,0.1)"},
+                          }],
+                          xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                        },
+                        legend: {display: false},
+                      }}/>
+                }
+              </div>
+            </div>
+          </div>)
+        : null
+      }
+
     </div>
   </div>
 }

@@ -14,6 +14,18 @@ from mainframe.finance.serializers import (
 )
 
 
+class ContributionsViewSet(ModelViewSet):
+    permission_classes = (IsAdminUser,)
+    queryset = Contribution.objects.select_related("pension").order_by("-date")
+    serializer_class = ContributionSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if pension_id := self.request.query_params.get("pension_id"):
+            queryset = queryset.filter(pension_id=pension_id)
+        return queryset
+
+
 class PensionViewSet(ModelViewSet):
     permission_classes = (IsAdminUser,)
     queryset = Pension.objects.prefetch_related("contribution_set", "unitvalue_set")

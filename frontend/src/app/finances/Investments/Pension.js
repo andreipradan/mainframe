@@ -11,7 +11,6 @@ import Errors from "../../shared/Errors";
 import ListItem from "../../shared/ListItem";
 import { selectItem, setModalOpen } from "../../../redux/pensionSlice";
 import { PensionApi } from '../../../api/finance';
-import { Collapse } from 'react-bootstrap';
 
 const Pension = () => {
   const dispatch = useDispatch();
@@ -24,9 +23,9 @@ const Pension = () => {
   const [startDate, setStartDate] = useState(new Date())
   const [totalUnits, setTotalUnits] = useState(0)
 
-  const [pensionContributionsOpen, setPensionContributionsOpen] = useState(null)
+  const [pensionOpen, setPensionOpen] = useState(null)
 
-  const [contribModalOpen, setContribModalOpen] = useState(null)
+  const [contribAddOpen, setContribAddOpen] = useState(false)
 
   const [contribAmount, setContribAmount] = useState(0)
   const [contribDate, setContribDate] = useState(new Date())
@@ -44,11 +43,20 @@ const Pension = () => {
     clearModal()
   }
 
+  const getPnl = p => {
+    const pnl = (parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0) - p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)
+    return <span className={`text-${pnl > 0 ? 'success' : pnl === '0.00' ? 'muted' : 'danger'}`}>{pnl} {p.unit_values?.[0]?.currency}</span>
+  }
+  const onAddContribution = () => {
+    if (!contribAddOpen) setEditing(null)
+    setContribAddOpen(!contribAddOpen)
+  }
   const onEditContribution = (c) => {
     setContribAmount(c.amount)
     setContribDate(new Date(c.date))
     setContribUnits(c.units)
-    setEditing(`${c.pension}-${c.id}`);
+    setEditing(c.id);
+    setContribAddOpen(false)
   }
 
   const onUpdateContribution = (pensionId, contributionId) => {
@@ -83,7 +91,15 @@ const Pension = () => {
       units: contribUnits,
     }
     dispatch(api.createContribution(pensionId, data))
+    setContribAddOpen(false)
   }
+
+  useEffect(() => {
+    if (!pensionOpen || !pension.results) return
+
+    const pensionOpenChanged = pension.results.find(p => p.id === pensionOpen.id)
+    if (pensionOpenChanged) setPensionOpen(pensionOpenChanged)
+  }, [pensionOpen, pension.results]);
 
   useEffect(() => {
     if (pension.selectedItem) {
@@ -103,12 +119,25 @@ const Pension = () => {
     <div className="page-header mb-0">
       <h3 className="page-title">
         Pension funds
-        <button type="button"
-          className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(api.getList(pension.kwargs))}
-        >
-          <i className="mdi mdi-refresh" />
-        </button>
+        {
+          pension.loading
+          ? <Circles height={15} width={15} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
+          : <>
+              <button type="button"
+                className="btn btn-outline-success btn-sm border-0 bg-transparent p-1"
+                onClick={() => dispatch(api.getList(pension.kwargs))}
+              >
+                <i className="mdi mdi-refresh" />
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm border-0 bg-transparent p-0"
+                onClick={() => dispatch(setModalOpen(true))}
+              >
+                <i className="mdi mdi-plus-circle-outline "/>
+              </button>
+            </>
+        }
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
@@ -117,302 +146,300 @@ const Pension = () => {
         </ol>
       </nav>
     </div>
+    <span className={"text-muted"}>Total: {}</span>
 
     {/* Top cards */}
-    <button
-      type="button"
-      className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
-      onClick={() => dispatch(setModalOpen(true))}
-    >
-      <i className="mdi mdi-plus" />
-    </button>
-    <div className="row">
-      {
-        pension.loading
-          ? <Circles height={20} width={20} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
-          : pension.results?.length
-            ? pension.results.map(p =>
-              <div className="col-lg-6 col-xl-3 grid-margin" key={`pension-${p.id}`}>
-                <div className="card">
-                  <div className="card-body">
-                    <h6>
-                      {p.name}
-                      {
-                        p.unit_values?.length
-                          ? <p className={"text-muted"}>
-                              Last update: {new Date(p.unit_values[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
-                              Unit value: {p.unit_values[0].value}
-                            </p>
-                          : ''
-                      }
-                      <button
-                        type="button"
-                        className="float-right btn btn-xs btn-outline-warning btn-icon pl-1 border-0"
-                        onClick={() => dispatch(selectItem(p.id))}
-                      >
-                        <i className="mdi mdi-pencil" />
-                      </button>
-                    </h6>
-                    <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                      <ListItem
-                        label={'Started'}
-                        value={new Date(p.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                        textType={'warning'}
-                      />
-                      <ListItem
-                        label={'Units bought'}
-                        value={
-                          p.contributions?.map(c => c.units).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0).toFixed(6)
-                        }
-                        textType={'warning'}
-                      />
-                      <ListItem
-                        label={'Net Units'}
-                        value={`${p.total_units} ${p.contributions?.length ? ` (${(p.total_units - p.contributions?.map(c => c.units).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)})` : ''}`}
-                        textType={'warning'}
-                      />
-                      <ListItem
-                        label={'Contributions'}
-                        value={p.contributions?.length ? `${p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)} ${p.contributions[0].currency} (${p.contributions.length})` : '-'}
-                        textType={'warning'}
-                      />
-                      <ListItem
-                        label={'Net'}
-                        value={
-                          (parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0)).toFixed(2) + ` ${p.contributions?.[0]?.currency || ''} ${p.contributions?.length ? ` (${(parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0) - p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)})` : ''}`
-                      }
-                        textType={'warning'}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-            : <small className="text-muted">No pension funds</small>
-      }
-    </div>
-
-    {pension.modalOpen ? null : <Errors errors={pension.errors}/>}
-
-    {/* Each pension contributions */}
     <div className="row">
     {
       pension.results?.map(p =>
-          <div className="col-12 grid-margin" key={`pension-transactions-${p.id}`}>
-            <div className="card">
-              <div className="card-body">
-                <div className="table-responsive">
-                  <div className="mb-0 text-muted">
-                    <div className="row">
-                      <div className="col-sm-12">
-                        <h6 className="text-secondary">
-                          {p.name}
-                          {
-                            pension.loadingItems?.includes(p.id)
-                              ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
-                              : <button
-                                  type="button"
-                                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                                  onClick={() => dispatch(api.getItem(p.id))}
-                                >
-                                  <i className="mdi mdi-refresh" />
-                                </button>
-                          }
-
+        <div className={`col-${pensionOpen === p.id ? 12 : 12 / pension.count} grid-margin`} key={`pension-transactions-${p.id}`}>
+          <div className="card">
+            <div className="card-body">
+              <div className="table-responsive">
+                <h6 className="text-secondary">
+                  {p.name}
+                  {
+                    pension.loadingItems?.includes(p.id)
+                      ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
+                      : <>
                           <button
                             type="button"
-                            className="ml-0 p-0 btn btn-outline-primary btn-sm border-0 bg-transparent"
-                            onClick={() => setContribModalOpen(contribModalOpen === p.id ? null : p.id)}
+                            className="btn btn-outline-success btn-sm border-0 bg-transparent p-1"
+                            onClick={() => dispatch(api.getItem(p.id))}
                           >
-                            <i className="mdi mdi-plus" />
+                            <i className="mdi mdi-refresh" />
                           </button>
-                          <small
-                            className="cursor-pointer ml-4 text-muted"
-                            onClick={() =>
-                              setPensionContributionsOpen(pensionContributionsOpen === p.id ? null : p.id)
-                            }
+                          <button
+                            type="button"
+                            className="btn btn-outline-warning btn-sm border-0 bg-transparent p-0"
+                            onClick={() => dispatch(selectItem(p.id))}
                           >
-                            Click to {
-                              pensionContributionsOpen !== p.id
-                              ? "expand"
-                              : "collapse"
-                          }...
-                          </small>
-                          <p className={'text-muted'}>Total: {p.contributions?.length}</p>
-                        </h6>
-                        <Collapse in={contribModalOpen === p.id}>
-                        <ul className="navbar-nav w-100 rounded">
-                            <li className="nav-item w-100">
-                              <Form onSubmit={e => onSubmitContrib(e, p.id)}>
-                                <div className="row">
-                                  <div className="col-md-4">
-                                    <Form.Group className="row">
-                                      <span className="col-sm-4 col-form-label">Amount</span>
-                                      <div className="col-sm-8">
-                                        <Form.Control
-                                          type="text"
-                                          value={contribAmount}
-                                          onChange={e => setContribAmount(e.target.value)}
-                                        />
-                                      </div>
-                                    </Form.Group>
-                                  </div>
-                                  <div className="col-md-4">
-                                    <Form.Group className="row">
-                                      <span className="col-sm-4 col-form-label">Units</span>
-                                      <div className="col-sm-8">
-                                        <Form.Control
-                                          type="text"
-                                          value={contribUnits}
-                                          onChange={e => setContribUnits(e.target.value)}
-                                        />
-                                      </div>
-                                    </Form.Group>
-                                  </div>
-                                  <div className="col-md-4">
-                                    <Form.Group className="row">
-                                      <div className="col-sm-9 mw-100">
-                                        <DatePicker
-                                          className="btn btn-outline-secondary rounded btn-sm"
-                                          dateFormat={'MMM yyyy'}
-                                          isClearable={false}
-                                          onChange={date => setContribDate(date)}
-                                          readOnly={pension.loading}
-                                          scrollableYearDropdown
-                                          selected={contribDate}
-                                          showIcon
-                                          showYearDropdown
-                                          showMonthYearPicker
-                                        />
-                                      </div>
-                                    </Form.Group>
-                                  </div>
-                                </div>
-                                <Button
-                                  hidden={true}
-                                  type={"submit"}
-                                  variant="primary"
-                                  onClick={e => onSubmitContrib(e, p.id)}
-                                  disabled={!contribDate || !contribAmount}
-                                >
-                                  Add
-                                </Button>
-                              </Form>
-                            </li>
-                          </ul>
-                        </Collapse>
-                      </div>
-                    </div>
-                  </div>
-                  <Collapse in={pensionContributionsOpen === p.id}>
-                    <table className="table table-hover">
-                      <thead><tr><th>Date</th><th>Amount</th><th>Units</th><th>Actions</th></tr></thead>
-                      <tbody>
-                      {
-                        pension.loading || pension.loadingItems?.includes(p.id)
-                          ? <Circles
-                            visible
-                            width="100%"
-                            ariaLabel="ball-triangle-loading"
-                            wrapperStyle={{ float: 'right' }}
-                            color="orange"
-                          />
-                          : p.contributions?.length
-                            ? p.contributions.map(c => <tr key={`pension-${p.id}-${c.id}`}>
-                              <td>
-                                {
-                                  editing === `${p.id}-${c.id}`
-                                    ? <div>
-                                        <DatePicker
-                                          className="btn btn-outline-secondary rounded btn-sm"
-                                          dateFormat={'MMM yyyy'}
-                                          isClearable={false}
-                                          onChange={date => setContribDate(date)}
-                                          readOnly={pension.loading}
-                                          scrollableYearDropdown
-                                          selected={contribDate}
-                                          showIcon
-                                          showYearDropdown
-                                          showMonthYearPicker
-                                          onClickOutside={() => setContribDate(null)}
-                                        />
-                                      </div>
-                                    : new Date(c.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long'})
-                                }
+                            <i className="mdi mdi-pencil" />
+                          </button>
+                        </>
+                  }
+                  <p className={'text-muted'}>
+                    {
+                      p.unit_values?.length
+                        ? <p className={"text-muted mb-0"}>
+                            Last update: {new Date(p.unit_values[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
+                            Last value: {p.unit_values[0].value}
+                          </p>
+                        : ''
+                    }
+                  </p>
 
-                              </td>
-                              <td>
-                                {
-                                  editing === `${p.id}-${c.id}`
-                                    ? <input
-                                        autoFocus
-                                        onChange={(e) => setContribAmount(e.target.value)}
-                                        type="text"
-                                        value={contribAmount}
-                                      />
-                                    : <span>{c.amount} {c.currency}</span>
-                                }
-                              </td>
-                              <td>
-                                {
-                                  editing === `${p.id}-${c.id}`
-                                    ? <input
-                                        autoFocus
-                                        onChange={(e) => setContribUnits(e.target.value)}
-                                        type="text"
-                                        value={contribUnits}
-                                      />
-                                    : <span>{c.units}</span>
-                                }
-                              </td>
-                              <td>
-                                {
-                                  editing === `${p.id}-${c.id}`
-                                    ? <>
-                                        <i
-                                          className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                          onClick={() => setEditing("")}
-                                        />
-                                        <i
-                                          className="cursor-pointer mdi mdi-check text-success mr-2"
-                                          onClick={() => onUpdateContribution(p.id, c.id)}
-                                        />
-                                      </>
-                                    : <i
-                                        className="cursor-pointer mdi mdi-pencil text-warning mr-2"
-                                        onClick={() => onEditContribution(c)}
-                                      />
-                                }
-                                <i
-                                  className="cursor-pointer mdi mdi-sync-alert text-danger mr-2"
-                                  onClick={() => dispatch(api.syncContributionUnits(p.id, c.id))}
-                                />
-                                <i
-                                  className="cursor-pointer mdi mdi-delete text-danger"
-                                  onClick={() => dispatch(api.deleteContribution(
-                                    p.id,
-                                    c.id,
-                                    `${p.name} for ${new Date(c.date).toLocaleDateString(
-                                      "en-US",
-                                      {month: "short", year: "numeric"}
-                                    )}`))}
-                                />
-                              </td>
-                            </tr>)
-                            : <tr>
-                              <td colSpan={6}><span>No contributions found</span></td>
-                            </tr>
+                  {/* Pension fund details */}
+                  <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+                    <ListItem
+                      label={'Started'}
+                      value={new Date(p.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      textType={'primary'}
+                    />
+                    <ListItem
+                      label={'Units'}
+                      value={p.total_units}
+                    />
+                    <ListItem
+                      label={'Evaluation'}
+                      value={
+                        <span>
+                          {(parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0)).toFixed(2)}
+                          &nbsp;{p.unit_values?.[0]?.currency}
+                        </span>
                       }
-                      </tbody>
-                    </table>
-                  </Collapse>
-                </div>
+                      textType={'success'}
+                    />
+                    <ListItem label={'Profit / Loss'} value={getPnl(p)} />
+                  </div>
+                </h6>
+                <button
+                  type={"button"}
+                  className={`ml-2 btn btn-sm btn-rounded btn-outline-${pensionOpen?.id === p.id ? 'info' : 'primary'}`}
+                  onClick={() => setPensionOpen(pensionOpen?.id === p.id ? null : p)}
+                >
+                  {pensionOpen?.id === p.id ? 'Deselect' : 'Select'}
+                </button>
               </div>
             </div>
-          </div>,
+          </div>
+        </div>
       )
     }
     </div>
+    {pension.modalOpen ? null : <Errors errors={pension.errors}/>}
+
+    {/* Contributions table */}
+    <div className="row">
+      <div className={`col-12 grid-margin`}>
+        <div className="card">
+          <div className="card-body">
+            <div className="table-responsive">
+              <h6 className="text-secondary">
+                {
+                  pensionOpen
+                    ? <span>{pensionOpen.name} ({pensionOpen.contributions?.length || 0})</span>
+                    : null
+                }
+                {
+                  pensionOpen
+                    ? <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm border-0 bg-transparent"
+                        onClick={onAddContribution}
+                      >
+                        <i className="mdi mdi-plus" />
+                      </button>
+                    : null
+                }
+              </h6>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>
+                      Amount{
+                        pensionOpen
+                          ? <sup className={""}>{pensionOpen.contributions?.map(c => c.amount)
+                            .reduce((accumulator, currentValue) =>
+                              accumulator + parseFloat(currentValue), 0
+                            ).toFixed(3)}</sup>
+                          : null
+                      }
+                    </th>
+                    <th>
+                      Units{
+                        pensionOpen
+                          ? <sup className={""}>{pensionOpen.contributions?.map(c => c.units)
+                            .reduce((accumulator, currentValue) => 
+                              accumulator + parseFloat(currentValue), 0
+                            ).toFixed(3)}</sup>
+                          : null
+                      }
+                    </th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {
+                      pensionOpen && contribAddOpen
+                        ? <>
+                            <td>
+                              <DatePicker
+                                className="btn btn-outline-secondary rounded btn-sm"
+                                dateFormat={'MMM yyyy'}
+                                isClearable={false}
+                                onChange={date => setContribDate(date)}
+                                readOnly={pension.loading}
+                                scrollableYearDropdown
+                                selected={contribDate}
+                                showIcon
+                                showYearDropdown
+                                showMonthYearPicker
+                              />
+                            </td>
+                            <td>
+                              <input
+                                autoFocus
+                                onChange={(e) => setContribAmount(e.target.value)}
+                                type="text"
+                                value={contribAmount}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                autoFocus
+                                onChange={(e) => setContribUnits(e.target.value)}
+                                type="text"
+                                value={contribUnits}
+                              />
+                            </td>
+                            <td>
+                              {
+                                contribAddOpen
+                                  ? <>
+                                      <i
+                                        className="cursor-pointer mdi mdi-cancel text-danger mr-2"
+                                        onClick={() => setContribAddOpen(false)}
+                                      />
+                                      <i
+                                        className="cursor-pointer mdi mdi-check text-success mr-2"
+                                        onClick={(e) => onSubmitContrib(e, pensionOpen.id)}
+                                      />
+                                    </>
+                                  : null
+                              }
+                            </td>
+                          </>
+                        : null
+                    }
+
+                  </tr>
+
+                  {
+                    pension.loading || pension.loadingItems?.includes(pensionOpen?.id)
+                      ? <tr><td><Circles
+                          visible
+                          width="100%"
+                          ariaLabel="ball-triangle-loading"
+                          wrapperStyle={{ float: 'right' }}
+                          color="orange"
+                        /></td></tr>
+                      : pensionOpen
+                        ? pensionOpen.contributions.map(c =>
+                          <tr key={`contrib-${c.id}`}>
+                            <td>
+                              {
+                                editing === c.id
+                                  ? <div>
+                                      <DatePicker
+                                        className="btn btn-outline-secondary rounded btn-sm"
+                                        dateFormat={'MMM yyyy'}
+                                        isClearable={false}
+                                        onChange={date => setContribDate(date)}
+                                        readOnly={pension.loading}
+                                        scrollableYearDropdown
+                                        selected={contribDate}
+                                        showIcon
+                                        showYearDropdown
+                                        showMonthYearPicker
+                                        onClickOutside={() => setContribDate(null)}
+                                      />
+                                    </div>
+                                  : new Date(c.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long'})
+                              }
+
+                            </td>
+                            <td>
+                              {
+                                editing === c.id
+                                  ? <input
+                                      autoFocus
+                                      onChange={(e) => setContribAmount(e.target.value)}
+                                      type="text"
+                                      value={contribAmount}
+                                    />
+                                  : <span>{c.amount} {c.currency}</span>
+                              }
+                            </td>
+                            <td>
+                              {
+                                editing === c.id
+                                  ? <input
+                                      autoFocus
+                                      onChange={(e) => setContribUnits(e.target.value)}
+                                      type="text"
+                                      value={contribUnits}
+                                    />
+                                  : <span>{c.units}</span>
+                              }
+                            </td>
+                            <td>
+                              {
+                                editing === c.id
+                                  ? <>
+                                      <i
+                                        className="cursor-pointer mdi mdi-cancel text-danger mr-2"
+                                        onClick={() => setEditing("")}
+                                      />
+                                      <i
+                                        className="cursor-pointer mdi mdi-check text-success mr-2"
+                                        onClick={() => onUpdateContribution(pensionOpen.id, c.id)}
+                                      />
+                                    </>
+                                  : <i
+                                      className="cursor-pointer mdi mdi-pencil text-warning mr-2"
+                                      onClick={() => onEditContribution(c)}
+                                    />
+                              }
+                              <i
+                                className="cursor-pointer mdi mdi-sync-alert text-danger mr-2"
+                                onClick={() => dispatch(api.syncContributionUnits(pensionOpen.id, c.id))}
+                              />
+                              <i
+                                className="cursor-pointer mdi mdi-delete text-danger"
+                                onClick={() => dispatch(api.deleteContribution(
+                                  pensionOpen.id,
+                                  c.id,
+                                  `${pensionOpen.name} for ${new Date(c.date).toLocaleDateString(
+                                    "en-US",
+                                    {month: "short", year: "numeric"}
+                                  )}`))}
+                              />
+                            </td>
+                          </tr>)
+                        : <tr><td colSpan={4} className={"text-center"}>Please select a pension fund</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Add / edit pension Modal */}
     <Modal centered show={Boolean(pension.selectedItem) || pension.modalOpen} onHide={closeModal}>
       <Modal.Header closeButton>
         <Modal.Title>

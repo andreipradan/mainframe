@@ -1,12 +1,20 @@
-from django.db.models import Count, DecimalField, F, OuterRef, Q, Subquery, Sum, Value
+from django.db.models import (
+    Count,
+    DecimalField,
+    F,
+    OuterRef,
+    Prefetch,
+    Q,
+    Subquery,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
-from mainframe.exchange.models import ExchangeRate
-from mainframe.exchange.serializers import ExchangeRateSerializer
 from mainframe.finance.models import Bond, Deposit, Pension, UnitValue
 from mainframe.finance.serializers import BondSerializer, DepositSerializer
 
@@ -16,7 +24,6 @@ class InvestmentsViewSet(viewsets.ViewSet):
 
     @staticmethod
     def list(request, **kwargs):
-        rates = ExchangeRate.objects.distinct("symbol").order_by("symbol", "-date")
         bond_currencies = list(
             Bond.objects.values_list("currency", flat=True)
             .distinct("currency")
@@ -92,14 +99,13 @@ class InvestmentsViewSet(viewsets.ViewSet):
         latest_unit_value_subquery = UnitValue.objects.filter(
             pension=OuterRef("id")
         ).order_by("-date")
-        latest_value_subquery = latest_unit_value_subquery.values("value")[:1]
-        latest_currency_subquery = latest_unit_value_subquery.values("currency")[:1]
         total_net_per_currency = (
             Pension.objects.annotate(
                 latest_unit_value=Subquery(
-                    latest_value_subquery, output_field=DecimalField()
+                    latest_unit_value_subquery.values("value")[:1],
+                    output_field=DecimalField(),
                 ),
-                currency=Subquery(latest_currency_subquery),
+                currency=Subquery(latest_unit_value_subquery.values("currency")[:1]),
             )
             .annotate(
                 net_amount=F("total_units")
@@ -122,6 +128,20 @@ class InvestmentsViewSet(viewsets.ViewSet):
         currencies = sorted(
             (set(bond_currencies + deposit_currencies + pension_currencies))
         )
+        unit_values_qs = UnitValue.objects.filter(
+            pension_id__in=Pension.objects.values("id")
+        ).order_by("date")
+        unit_values_prefetch = Prefetch("unitvalue_set", queryset=unit_values_qs)
+
+        unit_values = {
+            pension.name: [
+                {"date": unit_value.date, "value": unit_value.value}
+                for unit_value in pension.unitvalue_set.all()
+            ]
+            for pension in Pension.objects.prefetch_related(
+                unit_values_prefetch
+            ).order_by("name")
+        }
         return JsonResponse(
             data={
                 "bonds": {
@@ -132,11 +152,17 @@ class InvestmentsViewSet(viewsets.ViewSet):
                         .order_by("date")
                         .first()
                     ).data,
-                    "interest_rates": list(
-                        Bond.objects.filter(interest__isnull=False)
-                        .values("date__date", "interest")
-                        .order_by("date")
-                    ),
+                    **{
+                        f"interest_rates_{currency}": list(
+                            Bond.objects.filter(
+                                currency=currency, interest__isnull=False
+                            )
+                            .values("date__date", "interest")
+                            .annotate(date=F("date__date"))
+                            .order_by("date")
+                        )
+                        for currency in bond_currencies
+                    },
                 },
                 "deposits": {
                     **{k: v for k, v in deposits.items() if v},
@@ -146,16 +172,22 @@ class InvestmentsViewSet(viewsets.ViewSet):
                         .order_by("date")
                         .first()
                     ).data,
-                    "interest_rates": list(
-                        Deposit.objects.filter(interest__isnull=False)
-                        .values("date", "interest")
-                        .order_by("date")
-                    ),
+                    **{
+                        f"interest_rates_{currency}": list(
+                            Deposit.objects.filter(
+                                currency=currency, interest__isnull=False
+                            )
+                            .values("date", "interest")
+                            .order_by("date")
+                        )
+                        for currency in deposit_currencies
+                    },
                 },
                 "pension": {
                     **pensions,
                     "count": Pension.objects.count(),
                     "currencies": pension_currencies,
+                    "unit_values": unit_values,
                 },
                 "currencies": currencies,
                 "totals": {
@@ -181,6 +213,5 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     }
                     for currency in currencies
                 },
-                "rates": ExchangeRateSerializer(rates, many=True).data,
             }
         )
