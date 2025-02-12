@@ -96,8 +96,8 @@ const Summary = () => {
                       {
                         state.totals[currency]?.active
                           ? <ListItem
-                              label={"Active"}
-                              value={`${parseFloat(state.totals[currency].active).toFixed(2)} ${currency}`}
+                              label={`Active (${currency})`}
+                              value={parseFloat(state.totals[currency].active).toFixed(2)}
                               textType={"primary"}
                           />
                           : null
@@ -154,8 +154,8 @@ const Summary = () => {
                         {
                           state[entry]?.[`active_${currency}`]
                             ? <ListItem
-                                label={"Active"}
-                                value={`${parseFloat(state[entry][`active_${currency}`]).toFixed(2)} ${currency}`}
+                                label={`Active (${currency})`}
+                                value={parseFloat(state[entry][`active_${currency}`]).toFixed(2)}
                                 textType={"info"}
                               />
                             : null

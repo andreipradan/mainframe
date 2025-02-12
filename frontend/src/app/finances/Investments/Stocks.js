@@ -117,7 +117,7 @@ const Stocks = () => {
 
     {/* Top cards */}
     <div className="row">
-      <div className="col-sm-4 grid-margin">
+      <div className={`col-sm-${stocks.loading && !stocks.results ? 12 : 4} grid-margin`}>
         <div className="card">
           <div className="card-body">
             <h6>
@@ -169,7 +169,7 @@ const Stocks = () => {
                 </div>
               </div>
             </div>
-          </div>,
+          </div>
         )
       }
     </div>

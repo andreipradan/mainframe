@@ -102,7 +102,7 @@ const Pension = () => {
   return <div>
     <div className="page-header mb-0">
       <h3 className="page-title">
-        Pension
+        Pension funds
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
           onClick={() => dispatch(api.getList(pension.kwargs))}
@@ -119,84 +119,77 @@ const Pension = () => {
     </div>
 
     {/* Top cards */}
+    <button
+      type="button"
+      className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
+      onClick={() => dispatch(setModalOpen(true))}
+    >
+      <i className="mdi mdi-plus" />
+    </button>
     <div className="row">
-      <div className="col-sm-12 grid-margin">
-        <div className="card">
-          <div className="card-body">
-            <h6>
-              Funds
-              <button
-                type="button"
-                className="float-right btn btn-outline-primary btn-rounded btn-icon pl-1"
-                onClick={() => dispatch(setModalOpen(true))}
-              >
-                <i className="mdi mdi-plus" />
-              </button>
-            </h6>
-            <div className={"row"}>
-              {
-                pension.loading
-                  ? <Circles height={20} width={20} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
-                  : pension.results?.length
-                    ? pension.results.map(p => <div className="col-lg-6 col-xl-3 grid-margin" key={`pension-${p.id}`}>
-                      <div className="card-body">
-                        <h6>
-                          {p.name}
-                          {
-                            p.unit_values?.length
-                              ? <p className={"text-muted"}>
-                                  Last update: {new Date(p.unit_values[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
-                                  Unit value: {p.unit_values[0].value}
-                                </p>
-                              : ''
-                          }
-                          <button
-                            type="button"
-                            className="float-right btn btn-xs btn-outline-warning btn-icon pl-1 border-0"
-                            onClick={() => dispatch(selectItem(p.id))}
-                          >
-                            <i className="mdi mdi-pencil" />
-                          </button>
-                        </h6>
-                        <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                          <ListItem
-                            label={'Started'}
-                            value={new Date(p.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                            textType={'warning'}
-                          />
-                          <ListItem
-                            label={'Units bought'}
-                            value={
-                              p.contributions?.map(c => c.units).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0).toFixed(6)
-                            }
-                            textType={'warning'}
-                          />
-                          <ListItem
-                            label={'Net Units'}
-                            value={`${p.total_units} ${p.contributions?.length ? ` (${(p.total_units - p.contributions?.map(c => c.units).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)})` : ''}`}
-                            textType={'warning'}
-                          />
-                          <ListItem
-                            label={'Contributions'}
-                            value={p.contributions?.length ? `${p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)} ${p.contributions[0].currency} (${p.contributions.length})` : '-'}
-                            textType={'warning'}
-                          />
-                          <ListItem
-                            label={'Net'}
-                            value={
-                              (parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0)).toFixed(2) + ` ${p.contributions?.[0]?.currency || ''} ${p.contributions?.length ? ` (${(parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0) - p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)})` : ''}`
-                          }
-                            textType={'warning'}
-                          />
-                        </div>
-                      </div>
-                    </div>)
-                    : <small className="text-muted">No pension funds</small>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
+      {
+        pension.loading
+          ? <Circles height={20} width={20} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
+          : pension.results?.length
+            ? pension.results.map(p =>
+              <div className="col-lg-6 col-xl-3 grid-margin" key={`pension-${p.id}`}>
+                <div className="card">
+                  <div className="card-body">
+                    <h6>
+                      {p.name}
+                      {
+                        p.unit_values?.length
+                          ? <p className={"text-muted"}>
+                              Last update: {new Date(p.unit_values[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
+                              Unit value: {p.unit_values[0].value}
+                            </p>
+                          : ''
+                      }
+                      <button
+                        type="button"
+                        className="float-right btn btn-xs btn-outline-warning btn-icon pl-1 border-0"
+                        onClick={() => dispatch(selectItem(p.id))}
+                      >
+                        <i className="mdi mdi-pencil" />
+                      </button>
+                    </h6>
+                    <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+                      <ListItem
+                        label={'Started'}
+                        value={new Date(p.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        textType={'warning'}
+                      />
+                      <ListItem
+                        label={'Units bought'}
+                        value={
+                          p.contributions?.map(c => c.units).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0).toFixed(6)
+                        }
+                        textType={'warning'}
+                      />
+                      <ListItem
+                        label={'Net Units'}
+                        value={`${p.total_units} ${p.contributions?.length ? ` (${(p.total_units - p.contributions?.map(c => c.units).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)})` : ''}`}
+                        textType={'warning'}
+                      />
+                      <ListItem
+                        label={'Contributions'}
+                        value={p.contributions?.length ? `${p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)} ${p.contributions[0].currency} (${p.contributions.length})` : '-'}
+                        textType={'warning'}
+                      />
+                      <ListItem
+                        label={'Net'}
+                        value={
+                          (parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0)).toFixed(2) + ` ${p.contributions?.[0]?.currency || ''} ${p.contributions?.length ? ` (${(parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0) - p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)})` : ''}`
+                      }
+                        textType={'warning'}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+            : <small className="text-muted">No pension funds</small>
+      }
     </div>
 
     {pension.modalOpen ? null : <Errors errors={pension.errors}/>}
@@ -452,6 +445,7 @@ const Pension = () => {
                 <Form.Label>Name</Form.Label>
                 <Form.Control
                   type="text"
+                  placeholder="Pension fund name"
                   value={name}
                   onChange={e => setName(e.target.value)}
                 />
