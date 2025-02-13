@@ -4,44 +4,23 @@ from mainframe.finance.models import Contribution, Pension, UnitValue
 
 
 class ContributionSerializer(serializers.ModelSerializer):
+    unit_value = serializers.CharField(read_only=True)
+
     class Meta:
         model = Contribution
         fields = "__all__"
-
-    def create(self, validated_data):
-        date = validated_data["date"]
-        if not validated_data.get("units"):
-            unit_value = (
-                validated_data["pension"]
-                .unitvalue_set.filter(
-                    date__month=date.month,
-                    date__year=date.year,
-                )
-                .order_by("date")
-                .first()
-            )
-            if not unit_value:
-                raise serializers.ValidationError(
-                    f"No unitValue found for '{date.month}/{date.year}'"
-                )
-
-            validated_data["units"] = validated_data["amount"] / unit_value.value
-        return super().create(validated_data)
 
 
 class PensionUnitValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnitValue
-        fields = "__all__"
+        fields = ("date", "value")
 
 
 class PensionSerializer(serializers.ModelSerializer):
-    contributions = ContributionSerializer(
-        many=True, source="contribution_set", read_only=True
-    )
-    unit_values = PensionUnitValueSerializer(
-        many=True, source="unitvalue_set", read_only=True
-    )
+    contributions = ContributionSerializer(many=True, read_only=True)
+    latest_unit_value = serializers.CharField()
+    latest_unit_value_date = serializers.CharField()
 
     class Meta:
         depth = 1

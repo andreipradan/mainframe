@@ -99,3 +99,19 @@
 .min-vw-50 {
   min-width: 50vw;
 }
+
+.sticky-table {
+  max-height: 20vw;
+  overflow-y: auto;
+  display: block;
+}
+.sticky-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.sticky-table table thead {
+  position: sticky;
+  top: 0;
+  background: $card-bg;
+  z-index: 1;
+}

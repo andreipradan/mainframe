@@ -12,6 +12,21 @@ import ListItem from "../../shared/ListItem";
 import { selectItem, setModalOpen } from "../../../redux/pensionSlice";
 import { PensionApi } from '../../../api/finance';
 
+export const getEvaluation = (p, justValue = false) => {
+  const evaluation = parseFloat(p.latest_unit_value || 0) * (p.total_units || 0)
+  if (justValue) return evaluation
+  return <span>{evaluation.toFixed(2)} {p.contributions?.[0]?.currency}</span>
+}
+export const getPnl = (p, justValue = false) => {
+  const pnl = parseFloat(p.latest_unit_value || 0) *
+    (p.total_units || 0) -
+    p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) =>
+      accumulator + parseFloat(currentValue), 0
+  )
+  if (justValue) return pnl
+  return <span className={`text-${pnl > 0 ? 'success' : pnl === 0 ? 'muted' : 'danger'}`}>{pnl.toFixed(2)} {p.contributions?.[0]?.currency}</span>
+}
+
 const Pension = () => {
   const dispatch = useDispatch();
   const pension = useSelector(state => state.pension)
@@ -43,12 +58,13 @@ const Pension = () => {
     clearModal()
   }
 
-  const getPnl = p => {
-    const pnl = (parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0) - p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) => accumulator + parseFloat(currentValue), 0)).toFixed(2)
-    return <span className={`text-${pnl > 0 ? 'success' : pnl === '0.00' ? 'muted' : 'danger'}`}>{pnl} {p.unit_values?.[0]?.currency}</span>
-  }
   const onAddContribution = () => {
-    if (!contribAddOpen) setEditing(null)
+    if (!contribAddOpen) {
+      setEditing(null);
+      setContribDate(new Date())
+      setContribAmount(0)
+      setContribUnits(0)
+    }
     setContribAddOpen(!contribAddOpen)
   }
   const onEditContribution = (c) => {
@@ -146,7 +162,20 @@ const Pension = () => {
         </ol>
       </nav>
     </div>
-    <span className={"text-muted"}>Total: {}</span>
+    <b className={"text-small text-muted"}>
+      <div>
+        Total: {
+          pension.results?.map(p => getEvaluation(p, true)).reduce((accumulator, currentValue) =>
+            accumulator + parseFloat(currentValue), 0
+          ).toFixed(2)
+        } {pension.results?.[0].contributions?.[0]?.currency}
+      </div>
+      <div className={"mb-1"}>
+        PnL: {
+          pension.results?.map(p => getPnl(p, true)).reduce((acc, val) => acc + parseFloat(val), 0).toFixed(2)
+        } {pension.results?.[0].contributions?.[0]?.currency}
+      </div>
+    </b>
 
     {/* Top cards */}
     <div className="row">
@@ -178,16 +207,22 @@ const Pension = () => {
                           </button>
                         </>
                   }
-                  <p className={'text-muted'}>
+                  <div className={'text-muted'}>
                     {
-                      p.unit_values?.length
-                        ? <p className={"text-muted mb-0"}>
-                            Last update: {new Date(p.unit_values[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
-                            Last value: {p.unit_values[0].value}
+                      p.latest_unit_value_date
+                        ? <p className={"text-muted mb-0 text-small"}>
+                            Last update: {new Date(p.latest_unit_value_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
                           </p>
-                        : ''
+                        : null
                     }
-                  </p>
+                    {
+                      p.latest_unit_value
+                        ? <p className={"text-muted text-small"}>
+                            Last value: {p.latest_unit_value}
+                          </p>
+                        : null
+                    }
+                  </div>
 
                   {/* Pension fund details */}
                   <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
@@ -202,12 +237,7 @@ const Pension = () => {
                     />
                     <ListItem
                       label={'Evaluation'}
-                      value={
-                        <span>
-                          {(parseFloat(p.unit_values?.[0]?.value || 0) * (p.total_units || 0)).toFixed(2)}
-                          &nbsp;{p.unit_values?.[0]?.currency}
-                        </span>
-                      }
+                      value={getEvaluation(p)}
                       textType={'success'}
                     />
                     <ListItem label={'Profit / Loss'} value={getPnl(p)} />
@@ -238,7 +268,7 @@ const Pension = () => {
               <h6 className="text-secondary">
                 {
                   pensionOpen
-                    ? <span>{pensionOpen.name} ({pensionOpen.contributions?.length || 0})</span>
+                    ? <span>{pensionOpen.name}</span>
                     : null
                 }
                 {
@@ -253,186 +283,192 @@ const Pension = () => {
                     : null
                 }
               </h6>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>
-                      Amount{
-                        pensionOpen
-                          ? <sup className={""}>{pensionOpen.contributions?.map(c => c.amount)
-                            .reduce((accumulator, currentValue) =>
-                              accumulator + parseFloat(currentValue), 0
-                            ).toFixed(3)}</sup>
+              <div className={"sticky-table"}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Date</th>
+                      <th>
+                        Amount{
+                          pensionOpen
+                            ? <sup>{pensionOpen.contributions?.map(c => c.amount)
+                              .reduce((accumulator, currentValue) =>
+                                accumulator + parseFloat(currentValue), 0
+                              ).toFixed(3)}</sup>
+                            : null
+                        }
+                      </th>
+                      <th>
+                        Units{
+                          pensionOpen
+                            ? <sup>{pensionOpen.contributions?.map(c => c.units)
+                              .reduce((accumulator, currentValue) =>
+                                accumulator + parseFloat(currentValue), 0
+                              ).toFixed(3)}</sup>
+                            : null
+                        }
+                      </th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      {
+                        pensionOpen && contribAddOpen
+                          ? <>
+                              <td>{'<'}new{'>'}</td>
+                              <td>
+                                <DatePicker
+                                  className="btn btn-outline-secondary rounded btn-sm"
+                                  dateFormat={'MMM yyyy'}
+                                  isClearable={false}
+                                  onChange={date => setContribDate(date)}
+                                  readOnly={pension.loading}
+                                  scrollableYearDropdown
+                                  selected={contribDate}
+                                  showIcon
+                                  showYearDropdown
+                                  showMonthYearPicker
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  autoFocus
+                                  onChange={(e) => setContribAmount(e.target.value)}
+                                  type="text"
+                                  value={contribAmount}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  autoFocus
+                                  onChange={(e) => setContribUnits(e.target.value)}
+                                  type="text"
+                                  value={contribUnits}
+                                />
+                              </td>
+                              <td>
+                                {
+                                  contribAddOpen
+                                    ? <>
+                                        <i
+                                          className="cursor-pointer mdi mdi-cancel text-danger mr-2"
+                                          onClick={() => setContribAddOpen(false)}
+                                        />
+                                        <i
+                                          className="cursor-pointer mdi mdi-check text-success mr-2"
+                                          onClick={(e) => onSubmitContrib(e, pensionOpen.id)}
+                                        />
+                                      </>
+                                    : null
+                                }
+                              </td>
+                            </>
                           : null
                       }
-                    </th>
-                    <th>
-                      Units{
-                        pensionOpen
-                          ? <sup className={""}>{pensionOpen.contributions?.map(c => c.units)
-                            .reduce((accumulator, currentValue) => 
-                              accumulator + parseFloat(currentValue), 0
-                            ).toFixed(3)}</sup>
-                          : null
-                      }
-                    </th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
+
+                    </tr>
+
                     {
-                      pensionOpen && contribAddOpen
-                        ? <>
-                            <td>
-                              <DatePicker
-                                className="btn btn-outline-secondary rounded btn-sm"
-                                dateFormat={'MMM yyyy'}
-                                isClearable={false}
-                                onChange={date => setContribDate(date)}
-                                readOnly={pension.loading}
-                                scrollableYearDropdown
-                                selected={contribDate}
-                                showIcon
-                                showYearDropdown
-                                showMonthYearPicker
-                              />
-                            </td>
-                            <td>
-                              <input
-                                autoFocus
-                                onChange={(e) => setContribAmount(e.target.value)}
-                                type="text"
-                                value={contribAmount}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                autoFocus
-                                onChange={(e) => setContribUnits(e.target.value)}
-                                type="text"
-                                value={contribUnits}
-                              />
-                            </td>
-                            <td>
-                              {
-                                contribAddOpen
-                                  ? <>
-                                      <i
-                                        className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                        onClick={() => setContribAddOpen(false)}
+                      pension.loading || pension.loadingItems?.includes(pensionOpen?.id)
+                        ? <tr><td><Circles
+                            visible
+                            width="100%"
+                            ariaLabel="ball-triangle-loading"
+                            wrapperStyle={{ float: 'right' }}
+                            color="orange"
+                          /></td></tr>
+                        : pensionOpen
+                          ? pensionOpen.contributions.map((c, i) =>
+                            <tr key={`contrib-${c.id}`}>
+                              <td>{i + 1}</td>
+                              <td>
+                                {
+                                  editing === c.id
+                                    ? <div>
+                                        <DatePicker
+                                          className="btn btn-outline-secondary rounded btn-sm"
+                                          dateFormat={'MMM yyyy'}
+                                          isClearable={false}
+                                          onChange={date => setContribDate(date)}
+                                          readOnly={pension.loading}
+                                          scrollableYearDropdown
+                                          selected={contribDate}
+                                          showIcon
+                                          showYearDropdown
+                                          showMonthYearPicker
+                                          onClickOutside={() => setContribDate(null)}
+                                        />
+                                      </div>
+                                    : new Date(c.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long'})
+                                }
+
+                              </td>
+                              <td>
+                                {
+                                  editing === c.id
+                                    ? <input
+                                        autoFocus
+                                        onChange={(e) => setContribAmount(e.target.value)}
+                                        type="text"
+                                        value={contribAmount}
                                       />
-                                      <i
-                                        className="cursor-pointer mdi mdi-check text-success mr-2"
-                                        onClick={(e) => onSubmitContrib(e, pensionOpen.id)}
+                                    : <span>{c.amount} {c.currency}</span>
+                                }
+                              </td>
+                              <td>
+                                {
+                                  editing === c.id
+                                    ? <input
+                                        autoFocus
+                                        onChange={(e) => setContribUnits(e.target.value)}
+                                        type="text"
+                                        value={contribUnits}
                                       />
-                                    </>
-                                  : null
-                              }
-                            </td>
-                          </>
-                        : null
+                                    : <span>{c.units}</span>
+                                }
+                              </td>
+                              <td>
+                                {
+                                  editing === c.id
+                                    ? <>
+                                        <i
+                                          className="cursor-pointer mdi mdi-cancel text-danger mr-2"
+                                          onClick={() => setEditing("")}
+                                        />
+                                        <i
+                                          className="cursor-pointer mdi mdi-check text-success mr-2"
+                                          onClick={() => onUpdateContribution(pensionOpen.id, c.id)}
+                                        />
+                                      </>
+                                    : <i
+                                        className="cursor-pointer mdi mdi-pencil text-warning mr-2"
+                                        onClick={() => onEditContribution(c)}
+                                      />
+                                }
+                                <i
+                                  className="cursor-pointer mdi mdi-delete text-danger"
+                                  onClick={() => dispatch(api.deleteContribution(
+                                    pensionOpen.id,
+                                    c.id,
+                                    `${pensionOpen.name} for ${new Date(c.date).toLocaleDateString(
+                                      "en-US",
+                                      {month: "short", year: "numeric"}
+                                    )}`))}
+                                />
+                              </td>
+                            </tr>)
+                          : <tr><td colSpan={4} className={"text-center"}>Please select a pension fund</td></tr>
                     }
-
-                  </tr>
-
-                  {
-                    pension.loading || pension.loadingItems?.includes(pensionOpen?.id)
-                      ? <tr><td><Circles
-                          visible
-                          width="100%"
-                          ariaLabel="ball-triangle-loading"
-                          wrapperStyle={{ float: 'right' }}
-                          color="orange"
-                        /></td></tr>
-                      : pensionOpen
-                        ? pensionOpen.contributions.map(c =>
-                          <tr key={`contrib-${c.id}`}>
-                            <td>
-                              {
-                                editing === c.id
-                                  ? <div>
-                                      <DatePicker
-                                        className="btn btn-outline-secondary rounded btn-sm"
-                                        dateFormat={'MMM yyyy'}
-                                        isClearable={false}
-                                        onChange={date => setContribDate(date)}
-                                        readOnly={pension.loading}
-                                        scrollableYearDropdown
-                                        selected={contribDate}
-                                        showIcon
-                                        showYearDropdown
-                                        showMonthYearPicker
-                                        onClickOutside={() => setContribDate(null)}
-                                      />
-                                    </div>
-                                  : new Date(c.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long'})
-                              }
-
-                            </td>
-                            <td>
-                              {
-                                editing === c.id
-                                  ? <input
-                                      autoFocus
-                                      onChange={(e) => setContribAmount(e.target.value)}
-                                      type="text"
-                                      value={contribAmount}
-                                    />
-                                  : <span>{c.amount} {c.currency}</span>
-                              }
-                            </td>
-                            <td>
-                              {
-                                editing === c.id
-                                  ? <input
-                                      autoFocus
-                                      onChange={(e) => setContribUnits(e.target.value)}
-                                      type="text"
-                                      value={contribUnits}
-                                    />
-                                  : <span>{c.units}</span>
-                              }
-                            </td>
-                            <td>
-                              {
-                                editing === c.id
-                                  ? <>
-                                      <i
-                                        className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                        onClick={() => setEditing("")}
-                                      />
-                                      <i
-                                        className="cursor-pointer mdi mdi-check text-success mr-2"
-                                        onClick={() => onUpdateContribution(pensionOpen.id, c.id)}
-                                      />
-                                    </>
-                                  : <i
-                                      className="cursor-pointer mdi mdi-pencil text-warning mr-2"
-                                      onClick={() => onEditContribution(c)}
-                                    />
-                              }
-                              <i
-                                className="cursor-pointer mdi mdi-sync-alert text-danger mr-2"
-                                onClick={() => dispatch(api.syncContributionUnits(pensionOpen.id, c.id))}
-                              />
-                              <i
-                                className="cursor-pointer mdi mdi-delete text-danger"
-                                onClick={() => dispatch(api.deleteContribution(
-                                  pensionOpen.id,
-                                  c.id,
-                                  `${pensionOpen.name} for ${new Date(c.date).toLocaleDateString(
-                                    "en-US",
-                                    {month: "short", year: "numeric"}
-                                  )}`))}
-                              />
-                            </td>
-                          </tr>)
-                        : <tr><td colSpan={4} className={"text-center"}>Please select a pension fund</td></tr>
-                  }
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
+              {
+                pensionOpen
+                  ? <b className={"text-small text-secondary"}>Total: {pensionOpen?.contributions?.length || 0}</b>
+                  : null
+              }
             </div>
           </div>
         </div>

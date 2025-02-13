@@ -178,20 +178,6 @@ export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, U
     })
     .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
   }
-  syncContributionUnits = (pensionId, contributionId) => dispatch => {
-    dispatch(this.constructor.methods.setLoading())
-    axios
-      .patch(
-        `${this.constructor.baseUrl}/${pensionId}/sync-units/`,
-        {contribution_id: contributionId},
-        {headers: { Authorization: this.token } }
-      )
-    .then(response => {
-      dispatch(this.constructor.methods.update(response.data))
-      toast.success(`Contribution units calculated successfully!`, toastParams);
-    })
-    .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
-  }
 }
 
 export class StocksApi extends mix(ListApi, TokenMixin) {

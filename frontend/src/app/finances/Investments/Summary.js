@@ -4,21 +4,27 @@ import { Line } from 'react-chartjs-2';
 import { Circles } from "react-loader-spinner";
 import Marquee from "react-fast-marquee";
 
-import { InvestmentsApi } from '../../../api/finance';
+import { InvestmentsApi, PensionApi } from '../../../api/finance';
 import ListItem from "../../shared/ListItem";
 import Errors from "../../shared/Errors";
 import { formatDate } from '../../earthquakes/Earthquakes';
+import { getEvaluation, getPnl } from './Pension';
 
 const Summary = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const state = useSelector(state => state.investments)
+  const pension = useSelector(s => s.pension)
 
   const api = new InvestmentsApi(token)
+  const pensionApi = new PensionApi(token)
 
-  useEffect(() => {
+  const refresh = () => {
     dispatch(api.getList())
-  }, []);
+    dispatch(pensionApi.getList())
+  }
+
+  useEffect(refresh, []);
 
   return <div>
     <div className="page-header mb-0">
@@ -27,7 +33,7 @@ const Summary = () => {
         <button
           type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(api.getList())}
+          onClick={refresh}
         >
           <i className="mdi mdi-refresh" />
         </button>
@@ -43,10 +49,13 @@ const Summary = () => {
 
     {/* Top Cards - Summary, Remaining, Paid */}
     <div className="row">
-      <div className="col-sm-12 col-lg-3 grid-margin">
+      <div className="col-lg-12 col-xl-3 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h5>Summary</h5>
+            <h5 className={"mb-0"}>
+              Summary
+              <p className={"text-small text-muted"}>*pension not included</p>
+            </h5>
             {
               state.loading
                 ? <Circles />
@@ -100,7 +109,7 @@ const Summary = () => {
           </div>
       </div>
       {
-        ["bonds", "deposits", "pension"].map(entry => <div key={entry} className="col-sm-12 col-lg-3 grid-margin">
+        ["bonds", "deposits"].map(entry => <div key={entry} className="col-lg-12 col-xl-3 grid-margin">
         <div className="card">
           <div className="card-body">
             <h5>{entry[0].toUpperCase() + entry.slice(1)}</h5>
@@ -189,6 +198,47 @@ const Summary = () => {
           </div>
         </div>
       </div>)
+      }
+
+      {
+        <div className="col-lg-12 col-xl-3 grid-margin">
+          <div className="card">
+            <div className="card-body">
+              <h5>
+                Pension
+                <button
+                  type="button"
+                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                  onClick={() => dispatch(pensionApi.getList())}
+                >
+                  <i className="mdi mdi-refresh" />
+                </button>
+              </h5>
+              {
+                pension.loading
+                  ? <Circles />
+                  : <>
+                      <ListItem
+                        label={`Active (RON)`}
+                        value={
+                          pension.results?.map(p => getEvaluation(p, true)).reduce((accumulator, currentValue) =>
+                            accumulator + parseFloat(currentValue), 0
+                          ).toFixed(2)
+                        }
+                        textType={"info"}
+                      />
+                    <ListItem
+                      label={"Profit / Loss"}
+                      value={
+                        pension.results?.map(p => getPnl(p, true)).reduce((acc, val) => acc + parseFloat(val), 0).toFixed(2)
+                      }
+                      textType={'warning'}
+                    />
+                  </>
+              }
+            </div>
+          </div>
+        </div>
       }
 
     </div>
@@ -314,51 +364,77 @@ const Summary = () => {
 
       }
       {
-        state.pension?.unit_values
-          ? Object.keys(state.pension.unit_values).map(pensionName => <div key={pensionName} className="col-sm-6 grid-margin stretch-card">
+        pension.results?.map(p =>
+          <div key={p.id} className="col-sm-12 grid-margin stretch-card">
             <div className="card">
               <div className="card-body">
                 <h6 className="card-title">
-                  {pensionName} unit values
+                  {p.name}
                   <button
                     type={'button'}
                     className={'btn btn-outline-success btn-sm border-0 bg-transparent'}
-                    onClick={() => dispatch(api.getList())}
+                    onClick={() => dispatch(pensionApi.getList())}
                   >
                     <i className={'mdi mdi-refresh'} />
                   </button>
                 </h6>
                 {
-                  state.loading
+                  pension.loading
                     ? <Circles/>
-                    : <Line data={{
-                        labels: state.pension.unit_values[pensionName]?.map(rate => rate.date),
-                        datasets: [
-                          {
-                            data: state.pension.unit_values[pensionName]?.map(rate => rate.value),
-                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                            borderColor: 'rgb(76,255,0)',
-                            borderWidth: 1,
-                            fill: false
-                          },
-                        ]
-                      }} options={{
-                        scales: {
-                          yAxes: [{
-                            ticks: {beginAtZero: true, precision: 0.1},
-                            gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                          }],
-                          xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
-                        },
-                        legend: {display: false},
-                      }}/>
+                    : <div className={"row"}>
+                        <div className={"col-lg-6"}>
+                          <Line data={{
+                            labels: p.contributions?.map(item => item.date).reverse(),
+                            datasets: [
+                              {
+                                data: p.contributions?.map(item => item.amount).reverse(),
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                borderColor: 'rgb(76,255,0)',
+                                borderWidth: 1,
+                                fill: false,
+                                label: "Contribution"
+                              },
+                            ]
+                          }} options={{
+                            scales: {
+                              yAxes: [{
+                                ticks: {beginAtZero: true, precision: 0.1},
+                                gridLines: {color: "rgba(204, 204, 204,0.1)"},
+                              }],
+                              xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                            },
+                          }}/>
+                        </div>
+                        <div className={"col-lg-6"}>
+                          <Line data={{
+                            labels: p.contributions?.map(item => item.date).reverse(),
+                            datasets: [
+                              {
+                                data: p.contributions?.map(item => item.unit_value).reverse(),
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                borderColor: 'rgb(12,57,198)',
+                                borderWidth: 1,
+                                fill: false,
+                                label: "Value"
+                              },
+                            ]
+                          }} options={{
+                            scales: {
+                              yAxes: [{
+                                ticks: {beginAtZero: true, precision: 0.1},
+                                gridLines: {color: "rgba(204, 204, 204,0.1)"},
+                              }],
+                              xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                            },
+                          }}/>
+                        </div>
+                    </div>
                 }
               </div>
             </div>
-          </div>)
-        : null
+          </div>
+        )
       }
-
     </div>
   </div>
 }
