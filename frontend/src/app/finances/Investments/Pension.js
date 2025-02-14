@@ -43,12 +43,14 @@ const Pension = () => {
 
   const [pensionOpen, setPensionOpen] = useState(null)
 
-  const [contribAddOpen, setContribAddOpen] = useState(false)
 
   const [contribAmount, setContribAmount] = useState(0)
   const [contribDate, setContribDate] = useState(new Date())
   const [contribUnits, setContribUnits] = useState(0)
-  const [editing, setEditing] = useState("")
+
+  const [contribAddOpen, setContribAddOpen] = useState(false)
+  const [contribToEdit, setContribToEdit] = useState(null)
+  const [contribToDelete, setContribToDelete] = useState(null)
 
   const clearModal = () => {
     setName("")
@@ -61,21 +63,11 @@ const Pension = () => {
     clearModal()
   }
 
-  const onAddContribution = () => {
-    if (!contribAddOpen) {
-      setEditing(null);
-      setContribDate(new Date())
-      setContribAmount(0)
-      setContribUnits(0)
-    }
-    setContribAddOpen(!contribAddOpen)
-  }
   const onEditContribution = (c) => {
     setContribAmount(c.amount)
     setContribDate(new Date(c.date))
     setContribUnits(c.units)
-    setEditing(c.id);
-    setContribAddOpen(false)
+    setContribToEdit(c.id);
   }
 
   const onUpdateContribution = (pensionId, contributionId) => {
@@ -88,7 +80,7 @@ const Pension = () => {
         units: contribUnits
       }
     ))
-    setEditing("")
+    setContribToEdit(null)
   }
 
   const onSubmit = e => {
@@ -112,6 +104,29 @@ const Pension = () => {
     dispatch(api.createContribution(pensionId, data))
     setContribAddOpen(false)
   }
+
+  // Contrib forms open/close
+  useEffect(() => {
+    if (contribAddOpen) {
+      setContribToEdit(null)
+      setContribToDelete(null)
+      setContribDate(new Date())
+      setContribAmount(0)
+      setContribUnits(0)
+    }
+  }, [contribAddOpen]);
+  useEffect(() => {
+    if (contribToDelete) {
+      setContribToEdit(null)
+      setContribAddOpen(false)
+    }
+  }, [contribToDelete]);
+  useEffect(() => {
+    if (contribToEdit) {
+      setContribAddOpen(false)
+      setContribToDelete(null)
+    }
+  }, [contribToEdit]);
 
   useEffect(() => {
     if (!pensionOpen || !pension.results) return
@@ -286,7 +301,7 @@ const Pension = () => {
                     ? <button
                         type="button"
                         className="btn btn-outline-primary btn-sm border-0 bg-transparent"
-                        onClick={onAddContribution}
+                        onClick={() => setContribAddOpen(!contribAddOpen)}
                       >
                         <i className="mdi mdi-plus" />
                       </button>
@@ -324,6 +339,7 @@ const Pension = () => {
                   </thead>
                   <tbody>
                     <tr>
+                      {/* Add contribution form */}
                       {
                         pensionOpen && contribAddOpen
                           ? <>
@@ -380,6 +396,7 @@ const Pension = () => {
 
                     </tr>
 
+                    {/* Contribution rows */}
                     {
                       pension.loading || pension.loadingItems?.includes(pensionOpen?.id)
                         ? <tr><td><Circles
@@ -395,7 +412,7 @@ const Pension = () => {
                               <td>{i + 1}</td>
                               <td>
                                 {
-                                  editing === c.id
+                                  contribToEdit === c.id
                                     ? <div>
                                         <DatePicker
                                           className="btn btn-outline-secondary rounded btn-sm"
@@ -417,7 +434,7 @@ const Pension = () => {
                               </td>
                               <td>
                                 {
-                                  editing === c.id
+                                  contribToEdit === c.id
                                     ? <input
                                         autoFocus
                                         onChange={(e) => setContribAmount(e.target.value)}
@@ -429,7 +446,7 @@ const Pension = () => {
                               </td>
                               <td>
                                 {
-                                  editing === c.id
+                                  contribToEdit === c.id
                                     ? <input
                                         autoFocus
                                         onChange={(e) => setContribUnits(e.target.value)}
@@ -441,32 +458,48 @@ const Pension = () => {
                               </td>
                               <td>
                                 {
-                                  editing === c.id
+                                  contribToEdit === c.id
                                     ? <>
                                         <i
                                           className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                          onClick={() => setEditing("")}
+                                          onClick={() => setContribToEdit(null)}
                                         />
                                         <i
                                           className="cursor-pointer mdi mdi-check text-success mr-2"
                                           onClick={() => onUpdateContribution(pensionOpen.id, c.id)}
                                         />
                                       </>
-                                    : <i
-                                        className="cursor-pointer mdi mdi-pencil text-warning mr-2"
-                                        onClick={() => onEditContribution(c)}
-                                      />
+                                    : contribToDelete === c.id
+                                      ? <>
+                                          <div className={"text-danger mb-2"}>Delete?</div>
+                                          <div>
+                                            <i
+                                              className="cursor-pointer mdi mdi-cancel text-danger mr-2"
+                                              onClick={() => setContribToDelete(null)}
+                                            />
+                                            <i
+                                              className="cursor-pointer mdi mdi-check text-success mr-2"
+                                              onClick={() => dispatch(api.deleteContribution(
+                                                pensionOpen.id,
+                                                c.id,
+                                                `${pensionOpen.name} for ${new Date(c.date).toLocaleDateString(
+                                                  "en-US",
+                                                  {month: "short", year: "numeric"}
+                                                )}`))}
+                                            />
+                                          </div>
+                                        </>
+                                      : <>
+                                          <i
+                                            className="cursor-pointer mdi mdi-pencil text-warning mr-2"
+                                            onClick={() => onEditContribution(c)}
+                                          />
+                                          <i
+                                            className="cursor-pointer mdi mdi-delete text-danger"
+                                            onClick={() => setContribToDelete(c.id)}
+                                          />
+                                      </>
                                 }
-                                <i
-                                  className="cursor-pointer mdi mdi-delete text-danger"
-                                  onClick={() => dispatch(api.deleteContribution(
-                                    pensionOpen.id,
-                                    c.id,
-                                    `${pensionOpen.name} for ${new Date(c.date).toLocaleDateString(
-                                      "en-US",
-                                      {month: "short", year: "numeric"}
-                                    )}`))}
-                                />
                               </td>
                             </tr>)
                           : <tr><td colSpan={4} className={"text-center"}>Please select a pension fund</td></tr>
