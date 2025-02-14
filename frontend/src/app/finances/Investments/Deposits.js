@@ -16,9 +16,12 @@ import { formatDate, formatTime } from '../../earthquakes/Earthquakes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker/es';
+import { useHistory } from 'react-router-dom';
 
 const Deposits = () => {
   const dispatch = useDispatch();
+  const history = useHistory()
+
   const state = useSelector(state => state.deposits)
   const token = useSelector((state) => state.auth.token)
 
@@ -115,69 +118,39 @@ const Deposits = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
+          <li className="breadcrumb-item">
+            <span
+              className={"cursor-pointer text-primary"}
+              onClick={() => history.push("/investments/summary")}
+            >
+              Investments
+            </span>
+          </li>
           <li className="breadcrumb-item active" aria-current="page">Deposits</li>
         </ol>
       </nav>
     </div>
 
-    <Errors errors={state.errors}/>
+    {
+      state.loading
+        ? <Circles
+            height={20}
+            width={20}
+            wrapperStyle={{ display: 'default' }}
+            wrapperClass="btn"
+          />
+        : <b className={"text-small text-muted"}>
+            <div>Count: {state.count}</div>
+            <div>
+              Profit: {state.aggregations?.pnl ? `${state.aggregations?.pnl} RON` : '-'}
+            </div>
+            <div className="mb-1">
+              Tax: {state.aggregations?.tax ? `${state.aggregations?.tax} RON` : '-'}
+            </div>
+          </b>
+    }
 
-    {/* Top cards */}
-    <div className="row">
-      <div className="col-sm-12 grid-margin">
-        <div className="card">
-          <div className="card-body">
-            <h6>
-              Portfolio&nbsp;
-              {
-                state.loading
-                  ? <Circles
-                      height={20}
-                      width={20}
-                      wrapperStyle={{ display: 'default' }}
-                      wrapperClass="btn"
-                    />
-                  : null
-              }
-            </h6>
-            {
-              !state.loading && state.results
-                ? <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                    <ListItem
-                      label={'Deposits'}
-                      value={state.count || '-'}
-                      textType={'primary'}
-                      className="mr-3"
-                    />
-                    <ListItem
-                      label="Profit"
-                      value={state.aggregations?.pnl ? `${state.aggregations?.pnl} RON` : '-'}
-                      textType={state.aggregations?.pnl > 0 ? 'success' : ''}
-                      className="mr-3"
-                    />
-                    <ListItem
-                      label="Tax"
-                      value={state.aggregations?.tax ? `${state.aggregations?.tax} RON` : '-'}
-                      textType={state.aggregations?.tax > 0 ? 'danger' : 'warning'}
-                      className="mr-3"
-                    />
-                    {
-                      state.currencies.filter(c => Object.keys(state.aggregations).includes(c[0])).map(currency => <ListItem
-                        key={currency}
-                        label={currency}
-                        value={`${state.aggregations?.[currency]} ${currency}`}
-                        textType={'success'}
-                        className="mr-3"
-                      />)
-                    }
-                  </div>
-                : null
-            }
-          </div>
-        </div>
-      </div>
-    </div>
+    <Errors errors={state.errors}/>
 
     {/* Last deposit */}
     <div className="row">

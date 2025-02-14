@@ -11,6 +11,7 @@ import Errors from "../../shared/Errors";
 import ListItem from "../../shared/ListItem";
 import { selectItem, setModalOpen } from "../../../redux/pensionSlice";
 import { PensionApi } from '../../../api/finance';
+import { useHistory } from 'react-router-dom';
 
 export const getEvaluation = (p, justValue = false) => {
   const evaluation = parseFloat(p.latest_unit_value || 0) * (p.total_units || 0)
@@ -29,6 +30,8 @@ export const getPnl = (p, justValue = false) => {
 
 const Pension = () => {
   const dispatch = useDispatch();
+  const history = useHistory()
+
   const pension = useSelector(state => state.pension)
   const token = useSelector((state) => state.auth.token)
 
@@ -157,7 +160,14 @@ const Pension = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
+          <li className="breadcrumb-item">
+            <span
+              className={"cursor-pointer text-primary"}
+              onClick={() => history.push("/investments/summary")}
+            >
+              Investments
+            </span>
+          </li>
           <li className="breadcrumb-item active" aria-current="page">Pension</li>
         </ol>
       </nav>

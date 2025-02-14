@@ -14,9 +14,12 @@ import { capitalize } from "../../utils";
 import { setKwargs } from "../../../redux/cryptoSlice";
 import { setKwargs as setPnlKwargs } from "../../../redux/cryptoPnlSlice";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
+import { useHistory } from 'react-router-dom';
 
 const Crypto = () => {
   const dispatch = useDispatch();
+  const history = useHistory()
+
   const crypto = useSelector(state => state.crypto)
   const pnl = useSelector(state => state.cryptoPnl)
   const token = useSelector((state) => state.auth.token)
@@ -93,8 +96,15 @@ const Crypto = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
-          <li className="breadcrumb-item active" aria-current="page">Stocks</li>
+          <li className="breadcrumb-item">
+            <span
+              className={"cursor-pointer text-primary"}
+              onClick={() => history.push("/investments/summary")}
+            >
+              Investments
+            </span>
+          </li>
+          <li className="breadcrumb-item active" aria-current="page">Crypto</li>
         </ol>
       </nav>
     </div>
@@ -103,7 +113,7 @@ const Crypto = () => {
 
     {/* Top cards */}
     <div className="row">
-      <div className="col-sm-4 grid-margin">
+      <div className={`col-sm-${crypto.loading && !crypto.results ? 12 : 4} grid-margin`}>
         <div className="card">
           <div className="card-body">
             <h6>

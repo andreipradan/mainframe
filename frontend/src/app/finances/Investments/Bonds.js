@@ -16,9 +16,11 @@ import { formatTime } from '../../earthquakes/Earthquakes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker/es';
+import { useHistory } from 'react-router-dom';
 
 const Bonds = () => {
   const dispatch = useDispatch();
+  const history = useHistory()
   const state = useSelector(state => state.bonds)
   const token = useSelector((state) => state.auth.token)
 
@@ -123,7 +125,14 @@ const Bonds = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
+          <li className="breadcrumb-item">
+            <span
+              className={"cursor-pointer text-primary"}
+              onClick={() => history.push("/investments/summary")}
+            >
+              Investments
+            </span>
+          </li>
           <li className="breadcrumb-item active" aria-current="page">Bonds</li>
         </ol>
       </nav>
@@ -133,7 +142,7 @@ const Bonds = () => {
 
     {/* Top cards */}
     <div className="row">
-      <div className="col-sm-12 grid-margin">
+      <div className="col-sm-12 col-xl-4 grid-margin">
         <div className="card">
           <div className="card-body">
             <h6>
@@ -160,52 +169,43 @@ const Bonds = () => {
                     />
                   {
                     state.aggregations
-                      ? <>
+                      ? state.currencies?.map(currency =>
+                        <>
+                          {
+                            ['active', 'buy', 'deposit', 'pnl', 'dividend', 'sell'].map(item =>
+                              <ListItem
+                                label={
+                                  item === 'pnl'
+                                    ? 'Profit / Loss'
+                                    : item[0].toUpperCase() + item.slice(1)
+                                }
+                                value={`${state.aggregations[`${item}_${currency}`]} ${currency}`}
+                                textType={
+                                  item === 'dividend'
+                                    ? 'success'
+                                    : item === 'pnl'
+                                      ? state.aggregations[`${item}_${currency}`] > 0
+                                        ? 'success' : 'danger'
+                                      : item === 'sell'
+                                        ? 'warning'
+                                        : item === 'active'
+                                          ? 'info'
+                                          : 'primary'
+                                }
+                                className="mr-3"
+                              />)
+                          }
                           <ListItem
-                            label="Active"
-                            value={`${state.aggregations.active_RON} RON`}
-                            textType={'primary'}
+                            label={"Profit"}
+                            value={`${state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`]} ${currency}`}
+                            textType={
+                              state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`] > 0
+                                ? 'success': 'danger'
+                            }
                             className="mr-3"
                           />
-                          <ListItem
-                            label="Deposited"
-                            value={`${state.aggregations.deposited} RON`}
-                            textType={'info'}
-                            className="mr-3"
-                          />
-                          <ListItem
-                            label="Invested"
-                            value={`${state.aggregations.invested} RON`}
-                            textType={'info'}
-                            className="mr-3"
-                          />
-                          <ListItem
-                            label="Sold"
-                            value={`${state.aggregations.sold} RON`}
-                            textType={'warning'}
-                            className="mr-3"
-                          />
-                          <ListItem
-                            label="Profit / Loss"
-                            value={`${state.aggregations.pnl} RON`}
-                            textType={state.aggregations.pnl > 0 ? 'success' : 'warning'}
-                            className="mr-3"
-                          />
-                          <ListItem
-                            label="Dividends"
-                            value={`${state.aggregations.dividends} RON`}
-                            textType={'success'}
-                            className="mr-3"
-                          />
-                          <ListItem
-                            label="Profit"
-                            value={`${state.aggregations.pnl + state.aggregations.dividends} RON`}
-                            textType={'success'}
-                            className="mr-3"
-                          />
-                        </>
-                      : null
-                  }
+                        </>)
+                      : null}
                   </div>
                 : null
             }
@@ -215,7 +215,7 @@ const Bonds = () => {
     </div>
 
     {/* Last Transaction */}
-    <div className="row">
+    <div className="row mt-2">
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">

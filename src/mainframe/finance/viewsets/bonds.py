@@ -29,11 +29,6 @@ class BondsViewSet(viewsets.ModelViewSet):
         )
         response.data.update(
             aggregations=Bond.objects.aggregate(
-                deposited=Sum("net", filter=Q(type=Bond.TYPE_DEPOSIT)),
-                dividends=Sum("net", filter=Q(type=Bond.TYPE_DIVIDEND)),
-                invested=Sum("net", filter=Q(type=Bond.TYPE_BUY)),
-                pnl=Sum("pnl"),
-                sold=Sum("net", filter=Q(type=Bond.TYPE_SELL)),
                 **{
                     f"active_{currency}": Sum(
                         "net",
@@ -45,7 +40,23 @@ class BondsViewSet(viewsets.ModelViewSet):
                     )
                     for currency in bond_currencies
                 },
+                **{
+                    f"pnl_{currency}": Sum("net", filter=Q(currency=currency))
+                    for currency in bond_currencies
+                },
+                **{
+                    f"{bond_type}_{currency}": Sum(
+                        "net",
+                        filter=Q(
+                            currency=currency,
+                            type=getattr(Bond, f"TYPE_{bond_type.upper()}"),
+                        ),
+                    )
+                    for currency in bond_currencies
+                    for bond_type in ["buy", "deposit", "dividend", "sell"]
+                },
             ),
+            currencies=bond_currencies,
             tickers=(
                 Bond.objects.values_list("ticker", flat=True)
                 .distinct("ticker")

@@ -15,9 +15,12 @@ import { setKwargs as setPnlKwargs } from "../../../redux/pnlSlice";
 import { setKwargs } from "../../../redux/stocksSlice";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import { StocksApi, StocksPnlApi } from '../../../api/finance';
+import { useHistory } from 'react-router-dom';
 
 const Stocks = () => {
   const dispatch = useDispatch();
+  const history = useHistory()
+
   const pnl = useSelector(state => state.pnl)
   const stocks = useSelector(state => state.stocks)
   const token = useSelector((state) => state.auth.token)
@@ -107,7 +110,14 @@ const Stocks = () => {
       </h3>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
-          <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Finance</a></li>
+          <li className="breadcrumb-item">
+            <span
+              className={"cursor-pointer text-primary"}
+              onClick={() => history.push("/investments/summary")}
+            >
+              Investments
+            </span>
+          </li>
           <li className="breadcrumb-item active" aria-current="page">Stocks</li>
         </ol>
       </nav>
