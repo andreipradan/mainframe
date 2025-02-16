@@ -6,6 +6,7 @@ export const authSlice = createSlice({
   initialState: {
     errors: null,
     loading: false,
+    redirectUrl: null,
     token: Cookie.get('token') || null,
 	  user: Cookie.get("user") ? JSON.parse(Cookie.get('user')) : null,
   },
@@ -16,8 +17,9 @@ export const authSlice = createSlice({
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
-    logout: state => {
+    logout: (state, action) => {
       state.errors = null;
+      state.redirectUrl = window.location.pathname
       state.token = null;
       state.user = null;
     },
@@ -31,6 +33,11 @@ export const authSlice = createSlice({
   },
 });
 
-export const { login, logout, setErrors, setLoading } = authSlice.actions;
+export const {
+  login,
+  logout,
+  setErrors,
+  setLoading
+} = authSlice.actions;
 
 export default authSlice.reducer;

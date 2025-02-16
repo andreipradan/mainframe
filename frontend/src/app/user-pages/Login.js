@@ -16,7 +16,7 @@ const Login = () => {
 
   const login = async (e) => {
     e.preventDefault()
-    dispatch(AuthApi.Login({email, password}, history))
+    dispatch(AuthApi.Login({email, password}, history, auth.redirectUrl))
   }
 
   useEffect(() => setMessageOpen(Boolean(auth.message)), [auth.message])

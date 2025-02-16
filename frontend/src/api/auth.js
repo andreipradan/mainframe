@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 export const toastParams = {pauseOnFocusLoss: true, theme: "colored"}
 
 class AuthApi {
-  static Login = (data, history) => dispatch => {
+  static Login = (data, history, redirectUrl) => dispatch => {
     dispatch(setLoading(true))
     axios.post(`${base}/login`, data)
     .then(response => {
@@ -15,7 +15,13 @@ class AuthApi {
       Cookie.set('user', JSON.stringify(response.data.user));
       dispatch(login(response.data))
       toast.info(`Welcome ${response.data.user.username} !`, toastParams)
-      history.push(response.data.user?.is_staff ? "/" : "/expenses")
+      history.push(
+        redirectUrl
+          ? redirectUrl
+          : response.data.user?.is_staff
+            ? "/"
+            : "/expenses"
+      )
     })
     .catch((err) => handleErrors(err, dispatch, setErrors));
   };

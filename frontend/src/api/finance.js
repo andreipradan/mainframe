@@ -91,7 +91,7 @@ export class BondsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, Upd
   }
 }
 
-export class CryptoApi extends mix(ListApi, TokenMixin) {
+export class CryptoApi extends mix(ListApi, TokenMixin, UploadApi) {
   static baseUrl = "finance/crypto"
   static methods = {
     set: setCrypto,
@@ -100,7 +100,7 @@ export class CryptoApi extends mix(ListApi, TokenMixin) {
   }
 }
 
-export class CryptoPnlApi extends mix(ListApi, TokenMixin) {
+export class CryptoPnlApi extends mix(ListApi, TokenMixin, UploadApi) {
   static baseUrl = "finance/crypto/pnl"
   static methods = {
     set: setCryptoPnl,
