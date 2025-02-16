@@ -11,11 +11,6 @@ def backup_finance_model(model):
     call_command("backup", app="finance", model=model)
 
 
-@db_task(expires=30)
-def finance_import(doc_type, **kwargs):
-    call_command(f"import_{doc_type}", **kwargs)
-
-
 @db_task()
 def predict(queryset, logger):
     import pandas as pd
