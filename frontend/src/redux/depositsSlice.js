@@ -6,6 +6,7 @@ export const {
   create,
   selectItem,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingItems,

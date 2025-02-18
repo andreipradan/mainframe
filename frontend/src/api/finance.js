@@ -12,6 +12,7 @@ import {
 import {
   create as createBonds,
   set as setBonds,
+  setCompletedLoadingItem as setBondsCompletedLoadingItem,
   setErrors as setBondsErrors,
   setLoading as setBondsLoading,
   setLoadingItems as setBondsLoadingItems,
@@ -30,6 +31,7 @@ import {
 import {
   create as createDeposits,
   set as setDeposits,
+  setCompletedLoadingItem as setDepositsCompletedLoadingItem,
   setErrors as setDepositsErrors,
   setLoading as setDepositsLoading,
   setLoadingItems as setDepositsLoadingItems,
@@ -86,6 +88,7 @@ export class BondsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, Upd
   static methods = {
     create: createBonds,
     set: setBonds,
+    setCompletedLoadingItem: setBondsCompletedLoadingItem,
     setErrors: setBondsErrors,
     setLoading: setBondsLoading,
     setLoadingItems: setBondsLoadingItems,
@@ -116,6 +119,7 @@ export class DepositsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, 
   static methods = {
     create: createDeposits,
     set: setDeposits,
+    setCompletedLoadingItem: setDepositsCompletedLoadingItem,
     setErrors: setDepositsErrors,
     setLoading: setDepositsLoading,
     setLoadingItems: setDepositsLoadingItems,
@@ -137,6 +141,7 @@ export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, U
   static methods = {
     create: createPension,
     set: setPension,
+    setCompletedLoadingItem: setPensionCompletedLoadingItem,
     setErrors: setPensionErrors,
     setLoading: setPensionLoading,
     setLoadingItems: setPensionLoadingItems,

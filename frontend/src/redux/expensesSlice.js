@@ -7,6 +7,7 @@ export const {
   loadingItems,
   selectItem,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setItem,
   setKwargs,

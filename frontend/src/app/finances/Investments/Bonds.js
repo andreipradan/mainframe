@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import Marquee from "react-fast-marquee";
+import { useHistory } from 'react-router-dom';
 import BottomPagination from "../../shared/BottomPagination";
+import Button from 'react-bootstrap/Button';
+import DatePicker from 'react-datepicker/es';
 import Form from "react-bootstrap/Form";
+import Marquee from "react-fast-marquee";
+import Modal from 'react-bootstrap/Modal';
 import Select from "react-select";
 import { Circles, ColorRing } from 'react-loader-spinner';
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,10 +17,6 @@ import { selectItem, setKwargs, setModalOpen } from "../../../redux/bondsSlice";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import { BondsApi } from '../../../api/finance';
 import { formatTime } from '../../earthquakes/Earthquakes';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
-import DatePicker from 'react-datepicker/es';
-import { useHistory } from 'react-router-dom';
 
 const Bonds = () => {
   const dispatch = useDispatch();
@@ -39,6 +39,8 @@ const Bonds = () => {
   const [ticker, setTicker] = useState("")
   const [type, setType] = useState(null)
 
+  const [activeOnlyChecked, setActiveOnlyChecked] = useState(false)
+
   const clearModal = () => {
     setCommission("")
     setDate(null)
@@ -59,6 +61,11 @@ const Bonds = () => {
     clearModal()
   }
 
+  const onActiveOnlyChange = () => {
+    setActiveOnlyChecked(!activeOnlyChecked)
+    dispatch(setKwargs({...(state.kwargs || {}), active_only: !activeOnlyChecked}))
+
+  }
   const onChange = (what, newValue, store) => {
     const newTypes = newValue.map(v => v.value)
     dispatch(setKwargs({...(store.kwargs || {}), [what]: newTypes, page: 1}))
@@ -250,7 +257,6 @@ const Bonds = () => {
             <h4 className="card-title">
               {state.modalOpen ? null : <Errors errors={state.errors}/>}
             </h4>
-
             <div className="table-responsive">
 
               {/* Title and filters */}
@@ -273,6 +279,16 @@ const Bonds = () => {
                         <i className="mdi mdi-plus" />
                       </button>
                     </h6>
+                    <div className="form-check">
+                      <label htmlFor="" className="form-check-label">
+                        <input
+                            className="checkbox"
+                            type="checkbox"
+                            checked={activeOnlyChecked}
+                            onChange={onActiveOnlyChange}
+                        />Active only <i className="input-helper"/>
+                      </label>
+                    </div>
                   </div>
 
                   {/* Filters */}

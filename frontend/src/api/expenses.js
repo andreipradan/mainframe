@@ -12,6 +12,7 @@ import {
 import {
   create as createExpense,
   set as setExpenses,
+  setCompletedLoadingItem as setExpensesCompletedLoadingItem,
   setErrors as setExpensesErrors,
   setLoading as setExpensesLoading,
   setLoadingItems as setExpensesLoadingItems,
@@ -79,6 +80,7 @@ export class ExpensesApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, 
   static methods = {
     create: createExpense,
     set: setExpenses,
+    setCompletedLoadingItem: setExpensesCompletedLoadingItem,
     setErrors: setExpensesErrors,
     setLoading: setExpensesLoading,
     setLoadingItems: setExpensesLoadingItems,

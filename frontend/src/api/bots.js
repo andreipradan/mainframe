@@ -16,7 +16,15 @@ import { CreateApi, DetailApi, ListApi, mix, UpdateApi, TokenMixin} from './shar
 class BotsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
   static baseUrl = "telegram/bots"
   static displayField = "full_name"
-  static methods = {create, set, setErrors, setLoading, setLoadingItems, update}
+  static methods = {
+    create,
+    set,
+    setCompletedLoadingItem,
+    setErrors,
+    setLoading,
+    setLoadingItems,
+    update
+  }
 
   sync = botId => dispatch => {
     dispatch(setLoadingItems(botId));
