@@ -21,13 +21,13 @@ class WatcherError(Exception): ...
 class WatcherElementsNotFound(WatcherError): ...
 
 
-def get_elements(watcher, logger, retry=False):
+def fetch_element(watcher, logger, retry=False):
     soup, error = fetch(watcher.url, logger, retries=1, timeout=10, **watcher.request)
-    if soup and (items := soup.select(watcher.selector)):
-        return items
+    if soup and (element := soup.select_one(watcher.selector)):
+        return element
     if retry:
-        logger.warning("No elements found - retrying")
-        return get_elements(watcher, logger, retry=False)
+        logger.warning("Element '%s' not found - retrying", watcher.selector)
+        return fetch_element(watcher, logger, retry=False)
     if error:
         raise WatcherError(error)
     raise WatcherElementsNotFound(f"[{watcher.name}] No elements found")
@@ -51,17 +51,16 @@ class Watcher(TimeStampedModel):
     def run(self):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
-            elements = get_elements(self, logger, retry=True)
-            found = elements[0 if self.top else -1]
+            element = fetch_element(self, logger, retry=True)
             if self.latest.get("title") == (
-                title := (found.text.strip() or found.attrs.get("title"))
+                title := (element.text.strip() or element.attrs.get("title"))
             ):
                 logger.info("No new items")
                 return False
             url = (
-                urljoin(self.url, found.attrs["href"])
-                if not found.attrs["href"].startswith("http")
-                else found.attrs["href"]
+                urljoin(self.url, element.attrs["href"])
+                if not element.attrs["href"].startswith("http")
+                else element.attrs["href"]
             )
             self.latest = {
                 "title": title,

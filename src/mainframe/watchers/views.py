@@ -6,8 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAdminUser
 
-from mainframe.clients.scraper import fetch
-from mainframe.watchers.models import Watcher, WatcherError
+from mainframe.watchers.models import Watcher, WatcherError, fetch_element
 from mainframe.watchers.serializers import WatcherSerializer
 
 logger = logging.getLogger(__name__)
@@ -29,14 +28,16 @@ class WatcherViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["PUT"])
     def test(self, request):
-        soup, error = fetch(
-            request.data["url"], logger, timeout=10, headers={"User-Agent": "foo"}
-        )
-        if error:
-            raise ValidationError(error)
+        watcher = Watcher(**request.data)
+        try:
+            element = fetch_element(watcher, logger)
+        except WatcherError as e:
+            logger.error(e)
+            raise ValidationError(e) from e
 
-        elements = soup.select(request.data["selector"])
-        if not elements:
-            raise ValidationError("No elements found")
-
-        return JsonResponse({"result": str(elements[0])})
+        data = {"result": str(element)}
+        if watcher.latest.get("title") == (
+            element.text.strip() or element.attrs.get("title")
+        ):
+            data["is_new"] = False
+        return JsonResponse(data)
