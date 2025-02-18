@@ -32,7 +32,7 @@ export class AccountsApi {
     axios
       .get(`${base}/${accountId}/`, { headers: { Authorization: token } })
       .then(response => dispatch(setItem(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static getList = (token, initial = false) => (dispatch) => {
     dispatch(setLoading(true));
@@ -42,7 +42,7 @@ export class AccountsApi {
         dispatch(set(response.data));
         if (initial) dispatch(selectItem(response.data.results[0].id))
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 
   static update = (token, id, data, modalOpen) => dispatch => {
@@ -55,7 +55,7 @@ export class AccountsApi {
       })
       .catch((err) => {
         dispatch(setModalOpen(modalOpen))
-        handleErrors(err, dispatch, setErrors);
+        handleErrors(err, dispatch, setErrors, setLoading);
       })
   }
 }

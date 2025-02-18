@@ -31,7 +31,7 @@ export const logLevels = {
 const Crons = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {selectedCron, results: crons, errors, loading, loadingCrons, modalOpen } = useSelector(state => state.crons)
+  const {selectedCron, results: crons, errors, loading, loadingItems, modalOpen } = useSelector(state => state.crons)
 
   const api = new CronsApi(token)
 
@@ -94,7 +94,7 @@ const Crons = () =>  {
                       !loading
                         ? crons?.length
                           ? crons.map(
-                            (cron, i) => !loadingCrons?.includes(cron.id)
+                            (cron, i) => !loadingItems?.includes(cron.id)
                               ? <tr key={i}>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">{i + 1}</td>
                                 <td onClick={() => dispatch(select(cron.id))} className="cursor-pointer">

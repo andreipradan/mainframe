@@ -25,7 +25,7 @@ const EditModal = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
   const commands = useSelector(state => state.commands)
-  const { selectedCron: cron, loadingCrons, errors, modalOpen } = useSelector(state => state.crons)
+  const { selectedCron: cron, loadingItems, errors, modalOpen } = useSelector(state => state.crons)
 
   const api = new CronsApi(token)
 
@@ -194,7 +194,7 @@ const EditModal = () => {
       </Modal.Title>
     </Modal.Header>
     {
-      loadingCrons?.includes(cron?.id)
+      loadingItems?.includes(cron?.id)
         ? <ColorRing
           width = "100%"
           height = "50"

@@ -2,6 +2,7 @@ import {
   create,
   deleteItem,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingItems,
@@ -12,6 +13,15 @@ import { CreateApi, DeleteApi, ListApi, mix, TokenMixin, UpdateApi } from './sha
 
 class SourcesApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, UpdateApi) {
   static baseUrl = "sources"
-  static methods = {create, delete: deleteItem, set, setErrors, setLoading, setLoadingItems, update}
+  static methods = {
+    create,
+    delete: deleteItem,
+    set,
+    setCompletedLoadingItem,
+    setErrors,
+    setLoading,
+    setLoadingItems,
+    update
+  }
 }
 export default SourcesApi;

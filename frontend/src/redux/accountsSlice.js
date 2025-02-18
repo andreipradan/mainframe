@@ -20,6 +20,7 @@ export const {
   setAnalytics,
   setErrors,
   setLoading,
+  setLoadingItems,
   setModalOpen,
   update
 } = accountsSlice.actions;

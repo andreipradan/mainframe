@@ -12,6 +12,8 @@ export const authSlice = createSlice({
   },
   reducers: {
     login: (state, action) => {
+      Cookie.set('token', action.payload.token);
+      Cookie.set('user', JSON.stringify(action.payload.user));
       state.errors = null;
       state.loading = false;
       state.token = action.payload.token;
@@ -22,6 +24,9 @@ export const authSlice = createSlice({
       state.redirectUrl = window.location.pathname
       state.token = null;
       state.user = null;
+      Cookie.remove('expires_at');
+      Cookie.remove('token');
+      Cookie.remove('user');
     },
     setErrors: (state, action) => {
       state.errors = action.payload

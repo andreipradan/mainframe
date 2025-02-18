@@ -8,6 +8,7 @@ export const {
   deleteItem,
   selectItem,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingItems,

@@ -1,6 +1,14 @@
 import axios from "./index";
 import {
-  create, deleteItem, set, setItem, setCompletedLoadingItem, setErrors, setLoading, setLoadingItems, update
+  create,
+  deleteItem,
+  set,
+  setCompletedLoadingItem,
+  setItem,
+  setErrors,
+  setLoading,
+  setLoadingItems,
+  update
 } from "../redux/watchersSlice";
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
@@ -10,7 +18,16 @@ import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi } 
 
 class WatchersApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
   static baseUrl = "watchers";
-  static methods = {create, delete: deleteItem, set, setErrors, setLoading, setLoadingItems, update}
+  static methods = {
+    create,
+    delete: deleteItem,
+    set,
+    setCompletedLoadingItem,
+    setErrors,
+    setLoading,
+    setLoadingItems,
+    update
+  }
   static run = (token, id) => dispatch => {
     dispatch(setLoadingItems(id));
     axios
@@ -23,17 +40,23 @@ class WatchersApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMix
         else toast.warning("No new items found", toastParams)
         dispatch(setCompletedLoadingItem(id));
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => {
+        dispatch(setCompletedLoadingItem(id))
+        handleErrors(err, dispatch, setErrors);
+      });
   }
-  static test = (token, url, selector) => dispatch => {
+  static test = (token, data) => dispatch => {
     dispatch(setLoading(true));
     axios
-      .put(`${base}test/`, {url, selector}, { headers: { Authorization: token } })
+      .put(`${base}test/`, data, { headers: { Authorization: token } })
       .then(response => {
-        toast.success(response.data.result, toastParams);
+        toast[response.data.is_new ? 'success' : 'info'](
+          <span>{response.data.is_new ? 'New item found!' : 'Existing item'}<br/>{response.data.result}</span>,
+          toastParams
+        );
         dispatch(setLoading(false))
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   }
 }
 

@@ -13,14 +13,14 @@ class LogsApi {
     axios
       .get(base + (path ? `?path=${path}` : ""), { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static getFile = (token, filename) => dispatch => {
     dispatch(setLoading(true));
     axios
       .get(`${base}?filename=${filename}`, { headers: { Authorization: token } })
       .then((response) => dispatch(setCurrentLog({contents: response.data, name: filename})))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 }
 

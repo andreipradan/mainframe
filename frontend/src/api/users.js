@@ -43,7 +43,7 @@ export class UsersApi {
     axios
       .get(base + `/?page=${page || 1}`, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static getUser = (token, id) => dispatch => {
     dispatch(setLoadingUsers(id));

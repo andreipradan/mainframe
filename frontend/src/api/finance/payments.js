@@ -1,6 +1,4 @@
-import axios from '../index';
-import { handleErrors } from '../errors';
-import { createSearchParams } from '../shared';
+import { ListApi, mix, TokenMixin, UpdateApi, UploadApi } from '../shared';
 
 import {
   set,
@@ -9,40 +7,16 @@ import {
   setLoadingItems,
   update,
 } from '../../redux/paymentSlice';
-import { toast } from 'react-toastify';
-import { toastParams } from '../auth';
 
-export class PaymentsApi {
-  static getList = (token, kwargs = null) => (dispatch) => {
-    kwargs = kwargs || {}
-    dispatch(setLoading(true));
-    axios
-      .get(`${base}/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static update = (token, id, data) => dispatch => {
-    dispatch(setLoadingItems(id))
-    axios
-      .patch(`${base}/payments/${id}/`, data, { headers: { Authorization: token } })
-      .then((response) => dispatch(update(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors))
-  };
-
-  static upload = (token, data) => dispatch => {
-    dispatch(setLoading(true))
-    axios.post(
-      `${base}/`,
-      data,
-      {headers: {Authorization: token, 'Content-Type': 'multipart/form-data'}}
-    )
-    .then((response) => {
-      dispatch(set(response.data));
-      toast.success("Payments uploaded successfully!", toastParams)
-
-    })
-    .catch((err) => handleErrors(err, dispatch, setErrors));
+export class PaymentsApi extends mix(ListApi, TokenMixin, UpdateApi, UploadApi) {
+  static baseUrl = "finance/payments"
+  static displayField = "date"
+  static methods = {
+    set,
+    setErrors,
+    setLoading,
+    setLoadingItems,
+    update,
   }
 
 }
-const base = "finance/payments"

@@ -63,7 +63,7 @@ class LightsApi extends mix(ListApi, TokenMixin) {
     axios
       .put(`${base}/turn-all-${state}/`, {}, {headers: {Authorization: token}})
       .then(() => dispatch(turn_all(state)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static turn_off = (token, lightId) => (dispatch) => {
     dispatch(setLoadingItems(lightId));

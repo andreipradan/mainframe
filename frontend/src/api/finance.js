@@ -44,6 +44,7 @@ import {
   create as createPension,
   deleteContribution,
   set as setPension,
+  setCompletedLoadingItem as setPensionCompletedLoadingItem,
   setErrors as setPensionErrors,
   setLoading as setPensionLoading,
   setLoadingItems as setPensionLoadingItems,
@@ -62,6 +63,7 @@ import {
 import {
   deleteItem as deleteTimetable,
   set as setTimetables,
+  setCompletedLoadingItem as setTimetableCompletedLoadingItem,
   setErrors as setTimetableErrors,
   setLoading as setTimetablesLoading,
   setLoadingItems as setTimetablesLoadingItems,
@@ -148,7 +150,7 @@ export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, U
         dispatch(this.constructor.methods.update(response.data))
         toast.success(`Contribution for '${data.date}' created successfully!`, toastParams);
       })
-      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoading))
   }
   deleteContribution = (pensionId, contributionId, month=null) => dispatch => {
     dispatch(this.constructor.methods.setLoadingItems(pensionId))
@@ -162,7 +164,10 @@ export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, U
         const verbose = month || contributionId
         toast.warning(`Contribution ${verbose} deleted!`, toastParams)
       })
-      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+      .catch(err => {
+        dispatch(setPensionCompletedLoadingItem(pensionId))
+        handleErrors(err, dispatch, this.constructor.methods.setErrors);
+      })
   }
   updateContribution = (pensionId, contributionId, data) => dispatch => {
     dispatch(this.constructor.methods.setLoadingItems(pensionId))
@@ -176,7 +181,10 @@ export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, U
       dispatch(this.constructor.methods.update(response.data))
       toast.success(`Contribution for ${data.date} updated!`, toastParams);
     })
-    .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+    .catch(err => {
+      dispatch(setPensionCompletedLoadingItem(pensionId))
+      handleErrors(err, dispatch, this.constructor.methods.setErrors);
+    })
   }
 }
 
@@ -205,14 +213,14 @@ export class FinanceApi {
     axios
       .get(url, { headers: { Authorization: token } })
       .then(response => dispatch(setAnalytics(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setAccountsErrors));
+      .catch((err) => handleErrors(err, dispatch, setAccountsErrors, setAccountsLoading));
   };
   static getCredit = token => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .get(`${base}/credit/`, { headers: { Authorization: token } })
       .then(response => {dispatch(set(response.data))})
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 }
 
@@ -223,28 +231,28 @@ export class PredictionApi {
     axios
       .get(`${base}/prediction/${type}-status/`, { headers: { Authorization: token } })
       .then((response) => dispatch(setTask({type, data: response.data, updateLoading})))
-      .catch((err) => handleErrors(err, dispatch, setPredictionErrors));
+      .catch((err) => handleErrors(err, dispatch, setPredictionErrors, setLoadingTask));
   };
   static getTasks = token => dispatch => {
     dispatch(setPredictionLoading(true))
     axios
       .get(`${base}/prediction/`, { headers: { Authorization: token } })
       .then((response) => dispatch(setPredictionResults(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setPredictionErrors));
+      .catch((err) => handleErrors(err, dispatch, setPredictionErrors, setPredictionLoading));
   };
   static predict = (token, data) => dispatch => {
     dispatch(setLoadingTask({type: "predict", loading: true}))
     axios
       .put(`${base}/prediction/start-prediction/`, data, {headers: {Authorization: token}})
       .then(response => dispatch(setTask({type: "predict", data: response.data})))
-      .catch(err => handleErrors(err, dispatch, setPredictionErrors))
+      .catch(err => handleErrors(err, dispatch, setPredictionErrors, setLoadingTask))
   }
   static train = token => dispatch => {
     dispatch(setLoadingTask({type: "train", loading: true}))
     axios
       .put(`${base}/prediction/start-training/`, {}, {headers: {Authorization: token}})
       .then(response => dispatch(setTask({type: "train", data: response.data})))
-      .catch(err => handleErrors(err, dispatch, setPredictionErrors))
+      .catch(err => handleErrors(err, dispatch, setPredictionErrors, setLoadingTask))
   }
 }
 
@@ -253,6 +261,7 @@ export class TimetableApi extends mix(DeleteApi, DetailApi, ListApi, TokenMixin,
   static methods = {
     delete: deleteTimetable,
     set: setTimetables,
+    setCompletedLoadingItem: setTimetableCompletedLoadingItem,
     setErrors: setTimetableErrors,
     setLoading: setTimetablesLoading,
     setLoadingItems: setTimetablesLoadingItems,

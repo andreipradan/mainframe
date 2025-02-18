@@ -1,7 +1,8 @@
-import Cookie from "js-cookie";
 import {logout} from "../redux/authSlice";
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
 
-export const handleErrors = (err, dispatch, setErrors) => {
+export const handleErrors = (err, dispatch, setErrors, setLoading) => {
   if (err.response) {
     const contentType = err.response.headers["content-type"];
     if (!contentType.startsWith("application/json")) {
@@ -11,10 +12,10 @@ export const handleErrors = (err, dispatch, setErrors) => {
     if (err.response.data) {
       const isNgrok = err.request.responseURL.startsWith(process.env.REACT_APP_NGROK_URL)
       if (!isNgrok && err.response.data?.msg === "User is not logged on.") {
-        Cookie.remove('expires_at');
-        Cookie.remove('token');
-        Cookie.remove('user');
+        toast.warning("Session expired - please log in!", toastParams)
+        if (setLoading) dispatch(setLoading(false))
         dispatch(logout())
+        return
       }
       return dispatch(setErrors(err.response.data))
     }

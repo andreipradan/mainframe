@@ -7,6 +7,7 @@ export const {
   deleteItem,
   selectItem,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setKwargs,
   setLoading,

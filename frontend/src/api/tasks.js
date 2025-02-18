@@ -26,7 +26,7 @@ class TasksApi {
       .catch(err =>
         err.status === 400
           ? toast.warning(`${taskName} details not found!`)
-          : handleErrors(err, dispatch, setErrors)
+          : handleErrors(err, dispatch, setErrors, setLoading)
       );
   };
   static getItem = (token, taskName, taskId) => dispatch => {
@@ -41,7 +41,7 @@ class TasksApi {
     axios
       .get(`${base}/`, { headers: { Authorization: token } })
       .then(response => dispatch(set(response.data)))
-      .catch(err => handleErrors(err, dispatch, setErrors));
+      .catch(err => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static revoke = (token, taskName, app, method) => dispatch => {
     dispatch(setLoading(true));
@@ -60,7 +60,7 @@ class TasksApi {
       .catch(err =>
         err.status === 400
           ? toast.warning(`${taskName} details not found!`)
-          : handleErrors(err, dispatch, setErrors)
+          : handleErrors(err, dispatch, setErrors, setLoading)
       );
   };
 }

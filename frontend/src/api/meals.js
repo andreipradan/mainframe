@@ -13,14 +13,14 @@ class MealsApi {
     axios
       .get(base + `/?start_date=${startDate}&end_date=${endDate}`, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static sync = token => dispatch => {
     dispatch(setLoading(true));
     axios
       .put(`${base}/sync/`, {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 }
 

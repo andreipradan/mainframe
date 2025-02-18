@@ -3,6 +3,7 @@ import {
   create,
   deleteCron,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingCron,
@@ -16,7 +17,16 @@ import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi } 
 
 class CronsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
   static baseUrl = "crons"
-  static methods = {create, delete: deleteCron, set, setErrors, setLoading, setLoadingItems: setLoadingCron, update}
+  static methods = {
+    create,
+    delete: deleteCron,
+    set,
+    setCompletedLoadingItem,
+    setErrors,
+    setLoading,
+    setLoadingItems: setLoadingCron,
+    update
+  }
 
   static kill = (token, cronId, cronCommand) => dispatch => {
     dispatch(setLoading(true));
@@ -26,7 +36,7 @@ class CronsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin,
       .catch((err) => {
         if (err.response?.status === 404)
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
-        return handleErrors(err, dispatch, setErrors)
+        return handleErrors(err, dispatch, setErrors, setLoading)
       });
   };
   static run = (token, cronId, cronCommand) => dispatch => {
@@ -40,7 +50,7 @@ class CronsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin,
       .catch((err) => {
         if (err.response?.status === 404)
           return dispatch(setErrors([`Process ${cronCommand} does not exist`]))
-        return handleErrors(err, dispatch, setErrors)
+        return handleErrors(err, dispatch, setErrors, setLoading)
       });
   }
 }

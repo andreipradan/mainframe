@@ -15,7 +15,8 @@ export const createSearchParams = params => {
   )
 }
 
-const getAxios = (method, ngrokAxiosList) => ngrokAxiosList?.includes(method) ? ngrokAxios : axios
+const getAxios = (method, ngrokAxiosList) =>
+  ngrokAxiosList?.includes(method) ? ngrokAxios : axios
 
 const getDisplayName = (constructor, data) => {
   if (constructor.displayField)
@@ -61,7 +62,7 @@ export const TokenMixin = Base => class extends Base {
 export const CreateApi = Base => class extends Base {
   constructor(token) {
     super(token);
-    ["create", "setLoadingItems"].forEach(method => {
+    ["create"].forEach(method => {
       if (typeof this.constructor?.methods?.[method] !== "function") {
         throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
       }
@@ -77,7 +78,7 @@ export const CreateApi = Base => class extends Base {
         const displayField = getDisplayName(this.constructor, response.data)
         toast.success(`${getResource(this.constructor.baseUrl)} ${displayField} created successfully!`, toastParams);
       })
-      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoading))
   }
 
 }
@@ -88,6 +89,11 @@ export const DeleteApi = Base => class extends Base {
     if (typeof this.constructor.methods.delete !== "function") {
       throw new Error(`'delete' is missing from the ${this.constructor.name}.methods object`);
     }
+    ["setCompletedLoadingItem", "setLoadingItems"].forEach(method => {
+      if (typeof this.constructor?.methods?.[method] !== "function") {
+        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+      }
+    })
   }
 
   delete = (id, verbose = "") => dispatch => {
@@ -104,17 +110,31 @@ export const DeleteApi = Base => class extends Base {
           toastParams,
           );
       })
-      .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors));
+      .catch((err) => {
+        dispatch(this.constructor.methods.setCompletedLoadingItem(id))
+        handleErrors(err, dispatch, this.constructor.methods.setErrors);
+      });
   }
 }
 
 export const DetailApi = Base => class extends Base {
+  constructor(token) {
+    super(token);
+    ["setCompletedLoadingItem", "setLoadingItems"].forEach(method => {
+      if (typeof this.constructor?.methods?.[method] !== "function") {
+        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+      }
+    })
+  }
   getItem = id => dispatch => {
     dispatch(this.constructor.methods.setLoadingItems(id));
     axios
       .get(`${this.constructor.baseUrl}/${id}/`, { headers: { Authorization: this.token } })
       .then((response) => dispatch(this.constructor.methods.update({ ...response.data, dontClearSelectedItem: true })))
-      .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors));
+      .catch((err) => {
+        dispatch(this.constructor.methods.setCompletedLoadingItem(id))
+        handleErrors(err, dispatch, this.constructor.methods.setErrors);
+      });
   };
 }
 
@@ -127,21 +147,23 @@ export const ListApi = Base => class extends Base {
         `${this.constructor.baseUrl}/?${createSearchParams(kwargs)}`,
         {headers: { Authorization: this.token }})
       .then(response => dispatch(this.constructor.methods.set(response.data)))
-      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors));
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoading));
   };
 }
 
 export const RunApi = Base => class extends Base {
-  run = (id, data) => dispatch => {
+  run = (id, data, verbose = null) => dispatch => {
     dispatch(this.constructor.methods.setLoading());
+    const axios = getAxios("run", this.constructor.ngrokAxios)
     axios
       .put(`${this.constructor.baseUrl}/${id}/run/`, data, { headers: { Authorization: this.token } })
       .then(() => {
-        toast.success(`"${id}" executed successfully!`, toastParams)
+        const item = verbose || id
+        toast.success(`"${item}" executed successfully!`, toastParams)
         dispatch(this.constructor.methods.setLoading(false))
         dispatch(this.constructor.methods.setErrors(null))
       })
-      .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors))
+      .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoading))
   };
 }
 
@@ -163,7 +185,7 @@ export const UpdateApi = Base => class extends Base {
         const displayField = getDisplayName(this.constructor, response.data)
         toast.info(`${getResource(this.constructor.baseUrl)} "${displayField}" updated successfully!`, toastParams);
       })
-      .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors));
+      .catch((err) => handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoadingItems));
   };
 }
 
@@ -179,6 +201,6 @@ export const UploadApi = Base => class extends Base {
         dispatch(this.constructor.methods.set(response.data));
         toast.success(`${getResource(this.constructor.baseUrl)} uploaded successfully!`, toastParams);
       })
-      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors));
+      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoading));
   };
 }

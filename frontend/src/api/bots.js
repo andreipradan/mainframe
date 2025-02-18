@@ -2,6 +2,7 @@ import axios from "./index";
 import {
   create,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingItems,
@@ -22,7 +23,10 @@ class BotsApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) 
     axios
       .put(`${this.constructor.baseUrl}/${botId}/sync/`, {}, { headers: { Authorization: this.token } })
       .then((response) => dispatch(update(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => {
+        dispatch(setCompletedLoadingItem(botId))
+        handleErrors(err, dispatch, setErrors);
+      });
   };
 }
 

@@ -1,5 +1,4 @@
 import axios from "./index";
-import Cookie from 'js-cookie'
 import { login, logout, setErrors, setLoading } from "../redux/authSlice";
 import { handleErrors } from "./errors";
 import { toast } from "react-toastify";
@@ -11,19 +10,15 @@ class AuthApi {
     dispatch(setLoading(true))
     axios.post(`${base}/login`, data)
     .then(response => {
-      Cookie.set('token', response.data.token);
-      Cookie.set('user', JSON.stringify(response.data.user));
       dispatch(login(response.data))
       toast.info(`Welcome ${response.data.user.username} !`, toastParams)
       history.push(
-        redirectUrl
-          ? redirectUrl
-          : response.data.user?.is_staff
-            ? "/"
-            : "/expenses"
+        response.data.user?.is_staff
+          ? redirectUrl || "/"
+          : redirectUrl || "/expenses"
       )
     })
-    .catch((err) => handleErrors(err, dispatch, setErrors));
+    .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 
   static Register = (data, history) => dispatch => {
@@ -34,14 +29,12 @@ class AuthApi {
       toast.success(response.data.msg, toastParams)
       history.push("/login")
     })
-    .catch((err) => handleErrors(err, dispatch, setErrors));
+    .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 
   static Logout = (token, history) => dispatch => {
     axios.put(`${base}/logout`, {}, { headers: { Authorization: token } })
     .then(() => {
-      Cookie.remove('token');
-      Cookie.remove('user');
       dispatch(logout())
       toast.info("Logged out successfully", toastParams)
       history.push("/login")

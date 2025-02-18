@@ -1,25 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { Circles } from "react-loader-spinner";
+import { Circles, ColorRing } from 'react-loader-spinner';
 import { Collapse } from 'react-bootstrap';
+import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
 
 import { PaymentsApi } from '../../../../api/finance/payments';
 import { selectItem as selectPayment, setKwargs } from "../../../../redux/paymentSlice";
 import { useHistory } from "react-router-dom";
 import BottomPagination from "../../../shared/BottomPagination";
 import Errors from "../../../shared/Errors";
-import EditModal from "./EditModal";
 
 const Payments = () => {
   const history = useHistory()
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
+  const api = new PaymentsApi(token)
+
   const payment = useSelector(state => state.payment)
 
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadOpen, setUploadOpen] = useState(false)
+
+  const [saved, setSaved] = useState(null);
 
   const [fileError, setFileError] = useState(null)
   const handleFileChange = e => {
@@ -35,11 +40,13 @@ const Payments = () => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedFile);
-    dispatch(PaymentsApi.upload(token, formData))
+    dispatch(api.upload(formData))
     setUploadOpen(false)
     setSelectedFile(null)
   };
-
+  useEffect(() => {
+    if (payment.selectedItem) setSaved(payment.selectedItem.saved || 0)
+  }, [payment.selectedItem]);
   useEffect(() => setUploadOpen(Boolean(payment.errors)), [payment.errors]);
 
   return <div>
@@ -48,7 +55,7 @@ const Payments = () => {
         Payments
         <button type="button"
           className="btn btn-outline-success btn-sm border-0 bg-transparent"
-          onClick={() => dispatch(PaymentsApi.getList(token))}
+          onClick={() => dispatch(api.getList())}
         >
           <i className="mdi mdi-refresh" />
         </button>
@@ -109,7 +116,7 @@ const Payments = () => {
               <table className="table table-hover">
                 <thead>
                 <tr>
-                <th> Date</th>
+                  <th> Date</th>
                   <th> Total</th>
                   <th> Is Prepayment</th>
                   <th> Principal</th>
@@ -130,24 +137,30 @@ const Payments = () => {
                       color='orange'
                     />
                     : payment.results?.length
-                      ? payment.results.map(p => <tr key={p.id}>
-                        <td> {p.date} </td>
-                        <td> {p.total} </td>
-                        <td><i
-                          className={`text-${p.is_prepayment ? "success" : "danger"} mdi mdi-${p.is_prepayment ? 'check' : 'close'}`} />
-                        </td>
-                        <td> {p.principal} </td>
-                        <td> {p.interest} </td>
-                        <td> {p.remaining} </td>
-                        <td> {p.saved} </td>
-                        <td>
-                          <i
-                            style={{ cursor: "pointer" }}
-                            className="mr-2 mdi mdi-pencil text-secondary"
-                            onClick={() => dispatch(selectPayment(p.id))}
-                          />
-                        </td>
-                      </tr>)
+                      ? payment.results.map(p =>
+                        <tr
+                          key={p.id} className="cursor-pointer"
+                          onClick={() => dispatch(selectPayment(p.id))}
+                        >
+                          <td> {p.date} </td>
+                          <td> {p.total} </td>
+                          <td>
+                            <i className={
+                              `text-${p.is_prepayment ? "success" : "danger"}
+                               mdi mdi-${p.is_prepayment ? 'check' : 'close'}
+                               `}
+                            />
+                          </td>
+                          <td> {p.principal} </td>
+                          <td> {p.interest} </td>
+                          <td> {p.remaining} </td>
+                          <td> {p.saved} </td>
+                          <td>
+                            <i
+                              className="mr-2 mdi mdi-pencil text-secondary"
+                            />
+                          </td>
+                        </tr>)
                       : <tr>
                         <td colSpan={6}><span>No payments found</span></td>
                       </tr>
@@ -155,14 +168,59 @@ const Payments = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={payment} fetchMethod={PaymentsApi.getList} setKwargs={setKwargs} />
+            <BottomPagination items={payment} fetchMethod={api.getList} setKwargs={setKwargs} />
 
           </div>
         </div>
       </div>
     </div>
-    <EditModal />
+    <Modal centered show={Boolean(payment.selectedItem)} onHide={() => dispatch(selectPayment())}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <div className="row">
+            <div className="col-lg-12 grid-margin stretch-card mb-1">
+              {payment.selectedItem?.is_prepayment ? "Prepayment" : "Installment"}
+            </div>
+          </div>
+          <p className="text-muted mb-0">{payment.selectedItem?.date}</p>
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Errors errors={payment.errors}/>
 
+        {
+          payment.loadingItems?.includes(payment.selectedItem?.id)
+          ? <ColorRing
+              width = "100%"
+              height = "50"
+              wrapperStyle={{width: "100%"}}
+            />
+          : <Form
+              onSubmit={event => {
+                event.preventDefault()
+                dispatch(api.update(payment.selectedItem.id, {saved}))
+              }}
+            >
+              <Form.Group className="mb-3">
+                <Form.Label>Saved</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={saved}
+                  onChange={e => setSaved(e.target.value)}
+                />
+              </Form.Group>
+            </Form>
+        }
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => dispatch(selectPayment())}>Close</Button>
+        <Button variant="primary" onClick={() =>
+          dispatch(api.update(payment.selectedItem.id, {saved}))}
+        >
+          Save Changes
+        </Button>
+      </Modal.Footer>
+    </Modal>
   </div>
 }
 

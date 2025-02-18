@@ -5,7 +5,7 @@ export const cronsSlice = createSlice({
   initialState: {
     errors: null,
     loading: false,
-    loadingCrons: null,
+    loadingItems: null,
     modalOpen: false,
     results: null,
     selectedCron: null,
@@ -26,7 +26,7 @@ export const cronsSlice = createSlice({
     },
     deleteCron: (state, action) => {
       state.errors = null;
-      state.loadingCrons = state.loadingCrons?.filter((cron) => cron.id === action.payload);
+      state.loadingItems = state.loadingItems?.filter((cron) => cron.id === action.payload);
       state.results = state.results.filter((cron) => cron.id !== action.payload);
       state.selectedCron = null
       state.modalOpen = false
@@ -34,7 +34,7 @@ export const cronsSlice = createSlice({
     setErrors: (state, action) => {
       state.errors = action.payload;
       state.loading = false;
-      state.loadingCrons = null;
+      state.loadingItems = null;
     },
     select: (state, action) => {
       state.selectedCron = action.payload ? state.results.find(cron => cron.id === action.payload) : null
@@ -43,21 +43,26 @@ export const cronsSlice = createSlice({
     set: (state, action) => {
       state.errors = null
       state.loading = false
-      state.loadingCrons = null;
+      state.loadingItems = null;
       state.results = action.payload.results;
+    },
+    setCompletedLoadingItem: (state, action) => {
+      state.loadingItems = state.loadingItems
+        ? state.loadingItems.filter(i => i !== action.payload)
+        : null
     },
     setModalOpen: (state, action) => {
       state.modalOpen = action.payload
     },
     setLoading: (state, action) => {state.loading = action.payload !== undefined ? action.payload : true},
     setLoadingCron: (state, action) => {
-      state.loadingCrons = !state.loadingCrons
+      state.loadingItems = !state.loadingItems
         ? [action.payload]
-        : [...state.loadingCrons, action.payload];
+        : [...state.loadingItems, action.payload];
     },
     update: (state, action) => {
       state.errors = null;
-      state.loadingCrons = state.loadingCrons?.filter((cron) => cron.id === action.payload.id);
+      state.loadingItems = state.loadingItems?.filter((cron) => cron.id === action.payload.id);
       state.results = state.results.map((cron) =>
         (cron.id === action.payload.id ? action.payload : cron)).sort((a, b) =>
           b.is_active === a.is_active
@@ -80,6 +85,7 @@ export const {
   deleteCron,
   select,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingCron,

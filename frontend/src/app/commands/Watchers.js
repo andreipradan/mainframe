@@ -489,7 +489,15 @@ const Watchers = () =>  {
           <Button
             variant="outline-warning"
             disabled={!url || !selector}
-            onClick={() => dispatch(WatchersApi.test(token, url, selector))}
+            onClick={() => dispatch(WatchersApi.test(
+              token,
+              {
+                url,
+                latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
+                request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
+                selector
+              }
+            ))}
           >
             Test
           </Button>

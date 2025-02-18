@@ -2,12 +2,12 @@ import axios from '../index';
 import { handleErrors } from '../errors';
 import { toast } from 'react-toastify';
 import { toastParams } from '../auth';
-import { createSearchParams } from '../shared';
+import { createSearchParams, DeleteApi, DetailApi, ListApi, mix, TokenMixin } from '../shared';
 
 import {
-  deleteItem as deleteTransaction,
+  deleteItem,
   set,
-  setItem,
+  setCompletedLoadingItem,
   setErrors,
   setExtra,
   setLoading,
@@ -16,7 +16,16 @@ import {
   setKwargs,
 } from '../../redux/transactionsSlice';
 
-export class TransactionsApi {
+export class TransactionsApi extends mix(DeleteApi, DetailApi, ListApi, TokenMixin) {
+  static baseUrl = "finance/transactions"
+  static methods = {
+    delete: deleteItem,
+    set,
+    setCompletedLoadingItem,
+    setErrors,
+    setLoading,
+    setLoadingItems,
+  }
   static bulkUpdateTransactions = (token, data, kwargs) => dispatch => {
     dispatch(setLoading(true))
     axios
@@ -24,7 +33,7 @@ export class TransactionsApi {
         data,
         { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors))
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading))
   }
   static bulkUpdateTransactionsPreview = (token, data) => dispatch => {
     dispatch(setExtra({ loading: true }))
@@ -40,28 +49,6 @@ export class TransactionsApi {
         handleErrors(err, dispatch, setErrors);
       })
   }
-  static delete = (token, id) => dispatch => {
-    dispatch(setLoadingItems(id));
-    axios
-      .delete(`${base}/${id}/`, { headers: { Authorization: token } })
-      .then(() => dispatch(deleteTransaction(id)))
-      .catch(err => handleErrors(err, dispatch, setErrors));
-  };
-  static get = (token, transactionId) => dispatch => {
-    dispatch(setLoadingItems(transactionId));
-    axios
-      .get(`${base}/${transactionId}/`, { headers: { Authorization: token } })
-      .then((response) => dispatch(setItem(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
-  static getList = (token, kwargs = null) => (dispatch) => {
-    dispatch(setLoading(true));
-    kwargs = kwargs || {};
-    axios
-      .get(`${base}/?${createSearchParams(kwargs)}`, { headers: { Authorization: token } })
-      .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
-  };
   static update = (token, id, data, updateCategory = false) => dispatch => {
     dispatch(setLoading(true))
     data.confirmed_by = data.category === "Unidentified" ? 0 : 1
@@ -72,7 +59,7 @@ export class TransactionsApi {
         if (updateCategory) dispatch(setKwargs({ category: data.category }))
         toast.success("Transaction updated successfully!", toastParams)
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors))
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading))
   }
   static updateAll = (token, data, kwargs) => dispatch => {
     dispatch(setLoading(true))
@@ -81,7 +68,7 @@ export class TransactionsApi {
         data,
         { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors))
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading))
   }
 
   static uploadTransactions = (token, data, kwargs) => dispatch => {
@@ -97,7 +84,7 @@ export class TransactionsApi {
       toast.success("Payments uploaded successfully!", toastParams)
 
     })
-    .catch((err) => handleErrors(err, dispatch, setErrors));
+    .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   }
 }
 let base = "finance/transactions";

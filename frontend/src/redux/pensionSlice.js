@@ -27,6 +27,7 @@ export const {
   deleteContribution,
   selectItem,
   set,
+  setCompletedLoadingItem,
   setErrors,
   setLoading,
   setLoadingItems,

@@ -27,6 +27,8 @@ const Categorize = () => {
   const token = useSelector((state) => state.auth.token)
   const transactions = useSelector(state => state.transactions)
 
+  const api = new TransactionsApi(token)
+
   const [messageAlertOpen, setMessageAlertOpen] = useState(false)
   const [allChecked, setAllChecked] = useState(false)
   const [checkedCategories, setCheckedCategories] = useState(null)
@@ -138,7 +140,7 @@ const Categorize = () => {
       clearInterval(predictTimerIdRef.current);
       dispatch(setLoadingTask({type: "predict", loading: false}))
       if (prediction.predict?.status === "complete")
-        dispatch(TransactionsApi.getList(token, kwargs))
+        dispatch(api.getList(kwargs))
     };
 
     if (["executing", "initial", "progress"].includes(prediction.predict?.status)) startPolling()
@@ -414,7 +416,7 @@ const Categorize = () => {
                     type="button"
                     className="btn btn-outline-success btn-sm border-0 bg-transparent"
                     onClick={() => {
-                      dispatch(TransactionsApi.getList(token, kwargs));
+                      dispatch(api.getList(kwargs));
                       dispatch(PredictionApi.getTasks(token));
                     }}
                   >
@@ -628,7 +630,7 @@ const Categorize = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={transactions} fetchMethod={TransactionsApi.getList} setKwargs={setKwargs} />
+            <BottomPagination items={transactions} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
           </div>
         </div>
       </div>
@@ -638,7 +640,7 @@ const Categorize = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault();
-              dispatch(TransactionsApi.getList(token, kwargs));
+              dispatch(api.getList(kwargs));
             }}>
               <Form.Group>
                 <Form.Label>Confirmed by</Form.Label>&nbsp;
@@ -676,7 +678,7 @@ const Categorize = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   isMulti
-                  onMenuClose={() => dispatch(TransactionsApi.getList(token, kwargs))}
+                  onMenuClose={() => dispatch(api.getList(kwargs))}
                   onChange={onTypeChange}
                   options={transactions.types?.map(t => ({label: getTypeLabel(t), value: t}))}
                   styles={selectStyles}

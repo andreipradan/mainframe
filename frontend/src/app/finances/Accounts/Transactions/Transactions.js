@@ -55,6 +55,8 @@ const Transactions = () => {
   const accounts = useSelector(state => state.accounts)
   const transactions = useSelector(state => state.transactions)
 
+  const api = new TransactionsApi(token)
+
   const [allChecked, setAllChecked] = useState(false)
   const [checkedCategories, setCheckedCategories] = useState(null)
   const [fileError, setFileError] = useState(null)
@@ -667,7 +669,7 @@ const Transactions = () => {
                 </tbody>
               </table>
             </div>
-            <BottomPagination items={transactions} fetchMethod={TransactionsApi.getList} setKwargs={setKwargs}/>
+            <BottomPagination items={transactions} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs}/>
           </div>
         </div>
       </div>
@@ -677,7 +679,7 @@ const Transactions = () => {
             <h4 className="card-title">Filters</h4>
             <Form onSubmit={e => {
               e.preventDefault()
-              dispatch(TransactionsApi.getList(token, transactions.kwargs))
+              dispatch(api.getList(transactions.kwargs))
             }}>
               <Form.Group>
                 <Form.Label>Confirmed by</Form.Label>&nbsp;
@@ -716,7 +718,7 @@ const Transactions = () => {
                   isDisabled={transactions.loading}
                   isLoading={transactions.loading}
                   isMulti
-                  onMenuClose={() => dispatch(TransactionsApi.getList(token, transactions.kwargs))}
+                  onMenuClose={() => dispatch(api.getList(transactions.kwargs))}
                   onChange={onTypeChange}
                   options={transactions.types?.map(t => ({ label: getTypeLabel(t), value: t }))}
                   styles={selectStyles}
@@ -778,7 +780,7 @@ const Transactions = () => {
         <Button
           variant="danger"
           onClick={() => {
-            dispatch(TransactionsApi.delete(token, transactionToRemove?.id))
+            dispatch(api.delete(transactionToRemove?.id))
             setTransactionToRemove(null)
           }}
         >

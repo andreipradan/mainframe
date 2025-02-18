@@ -28,6 +28,8 @@ const TransactionEditModal = () => {
   const categories = useSelector(state => state.categories)
   const { errors, loadingItems, selectedItem } = useSelector(state => state.transactions)
 
+  const api = new TransactionsApi(token)
+
   const [additionalData, setAdditionalData] = useState(null)
   const [additionalDataAnnotations, setAdditionalDataAnnotations] = useState(null)
 
@@ -69,7 +71,7 @@ const TransactionEditModal = () => {
               className="btn btn-outline-success btn-sm border-0 bg-transparent"
               onClick={() => {
                 dispatch(CategoriesApi.getList(token))
-                dispatch(TransactionsApi.get(token, selectedItem?.id))
+                dispatch(api.get(selectedItem?.id))
               }}
             >
               <i className="mdi mdi-refresh" />

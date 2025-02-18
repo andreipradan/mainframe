@@ -19,14 +19,14 @@ export class CategoriesApi {
         dispatch(create({ setSelected: true, ...response.data }));
         toast.success(`Category ${data.id} created successfully!`, toastParams)
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   }
   static getList = token => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .get(`${base}/`, { headers: { Authorization: token } })
       .then(response => dispatch(set(response.data)))
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 
 }

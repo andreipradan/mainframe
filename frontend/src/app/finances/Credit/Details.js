@@ -18,6 +18,8 @@ const Details = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
 
+  const paymentsApi = new PaymentsApi(token)
+
   const overview = useSelector(state => state.credit)
   const credit = overview.credit
   const rates = overview.rates
@@ -44,7 +46,7 @@ const Details = () => {
 
   useEffect(() => {
     {
-      !payment.results && dispatch(PaymentsApi.getList(token));
+      !payment.results && dispatch(paymentsApi.getList());
       !timetable.results && dispatch(timetableApi.getList())
     }}, []);
   useEffect(() => {
@@ -393,7 +395,7 @@ const Details = () => {
               <button
                 type="button"
                 className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                onClick={() => dispatch(PaymentsApi.getList(token))}
+                onClick={() => dispatch(paymentsApi.getList())}
               >
                 <i className="mdi mdi-refresh"/>
               </button>
@@ -515,7 +517,7 @@ const Details = () => {
               <button
                   type="button"
                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                  onClick={() => dispatch(PaymentsApi.getList(token))}
+                  onClick={() => dispatch(paymentsApi.getList())}
               >
                 <i className="mdi mdi-refresh"/>
               </button>
@@ -595,7 +597,7 @@ const Details = () => {
               <button
                   type="button"
                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                  onClick={() => dispatch(PaymentsApi.getList(token))}
+                  onClick={() => dispatch(paymentsApi.getList())}
               >
                 <i className="mdi mdi-refresh"/>
               </button>

@@ -17,7 +17,7 @@ class RpiApi {
         dispatch(completed("Rebooting"))
         dispatch(logout("Started reboot, please refresh this page after a couple of moments"))
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static restartService = (token, service) => dispatch => {
     dispatch(setLoading(true));
@@ -26,7 +26,7 @@ class RpiApi {
       .then(() => {
         dispatch(completed(`Restarted ${service}, please refresh this page after a few of moments`))
       })
-      .catch((err) => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 }
 

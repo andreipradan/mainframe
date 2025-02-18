@@ -3,6 +3,7 @@ import {
   create as createCars,
   deleteItem as deleteCars,
   set as setCars,
+  setCompletedLoadingItem as setCarsCompletedLoadingItem,
   setErrors as setCarsErrors,
   setLoading as setCarsLoading,
   setLoadingItems as setCarsLoadingItems,
@@ -20,6 +21,7 @@ import {
   create as createGroup,
   deleteItem as deleteGroup,
   set as setGroups,
+  setCompletedLoadingItem as setGroupsCompletedLoadingItem,
   setErrors as setGroupsErrors,
   setLoading as setGroupsLoading,
   setLoadingItems as setGroupsLoadingItems,
@@ -36,6 +38,7 @@ export class CarApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, Updat
     create: createCars,
     delete: deleteCars,
     set: setCars,
+    setCompletedLoadingItem: setCarsCompletedLoadingItem,
     setErrors: setCarsErrors,
     setLoading: setCarsLoading,
     setLoadingItems: setCarsLoadingItems,
@@ -89,6 +92,7 @@ export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, Tok
     create: createGroup,
     delete: deleteGroup,
     set: setGroups,
+    setCompletedLoadingItem: setGroupsCompletedLoadingItem,
     setErrors: setGroupsErrors,
     setLoading: setGroupsLoading,
     setLoadingItems: setGroupsLoadingItems,
@@ -100,7 +104,7 @@ export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, Tok
       .put(`${base}/groups/${groupId}/invite/`, data, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
-        handleErrors(err, dispatch, setGroupsErrors)
+        handleErrors(err, dispatch, setGroupsErrors, setGroupsLoading)
         toast.error(err, toastParams)
 
       });
@@ -111,7 +115,7 @@ export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, Tok
       .put(`${base}/groups/${groupId}/remove-user/`, {id: userId}, { headers: { Authorization: token } })
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
-        handleErrors(err, dispatch, setGroupsErrors)
+        handleErrors(err, dispatch, setGroupsErrors, setGroupsLoading)
         toast.error(err, toastParams)
 
       });
