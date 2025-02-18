@@ -18,6 +18,8 @@ class BondsViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(ticker__in=tickers)
         if transaction_types := self.request.query_params.getlist("type"):
             queryset = queryset.filter(type__in=transaction_types)
+        if self.request.query_params.get("active_only") == "true":
+            queryset = queryset.filter(maturity__gt=timezone.now())
         return queryset
 
     def list(self, request, *args, **kwargs):
