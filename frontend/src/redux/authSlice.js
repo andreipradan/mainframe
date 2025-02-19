@@ -21,7 +21,8 @@ export const authSlice = createSlice({
     },
     logout: (state, action) => {
       state.errors = null;
-      state.redirectUrl = window.location.pathname
+      if (window.location.pathname !== '/login')
+        state.redirectUrl = window.location.pathname
       state.token = null;
       state.user = null;
       Cookie.remove('expires_at');

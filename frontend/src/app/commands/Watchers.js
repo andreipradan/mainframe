@@ -32,7 +32,6 @@ const Watchers = () =>  {
   const [logLevel, setLogLevel] = useState(null);
   const [name, setName] = useState("");
   const [selector, setSelector] = useState("");
-  const [top, setTop] = useState(selectedItem?.top || true);
   const [url, setUrl] = useState("");
 
   const [latest, setLatest] = useState(null);
@@ -55,7 +54,6 @@ const Watchers = () =>  {
       setName(selectedItem.name)
       setRequest(JSON.stringify(selectedItem.request, null, "\t"))
       setSelector(selectedItem.selector)
-      setTop(selectedItem.top)
       setUrl(selectedItem.url)
     }
   }, [selectedItem]);
@@ -95,7 +93,6 @@ const Watchers = () =>  {
     setName("")
     setRequest("{}")
     setSelector("")
-    setTop(true)
     setUrl("")
   }
   const closeModal = () => {
@@ -112,7 +109,6 @@ const Watchers = () =>  {
     setName(watcher.name)
     setRequest(JSON.stringify(watcher.request, null, "\t"))
     setSelector(watcher.selector)
-    setTop(watcher.top)
     setUrl(watcher.url)
   }
 
@@ -415,15 +411,6 @@ const Watchers = () =>  {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Check
-                  type="switch"
-                  id="top-switch"
-                  label="Top search"
-                  checked={top}
-                  onChange={() => {setTop(!top)}}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
                 <Form.Label>Latest data</Form.Label>
                 <AceEditor
                   className={(latestAnnotations) ? "form-control is-invalid" : ""}
@@ -520,7 +507,6 @@ const Watchers = () =>  {
                         name,
                         request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
                         selector,
-                        top,
                         url,
                       }))
                   }}>
@@ -539,7 +525,6 @@ const Watchers = () =>  {
                       name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, "")),
                       selector,
-                      top,
                       url,
                     }))
                 }}>
