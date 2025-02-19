@@ -177,10 +177,11 @@ const Bonds = () => {
                   {
                     state.aggregations
                       ? state.currencies?.map(currency =>
-                        <>
+                        <div key={currency}>
                           {
                             ['active', 'buy', 'deposit', 'pnl', 'dividend', 'sell'].map(item =>
                               <ListItem
+                                key={item}
                                 label={
                                   item === 'pnl'
                                     ? 'Profit / Loss'
@@ -211,7 +212,7 @@ const Bonds = () => {
                             }
                             className="mr-3"
                           />
-                        </>)
+                        </div>)
                       : null}
                   </div>
                 : null

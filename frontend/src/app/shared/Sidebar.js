@@ -37,6 +37,7 @@ const Sidebar = () => {
   const [creditMenuOpen, setCreditMenuOpen] = useState(false)
   const [documentationMenuOpen, setDocumentationMenuOpen] = useState(false)
   const [errorPagesMenuOpen, setErrorPagesMenuOpen] = useState(false)
+  const [expensesMenuOpen, setExpensesMenuOpen] = useState(false)
   const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false)
   const [iconsMenuOpen, setIconsMenuOpen] = useState(false)
   const [investmentsMenuOpen, setInvestmentsMenuOpen] = useState(false)
@@ -75,10 +76,11 @@ const Sidebar = () => {
     setChartsMenuOpen(false)
     setCommandsMenuOpen(false)
     setCreditMenuOpen(false)
-    setInvestmentsMenuOpen(false)
     setErrorPagesMenuOpen(false)
+    setExpensesMenuOpen(false)
     setFormElementsMenuOpen(false)
     setIconsMenuOpen(false)
+    setInvestmentsMenuOpen(false)
     setTablesMenuOpen(false)
     setTravelMenuOpen(false)
     setUserPagesMenuOpen(false)
@@ -94,6 +96,7 @@ const Sidebar = () => {
       {path:'/basic-ui', setState: setBasicUiMenuOpen},
       {path:'/credit', setState: setCreditMenuOpen},
       {path:'/commands', setState: setCommandsMenuOpen},
+      {path:'/expenses/car', setState: setExpensesMenuOpen},
       {path:'/expenses/travel', setState: setTravelMenuOpen},
       {path:'/finances/accounts', setState: setAccountsMenuOpen},
       {path:'/form-elements', setState: setFormElementsMenuOpen},
@@ -405,18 +408,18 @@ const Sidebar = () => {
                     <ul className="nav flex-column sub-menu">
                       <li className="nav-item">
                         <Link
-                          className={isPathActive('/finances/accounts/categorize') ? 'nav-link active' : 'nav-link'}
-                          to="/finances/accounts/categorize"
+                          className={isPathActive('/finances/accounts/transactions') ? 'nav-link active' : 'nav-link'}
+                          to="/finances/accounts/transactions"
                         >
-                          Categorize
+                          Overview
                         </Link>
                       </li>
                       <li className="nav-item">
                         <Link
-                          className={isPathActive('/finances/accounts/transactions') ? 'nav-link active' : 'nav-link'}
-                          to="/finances/accounts/transactions"
+                          className={isPathActive('/finances/accounts/categorize') ? 'nav-link active' : 'nav-link'}
+                          to="/finances/accounts/categorize"
                         >
-                          Transactions
+                          Categorize
                         </Link>
                       </li>
                     </ul>
@@ -463,6 +466,36 @@ const Sidebar = () => {
                     </ul>
                   </div>
                 </Collapse>
+              </li>
+
+              <li className={isPathActive('/expenses') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <div className={expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                     onClick={() => setExpensesMenuOpen(!expensesMenuOpen)} data-toggle="collapse">
+                  <span className="menu-icon">
+                    <i className="mdi mdi-account-cash-outline" />
+                  </span>
+                  <span className="menu-title">Expenses</span>
+                  <i className="menu-arrow" />
+                </div>
+                <Collapse in={expensesMenuOpen}>
+                  <div>
+                    <ul className="nav flex-column sub-menu">
+                      <li className="nav-item">
+                        <Link className={isPathActive('/expenses/car') ? 'nav-link active' : 'nav-link'}
+                              to="/expenses/car">
+                          Car
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </Collapse>
+              </li>
+
+              <li className={location.pathname === '/fx-rates' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+                <Link className="nav-link" to="/fx-rates">
+                  <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>
+                  <span className="menu-title">FX Rates</span>
+                </Link>
               </li>
 
               <li className={isPathActive('/investments') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
@@ -517,26 +550,12 @@ const Sidebar = () => {
                   </div>
                 </Collapse>
               </li>
+
             </>
             : null
         }
         <li className="nav-item nav-category"><span className="nav-link">Expenses & Rates</span></li>
-        {
-          user?.is_staff
-            ? <li className={location.pathname === '/expenses/car' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-                <Link className="nav-link" to="/expenses/car">
-                  <span className="menu-icon"><i className="mdi mdi-car" /></span>
-                  <span className="menu-title">Car</span>
-                </Link>
-              </li>
-            : null
-        }
-        <li className={location.pathname === '/exchange-rates' ? 'nav-item menu-items active' : 'nav-item menu-items'}>
-          <Link className="nav-link" to="/exchange-rates">
-            <span className="menu-icon"><i className="mdi mdi-chart-bar" /></span>
-            <span className="menu-title">FX Rates</span>
-          </Link>
-        </li>
+
         <li className={isPathActive('/expenses/travel') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
           <div className={travelMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                onClick={() => setTravelMenuOpen(!travelMenuOpen)} data-toggle="collapse">

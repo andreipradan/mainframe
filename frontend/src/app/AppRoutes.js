@@ -7,10 +7,9 @@ import { useSelector } from "react-redux";
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));
 const Commands = lazy(() => import('./commands/Commands'));
-const Crons = lazy(() => import('./commands/crons/Crons'));
+const Crons = lazy(() => import('./commands/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
-const ExchangeRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const ExpensesCar = lazy(() => import('./expenses/Car'));
 const ExpensesTravel = lazy(() => import('./expenses/Travel'));
 const ExpenseTravelGroups = lazy(() => import("./expenses/ExpenseGroups"));
@@ -20,6 +19,7 @@ const FinancesCreditDetails = lazy(() => import ("./finances/Credit/Details"));
 const FinancesCalculator = lazy(() => import ("./finances/Credit/Calculator"));
 const FinancesPayments = lazy(() => import ("./finances/Credit/Payments/Payments"));
 const FinancesTimetables = lazy(() => import ("./finances/Credit/Timetables/Timetables"));
+const FXRates = lazy(() => import ("./exchange-rates/ExchangeRates"));
 const InvestmentsBonds = lazy(() => import ("./finances/Investments/Bonds"));
 const InvestmentsCrypto = lazy(() => import('./finances/Investments/Crypto'));
 const InvestmentsDeposits = lazy(() => import ("./finances/Investments/Deposits"));
@@ -64,7 +64,6 @@ const AppRoutes = () => {
     <Suspense fallback={<Spinner/>}>
       <Switch>
         <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
-        <Route exact path="/exchange-rates" component={ ExchangeRates } />
         <Route exact path="/expenses/travel/groups" component={ ExpenseTravelGroups } />
         <Route exact path="/expenses/travel/my" component={ ExpensesTravel } />
         <Route exact path="/earthquakes" component={ Earthquakes } />
@@ -90,6 +89,7 @@ const AppRoutes = () => {
         {user?.is_staff && <Route exact path="/expenses/car" component={ ExpensesCar } />}
         {user?.is_staff && <Route exact path="/finances/accounts/transactions/:id?" component={ FinancesAccountsTransactions } />}
         {user?.is_staff && <Route exact path="/finances/accounts/categorize" component={ FinancesCategorize } />}
+        {user?.is_staff && <Route exact path="/fx-rates" component={ FXRates } />}
         {user?.is_staff && <Route exact path="/investments/bonds" component={ InvestmentsBonds } />}
         {user?.is_staff && <Route exact path="/investments/crypto" component={ InvestmentsCrypto } />}
         {user?.is_staff && <Route exact path="/investments/deposits" component={ InvestmentsDeposits } />}

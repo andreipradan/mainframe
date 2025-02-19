@@ -106,40 +106,42 @@ const Car = () => {
                 store.loading
                   ? <Circles height={20} width={20} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
                   : store.results?.length
-                    ? store.results.map(p => <div className="col-lg-6 col-xl-3 grid-margin" key={`car-${p.id}`}>
-                      <div className="card-body">
-                        <h6>
-                          {p.name}
-                          <button
-                            type="button"
-                            className="float-right btn btn-xs btn-outline-warning btn-icon pl-1 border-0"
-                            onClick={() => dispatch(selectItem(p.id))}
-                          >
-                            <i className="mdi mdi-pencil" />
-                          </button>
+                    ? store.results.map(p => <div className="col grid-margin" key={`car-${p.id}`}>
+                      <h6>
+                        <button
+                          type="button"
+                          className="float-right btn btn-xs btn-outline-warning btn-icon pl-1 border-0"
+                          onClick={() => dispatch(selectItem(p.id))}
+                        >
+                          <i className="mdi mdi-pencil" />
+                        </button>
 
-                        </h6>
-                        <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                          <ListItem
-                            label={'Service entries'}
-                            value={p.service_entries?.length || 0}
-                            textType={'warning'}
-                          />
-                          <ListItem
-                            label={'Total spent'}
-                            value={p.service_entries?.length ? p.service_entries.map(p => p.price).reduce((acc, val) => acc + parseFloat(val), 0).toFixed(2) : 0}
-                            textType={'warning'}
-                          />
-                          <ListItem
-                            label={'Last serviced'}
-                            value={
-                              p.service_entries?.length
-                                ? new Date(p.service_entries[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-                                : "No entries."
-                            }
-                            textType={'warning'}
-                          />
-                        </div>
+                      </h6>
+                      <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+                        <ListItem
+                          label={'Name'}
+                          value={p.name}
+                          textType={'warning'}
+                        />
+                        <ListItem
+                          label={'Service entries'}
+                          value={p.service_entries?.length || 0}
+                          textType={'warning'}
+                        />
+                        <ListItem
+                          label={'Total spent'}
+                          value={p.service_entries?.length ? p.service_entries.map(p => p.price).reduce((acc, val) => acc + parseFloat(val), 0).toFixed(2) : 0}
+                          textType={'warning'}
+                        />
+                        <ListItem
+                          label={'Last serviced'}
+                          value={
+                            p.service_entries?.length
+                              ? new Date(p.service_entries[0].date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+                              : "No entries."
+                          }
+                          textType={'warning'}
+                        />
                       </div>
                     </div>)
                     : <small className="text-muted">No cars added</small>

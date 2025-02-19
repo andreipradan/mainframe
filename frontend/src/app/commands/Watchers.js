@@ -8,13 +8,12 @@ import Modal from "react-bootstrap/Modal";
 import { Audio, ColorRing } from "react-loader-spinner";
 import { Collapse } from "react-bootstrap";
 
-import EditModal from "./crons/components/EditModal";
 import Errors from "../shared/Errors";
 import WatchersApi from "../../api/watchers";
 import { capitalize } from "../utils";
 import { parseStatus } from "./Tasks";
 import { selectItem, setModalOpen } from "../../redux/watchersSlice";
-import { CRITICAL, DEBUG, ERROR, INFO, logLevels, WARNING } from './crons/Crons';
+import { CRITICAL, DEBUG, ERROR, INFO, logLevels, WARNING } from './Crons';
 import Select from 'react-select';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 
@@ -257,7 +256,6 @@ const Watchers = () =>  {
           </div>
         </div>
       </div>
-      <EditModal />
       <Modal centered show={Boolean(selectedItem) || modalOpen} onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>

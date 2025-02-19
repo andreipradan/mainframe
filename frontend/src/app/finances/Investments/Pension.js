@@ -206,7 +206,7 @@ const Pension = () => {
     <div className="row">
     {
       pension.results?.map(p =>
-        <div className={`col-${pensionOpen === p.id ? 12 : 12 / pension.count} grid-margin`} key={`pension-transactions-${p.id}`}>
+        <div className="col-sm-12 col-md-6 col-xxl-3 grid-margin" key={`pension-transactions-${p.id}`}>
           <div className="card">
             <div className="card-body">
               <div className="table-responsive">

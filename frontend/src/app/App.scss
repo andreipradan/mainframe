@@ -2,6 +2,36 @@
 
 /* === Plugin styles === */
 
+// Define the new xxl breakpoint for Bootstrap 4 (larger screens)
+// before we import bootstrap
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px // Add the new breakpoint for xxl
+);
+// Update container max-widths for the new breakpoint
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  xxl: 1320px // Add the container max-width for xxl
+);
+// Define a col-xxl grid class
+.col-xxl {
+  flex: 0 0 auto;
+  width: 100%;
+}
+@for $i from 1 through 12 {
+  .col-xxl-#{$i} {
+    flex: 0 0 auto;
+    width: (100 / 12) * $i + "%";
+  }
+}
+
 
 @import "~slick-carousel/slick/slick.css";
 @import "~slick-carousel/slick/slick-theme.css";
