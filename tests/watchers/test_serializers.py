@@ -30,7 +30,6 @@ class TestWatcherSerializer:
         assert instance.cron == "0 10 31 2 *"
         assert instance.latest == {}
         assert instance.request == {}
-        assert instance.top is True
 
     def test_renaming_clears_cron(self, schedule_task_mock, __):
         instance = WatcherFactory(name="foo", cron="0 10 31 2 *")

@@ -42,7 +42,6 @@ class Watcher(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
     selector = models.CharField(max_length=128)
-    top = models.BooleanField(default=True)
     url = models.URLField()
 
     def __str__(self):

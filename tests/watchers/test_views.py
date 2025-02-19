@@ -35,7 +35,6 @@ class TestWatcherViews:
             "redis": {},
             "request": {},
             "selector": ".foo-selector",
-            "top": False,
             "updated_at": mock.ANY,
             "url": "https://example.com",
         }
@@ -61,7 +60,6 @@ class TestWatcherViews:
             "redis": {},
             "request": {},
             "selector": ".foo-selector",
-            "top": True,
             "updated_at": mock.ANY,
             "url": "",
         }
@@ -93,7 +91,6 @@ class TestWatcherViews:
                     "redis": {},
                     "request": {},
                     "selector": ".foo-selector",
-                    "top": True,
                     "updated_at": mock.ANY,
                     "url": "",
                 }
