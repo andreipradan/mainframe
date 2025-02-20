@@ -51,7 +51,15 @@ class WatchersApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMix
       .put(`${base}test/`, data, { headers: { Authorization: token } })
       .then(response => {
         toast[response.data.is_new ? 'success' : 'info'](
-          <span>{response.data.is_new ? 'New item found!' : 'Existing item'}<br/>{response.data.result}</span>,
+          <span>
+            {
+              response.data.is_new === undefined
+                ? 'New watcher - test'
+                : response.data.is_new
+                  ? 'New item found!' : 'Existing item'
+            }<br/>
+            {response.data.result}
+          </span>,
           toastParams
         );
         dispatch(setLoading(false))

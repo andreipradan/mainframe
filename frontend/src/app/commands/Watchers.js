@@ -477,6 +477,7 @@ const Watchers = () =>  {
             onClick={() => dispatch(WatchersApi.test(
               token,
               {
+                name,
                 url,
                 latest: JSON.parse(latest.replace(/[\r\n\t]/g, "")),
                 request: JSON.parse(request.replace(/[\r\n\t]/g, "")),

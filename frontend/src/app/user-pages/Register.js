@@ -32,7 +32,9 @@ const Register = () => {
               {
                 errors?.non_field_errors
                   ? <Errors errors={errors.non_field_errors}/>
-                  : null
+                  : !errors?.email && !errors?.password
+                    ? <Errors errors={errors}/>
+                    : null
               }
 
               <Form className="pt-3" onSubmit={register}>
