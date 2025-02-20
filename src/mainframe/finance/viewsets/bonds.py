@@ -43,7 +43,7 @@ class BondsViewSet(viewsets.ModelViewSet):
                     for currency in bond_currencies
                 },
                 **{
-                    f"pnl_{currency}": Sum("net", filter=Q(currency=currency))
+                    f"pnl_{currency}": Sum("pnl", filter=Q(currency=currency))
                     for currency in bond_currencies
                 },
                 **{
