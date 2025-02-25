@@ -1,3 +1,19 @@
+const sort = (objectsList, orderList) => {
+  objectsList.sort((a, b) => {
+    for (let field of orderList) {
+      const isDescending = field.startsWith('-');
+      const fieldName = isDescending ? field.slice(1) : field;
+
+      if (a.hasOwnProperty(fieldName) && b.hasOwnProperty(fieldName)) {
+        if (a[fieldName] < b[fieldName]) return isDescending ? 1 : -1;
+        if (a[fieldName] > b[fieldName]) return isDescending ? -1 : 1;
+      }
+    }
+    return 0;
+  });
+  return objectsList;
+}
+
 export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}) => ({
   name,
   initialState: {
@@ -9,6 +25,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
     loadingItems: null,
     modalOpen: false,
     next: null,
+    ordering: ["-date", "name"],
     previous: null,
     results: null,
     selectedItem: null,
@@ -21,13 +38,7 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
       state.loading = false
       state.modalOpen = false
       state.results = state.results
-        ? state.results[0].date
-          ? [...state.results, action.payload].sort((a,b) => a.date < b.date ? 1 : -1)
-          : [...state.results, action.payload].sort((a, b) =>
-              a.name > b.name
-                ? 1
-                : a.id > b.id ? 1 : -1
-        )
+        ? sort([...state.results, action.payload], state.ordering)
         : [action.payload]
       state.selectedItem =
         action.payload.dontClearSelectedItem === true

@@ -34,7 +34,7 @@ export const logLevels = {
 const Crons = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const {selectedCron, results: crons, errors, loading, loadingItems, modalOpen } = useSelector(state => state.crons)
+  const {selectedItem, results: crons, errors, loading, loadingItems, modalOpen } = useSelector(state => state.crons)
   const commands = useSelector(state => state.commands)
 
   const api = new CronsApi(token)
@@ -63,17 +63,17 @@ const Crons = () =>  {
     }
   }, [commands.results]);
   useEffect(() => {
-    if (selectedCron) {
-      setCommand(allCommands?.find(c => c.value === selectedCron.command) || null)
-      setExpression(selectedCron.expression)
-      setIsActive(selectedCron.is_active)
-      setKwargs(JSON.stringify(selectedCron.kwargs, null, "\t"))
-      setLogLevel(logLevels[selectedCron.log_level])
-      setRedis(JSON.stringify(selectedCron.redis, null, "\t"))
-      setName(selectedCron.name)
+    if (selectedItem) {
+      setCommand(allCommands?.find(c => c.value === selectedItem.command) || null)
+      setExpression(selectedItem.expression)
+      setIsActive(selectedItem.is_active)
+      setKwargs(JSON.stringify(selectedItem.kwargs, null, "\t"))
+      setLogLevel(logLevels[selectedItem.log_level])
+      setRedis(JSON.stringify(selectedItem.redis, null, "\t"))
+      setName(selectedItem.name)
     }
     if (!commands.results) dispatch(new CommandsApi(token).getList())
-  }, [allCommands, commands.results, selectedCron, dispatch, token]);
+  }, [allCommands, commands.results, selectedItem, dispatch, token]);
 
   const clearModal = () => {
     setCommand(null)
@@ -103,7 +103,7 @@ const Crons = () =>  {
   const onCommandChange = useCallback(e => {
       const cmd = allCommands?.find(c => c.value === e.value)
       allCommands && setCommand({ label: cmd.label, value: e.value })
-      if (!selectedCron) {
+      if (!selectedItem) {
         const placeholders = {
           str: "<placeholder str>",
           bool: false,
@@ -127,9 +127,9 @@ const Crons = () =>  {
         }
       }
     },
-    [allCommands, selectedCron]
+    [allCommands, selectedItem]
   )
-  const onDelete = useCallback(() => dispatch(api.delete(selectedCron.id, selectedCron.name)), [dispatch, selectedCron])
+  const onDelete = useCallback(() => dispatch(api.delete(selectedItem.id, selectedItem.name)), [dispatch, selectedItem])
   const onExpressionChange = useCallback(e => setExpression(e.target.value), [])
   const onIsActiveChange = useCallback(() => {setIsActive(!isActive)}, [isActive])
   const onKwargsChange = useCallback((e, i) => {
@@ -152,24 +152,24 @@ const Crons = () =>  {
       command: command.value,
       expression,
       is_active: isActive,
-      log_level: logLevel.value,
+      log_level: logLevel?.value,
       name
     }
     if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ""))
-    if (selectedCron) dispatch(api.update(selectedCron.id, data))
+    if (selectedItem) dispatch(api.update(selectedItem.id, data))
     else dispatch(api.create(data))
-  }, [command, selectedCron, dispatch, expression, isActive, kwargs, logLevel, name])
+  }, [command, selectedItem, dispatch, expression, isActive, kwargs, logLevel, name])
 
   const hasChanges = () => {
-    if (!selectedCron) return false
+    if (!selectedItem) return false
     return (
-      command?.value !== selectedCron.command ||
-      expression !== selectedCron.expression ||
-      isActive !== selectedCron.is_active ||
-      logLevel?.value !== selectedCron.log_level ||
-      name !== selectedCron.name ||
-      kwargs !== JSON.stringify(selectedCron.kwargs) ||
-      JSON.stringify(JSON.parse(redis)) !== JSON.stringify(selectedCron.redis)
+      command?.value !== selectedItem.command ||
+      expression !== selectedItem.expression ||
+      isActive !== selectedItem.is_active ||
+      logLevel?.value !== selectedItem.log_level ||
+      name !== selectedItem.name ||
+      kwargs !== JSON.stringify(selectedItem.kwargs) ||
+      JSON.stringify(JSON.parse(redis)) !== JSON.stringify(selectedItem.redis)
     )
   }
 
@@ -208,7 +208,7 @@ const Crons = () =>  {
                 </button>
               </h4>
 
-              {!selectedCron && !modalOpen && <Errors errors={errors}/>}
+              {!selectedItem && !modalOpen && <Errors errors={errors}/>}
 
               <div className="table-responsive">
                 <table className="table table-hover">
@@ -320,7 +320,7 @@ const Crons = () =>  {
                             <td colSpan={7}>No crons available</td>
                           </tr>
                         : <tr>
-                          <td colSpan={7}>
+                          <td colSpan={8}>
                             <Audio width="100%" radius="9" color="green" wrapperStyle={{width: "100%"}} />
                           </td>
                         </tr>
@@ -358,25 +358,25 @@ const Crons = () =>  {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal centered show={Boolean(selectedCron) || modalOpen} onHide={onCloseModal}>
+      <Modal centered show={Boolean(selectedItem) || modalOpen} onHide={onCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>
             <div className="row">
               <div className="col-lg-12 grid-margin stretch-card">
-                {selectedCron ? 'Edit' : 'Add new cron'} { selectedCron?.name }
+                {selectedItem ? 'Edit' : 'Add new cron'} { selectedItem?.name }
                 {
-                  selectedCron
+                  selectedItem
                     ? <button
                         type="button"
                         className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                        onClick={() => dispatch(api.getItem(selectedCron.id))}>
+                        onClick={() => dispatch(api.getItem(selectedItem.id))}>
                         <i className="mdi mdi-refresh" />
                       </button>
                     : null
                 }
               </div>
             </div>
-            {selectedCron && <p className="text-muted mb-0">{selectedCron?.description}</p>}
+            {selectedItem && <p className="text-muted mb-0">{selectedItem?.description}</p>}
             {
               command
                 ? allCommands?.find(c => c.value === command.value)?.args?.length
@@ -402,7 +402,7 @@ const Crons = () =>  {
           </Modal.Title>
         </Modal.Header>
         {
-          loadingItems?.includes(selectedCron?.id)
+          loadingItems?.includes(selectedItem?.id)
             ? <ColorRing
               width = "100%"
               height = "50"
@@ -504,7 +504,7 @@ const Crons = () =>  {
         }
         <Modal.Footer>
           {
-            selectedCron && <Button variant="danger" className="float-left" onClick={onDelete}>
+            selectedItem && <Button variant="danger" className="float-left" onClick={onDelete}>
               Delete
             </Button>
           }
@@ -515,7 +515,7 @@ const Crons = () =>  {
             variant="success"
             onClick={evt => {
               evt.preventDefault()
-              dispatch(CronsApi.run(token, selectedCron?.id, selectedCron?.command))
+              dispatch(CronsApi.run(token, selectedItem?.id, selectedItem?.command))
               }
           }
           >
