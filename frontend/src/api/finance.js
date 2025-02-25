@@ -193,7 +193,7 @@ export class PensionApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, U
   }
 }
 
-export class StocksApi extends mix(ListApi, TokenMixin) {
+export class StocksApi extends mix(ListApi, TokenMixin, UploadApi) {
   static baseUrl = "finance/stocks"
   static methods = {
     set: setStocks,
@@ -202,7 +202,7 @@ export class StocksApi extends mix(ListApi, TokenMixin) {
   }
 }
 
-export class StocksPnlApi extends mix(ListApi, TokenMixin) {
+export class StocksPnlApi extends mix(ListApi, TokenMixin, UploadApi) {
   static baseUrl = "finance/stocks/pnl"
   static methods = {
     set: setStocksPnl,
