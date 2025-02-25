@@ -14,6 +14,8 @@ from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
 from mainframe.finance.viewsets.mixins import PnlActionModelViewSet
 
+logger = logging.getLogger(__name__)
+
 
 class StocksViewSet(PnlActionModelViewSet):
     permission_classes = (IsAdminUser,)
@@ -26,7 +28,6 @@ class StocksViewSet(PnlActionModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = logging.getLogger(__name__)
         try:
             StockTransactionsImporter(file, logger).run()
         except StockImportError as e:

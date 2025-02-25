@@ -93,7 +93,7 @@ class StockTransactionsImporter:
             return key.lower().replace(" ", "_")
 
         def normalize_value(value):
-            return str(value).replace("$", "").replace("€", "")
+            return str(value).replace("$", "").replace("€", "").replace(",", "")
 
         row["Type"] = self.normalize_type(row["Type"])
         return {normalize_key(k): normalize_value(v) for (k, v) in row.items() if v}
