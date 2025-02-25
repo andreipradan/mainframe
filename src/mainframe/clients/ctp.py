@@ -164,7 +164,7 @@ class CTPClient:
                 ),
             )
 
-    def parse_schedule(self, args) -> Optional[Schedule]:
+    def parse_schedule(self, args) -> Optional[Schedule]:  # noqa: C901
         response, line, occ, url = args
         if not response or "<title> 404 Not Found" in response:
             self.logger.warning("No or 404 in response for %s", url)
@@ -185,6 +185,8 @@ class CTPClient:
                 schedule_start_date = datetime.strptime(date_row, "%d.%m.06.%Y")
             elif date_row == ".":
                 schedule_start_date = None
+            elif date_row == "24.02.2024v":
+                schedule_start_date = datetime.strptime(date_row, "%d.%m.%Yv")
             else:
                 self.logger.exception("Unexpected date format %s", date_row)
                 return None
