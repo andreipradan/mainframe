@@ -32,6 +32,7 @@ const Bonds = () => {
   const [maturity, setMaturity] = useState(null)
   const [notes, setNotes] = useState("")
   const [net, setNet] = useState("")
+  const [currency, setCurrency] = useState("")
   const [quantity, setQuantity] = useState("")
   const [pnl, setPnl] = useState("")
   const [price, setPrice] = useState("")
@@ -43,6 +44,7 @@ const Bonds = () => {
 
   const clearModal = () => {
     setCommission("")
+    setCurrency("")
     setDate(null)
     setInterest("")
     setMaturity(null)
@@ -76,6 +78,7 @@ const Bonds = () => {
     const data = {
       date: date.toISOString(),
       net,
+      currency,
       notes,
       quantity,
       pnl,
@@ -98,6 +101,7 @@ const Bonds = () => {
   useEffect(() => {
     if (state.selectedItem) {
       setCommission(state.selectedItem.commission)
+      setCurrency(state.selectedItem.currency)
       setDate(new Date(state.selectedItem.date))
       if (state.selectedItem.interest)
         setInterest(state.selectedItem.interest)
@@ -238,6 +242,9 @@ const Bonds = () => {
                     {state.results[0].quantity && <ListItem label={"Quantity"} value={state.results[0].quantity} textType={"warning"} className="mr-3" />}
                     {state.results[0].ticker && <ListItem label={"Ticker"} value={state.results[0].ticker} textType={"warning"} className="mr-3" />}
                     {state.results[0].price && <ListItem label={"Price"} value={state.results[0].price} textType={"warning"} className="mr-3" />}
+                    {state.results[0].net && <ListItem label={"Net"} value={
+                      `${state.results[0].net} ${state.results[0].currency ? state.results[0].currency : ''}`
+                    } textType={"warning"} className="mr-3" />}
                     {state.results[0].commission && <ListItem label={"Commission"} value={state.results[0].commission} textType={"warning"} className="mr-3" />}
                     {state.results[0].tax && <ListItem label={"Tax"} value={state.results[0].tax} textType={"success"} className="mr-3" />}
                     {state.results[0].interest && <ListItem label={"Interest"} value={state.results[0].interest} textType={"success"} className="mr-3" />}
@@ -488,8 +495,6 @@ const Bonds = () => {
                 scrollableYearDropdown
                 selected={maturity}
                 showIcon
-                // showYearDropdown
-                // showMonthYearPicker
               />
             </div>
           </Form.Group>
@@ -536,6 +541,14 @@ const Bonds = () => {
               type="text"
               value={net}
               onChange={e => setNet(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Currency</Form.Label>
+            <Form.Control
+              type="text"
+              value={currency}
+              onChange={e => setCurrency(e.target.value)}
             />
           </Form.Group>
           <Form.Group className="mb-3">
