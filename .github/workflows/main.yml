@@ -63,9 +63,7 @@ jobs:
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
-          args: --detailed-output
-        env:
-          IGNORE_VULNS: "59234"
+          args: --detailed-output -i 59234
   pre-commit:
     name: pre-commit (w/o pytest)
     runs-on: ubuntu-latest
