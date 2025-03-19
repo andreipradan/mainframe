@@ -62,7 +62,7 @@ class ServiceEntry(TimeStampedModel):
         Car, on_delete=models.CASCADE, related_name="service_entries"
     )
     currency = models.CharField(max_length=3, blank=True, default="RON")
-    date = models.DateTimeField()
+    date = models.DateField()
     description = models.TextField()
     price = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
 
