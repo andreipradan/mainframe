@@ -89,13 +89,6 @@ const Bots = () =>  {
                                 <td>
                                   <div className="btn-group" role="group" aria-label="Basic example">
                                     <button
-                                        type="button"
-                                        className="btn btn-outline-secondary"
-                                        onClick={() => dispatch(api.sync(bot.id))}
-                                    >
-                                      <i className="mdi mdi-refresh" />
-                                    </button>
-                                    <button
                                       type="button"
                                       className="btn btn-outline-secondary"
                                       onClick={() => dispatch(select(bot.id))}
