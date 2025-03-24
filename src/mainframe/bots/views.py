@@ -1,8 +1,6 @@
 import logging
 
-from django.http import JsonResponse
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAdminUser
 
 from mainframe.bots.models import Bot, Message
@@ -20,14 +18,6 @@ class BotViewSet(viewsets.ModelViewSet):
         if self.action == "webhook":
             return [AllowAny()]
         return super().get_permissions()
-
-    @action(detail=True, methods=["put"])
-    def sync(self, request, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data={}, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return JsonResponse(data=serializer.data)
 
 
 class MessageViewSet(viewsets.ModelViewSet):

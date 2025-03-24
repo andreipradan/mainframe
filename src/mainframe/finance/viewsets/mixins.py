@@ -12,7 +12,7 @@ class PnlActionModelViewSet(viewsets.ModelViewSet):
     pnl_model_class = NotImplemented
     pnl_serializer_class = NotImplemented
     pnl_importer_class = NotImplemented
-    pnl_importer_error_class = NotImplemented
+    pnl_importer_error_class = NotImplementedError
 
     @action(methods=["get", "post"], detail=False)
     def pnl(self, request, *args, **kwargs):
