@@ -63,7 +63,7 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<Spinner/>}>
       <Switch>
-        <Route exact path="/documentation/terms-and-conditions" component={ TermsAndConditions } />
+        <Route exact path="/terms-and-conditions" component={ TermsAndConditions } />
         <Route exact path="/expenses/travel/groups" component={ ExpenseTravelGroups } />
         <Route exact path="/expenses/travel/my" component={ ExpensesTravel } />
         <Route exact path="/earthquakes" component={ Earthquakes } />

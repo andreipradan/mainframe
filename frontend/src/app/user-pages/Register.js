@@ -91,7 +91,7 @@ const Register = () => {
                     <label className="form-check-label text-muted">
                       <input type="checkbox" className="form-check-input" required/>
                       <i className="input-helper" />
-                      I agree to all the <Link to="/documentation/terms-and-conditions">Terms & Conditions</Link>
+                      I agree to all the <Link to="/terms-and-conditions">Terms & Conditions</Link>
                     </label>
                   </div>
                 </div>
