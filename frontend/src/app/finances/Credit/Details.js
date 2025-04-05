@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { Chart, CategoryScale, BarElement, ArcElement, LinearScale, PointElement, LineElement, Tooltip as TooltipJS } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { Circles } from "react-loader-spinner";
 import { ProgressBar } from "react-bootstrap";
@@ -13,6 +14,8 @@ import { calculateSum, getPercentage } from "../utils";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import ListItem from "../../shared/ListItem";
 import Errors from "../../shared/Errors";
+
+Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, PointElement, LineElement, TooltipJS)
 
 const Details = () => {
   const dispatch = useDispatch();
@@ -221,12 +224,12 @@ const Details = () => {
   };
   const paymentsOptions = {
     scales: {
-      yAxes: [{
+      y: {
         ticks: {beginAtZero: true},
         gridLines: {color: "rgba(204, 204, 204,0.1)"},
         stacked: true,
-      }],
-      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+      },
+      x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}
     },
     legend: {display: true},
     elements: {point: {radius: 0}},
@@ -573,11 +576,11 @@ const Details = () => {
                 ? <Circles/>
                 : <Line data={interestData} options={{
                     scales: {
-                      yAxes: [{
+                      y: {
                         ticks: {beginAtZero: true, precision: 0.1},
                         gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                      }],
-                      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                      },
+                      x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}
                     },
                     legend: {display: true},
                   }}/>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import Button from 'react-bootstrap/Button';
-import DatePicker from 'react-datepicker/es';
+import DatePicker from 'react-datepicker';
 import Form from "react-bootstrap/Form";
 import Modal from 'react-bootstrap/Modal';
 import { Circles, ColorRing } from 'react-loader-spinner';

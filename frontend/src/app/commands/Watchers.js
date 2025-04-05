@@ -239,7 +239,7 @@ const Watchers = () =>  {
                             )
                           : <tr><td colSpan={8}>No watchers available</td></tr>
                         : <tr>
-                          <td colSpan={8}>
+                          <td colSpan={9}>
                             <Audio
                                 width = "100%"
                                 radius = "9"

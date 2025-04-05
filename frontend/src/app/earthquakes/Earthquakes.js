@@ -7,6 +7,7 @@ import * as am5map from "@amcharts/amcharts5/map";
 import mapGeodata from "@amcharts/amcharts5-geodata/romaniaHigh";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import Alert from "react-bootstrap/Alert";
+import { BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
 
 import BotsApi from "../../api/bots";
 import BottomPagination from "../shared/BottomPagination";
@@ -31,6 +32,8 @@ export const formatTime = timestamp => new Date(timestamp).toLocaleDateString(
     "ro-RO",
     {day: "2-digit", month: "short", year: "2-digit", hour: "numeric", minute: "numeric"}
 )
+
+Chart.register(BarElement, CategoryScale, LinearScale, Tooltip)
 
 const Earthquakes = () => {
   const dispatch = useDispatch();
@@ -77,11 +80,11 @@ const Earthquakes = () => {
 
   const options = {
     scales: {
-      yAxes: [{
+      y: {
         ticks: {beginAtZero: true, step: 20},
         gridLines: {color: "rgba(204, 204, 204,0.1)"}
-      }],
-      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}}]
+      },
+      x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}}
     },
     elements: {point: {radius: 0}},
     tooltips: {

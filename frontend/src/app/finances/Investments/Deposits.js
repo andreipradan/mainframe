@@ -15,8 +15,22 @@ import { DepositsApi } from '../../../api/finance';
 import { formatDate, formatTime } from '../../earthquakes/Earthquakes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import DatePicker from 'react-datepicker/es';
+import DatePicker from 'react-datepicker';
 import { useHistory } from 'react-router-dom';
+
+const diffMonths = (date1, date2) => {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  const years = d2.getFullYear() - d1.getFullYear();
+  const months = d2.getMonth() - d1.getMonth();
+  return years * 12 + months;
+}
+
+const getGrossInterest = (amount, interest, date, maturity) => {
+  const interestPerMonth = interest / 100 * amount / 12
+  const months = diffMonths(date, maturity)
+  return (interestPerMonth * months).toFixed(2)
+}
 
 const Deposits = () => {
   const dispatch = useDispatch();
@@ -251,7 +265,7 @@ const Deposits = () => {
                   <th>Name</th>
                   <th>Amount</th>
                   <th>Interest</th>
-                  <th>Tax</th>
+                  <th>Tax <sup>10%</sup></th>
                   <th>Profit</th>
                   <th>Maturity</th>
                 </tr>
@@ -278,28 +292,19 @@ const Deposits = () => {
                           <td className={"text-warning"}> {parseFloat(deposit.amount)} {deposit.currency}</td>
                           <td>
                             <span className={"text-success"}>
-                              {parseFloat((deposit.interest / 100 * deposit.amount )/3).toFixed(2)}&nbsp;
+
+                              {getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity)}&nbsp;
                               {deposit.currency}&nbsp;
                             </span>
-                            ({deposit.interest}%)
+                            <sup>{deposit.interest}%</sup>
                           </td>
                           <td>
-                            <span className={parseFloat(deposit.tax) ? 'text-danger' : ''}>
-                              {parseFloat(deposit.tax) || '-'}&nbsp;
-                              {parseFloat(deposit.tax) ? deposit.currency: null}
+                            <span className='text-danger'>
+                              {(getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity) / 10).toFixed(2)} {deposit.currency}
                             </span>
-                            {parseFloat(deposit.tax) ? ` (10%)` : null}
                           </td>
-                          <td className={`text-${
-                            deposit.pnl && deposit.pnl !== "0.00"
-                            ? parseFloat(deposit.pnl) > 0.0 ? 'success' : 'danger'
-                            : 'muted'
-                          }`}>
-                            {
-                              parseFloat(deposit.pnl)
-                                ? `${parseFloat(deposit.pnl)} ${deposit.currency}`
-                                : '-'
-                            }
+                          <td className={`text-${new Date(deposit.maturity) <= new Date() ? 'success' : 'muted'}`}>
+                            {(getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity) - getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity) / 10).toFixed(2)} {deposit.currency}
                           </td>
                           <td> {formatDate(deposit.maturity)} </td>
                         </tr>)

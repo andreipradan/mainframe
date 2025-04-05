@@ -85,12 +85,12 @@ const Transactions = () => {
   }
   const paymentsOptions = {
     scales: {
-      yAxes: [{
+      y: {
         ticks: {beginAtZero: true},
         gridLines: {color: "rgba(204, 204, 204,0.1)"},
         stacked: true,
-      }],
-      xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+      },
+      x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}
     },
     legend: {display: true},
     elements: {point: {radius: 0}},

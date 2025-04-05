@@ -3,12 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { Line } from 'react-chartjs-2';
 import { Circles } from "react-loader-spinner";
 import Marquee from "react-fast-marquee";
+import { CategoryScale, Chart, LinearScale, LineElement, PointElement, Tooltip } from 'chart.js';
 
 import { InvestmentsApi, PensionApi } from '../../../api/finance';
 import ListItem from "../../shared/ListItem";
 import Errors from "../../shared/Errors";
 import { formatDate } from '../../earthquakes/Earthquakes';
 import { getEvaluation, getPnl } from './Pension';
+
+Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip)
 
 const Summary = () => {
   const dispatch = useDispatch();
@@ -47,8 +50,8 @@ const Summary = () => {
                       {
                         state.totals[currency]?.active
                           ? <ListItem
-                              label={`Active (${currency})`}
-                              value={parseFloat(state.totals[currency].active).toFixed(2)}
+                              label={`Active`}
+                              value={parseFloat(state.totals[currency].active).toFixed(2) + ` ${currency}`}
                               textType={"primary"}
                           />
                           : null
@@ -72,7 +75,7 @@ const Summary = () => {
                           : null
                       }
                       {
-                        state.totals[currency]?.pnl
+                        state.totals[currency]?.pnl && state.totals[currency]?.dividend
                           ? <ListItem
                               label={"Profit"}
                               value={
@@ -105,8 +108,8 @@ const Summary = () => {
                         {
                           state[entry]?.[`active_${currency}`]
                             ? <ListItem
-                                label={`Active (${currency})`}
-                                value={parseFloat(state[entry][`active_${currency}`]).toFixed(2)}
+                                label={`Active`}
+                                value={parseFloat(state[entry][`active_${currency}`]).toFixed(2) + ` ${currency}`}
                                 textType={"info"}
                               />
                             : null
@@ -141,7 +144,7 @@ const Summary = () => {
                         {
                           state[entry]?.[`pnl_${currency}`]
                             ? <ListItem
-                                label={"Profit / Loss"}
+                                label={`Profit / Loss`}
                                 value={`${state[entry][`pnl_${currency}`]} ${currency}`}
                                 textType={'warning'}
                               />
@@ -157,9 +160,9 @@ const Summary = () => {
                             : null
                         }
                         {
-                          state[entry]?.[`pnl_${currency}`]
+                          state[entry]?.[`pnl_${currency}`] && state[entry]?.[`dividend_${currency}`]
                             ? <ListItem
-                                label={"Profit"}
+                                label={`Profit`}
                                 value={
                                   state[entry][`pnl_${currency}`]
                                     ? state[entry]?.[`dividend_${currency}`]
@@ -329,13 +332,13 @@ const Summary = () => {
                       }}
                       options={{
                         scales: {
-                          yAxes: [{
+                          y: {
                             ticks: {beginAtZero: true, precision: 0.1},
                             gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                          }],
-                          xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                          },
+                          x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}
                         },
-                        legend: {display: false},
+                        legend: {display: true},
                       }}
                   />
               }
@@ -379,11 +382,11 @@ const Summary = () => {
                             ]
                           }} options={{
                             scales: {
-                              yAxes: [{
+                              y: {
                                 ticks: {beginAtZero: true, precision: 0.1},
                                 gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                              }],
-                              xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                              },
+                              x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}
                             },
                           }}/>
                         </div>
@@ -402,11 +405,11 @@ const Summary = () => {
                             ]
                           }} options={{
                             scales: {
-                              yAxes: [{
+                              y: {
                                 ticks: {beginAtZero: true, precision: 0.1},
                                 gridLines: {color: "rgba(204, 204, 204,0.1)"},
-                              }],
-                              xAxes: [{gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}]
+                              },
+                              x: {gridLines: {color: "rgba(204, 204, 204,0.1)"}, stacked: true}
                             },
                           }}/>
                         </div>

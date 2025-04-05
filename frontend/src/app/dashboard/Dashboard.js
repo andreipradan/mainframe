@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { ArcElement, CategoryScale, Chart } from 'chart.js';
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Nouislider from 'nouislider-react';
@@ -17,6 +18,8 @@ import ActivityApi from '../../api/activity';
 import DevicesApi from '../../api/devices';
 import CronsApi from '../../api/crons';
 import {doughnutPieOptions, getLightsData, sliderSettings } from "./chartsData";
+
+Chart.register(ArcElement, CategoryScale)
 
 const Dashboard = () => {
   const dispatch = useDispatch();

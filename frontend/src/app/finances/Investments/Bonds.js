@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from 'react-router-dom';
 import BottomPagination from "../../shared/BottomPagination";
 import Button from 'react-bootstrap/Button';
-import DatePicker from 'react-datepicker/es';
+import DatePicker from 'react-datepicker';
 import Form from "react-bootstrap/Form";
 import Marquee from "react-fast-marquee";
 import Modal from 'react-bootstrap/Modal';
