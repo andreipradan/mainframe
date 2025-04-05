@@ -6,8 +6,6 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
-#   generate-hashes: false
-#   universal: false
 
 aiohttp==3.9.5
 aiosignal==1.3.1

@@ -72,9 +72,12 @@ class InvestmentsViewSet(viewsets.ViewSet):
         deposits = Deposit.objects.aggregate(
             count=Count("id"),
             **{
-                f"active_{currency}": Sum(
-                    "amount",
-                    filter=Q(currency=currency, maturity__gt=timezone.now()),
+                f"active_{currency}": Coalesce(
+                    Sum(
+                        "amount",
+                        filter=Q(currency=currency, maturity__gt=timezone.now())
+                    ),
+                    Value(0, output_field=DecimalField()),
                 )
                 for currency in deposit_currencies
             },
