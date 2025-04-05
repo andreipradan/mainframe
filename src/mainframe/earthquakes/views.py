@@ -33,7 +33,7 @@ class EarthquakeViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False)
     def map(self, request, **kwargs):
-        data_path = settings.BASE_DIR / "api" / "earthquakes" / "maps"
+        data_path = settings.BASE_DIR / "earthquakes" / "maps"
         with open(data_path / f"{request.GET.get('id')}.json") as county:
             return JsonResponse(json.load(county))
 

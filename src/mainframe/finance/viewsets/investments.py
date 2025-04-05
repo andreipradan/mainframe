@@ -86,7 +86,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     Sum("pnl", filter=Q(currency=currency)),
                     Value(0, output_field=DecimalField()),
                 )
-                for currency in bond_currencies
+                for currency in deposit_currencies
             },
         )
         currencies = sorted((set(bond_currencies + deposit_currencies)))
