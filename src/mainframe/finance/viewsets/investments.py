@@ -75,7 +75,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                 f"active_{currency}": Coalesce(
                     Sum(
                         "amount",
-                        filter=Q(currency=currency, maturity__gt=timezone.now())
+                        filter=Q(currency=currency, maturity__gt=timezone.now()),
                     ),
                     Value(0, output_field=DecimalField()),
                 )
