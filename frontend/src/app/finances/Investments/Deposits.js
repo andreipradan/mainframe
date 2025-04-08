@@ -155,23 +155,24 @@ const Deposits = () => {
           />
         : <b className={"text-small text-muted"}>
             <div>Count: {state.count}</div>
-            <div>
-              Profit: {state.aggregations?.pnl ? `${state.aggregations?.pnl} RON` : '-'}
-            </div>
-            <div className="mb-1">
-              Tax: {state.aggregations?.tax ? `${state.aggregations?.tax} RON` : '-'}
-            </div>
+            Active:
+            <ul className={"list-arrow"}>
+              {
+                state.currencies?.map(currency => <li
+                  className={"pt-0"}>{state.aggregations[currency]} {currency}</li>)
+              }
+            </ul>
           </b>
     }
 
     <Errors errors={state.errors}/>
 
-    {/* Last deposit */}
+    {/* Next maturity */}
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>Last Deposit</h6>
+            <h6>Next Maturity</h6>
             {
               state.loading
                 ? <Circles width="100%" height="50" />
@@ -261,13 +262,13 @@ const Deposits = () => {
               <table className="table table-hover">
                 <thead>
                 <tr>
+                  <th>Maturity</th>
                   <th>Date</th>
-                  <th>Name</th>
                   <th>Amount</th>
                   <th>Interest</th>
                   <th>Tax <sup>10%</sup></th>
                   <th>Profit</th>
-                  <th>Maturity</th>
+                  <th>Name</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -287,12 +288,19 @@ const Deposits = () => {
                           className="cursor-pointer"
                           onClick={() => dispatch(selectItem(deposit.id))}
                         >
-                          <td> {formatDate(deposit.date)} </td>
-                          <td> {deposit.name} </td>
+                          <td>
+                            {formatDate(deposit.maturity)}&nbsp;
+                            {
+                              new Date(deposit.maturity) < new Date()
+                                ? <i className={"text-success mdi mdi-check-circle-outline"}/>
+                                : null
+                            }
+                            <br/><sub>{diffMonths(deposit.date, deposit.maturity)} months</sub>
+                          </td>
+                          <td>{formatDate(deposit.date)}</td>
                           <td className={"text-warning"}> {parseFloat(deposit.amount)} {deposit.currency}</td>
                           <td>
                             <span className={"text-success"}>
-
                               {getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity)}&nbsp;
                               {deposit.currency}&nbsp;
                             </span>
@@ -303,10 +311,11 @@ const Deposits = () => {
                               {(getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity) / 10).toFixed(2)} {deposit.currency}
                             </span>
                           </td>
-                          <td className={`text-${new Date(deposit.maturity) <= new Date() ? 'success' : 'muted'}`}>
+                          <td
+                            className={`text-${new Date(deposit.maturity) <= new Date() ? 'success' : 'warning'}`}>
                             {(getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity) - getGrossInterest(deposit.amount, deposit.interest, deposit.date, deposit.maturity) / 10).toFixed(2)} {deposit.currency}
                           </td>
-                          <td> {formatDate(deposit.maturity)} </td>
+                          <td> {deposit.name} </td>
                         </tr>)
                       : <tr>
                         <td colSpan={6}><span>No deposits found</span></td>
