@@ -1,7 +1,8 @@
+from datetime import datetime
+
 from django.db.models import Count, DecimalField, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
-from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
@@ -26,7 +27,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     "net",
                     filter=Q(
                         currency=currency,
-                        maturity__gt=timezone.now(),
+                        maturity__gt=datetime.today(),
                         type=Bond.TYPE_BUY,
                     ),
                 )
@@ -75,7 +76,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                 f"active_{currency}": Coalesce(
                     Sum(
                         "amount",
-                        filter=Q(currency=currency, maturity__gt=timezone.now()),
+                        filter=Q(currency=currency, maturity__gt=datetime.today()),
                     ),
                     Value(0, output_field=DecimalField()),
                 )
@@ -96,7 +97,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     **bonds,
                     "currencies": bond_currencies,
                     "next_maturity": BondSerializer(
-                        Bond.objects.filter(maturity__gt=timezone.now())
+                        Bond.objects.filter(maturity__gt=datetime.today())
                         .order_by("date")
                         .first()
                     ).data,
@@ -116,7 +117,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     **{k: v for k, v in deposits.items() if v},
                     "currencies": deposit_currencies,
                     "next_maturity": DepositSerializer(
-                        Deposit.objects.filter(maturity__gt=timezone.now())
+                        Deposit.objects.filter(maturity__gt=datetime.today())
                         .order_by("date")
                         .first()
                     ).data,

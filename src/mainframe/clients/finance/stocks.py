@@ -57,22 +57,7 @@ class StockPnLImporter:
         try:
             results = PnL.objects.bulk_create(
                 self.parse_pnl(),
-                update_conflicts=True,
-                update_fields=[
-                    "amount",
-                    "cost_basis",
-                    "country",
-                    "isin",
-                    "pnl",
-                    "security_name",
-                ],
-                unique_fields=[
-                    "currency",
-                    "date_acquired",
-                    "date_sold",
-                    "ticker",
-                    "quantity",
-                ],
+                ignore_conflicts=True,
             )
         except (IntegrityError, ValidationError) as e:
             self.logger.error(str(e))

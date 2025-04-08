@@ -21,7 +21,15 @@ class PnL(TimeStampedModel):
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_"
                 "date_acquired_date_sold_ticker_quantity_currency_uniq",
-                fields=("date_acquired", "date_sold", "ticker", "quantity", "currency"),
+                fields=(
+                    "amount",
+                    "cost_basis",
+                    "currency",
+                    "date_acquired",
+                    "date_sold",
+                    "quantity",
+                    "ticker",
+                ),
             ),
         )
         ordering = ["-date_sold", "-date_acquired", "ticker"]

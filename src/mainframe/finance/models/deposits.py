@@ -12,7 +12,6 @@ class Deposit(TimeStampedModel):
     maturity = models.DateField()
     name = models.CharField(max_length=65)
 
-    alias = models.CharField(blank=True, max_length=128)
     pnl = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
     tax = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
 
