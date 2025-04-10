@@ -80,12 +80,7 @@ class Command(BaseCommand):
         else:
             unit_values = extract_azt(resp, pensions)
 
-        UnitValue.objects.bulk_create(
-            unit_values,
-            update_conflicts=True,
-            update_fields=["currency", "value"],
-            unique_fields=["date", "pension"],
-        )
+        UnitValue.objects.bulk_create(unit_values, ignore_conflicts=True)
 
         logger.info("[Pension] Done (%s records)", len(unit_values))
         healthchecks.ping(logger, "pension")

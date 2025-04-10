@@ -55,3 +55,6 @@ class UnitValue(TimeStampedModel):
                 fields=("date", "pension"),
             ),
         )
+
+    def __str__(self):
+        return f"[{self.date}] {self.pension} - {self.value} {self.currency}"
