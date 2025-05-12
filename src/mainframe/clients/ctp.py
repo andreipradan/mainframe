@@ -171,7 +171,7 @@ class CTPClient:
             return None
 
         rows = [row.strip() for row in response.split("\n") if row.strip()]
-        date_row = rows[2].split(",")[1].rstrip(".")
+        date_row = ",".join(rows[2].split(",")[1:]).replace(",", ".").rstrip(".")
         try:
             schedule_start_date = (
                 datetime.strptime(date_row, "%d.%m.%Y") if date_row else None
