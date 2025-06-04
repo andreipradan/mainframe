@@ -1,0 +1,9 @@
+[Unit]
+Description=Wi-Fi auto-repair if disconnected
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/rpi/projects/mainframe/deploy/wifi-repair.sh
+

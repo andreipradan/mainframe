@@ -1,0 +1,10 @@
+[Unit]
+Description=Runs Wi-Fi repair every 5 minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Unit=wifi-repair.service
+
+[Install]
+WantedBy=timers.target
