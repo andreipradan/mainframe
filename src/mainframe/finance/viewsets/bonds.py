@@ -47,7 +47,7 @@ class BondsViewSet(viewsets.ModelViewSet):
                     for currency in bond_currencies
                 },
                 **{
-                    f"{bond_type}_{currency}": Sum(
+                    f"{bond_type.lower()}_{currency}": Sum(
                         "net",
                         filter=Q(
                             currency=currency,
@@ -55,7 +55,7 @@ class BondsViewSet(viewsets.ModelViewSet):
                         ),
                     )
                     for currency in bond_currencies
-                    for bond_type in ["buy", "deposit", "dividend", "sell"]
+                    for bond_type in [t[1] for t in Bond.TYPE_CHOICES]
                 },
             ),
             currencies=bond_currencies,

@@ -9,12 +9,14 @@ class Bond(TimeStampedModel):
     TYPE_DEPOSIT = "in"
     TYPE_DIVIDEND = "div"
     TYPE_SELL = "vanz"
+    TYPE_WITHDRAWAL = "out"
 
     TYPE_CHOICES = (
         (TYPE_BUY, "Buy"),
         (TYPE_DEPOSIT, "Deposit"),
         (TYPE_DIVIDEND, "Dividend"),
         (TYPE_SELL, "Sell"),
+        (TYPE_WITHDRAWAL, "Withdrawal"),
     )
 
     commission = models.DecimalField(default=0, **DECIMAL_DEFAULT_KWARGS)
