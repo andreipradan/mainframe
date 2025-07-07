@@ -9,7 +9,7 @@ from mainframe.finance.serializers import BondSerializer
 
 class BondsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
-    queryset = Bond.objects.order_by("-date")
+    queryset = Bond.objects.order_by("-date", "-created_at")
     serializer_class = BondSerializer
 
     def get_queryset(self):

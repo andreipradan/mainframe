@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from mainframe.core.defaults import DECIMAL_DEFAULT_KWARGS
@@ -25,6 +26,7 @@ class Bond(TimeStampedModel):
     interest = models.DecimalField(
         blank=True, decimal_places=2, max_digits=5, null=True
     )
+    interest_dates = ArrayField(models.DateField(), default=list, blank=True)
     quantity = models.DecimalField(decimal_places=2, max_digits=15)
     maturity = models.DateField(blank=True, null=True)
     net = models.DecimalField(**DECIMAL_DEFAULT_KWARGS)
@@ -37,3 +39,9 @@ class Bond(TimeStampedModel):
 
     class Meta:
         ordering = ("-date",)
+
+    def save(self, *args, **kwargs):
+        if self.interest_dates:
+            self.interest_dates = sorted(self.interest_dates)
+            self.maturity = self.interest_dates[-1]
+        return super().save(*args, **kwargs)

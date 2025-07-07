@@ -10,11 +10,31 @@ from mainframe.finance.models import Bond, Deposit
 from mainframe.finance.serializers import BondSerializer, DepositSerializer
 
 
+def get_next_interest_bond():
+    closest_bond = None
+    closest_date = None
+    today = datetime.today().date()
+
+    for bond in Bond.objects.extra(
+        where=["EXISTS (SELECT 1 FROM unnest(interest_dates) AS d WHERE d > %s)"],
+        params=[today],
+    ):
+        future_dates = [d for d in bond.interest_dates if d > today]
+        if future_dates:
+            next_date = min(future_dates)
+            if closest_date is None or next_date < closest_date:
+                closest_date = next_date
+                closest_bond = bond
+    return closest_bond
+
+
 class InvestmentsViewSet(viewsets.ViewSet):
     permission_classes = (IsAdminUser,)
 
     @staticmethod
     def list(request, **kwargs):
+        today = datetime.today()
+
         bond_currencies = list(
             Bond.objects.values_list("currency", flat=True)
             .distinct("currency")
@@ -27,7 +47,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     "net",
                     filter=Q(
                         currency=currency,
-                        maturity__gt=datetime.today(),
+                        maturity__gt=today,
                         type=Bond.TYPE_BUY,
                     ),
                 )
@@ -76,7 +96,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                 f"active_{currency}": Coalesce(
                     Sum(
                         "amount",
-                        filter=Q(currency=currency, maturity__gt=datetime.today()),
+                        filter=Q(currency=currency, maturity__gt=today),
                     ),
                     Value(0, output_field=DecimalField()),
                 )
@@ -91,16 +111,15 @@ class InvestmentsViewSet(viewsets.ViewSet):
             },
         )
         currencies = sorted((set(bond_currencies + deposit_currencies)))
+        next_interest_bond = get_next_interest_bond()
         return JsonResponse(
             data={
                 "bonds": {
                     **bonds,
                     "currencies": bond_currencies,
-                    "next_maturity": BondSerializer(
-                        Bond.objects.filter(maturity__gt=datetime.today())
-                        .order_by("date")
-                        .first()
-                    ).data,
+                    "next_interest": BondSerializer(get_next_interest_bond()).data
+                    if next_interest_bond
+                    else None,
                     **{
                         f"interest_rates_{currency}": list(
                             Bond.objects.filter(
@@ -117,7 +136,7 @@ class InvestmentsViewSet(viewsets.ViewSet):
                     **{k: v for k, v in deposits.items() if v},
                     "currencies": deposit_currencies,
                     "next_maturity": DepositSerializer(
-                        Deposit.objects.filter(maturity__gt=datetime.today())
+                        Deposit.objects.filter(maturity__gt=today)
                         .order_by("date")
                         .first()
                     ).data,
@@ -136,17 +155,23 @@ class InvestmentsViewSet(viewsets.ViewSet):
                 "totals": {
                     currency: {
                         "active": bonds.get(f"active_{currency}", 0)
-                        + deposits.get(f"active_{currency}", 0),
+                        or 0 + deposits.get(f"active_{currency}", 0)
+                        or 0,
                         "deposit": bonds.get(f"deposit_{currency}", 0)
-                        + deposits.get(f"deposit_{currency}", 0),
+                        or 0 + deposits.get(f"deposit_{currency}", 0)
+                        or 0,
                         "buy": bonds.get(f"buy_{currency}", 0)
-                        + deposits.get(f"buy_{currency}", 0),
+                        or 0 + deposits.get(f"buy_{currency}", 0)
+                        or 0,
                         "sell": bonds.get(f"sell_{currency}", 0)
-                        + deposits.get(f"sell_{currency}", 0),
+                        or 0 + deposits.get(f"sell_{currency}", 0)
+                        or 0,
                         "pnl": bonds.get(f"pnl_{currency}", 0)
-                        + deposits.get(f"pnl_{currency}", 0),
+                        or 0 + deposits.get(f"pnl_{currency}", 0)
+                        or 0,
                         "dividend": bonds.get(f"dividend_{currency}", 0)
-                        + deposits.get(f"dividend_{currency}", 0),
+                        or 0 + deposits.get(f"dividend_{currency}", 0)
+                        or 0,
                     }
                     for currency in currencies
                 },

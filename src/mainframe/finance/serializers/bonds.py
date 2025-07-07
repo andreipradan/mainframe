@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
 from rest_framework import serializers
 
@@ -13,7 +15,11 @@ class BondSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_months(obj: Bond):
-        if not obj.maturity:
+        if not obj.interest_dates:
             return 0
-        diff = relativedelta(obj.maturity, obj.date.date())
+        today = datetime.today().date()
+        future_dates = sorted([d for d in obj.interest_dates if d > today])
+        if not future_dates:
+            return 0
+        diff = relativedelta(future_dates[0], obj.date.date())
         return diff.years * 12 + diff.months
