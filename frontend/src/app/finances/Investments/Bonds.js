@@ -13,10 +13,10 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import Errors from "../../shared/Errors";
 import ListItem from "../../shared/ListItem";
+import { formatDate, formatTime } from '../../earthquakes/Earthquakes';
 import { selectItem, setKwargs, setModalOpen } from "../../../redux/bondsSlice";
 import { selectStyles } from "../Accounts/Categorize/EditModal";
 import { BondsApi } from '../../../api/finance';
-import { formatTime } from '../../earthquakes/Earthquakes';
 
 const Bonds = () => {
   const dispatch = useDispatch();
@@ -26,34 +26,36 @@ const Bonds = () => {
 
   const api = new BondsApi(token)
 
-  const [commission, setCommission] = useState("")
+  // const [commission, setCommission] = useState("")
   const [date, setDate] = useState(null)
   const [interest, setInterest] = useState("")
-  const [maturity, setMaturity] = useState(null)
+  const [interestDates, setInterestDates] = useState(null)
+  // const [maturity, setMaturity] = useState(null)
   const [notes, setNotes] = useState("")
   const [net, setNet] = useState("")
   const [currency, setCurrency] = useState("")
   const [quantity, setQuantity] = useState("")
   const [pnl, setPnl] = useState("")
   const [price, setPrice] = useState("")
-  const [tax, setTax] = useState("")
+  // const [tax, setTax] = useState("")
   const [ticker, setTicker] = useState("")
   const [type, setType] = useState(null)
 
   const [activeOnlyChecked, setActiveOnlyChecked] = useState(false)
 
   const clearModal = () => {
-    setCommission("")
+    // setCommission("")
     setCurrency("")
     setDate(null)
     setInterest("")
-    setMaturity(null)
+    setInterestDates(null)
+    // setMaturity(null)
     setNet("")
     setNotes("")
     setQuantity("")
     setPnl("")
     setPrice("")
-    setTax("")
+    // setTax("")
     setTicker("")
     setType(null)
   }
@@ -83,13 +85,15 @@ const Bonds = () => {
       quantity,
       pnl,
       price,
-      tax,
+      // tax,
       ticker,
       type: type ? type.value : null,
     }
-    if (commission) data.commission = commission
+    // if (commission) data.commission = commission
     if (interest) data.interest = interest
-    if (maturity) data.maturity = maturity.toISOString().split("T")[0]
+    if (interestDates)
+      data.interest_dates = interestDates.map(d => d.toISOString().split("T")[0])
+    // if (maturity) data.maturity = maturity.toISOString().split("T")[0]
     if (state.selectedItem)
       dispatch(api.update(state.selectedItem.id, data))
     else {
@@ -100,19 +104,21 @@ const Bonds = () => {
 
   useEffect(() => {
     if (state.selectedItem) {
-      setCommission(state.selectedItem.commission)
+      // setCommission(state.selectedItem.commission)
       setCurrency(state.selectedItem.currency)
       setDate(new Date(state.selectedItem.date))
       if (state.selectedItem.interest)
         setInterest(state.selectedItem.interest)
-      if (state.selectedItem.maturity)
-        setMaturity(new Date(state.selectedItem.maturity))
+      if (state.selectedItem.interest_dates)
+        setInterestDates(state.selectedItem.interest_dates.map(d => new Date(d)))
+      // if (state.selectedItem.maturity)
+      //   setMaturity(new Date(state.selectedItem.maturity))
       setQuantity(state.selectedItem.quantity)
       setNet(state.selectedItem.net)
       setNotes(state.selectedItem.notes)
       setPnl(state.selectedItem.pnl)
       setPrice(state.selectedItem.price)
-      setTax(state.selectedItem.tax)
+      // setTax(state.selectedItem.tax)
       setTicker(state.selectedItem.ticker)
       const newType = {
           label: state.types.find(t => t[0] === state.selectedItem.type)[1],
@@ -170,8 +176,8 @@ const Bonds = () => {
               }
             </h6>
             {
-              !state.loading && state.results
-                ? <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+              !state.loading
+                ? <div style={{ maxHeight: '26vh', overflowY: 'scroll' }}>
                     <ListItem
                       label={'Transactions'}
                       value={state.count}
@@ -183,7 +189,12 @@ const Bonds = () => {
                       ? state.currencies?.map(currency =>
                         <div key={currency}>
                           {
-                            ['active', 'buy', 'deposit', 'pnl', 'dividend', 'sell'].map(item =>
+                            Object.keys(state.aggregations)
+                              .filter(item => item.split("_")[1] === currency)
+                              .filter(item => !!state.aggregations[item])
+                              .sort()
+                              .map(k => k.split('_')[0])
+                              .map(item =>
                               <ListItem
                                 key={item}
                                 label={
@@ -207,15 +218,19 @@ const Bonds = () => {
                                 className="mr-3"
                               />)
                           }
-                          <ListItem
-                            label={"Profit"}
-                            value={`${state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`]} ${currency}`}
-                            textType={
-                              state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`] > 0
-                                ? 'success': 'danger'
-                            }
-                            className="mr-3"
-                          />
+                          {
+                            state.aggregations[`pnl_${currency}`] && state.aggregations[`dividend_${currency}`]
+                              ? <ListItem
+                                  label={"Profit"}
+                                  value={`${state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`]} ${currency}`}
+                                  textType={
+                                    state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`] > 0
+                                      ? 'success': 'danger'
+                                  }
+                                  className="mr-3"
+                                />
+                              : null
+                          }
                         </div>)
                       : null}
                   </div>
@@ -245,10 +260,11 @@ const Bonds = () => {
                     {state.results[0].net && <ListItem label={"Net"} value={
                       `${state.results[0].net} ${state.results[0].currency ? state.results[0].currency : ''}`
                     } textType={"warning"} className="mr-3" />}
-                    {state.results[0].commission && <ListItem label={"Commission"} value={state.results[0].commission} textType={"warning"} className="mr-3" />}
-                    {state.results[0].tax && <ListItem label={"Tax"} value={state.results[0].tax} textType={"success"} className="mr-3" />}
+                    {/*{state.results[0].commission && <ListItem label={"Commission"} value={state.results[0].commission} textType={"warning"} className="mr-3" />}*/}
+                    {/*{state.results[0].tax && <ListItem label={"Tax"} value={state.results[0].tax} textType={"success"} className="mr-3" />}*/}
                     {state.results[0].interest && <ListItem label={"Interest"} value={state.results[0].interest} textType={"success"} className="mr-3" />}
-                    {state.results[0].maturity && <ListItem label={"Maturity"} value={new Date(state.results[0].date).toLocaleString()} textType={"warning"} className="mr-3" />}
+                    {state.results[0].interest_dates && <ListItem label={"Interest Dates"} value={state.results[0].interest_dates.map(d => formatDate(d)).join(", ")} textType={"success"} className="mr-3" />}
+                    {/*{state.results[0].maturity && <ListItem label={"Maturity"} value={new Date(state.results[0].date).toLocaleString()} textType={"warning"} className="mr-3" />}*/}
                   </Marquee>
                   : "-"
             }
@@ -355,8 +371,8 @@ const Bonds = () => {
                   <th>Price</th>
                   <th>Net</th>
                   <th>Interest</th>
-                  <th>Commission</th>
-                  <th>Tax</th>
+                  {/*<th>Commission</th>*/}
+                  {/*<th>Tax</th>*/}
                   <th>Profit</th>
                   <th>Maturity</th>
                   <th>Notes</th>
@@ -410,12 +426,14 @@ const Bonds = () => {
                                 : '-'
                             }
                           </td>
-                          <td> {parseFloat(bond.commission)} </td>
-                          <td> {bond.tax ? parseFloat(bond.tax): '-'} </td>
+                          {/*<td> {parseFloat(bond.commission)} </td>*/}
+                          {/*<td> {bond.tax ? parseFloat(bond.tax): '-'} </td>*/}
                           <td className={`text-${bond.pnl ? bond.pnl < 0 ? 'danger' : 'success' : 'muted'}`}>
                             {bond.pnl ? parseFloat(bond.pnl): '-'}
                           </td>
-                          <td> {bond.maturity ? new Date(bond.maturity).toLocaleDateString("ro-RO"): '-'} </td>
+                          <td>
+                            {bond.interest_dates.map(r => <div>{formatDate(r)}</div>)}
+                          </td>
                           <td> {bond.notes ? bond.notes: '-'} </td>
                         </tr>)
                       : <tr>
@@ -486,16 +504,45 @@ const Bonds = () => {
           <Form.Group className="mb-3">
             <Form.Label>Maturity</Form.Label>
             <div>
-              <DatePicker
-                className="btn btn-outline-secondary rounded btn-sm"
-                dateFormat={'dd MMM yyyy'}
-                isClearable={false}
-                onChange={maturity => setMaturity(maturity)}
-                readOnly={state.loading}
-                scrollableYearDropdown
-                selected={maturity}
-                showIcon
-              />
+              {
+                interestDates?.map(
+                  (d, index) => <div key={`mat-${index}`}>
+                    <DatePicker
+                      className="btn btn-outline-secondary rounded btn-sm"
+                      dateFormat={'dd MMM yyyy'}
+                      isClearable={false}
+                      onChange={maturity => setInterestDates(interestDates.map(
+                        (i, id) => id !== index ? i : maturity
+                      ))}
+                      readOnly={state.loading}
+                      scrollableYearDropdown
+                      selected={interestDates[index]}
+                      showIcon
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary btn-sm border-0 bg-transparent"
+                      onClick={
+                        () => setInterestDates(
+                          interestDates.filter((d, id) => id !== index)
+                        )}
+                    >
+                      <i className="mdi mdi-delete" />
+                    </button>
+                  </div>
+                )
+              }
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm border-0 bg-transparent"
+                onClick={
+                  () => setInterestDates(
+                    interestDates
+                      ? [...interestDates, new Date()]
+                      : [new Date()])}
+              >
+                add date +
+              </button>
             </div>
           </Form.Group>
           <Form.Group className="col-md-4">
@@ -557,22 +604,6 @@ const Bonds = () => {
               type="text"
               value={interest}
               onChange={e => setInterest(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Commission</Form.Label>
-            <Form.Control
-              type="text"
-              value={commission}
-              onChange={e => setCommission(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Tax</Form.Label>
-            <Form.Control
-              type="text"
-              value={tax}
-              onChange={e => setTax(e.target.value)}
             />
           </Form.Group>
           <Form.Group className="mb-3">

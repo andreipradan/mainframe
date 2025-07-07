@@ -228,32 +228,32 @@ const Summary = () => {
 
     </div>
 
-    {/* Marquee - Next bond maturity */}
+    {/* Marquee - Next bond interest */}
     <div className="row">
       <div className="col-sm-12 grid-margin">
         <div className="card">
           <div className="card-body">
-            <h6>Next bond maturity</h6>
+            <h6>Next bond interest</h6>
             {
               state.loading
                   ? <Circles/>
-                  : state.bonds?.next_maturity
+                  : state.bonds?.next_interest
                       ? <Marquee pauseOnHover>
-                        <ListItem label={"Date"} value={formatDate(new Date(state.bonds.next_maturity.maturity))} textType={"warning"} className="mr-3"/>
-                        <ListItem label={"Ticker"} value={state.bonds.next_maturity.ticker} textType={"primary"} className="mr-3"/>
-                        <ListItem label={"Amount"} value={`${state.bonds.next_maturity.net} ${state.bonds.next_maturity.currency}`} textType={"success"} className="mr-3"/>
+                        <ListItem label={"Date"} value={formatDate(new Date([...state.bonds.next_interest.interest_dates].sort().find(d => new Date(d) > new Date())))} textType={"warning"} className="mr-3"/>
+                        <ListItem label={"Ticker"} value={state.bonds.next_interest.ticker} textType={"primary"} className="mr-3"/>
+                        <ListItem label={"Amount"} value={`${state.bonds.next_interest.net} ${state.bonds.next_interest.currency}`} textType={"success"} className="mr-3"/>
                         <ListItem
                           label={"Interest"}
                           value={
                             `${
                               parseFloat(
-                                state.bonds.next_maturity.interest
+                                state.bonds.next_interest.interest
                                 / 100
-                                * -state.bonds.next_maturity.net
+                                * -state.bonds.next_interest.net
                                 / 12
-                                * state.bonds.next_maturity.months
+                                * state.bonds.next_interest.months
                               ).toFixed(2)
-                            } ${state.bonds.next_maturity.currency} (${state.bonds.next_maturity.interest}%)`} textType={"success"} className="mr-3"/>
+                            } ${state.bonds.next_interest.currency} (${state.bonds.next_interest.interest}%)`} textType={"success"} className="mr-3"/>
                       </Marquee>
                       : "-"
             }
