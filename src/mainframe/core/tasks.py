@@ -3,6 +3,7 @@ import json
 import logging
 
 from django.conf import settings
+from django.db import close_old_connections
 from django.utils import timezone
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task, task
@@ -39,6 +40,8 @@ def log_status(key, error=None, **kwargs):
 
 @HUEY.signal()
 def signal_handler(signal, t, exc=None):
+    if signal == HUEY.signals.BEFORE_EXECUTE:
+        close_old_connections()
     log_status(key=t.name, error=str(exc) if exc else None, id=t.id, status=signal)
 
 
