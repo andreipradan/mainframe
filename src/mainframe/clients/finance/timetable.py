@@ -99,7 +99,7 @@ def extract_summary(summary):
         r"Numele ([^>]+) Prenumele ([^>]+)",
         r"Număr cont (\d+)",
         r"Număr şi data contract credit(\d+) -",
-        r"(\d{2}\.\d{2}\.\d{4})Rata dobânzii fixă in",
+        r"(\d{2}\.\d{2}\.\d{4})Rata dobânzii fixă [iî]",
         r"primii 5 ani:(\d+\,\d+)",
         r"Rata dobânzii  variabilă folosită",
         r"începând cu al 6\xadlea an al duratei",
