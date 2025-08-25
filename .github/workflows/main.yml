@@ -68,10 +68,10 @@ jobs:
           api-key: ${{ secrets.SAFETY_API_KEY }}
           args: -i 59234 --detailed-output
   pre-commit:
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.deploy == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     name: pre-commit (w/o pytest)
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.deploy == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
       - name: Installing dev dependencies for migration check
@@ -82,9 +82,9 @@ jobs:
           SKIP: pytest
 
   tests:
+    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.deploy == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     runs-on: ubuntu-latest
     needs: changes
-    if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.deploy == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
       - uses: Harmon758/postgresql-action@v1.0.0
@@ -99,6 +99,7 @@ jobs:
           PYTHONPATH=src ENV=ci pytest tests --cov=. --ds mainframe.core.settings --nomigrations
 
   backend-deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: BE - Deploy
     runs-on: ubuntu-latest
     permissions:
@@ -159,12 +160,12 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
 
   frontend-build:
+    if: ${{ needs.changes.outputs.frontend == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     name: FE - Build
     runs-on: ubuntu-latest
     needs:
       - changes
       - security
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
     steps:
       - name: Notify FE start deployment
         uses: appleboy/telegram-action@master
