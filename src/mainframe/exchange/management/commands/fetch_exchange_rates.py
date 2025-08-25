@@ -27,7 +27,6 @@ class Command(BaseCommand):
     def handle(self, *_, **options):
         source = options["source"]
         logger.info("Fetching %s exchange rates", source.upper())
-        healthchecks.ping(logger, f"{source}-fx")
 
         try:
             count = CLIENTS[source](logger).fetch(full=options["full"])
@@ -36,3 +35,4 @@ class Command(BaseCommand):
 
         logger.info("Fetched %s %s exchange rates", source.upper(), count)
         self.stdout.write(self.style.SUCCESS("Done."))
+        healthchecks.ping(logger, f"{source}-fx")

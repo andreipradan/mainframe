@@ -18,7 +18,6 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
 
         app = options["app"]
-        healthchecks.ping(logger, f"{app.upper()}_BACKUP")
 
         file_name = f"{timezone.now():%Y_%m_%d_%H_%M_%S}.json.gz"
 
@@ -32,3 +31,4 @@ class Command(BaseCommand):
         run_cmd(f"rm {file_name}")
         logger.info("Done")
         self.stdout.write(self.style.SUCCESS("Done"))
+        healthchecks.ping(logger, f"{app.upper()}_BACKUP")

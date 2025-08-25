@@ -11,7 +11,6 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
 
         logger.info("Fetching menu for the next month")
-        healthchecks.ping(logger, "meals")
         try:
             meals = MealsClient.fetch_meals()
         except FetchMealsException as e:
@@ -19,3 +18,4 @@ class Command(BaseCommand):
 
         logger.info("Fetched %d meals", len(meals))
         self.stdout.write(self.style.SUCCESS("Done."))
+        healthchecks.ping(logger, "meals")
