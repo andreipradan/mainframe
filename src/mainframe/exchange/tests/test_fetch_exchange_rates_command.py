@@ -27,6 +27,7 @@ def _make_client(return_count=1, assert_full=None, ctor_spy=None, state=None, ex
     - state: dict to track call count and args of .fetch()
     - exc: exception to raise from .fetch(), if provided
     """
+
     class DummyClient:
         def __init__(self, logger):
             if ctor_spy is not None:
@@ -139,10 +140,13 @@ def test_handle_translates_client_exception_to_CommandError(monkeypatch, caplog)
     cmd.stdout = io.StringIO()
 
     # Act / Assert
-    with caplog.at_level(
-        logging.INFO,
-        logger=fetch_cmd.logger.name,
-    ), pytest.raises(CommandError) as ei:
+    with (
+        caplog.at_level(
+            logging.INFO,
+            logger=fetch_cmd.logger.name,
+        ),
+        pytest.raises(CommandError) as ei,
+    ):
         cmd.handle(source="bnr", full=False)
 
     assert "rate-limiter" in str(ei.value)

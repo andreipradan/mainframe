@@ -34,9 +34,7 @@ def _import_command_module():
             mod = __import__(path, fromlist=["Command"])
             # Basic sanity check: the module should define Command
             # with handle/handle_async
-            if hasattr(mod, "Command") and hasattr(
-                mod.Command, "handle_async"
-            ):
+            if hasattr(mod, "Command") and hasattr(mod.Command, "handle_async"):
                 return mod, path
         except Exception as e:  # pragma: no cover
             # diagnostics for path resolution only
@@ -44,9 +42,7 @@ def _import_command_module():
             continue
     if last_exc:
         raise last_exc
-    raise ImportError(
-        "Could not locate the import_transit_lines Command module."
-    )
+    raise ImportError("Could not locate the import_transit_lines Command module.")
 
 
 command_module, MODULE_UNDER_TEST = _import_command_module()
@@ -62,10 +58,13 @@ def _fake_sync_to_async():
     sync function into an async callable, preserving args and
     kwargs for assertions.
     """
+
     def wrapper(func):
         async def run(*args, **kwargs):
             return func(*args, **kwargs)
+
         return run
+
     return wrapper
 
 
@@ -116,33 +115,28 @@ def patched_dependencies(
     path_transit_line = "mainframe.transit_lines.models.TransitLine"
     path_logging_getlogger = "logging.getLogger"
 
-    with patch(path_sync_to_async, _fake_sync_to_async()), \
-         patch(
-             path_transit_line + ".LINE_TYPE_CHOICES",
-             tuple(line_type_choices),
-         ), \
-         patch(
-             path_transit_line + ".objects.bulk_create",
-             autospec=True,
-         ) as mock_bulk_create, \
-         patch(path_ctp_client) as MockClient:
+    with (
+        patch(path_sync_to_async, _fake_sync_to_async()),
+        patch(
+            path_transit_line + ".LINE_TYPE_CHOICES",
+            tuple(line_type_choices),
+        ),
+        patch(
+            path_transit_line + ".objects.bulk_create",
+            autospec=True,
+        ) as mock_bulk_create,
+        patch(path_ctp_client) as MockClient,
+    ):
         # Prepare CTPClient mock instance
-        mock_client_instance = MagicMock(
-            name="CTPClientInstance"
-        )
+        mock_client_instance = MagicMock(name="CTPClientInstance")
 
         def _fetch_lines(line_type, commit=False):
-            if (
-                raise_on_type is not None
-                and line_type == raise_on_type
-            ):
+            if raise_on_type is not None and line_type == raise_on_type:
                 # FetchTransitLinesException from real module
                 exc_type = __import__(
                     path_ctp_exc.rsplit(".", 1)[0],
                     fromlist=[path_ctp_exc.rsplit(".", 1)[-1]],
-                ).__dict__[
-                    "FetchTransitLinesException"
-                ]
+                ).__dict__["FetchTransitLinesException"]
                 raise exc_type(f"failed for {line_type}")
             return list(lines_by_type.get(line_type, []))
 
@@ -152,13 +146,13 @@ def patched_dependencies(
             return list(schedules_list)
 
         mock_client_instance.fetch_lines.side_effect = _fetch_lines
-        mock_client_instance.fetch_schedules.side_effect = (
-            _fetch_schedules
-        )
+        mock_client_instance.fetch_schedules.side_effect = _fetch_schedules
         MockClient.return_value = mock_client_instance
 
-        with patch(path_health_ping) as mock_ping, \
-             patch(path_logging_getlogger) as mock_get_logger:
+        with (
+            patch(path_health_ping) as mock_ping,
+            patch(path_logging_getlogger) as mock_get_logger,
+        ):
             logger = MagicMock(name="logger")
             mock_get_logger.return_value = logger
             yield types.SimpleNamespace(
@@ -196,9 +190,7 @@ class TestImportTransitLinesCommand:
             # update options
             assert deps.mock_bulk_create.call_count == 1
             args, kwargs = deps.mock_bulk_create.call_args
-            lines_arg = (
-                args[1] if len(args) > 1 else kwargs.get("objs")
-            )
+            lines_arg = args[1] if len(args) > 1 else kwargs.get("objs")
             # safety
             assert isinstance(lines_arg, list)
             assert len(lines_arg) == 3  # 2 bus + 1 tram by default
@@ -212,9 +204,7 @@ class TestImportTransitLinesCommand:
             assert kwargs.get("unique_fields") == ["name"]
 
             # fetch_schedules called once with commit=True
-            deps.mock_client.fetch_schedules.assert_called_once_with(
-                commit=True
-            )
+            deps.mock_client.fetch_schedules.assert_called_once_with(commit=True)
 
             # stdout contains the success message
             captured = capsys.readouterr()
@@ -226,9 +216,7 @@ class TestImportTransitLinesCommand:
                 for args, _ in deps.logger.info.call_args_list
             )
             assert any(
-                "Synced 3 transit lines and 2 schedules" in str(
-                    args[0]
-                )
+                "Synced 3 transit lines and 2 schedules" in str(args[0])
                 for args, _ in deps.logger.info.call_args_list
             )
 
@@ -250,9 +238,7 @@ class TestImportTransitLinesCommand:
             assert isinstance(lines_arg, list)
             assert len(lines_arg) == 0
 
-            deps.mock_client.fetch_schedules.assert_called_once_with(
-                commit=True
-            )
+            deps.mock_client.fetch_schedules.assert_called_once_with(commit=True)
 
             captured = capsys.readouterr()
             assert "Synced 0 transit lines and 0 schedules" in captured.out
@@ -315,6 +301,6 @@ class TestImportTransitLinesCommand:
             for ca in deps.mock_client.fetch_lines.call_args_list:
                 assert ca.kwargs.get("commit") is False
             # fetch_schedules called with commit=True
-            assert deps.mock_client.fetch_schedules.call_args.kwargs.get(
-                "commit"
-            ) is True
+            assert (
+                deps.mock_client.fetch_schedules.call_args.kwargs.get("commit") is True
+            )

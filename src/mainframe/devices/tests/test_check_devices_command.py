@@ -15,6 +15,7 @@ import pytest
 # The PR diff emphasized message composition and notification
 # triggers; tests focus on those behaviors.
 
+
 # Utilities to fabricate "device" objects with a
 # 'should_notify_presence' attribute and __str__.
 class DummyDevice:
@@ -95,9 +96,7 @@ def import_command_module(monkeypatch, fake_parse_mode):
 
 @pytest.fixture
 def command_module(monkeypatch, fake_parse_mode):
-    mod, should_notify, Command = import_command_module(
-        monkeypatch, fake_parse_mode
-    )
+    mod, should_notify, Command = import_command_module(monkeypatch, fake_parse_mode)
     return mod
 
 

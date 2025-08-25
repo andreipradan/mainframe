@@ -25,6 +25,7 @@ COMMAND_NAME = "fetch_meals"
 try:
     from mainframe.clients.meals import FetchMealsException
 except ImportError:
+
     class FetchMealsException(Exception):
         pass
 
@@ -48,10 +49,13 @@ def test_fetch_meals_happy_path_logs_and_pings(caplog):
     _patch_logger_level(caplog)
 
     # Patch MealsClient.fetch_meals and healthchecks.ping
-    with mock.patch(
-        "mainframe.clients.meals.MealsClient.fetch_meals",
-        return_value=[{"id": 1}, {"id": 2}],
-    ) as mock_fetch, mock.patch("mainframe.clients.healthchecks.ping") as mock_ping:
+    with (
+        mock.patch(
+            "mainframe.clients.meals.MealsClient.fetch_meals",
+            return_value=[{"id": 1}, {"id": 2}],
+        ) as mock_fetch,
+        mock.patch("mainframe.clients.healthchecks.ping") as mock_ping,
+    ):
         # call_command supports stdout/stderr file-like objects
         # use mocks with .write recorded
         # However, Django wraps style.SUCCESS, so easier is to pass StringIO
@@ -90,10 +94,13 @@ def test_fetch_meals_empty_list_still_logs_and_pings(caplog):
     """
     _patch_logger_level(caplog)
 
-    with mock.patch(
-        "mainframe.clients.meals.MealsClient.fetch_meals",
-        return_value=[],
-    ) as mock_fetch, mock.patch("mainframe.clients.healthchecks.ping") as mock_ping:
+    with (
+        mock.patch(
+            "mainframe.clients.meals.MealsClient.fetch_meals",
+            return_value=[],
+        ) as mock_fetch,
+        mock.patch("mainframe.clients.healthchecks.ping") as mock_ping,
+    ):
         stdout = StringIO()
         stderr = StringIO()
 
@@ -122,10 +129,13 @@ def test_fetch_meals_raises_fetch_meals_exception_as_command_error(caplog):
 
     exc = FetchMealsException("network failure")
 
-    with mock.patch(
-        "mainframe.clients.meals.MealsClient.fetch_meals",
-        side_effect=exc,
-    ) as mock_fetch, mock.patch("mainframe.clients.healthchecks.ping") as mock_ping:
+    with (
+        mock.patch(
+            "mainframe.clients.meals.MealsClient.fetch_meals",
+            side_effect=exc,
+        ) as mock_fetch,
+        mock.patch("mainframe.clients.healthchecks.ping") as mock_ping,
+    ):
         stdout = StringIO()
         stderr = StringIO()
 
@@ -195,12 +205,15 @@ def test_healthchecks_ping_receives_logger_instance(caplog):
         captured_logger["logger"] = logger_obj
         captured_logger["tag"] = tag
 
-    with mock.patch(
-        "mainframe.clients.meals.MealsClient.fetch_meals",
-        return_value=[{"id": 42}],
-    ), mock.patch(
-        "mainframe.clients.healthchecks.ping",
-        side_effect=_capture_logger,
+    with (
+        mock.patch(
+            "mainframe.clients.meals.MealsClient.fetch_meals",
+            return_value=[{"id": 42}],
+        ),
+        mock.patch(
+            "mainframe.clients.healthchecks.ping",
+            side_effect=_capture_logger,
+        ),
     ):
         stdout = StringIO()
         stderr = StringIO()

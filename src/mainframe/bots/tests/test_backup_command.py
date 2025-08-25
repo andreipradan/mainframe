@@ -70,12 +70,14 @@ def _expected_destination(app: str, model: str, dt: datetime) -> str:
 
 
 def test_handle_happy_path_app_only(command_cls, fixed_now, logger_mock):
-    with patch("django.utils.timezone.now") as tz_now, \
-         patch("django.core.management.call_command") as call_cmd, \
-         patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient, \
-         patch("mainframe.clients.system.run_cmd") as run_cmd, \
-         patch("mainframe.clients.healthchecks.ping") as hc_ping, \
-         patch("logging.getLogger") as get_logger:
+    with (
+        patch("django.utils.timezone.now") as tz_now,
+        patch("django.core.management.call_command") as call_cmd,
+        patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient,
+        patch("mainframe.clients.system.run_cmd") as run_cmd,
+        patch("mainframe.clients.healthchecks.ping") as hc_ping,
+        patch("logging.getLogger") as get_logger,
+    ):
         tz_now.return_value = fixed_now
         get_logger.return_value = logger_mock
 
@@ -111,15 +113,17 @@ def test_handle_happy_path_app_only(command_cls, fixed_now, logger_mock):
         hc_ping.assert_called_once_with(logger_mock, f"{app.upper()}_BACKUP")
 
 
-def test_handle_happy_path_with_model_name_transforms(command_cls,
-                                                     fixed_now,
-                                                     logger_mock):
-    with patch("django.utils.timezone.now") as tz_now, \
-         patch("django.core.management.call_command") as call_cmd, \
-         patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient, \
-         patch("mainframe.clients.system.run_cmd") as run_cmd, \
-         patch("mainframe.clients.healthchecks.ping") as hc_ping, \
-         patch("logging.getLogger") as get_logger:
+def test_handle_happy_path_with_model_name_transforms(
+    command_cls, fixed_now, logger_mock
+):
+    with (
+        patch("django.utils.timezone.now") as tz_now,
+        patch("django.core.management.call_command") as call_cmd,
+        patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient,
+        patch("mainframe.clients.system.run_cmd") as run_cmd,
+        patch("mainframe.clients.healthchecks.ping") as hc_ping,
+        patch("logging.getLogger") as get_logger,
+    ):
         tz_now.return_value = fixed_now
         get_logger.return_value = logger_mock
 
@@ -153,15 +157,17 @@ def test_handle_happy_path_with_model_name_transforms(command_cls,
 def test_handle_propagates_errors_and_skips_followups_on_dump_failure(
     command_cls, fixed_now, logger_mock
 ):
-    with patch("django.utils.timezone.now") as tz_now, \
-         patch(
-             "django.core.management.call_command",
-             side_effect=RuntimeError("dump failed"),
-         ), \
-         patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient, \
-         patch("mainframe.clients.system.run_cmd") as run_cmd, \
-         patch("mainframe.clients.healthchecks.ping") as hc_ping, \
-         patch("logging.getLogger") as get_logger:
+    with (
+        patch("django.utils.timezone.now") as tz_now,
+        patch(
+            "django.core.management.call_command",
+            side_effect=RuntimeError("dump failed"),
+        ),
+        patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient,
+        patch("mainframe.clients.system.run_cmd") as run_cmd,
+        patch("mainframe.clients.healthchecks.ping") as hc_ping,
+        patch("logging.getLogger") as get_logger,
+    ):
         tz_now.return_value = fixed_now
         get_logger.return_value = logger_mock
 
@@ -180,18 +186,18 @@ def test_handle_propagates_errors_and_skips_followups_on_dump_failure(
         logger_mock.info.assert_not_called()
 
 
-def test_handle_bubble_up_on_cleanup_failure(command_cls,
-                                            fixed_now,
-                                            logger_mock):
-    with patch("django.utils.timezone.now") as tz_now, \
-         patch("django.core.management.call_command") as call_cmd, \
-         patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient, \
-         patch(
-             "mainframe.clients.system.run_cmd",
-             side_effect=RuntimeError("rm failed"),
-         ), \
-         patch("mainframe.clients.healthchecks.ping") as hc_ping, \
-         patch("logging.getLogger") as get_logger:
+def test_handle_bubble_up_on_cleanup_failure(command_cls, fixed_now, logger_mock):
+    with (
+        patch("django.utils.timezone.now") as tz_now,
+        patch("django.core.management.call_command") as call_cmd,
+        patch("mainframe.clients.storage.GoogleCloudStorageClient") as GCSClient,
+        patch(
+            "mainframe.clients.system.run_cmd",
+            side_effect=RuntimeError("rm failed"),
+        ),
+        patch("mainframe.clients.healthchecks.ping") as hc_ping,
+        patch("logging.getLogger") as get_logger,
+    ):
         tz_now.return_value = fixed_now
         get_logger.return_value = logger_mock
 
