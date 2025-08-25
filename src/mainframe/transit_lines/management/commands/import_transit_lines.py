@@ -18,19 +18,19 @@ class Command(BaseCommand):
     async def handle_async(self):
         """
         Asynchronously import transit lines and schedules from the CTP client, persist them with conflict resolution, and report success.
-        
+
         Performs the full import workflow:
         - Fetches transit lines for each line type defined in TransitLine.LINE_TYPE_CHOICES via CTPClient (lines fetched with commit=False).
         - Persists all fetched TransitLine instances using bulk_create with conflict resolution (updates: car_type, line_type, terminal1, terminal2; uniqueness by name).
         - Fetches schedules from the CTP client (commit=True).
         - Logs and writes a success message containing the number of synced lines and schedules.
         - Pings the "transit" healthcheck on successful completion.
-        
+
         Side effects:
         - Persists/updates TransitLine rows in the database.
         - Writes a success message to stdout and logs progress.
         - Calls healthchecks.ping(logger, "transit").
-        
+
         Raises:
         - CommandError if fetching lines raises FetchTransitLinesException.
         """

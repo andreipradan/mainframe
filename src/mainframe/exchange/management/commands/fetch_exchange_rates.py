@@ -27,17 +27,17 @@ class Command(BaseCommand):
     def handle(self, *_, **options):
         """
         Execute the management command: fetch exchange rates from the specified source, output progress, and ping healthchecks on success.
-        
+
         Detailed behavior:
         - Reads 'source' and 'full' from the provided options.
         - Instantiates the client for the chosen source and calls its fetch(full=options["full"]).
         - Logs start and completion messages and writes "Done." to stdout on success.
         - Sends a healthchecks.ping with the target label "{source}-fx" only after a successful fetch.
-        
+
         Options (in `options`):
         - source (str): Exchange source identifier, expected to be 'bnr' or 'ecb'.
         - full (bool): When True, perform a full data retrieval; otherwise perform an incremental/partial fetch.
-        
+
         Raises:
         - CommandError: If the underlying client raises FetchExchangeRatesException, it is converted to a CommandError while preserving the original exception context.
         """

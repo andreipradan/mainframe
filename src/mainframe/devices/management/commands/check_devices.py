@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *_, **options):
         """
         Execute the management command: query device state, build and send a Telegram notification for notable changes, and ping the "devices" healthcheck.
-        
+
         Creates a DevicesClient, obtains lists of newly seen devices and devices that went online or offline, filters those lists via should_notify, and constructs a human-readable message (counts, pluralization, and device names with emoji prefixes). If any noteworthy changes exist, sends the message to Telegram (using asyncio.run to call send_telegram_message with HTML parse mode). Logs completion and pings the "devices" healthcheck; the health ping is performed only after successful command execution (it will not run if an exception is raised earlier).
         """
         client = DevicesClient(Source.objects.default(), logger=logger)
