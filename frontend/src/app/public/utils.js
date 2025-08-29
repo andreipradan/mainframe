@@ -26,7 +26,7 @@ export const getDirectedRoute = (tripId, routeName) => {
 export const getIconByType = (bus, route) => {
   const vType = vehicleTypes[bus.vehicle_type]?.toLowerCase()
   let color = "#3199b0"
-  if (route?.route_short_name[0] === "M")
+  if (route?.route_short_name?.[0] === "M")
     color = "#9f611b"
   else if (bus.bike_accessible === "BIKE_ACCESSIBLE")
     color = "#e5a823"
