@@ -26,7 +26,7 @@ export class TransitApi extends mix(TokenMixin) {
         response => dispatch(this.constructor.methods.set(
           {
             ...response.data,
-            last_update: new Date().toLocaleString(),
+            last_update: new Date().toISOString(),
             last_check: new Date().toLocaleString(),
           }
         )))
