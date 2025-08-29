@@ -59,7 +59,7 @@ export const getIconByType = (bus, route) => {
     labelWidth += 10
   }
 
-  const smallBusNumbers = ["("]
+  const smallBusNumbers = ["9"]
   if (smallBusNumbers.includes(route?.route_short_name) && bus.bike_accessible === "BIKE_ACCESSIBLE" && bus.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE")
     labelWidth += 10
   return new L.divIcon({

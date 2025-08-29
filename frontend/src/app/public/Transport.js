@@ -283,9 +283,7 @@ const Transport = () =>  {
                       position={[bus.latitude, bus.longitude]}
                       icon={getIconByType(bus, getRoute(bus.route_id))}
                       eventHandlers={{
-                        click: (e) => {
-                          setSelectedVehicle(e.target.isPopupOpen() ? bus : null)
-                        },
+                        popupopen: () => setSelectedVehicle(bus),
                         popupclose: () => setSelectedVehicle(null),
                       }}
                     >
