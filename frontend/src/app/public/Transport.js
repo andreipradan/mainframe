@@ -104,8 +104,14 @@ const Transport = () =>  {
   }
   else return
 
-  const interval = setInterval(() => fetchTransit("vehicles"), 5000);
-  return () => clearInterval(interval)}, [dispatch, togglePollingEnabled]);
+  let interval;
+  if (togglePollingEnabled) {
+    interval = setInterval(() => fetchTransit("vehicles"), 5000);
+  }
+  return () => {
+    if (interval) clearInterval(interval);
+  };
+}, [dispatch, togglePollingEnabled]);
 
   const getRoute = routeId => state.routes ? state.routes.find(r => r.route_id === routeId) : null
 
