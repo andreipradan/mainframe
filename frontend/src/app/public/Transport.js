@@ -20,7 +20,7 @@ const POLLING_DISABLED_AFTER_SECONDS = 240
 const Transport = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
-  const state = useSelector(state => state.vehicles)
+  const state = useSelector(state => state.transit)
 
   const api = new TransitApi(token)
 
@@ -166,7 +166,7 @@ const Transport = () =>  {
                         className={`btn btn-outline-${toggleBikes ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
                         onClick={() => setToggleBikes(!toggleBikes)}
                       >
-                        <i className={`mdi mdi-bike`} />
+                        <i className="mdi mdi-bike" />
                       </button> &nbsp;
                       <button
                         type="button"
@@ -239,7 +239,7 @@ const Transport = () =>  {
                 center={[46.77, 23.59]}
                 zoom={13}
                 style={{ height: "70vh", width: "100%" }}
-                preferCanvas={true}
+                preferCanvas
               >
                 {tileLayer[toggleMapType]}
                 {
@@ -316,7 +316,7 @@ const Transport = () =>  {
                           key={s.stop_id}
                           position={[s.stop_lat, s.stop_lon]}
                           icon={new L.divIcon({
-                            html: `<i class="mdi mdi-map-marker" style="font-size:24px;color:#3f2a2a;"></i>`,
+                            html: '<i class="mdi mdi-map-marker" style="font-size:24px;color:#3f2a2a;"></i>',
                             className: "custom-bus-icon",
                             iconAnchor: [16, 24],
                           })}

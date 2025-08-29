@@ -32,8 +32,8 @@ import sourcesReducer from "./sourcesSlice";
 import tasksReducer from "./tasksSlice";
 import timetableReducer from "./timetableSlice";
 import transactionsReducer from "../redux/transactionsSlice";
+import transitSlice from "./transitSlice";
 import usersSlice from "../redux/usersSlice";
-import vehiclesReducer from "./vehiclesSlice";
 import watchersSlice from "../redux/watchersSlice";
 
 export default configureStore({
@@ -71,8 +71,8 @@ export default configureStore({
     tasks: tasksReducer,
     timetable: timetableReducer,
     transactions: transactionsReducer,
+    transit: transitSlice,
     users: usersSlice,
-    vehicles: vehiclesReducer,
     watchers: watchersSlice,
   },
 });

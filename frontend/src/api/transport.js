@@ -3,7 +3,7 @@ import {
   set,
   setErrors,
   setLoading,
-} from "../redux/vehiclesSlice";
+} from "../redux/transitSlice";
 
 import { handleErrors } from "./errors";
 import { mix, TokenMixin } from './shared';
