@@ -59,7 +59,7 @@ class TransitViewSet(viewsets.GenericViewSet):
         if not (entity := request.GET.get("entity")):
             return JsonResponse(
                 status=status.HTTP_400_BAD_REQUEST,
-                data={"error": "entity header required"},
+                data={"error": "entity query parameter required"},
             )
 
         config = environ.Env()
