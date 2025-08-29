@@ -58,7 +58,9 @@ export const getIconByType = (bus, route) => {
     label += "♿"
     labelWidth += 10
   }
-  if (route?.route_short_name === "9" && bus.bike_accessible === "BIKE_ACCESSIBLE" && bus.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE")
+
+  const smallBusNumbers = ["("]
+  if (smallBusNumbers.includes(route?.route_short_name) && bus.bike_accessible === "BIKE_ACCESSIBLE" && bus.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE")
     labelWidth += 10
   return new L.divIcon({
     html: `<div style="
@@ -115,7 +117,7 @@ export const tileLayer = {
   />,
   false: <TileLayer
     attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-    url="https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}{r}.png"
+    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
   />
 }
 
