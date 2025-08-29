@@ -66,6 +66,14 @@ class TransitViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"error": "entity query parameter required"},
             )
+        allowed = {"vehicles", "routes", "shapes", "stops", "stop_times", "trips"}
+        if entity not in allowed:
+            return JsonResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"error": f"unsupported entity '{entity}'"},
+            )
+
+        # …rest of method…
 
         config = environ.Env()
         headers = {
@@ -73,10 +81,15 @@ class TransitViewSet(viewsets.GenericViewSet):
             "X-AGENCY-ID": config("TRANZY_AGENCY_ID"),
         }
         url = config("TRANZY_API_URL", default=None)
+        if not url:
+            logger.error("TRANZY_API_URL not configured")
+            return JsonResponse(
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                data={"error": "server misconfiguration: missing TRANZY_API_URL"},
+            )
 
         if etag := request.headers.get("if-none-match"):
             headers["If-None-Match"] = etag
-
         if entity == "vehicles":  # vehicles update often
             return self.handle_no_db(url, headers, entity)
 
