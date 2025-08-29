@@ -216,14 +216,13 @@ const Transport = () =>  {
               </h4>
               <Errors errors={state.errors}/>
 
-              <div className="text-small text-muted">
-                Last check: {state.last_check ? state.last_check : '-'}
-              </div>
               <div className={
                 `${!togglePollingEnabled ? 'mb-1 ' : ''}text-small text-${
                   togglePollingEnabled
-                    ? state.last_check !== state.last_update
-                      ? 'warning'
+                    ? Math.floor((new Date() - new Date(state.last_update)) / 1000) >= 15
+                      ? Math.floor((new Date() - new Date(state.last_update)) / 1000) >= 40
+                        ? 'danger'
+                        : 'warning'
                       : 'success'
                     : 'muted'
                 }`
@@ -231,10 +230,13 @@ const Transport = () =>  {
                 Last update: {
                   togglePollingEnabled
                     ? state.last_update
-                      ? `${timeSince(new Date(state.last_update))} ago`
+                      ? timeSince(new Date(state.last_update))
                       : '-'
                     : 'polling disabled'
                 }
+              </div>
+              <div className="text-small text-muted">
+                Last check: {state.last_check ? state.last_check : '-'}
               </div>
               {
                 togglePollingEnabled
