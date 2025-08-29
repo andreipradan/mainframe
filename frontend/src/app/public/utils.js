@@ -2,6 +2,16 @@ import L from "leaflet";
 import {TileLayer} from "react-leaflet";
 import React from "react";
 
+const escapeHtml = str => {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export const vehicleTypes = {
   0: "Tram, Streetcar, Light rail",
   1: "Subway, Metro",
@@ -34,7 +44,11 @@ export const getIconByType = (bus, route) => {
     color = "#42c41d"
   }
 
-  let label = route?.route_short_name || `? ${bus.label}`
+  let label = route?.route_short_name
+    ? escapeHtml(route?.route_short_name)
+    : bus.route_id
+      ? `?R ${escapeHtml(bus.route_id)}`
+      : `?L ${escapeHtml(bus.label)}`
   let labelWidth = 15 * label.length
   if (bus.bike_accessible === "BIKE_ACCESSIBLE") {
     label += "🚴"

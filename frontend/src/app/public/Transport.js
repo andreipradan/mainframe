@@ -391,7 +391,7 @@ const Transport = () =>  {
                 mode === "buses" && fieldsBus?.map(fieldConfig =>
                   <Form.Check
                     key={fieldConfig.key}
-                    checked={fieldsBus.find(f => f.key === fieldConfig.key)?.value || false}
+                    checked={Boolean(fieldsBus?.find(f => f.key === fieldConfig.key)?.value)}
                     type="switch"
                     id={`checkbox-toggle-${fieldConfig.key}`}
                     label={`${
@@ -421,7 +421,7 @@ const Transport = () =>  {
                       fieldsStop?.map(fieldConfig =>
                         <Form.Check
                           key={fieldConfig.key}
-                          checked={fieldsStop.find(f => f.key === fieldConfig.key)?.value || false}
+                          checked={Boolean(fieldsStop?.find(f => f.key === fieldConfig.key)?.value)}
                           type="switch"
                           id={`checkbox-fields-stop-${fieldConfig.key}`}
                           label={`${
