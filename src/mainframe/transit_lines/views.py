@@ -27,7 +27,8 @@ class TransitViewSet(viewsets.GenericViewSet):
             )
         if resp.status_code == status.HTTP_304_NOT_MODIFIED:
             if cache:
-                cache.save()
+                cache.last_checked = timezone.now()
+                cache.save(update_fields=["last_checked"])
             logger.info("[%s] No changes in external api", entity)
             return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
         if resp.status_code == status.HTTP_200_OK:
@@ -38,6 +39,7 @@ class TransitViewSet(viewsets.GenericViewSet):
 
             cache.etag = resp.headers.get("ETag")
             cache.data = resp.json()
+            cache.last_checked = timezone.now()
             cache.save()
             data = {entity: cache.data or {}}
             if cache.etag != headers.get("If-None-Match"):
@@ -83,12 +85,13 @@ class TransitViewSet(viewsets.GenericViewSet):
             etag
             and cache.etag
             and cache.etag == etag
-            and cache.updated_at + timedelta(days=1) > timezone.now()
+            and cache.last_checked
+            and cache.last_checked + timedelta(days=1) > timezone.now()
         ):
             logger.info(
-                "[%s] Matching ETag and recently updated (%s)",
+                "[%s] Matching ETag and recently checked (%s)",
                 entity,
-                cache.updated_at,
+                cache.last_checked,
             )
             return HttpResponse(status=304)
 
