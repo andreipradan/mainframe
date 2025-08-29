@@ -118,6 +118,7 @@ export const tileLayer = {
   false: <TileLayer
     attribution='&copy; OpenStreetMap contributors &copy; CARTO'
     url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+    subdomains={['a','b','c','d']}
   />
 }
 
