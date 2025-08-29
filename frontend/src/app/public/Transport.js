@@ -64,16 +64,23 @@ const Transport = () =>  {
 
   const [countdown, setCountdown] = useState(POLLING_DISABLED_AFTER_SECONDS); // seconds left
   const lastFetchRef = useRef(0);
+
   useEffect(() => {
     const tick = () => {
+      // If polling isn’t enabled or hasn’t started yet, reset to full timeout
+      if (!togglePollingEnabled || !startPollingTimeRef.current) {
+        setCountdown(POLLING_DISABLED_AFTER_SECONDS);
+        return;
+      }
       const secondsSinceStarted = (Date.now() - startPollingTimeRef.current) / 1000;
       const remaining = Math.max(POLLING_DISABLED_AFTER_SECONDS - secondsSinceStarted, 0);
       setCountdown(Math.ceil(remaining));
     };
 
-    const interval = setInterval(tick, 500); // update twice a second
+    // update twice a second
+    const interval = setInterval(tick, 500);
     return () => clearInterval(interval);
-  }, []);
+  }, [togglePollingEnabled]);
 
   // initial
   useEffect(() => {
