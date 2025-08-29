@@ -302,15 +302,16 @@ const Transport = () =>  {
                 }
                 {
                   mode === "stops" && <MarkerClusterGroup
-                    chunckedLoading
+                    chunkedLoading
                     disableClusteringAtZoom={16}
                     maxClusterRadius={20}
                   >
                     {
                       state.stops?.filter(
                         s => search
-                          ? s.stop_name.toLowerCase().trim().includes(search)
+                          ? s.stop_name.toLowerCase().trim().includes(search.trim().toLowerCase())
                           : s
+                      ).map(s =>
                       ).map(s =>
                         <Marker
                           key={s.stop_id}
