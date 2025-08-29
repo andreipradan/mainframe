@@ -33,6 +33,7 @@ const Profile = lazy(() => import ("./profile/Profile"));
 const Sources = lazy(() => import('./sources/Sources'));
 const Tasks = lazy(() => import('./commands/Tasks'));
 const Todo = lazy(() => import('./apps/TodoList'));
+const Transport = lazy(() => import('./public/Transport'));
 const UserGroups = lazy(() => import("./users/Groups"));
 const Users = lazy(() => import('./users/Users'));
 const Watchers = lazy(() => import('./commands/Watchers'));
@@ -69,6 +70,7 @@ const AppRoutes = () => {
         <Route exact path="/earthquakes" component={ Earthquakes } />
         <Route exact path="/meals" component={ Meals } />
         <Route exact path="/profile" component={ Profile } />
+        <Route exact path="/transport" component={ Transport } />
 
         {user?.is_staff && <Route exact path="/" component={Dashboard}/>}
         {user?.is_staff && <Route exact path="/apps/logs" component={ Logs } />}

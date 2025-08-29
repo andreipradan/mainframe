@@ -177,6 +177,7 @@ CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",
     "content-type",
+    "if-none-match",
     "user-agent",
     "x-csrftoken",
     "x-requested-with",

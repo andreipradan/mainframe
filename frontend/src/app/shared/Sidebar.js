@@ -600,6 +600,12 @@ const Sidebar = () => {
                 <span className="menu-title">Meals</span>
               </Link>
             </li>
+            <li className={isPathActive('/transport') ? 'nav-item menu-items active' : 'nav-item menu-items'}>
+              <Link className="nav-link" to="/transport">
+                <span className="menu-icon"><i className="mdi mdi-bus" /></span>
+                <span className="menu-title">Transport</span>
+              </Link>
+            </li>
           </>
         }
 
