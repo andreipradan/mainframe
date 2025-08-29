@@ -283,14 +283,11 @@ const Transport = () =>  {
                       position={[bus.latitude, bus.longitude]}
                       icon={getIconByType(bus, getRoute(bus.route_id))}
                       eventHandlers={{
-                        click: (e) => {
-                          setSelectedVehicle(bus)
-                          if (!e.target.isPopupOpen()) setSelectedVehicle(null)
-                        },
+                        popupopen: () => setSelectedVehicle(bus),
                         popupclose: () => setSelectedVehicle(null),
                       }}
                     >
-                      <Popup offset={[-20, -30]}>
+                      <Popup offset={[-20, -25]}>
                         <strong>{getRoute(bus.route_id)?.route_short_name || bus.label}</strong> {getDirectedRoute(bus.trip_id, getRoute(bus.route_id)?.route_long_name)}<br />
                         <strong>Speed:</strong> {bus.speed} km/h<br/>
                         <strong>Updated</strong> {timeSince(new Date(bus.timestamp))} ago<br/>
@@ -316,7 +313,7 @@ const Transport = () =>  {
                         position={[getStop(st.stop_id).stop_lat, getStop(st.stop_id).stop_lon]}
                         icon={getNumberIcon(st.stop_sequence)}
                       >
-                        <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={true}>
+                        <Tooltip direction="right" offset={[7, -15]} opacity={1} permanent={true}>
                           <strong>{getStop(st.stop_id).stop_name}</strong>
                         </Tooltip>
                       </Marker>)
@@ -349,8 +346,8 @@ const Transport = () =>  {
                             {
                               state.stop_times?.filter(st => st.stop_id === s.stop_id).map(st => <div key={st.trip_id}>
                                 <strong>{state.routes?.find(r => r.route_id === state.trips?.find(t => t.trip_id === st.trip_id)?.route_id)?.route_short_name}:</strong>&nbsp;
-                                {state.trips.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
-                                {fieldsStop.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
+                                {state.trips?.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
+                                {fieldsStop?.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
                               </div>)
                             }
                           </Popup>
