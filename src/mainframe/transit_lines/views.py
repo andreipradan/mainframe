@@ -17,7 +17,45 @@ class TransitViewSet(viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
-    def list(request, *args, **kwargs):  # noqa: PLR0911, C901
+    def handle_no_db(url, headers, entity, cache=None):
+        resp, error = fetch(
+            f"{url}/{entity}", logger=logger, soup=False, headers=headers
+        )
+        if error:
+            return JsonResponse(
+                status=status.HTTP_400_BAD_REQUEST, data={"error": str(error)}
+            )
+        if resp.status_code == status.HTTP_304_NOT_MODIFIED:
+            if cache:
+                cache.save()
+            logger.info("[%s] No changes in external api", entity)
+            return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
+        if resp.status_code == status.HTTP_200_OK:
+            if not cache:
+                return JsonResponse(
+                    data={entity: resp.json(), f"{entity}_etag": resp.headers["ETag"]}
+                )
+
+            cache.etag = resp.headers.get("ETag")
+            cache.data = resp.json()
+            cache.save()
+            data = {entity: cache.data or {}}
+            if cache.etag != headers["If-None-Match"]:
+                data[f"{entity}_etag"] = cache.etag
+            return JsonResponse(data=data)
+        elif cache:
+            logger.error(
+                "[%s] Unexpected status code: %s. Serving cached version from %s",
+                entity,
+                resp.status_code,
+                cache.updated_at,
+            )
+        else:
+            return HttpResponse(
+                status=status.HTTP_400_BAD_REQUEST, data={"error": str(resp.content)}
+            )
+
+    def list(self, request, *args, **kwargs):
         if not (entity := request.GET.get("entity")):
             return JsonResponse(
                 status=status.HTTP_400_BAD_REQUEST,
@@ -35,19 +73,7 @@ class TransitViewSet(viewsets.GenericViewSet):
             headers["If-None-Match"] = etag
 
         if entity == "vehicles":  # vehicles update often
-            resp, error = fetch(
-                f"{url}/{entity}", logger=logger, soup=False, headers=headers
-            )
-            if error:
-                return JsonResponse(
-                    status=status.HTTP_400_BAD_REQUEST, data={"error": str(error)}
-                )
-            if resp.status_code == status.HTTP_200_OK:
-                return JsonResponse(
-                    data={entity: resp.json(), f"{entity}_etag": resp.headers["ETag"]}
-                )
-            if resp.status_code == status.HTTP_304_NOT_MODIFIED:
-                return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
+            return self.handle_no_db(url, headers, entity)
 
         now = datetime.now(pytz.timezone("UTC"))
         cache, _ = TranzyResponse.objects.get_or_create(endpoint=entity)
@@ -64,32 +90,4 @@ class TransitViewSet(viewsets.GenericViewSet):
             )
             return HttpResponse(status=304)
 
-        resp, error = fetch(
-            f"{url}/{entity}", logger=logger, soup=False, headers=headers
-        )
-        if error:
-            return JsonResponse(
-                status=status.HTTP_400_BAD_REQUEST, data={"error": str(error)}
-            )
-
-        if resp.status_code == status.HTTP_304_NOT_MODIFIED:
-            cache.save()
-            logger.info("[%s] No changes in external api", entity)
-            return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
-
-        if resp.status_code == status.HTTP_200_OK:
-            cache.etag = resp.headers.get("ETag")
-            cache.data = resp.json()
-            cache.save()
-        else:
-            logger.error(
-                "[%s] Unexpected status code: %s. Serving cached version from %s",
-                entity,
-                resp.status_code,
-                cache.updated_at,
-            )
-
-        data = {entity: cache.data or {}}
-        if cache.etag != etag:
-            data[f"{entity}_etag"] = cache.etag
-        return JsonResponse(data=data)
+        return self.handle_no_db(url, headers, entity, cache)

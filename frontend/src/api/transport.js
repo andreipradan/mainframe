@@ -21,7 +21,7 @@ export class TransitApi extends mix(TokenMixin) {
     const headers = { Authorization: this.token}
     if (etag) headers["If-None-Match"] = etag
     axios
-      .get(`${this.constructor.baseUrl}/?entity=${what}`, { headers: headers })
+      .get(`${this.constructor.baseUrl}/?entity=${what}`, { headers })
       .then(
         response => dispatch(this.constructor.methods.set(
           {

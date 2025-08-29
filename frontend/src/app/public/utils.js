@@ -2,6 +2,19 @@ import L from "leaflet";
 import {TileLayer} from "react-leaflet";
 import React from "react";
 
+export const vehicleTypes = {
+  0: "Tram, Streetcar, Light rail",
+  1: "Subway, Metro",
+  2: "Rail",
+  3: "Bus",
+  4: "Ferry",
+  5: "Cable tram",
+  6: "Aerial lift",
+  7: "Funicular",
+  11: "Trolleybus",
+  12: "Monorail",
+}
+
 export const getDirectedRoute = (tripId, routeName) => {
   if (!tripId || !routeName) return routeName
   const [start, end] = routeName.split(" - ")
@@ -9,8 +22,9 @@ export const getDirectedRoute = (tripId, routeName) => {
     ? `${start} > ${end}`
     : `${end} > ${start}`
 }
+
 export const getIconByType = (bus, route) => {
-  let vType = vehicleTypes[bus.vehicle_type]?.toLowerCase()
+  const vType = vehicleTypes[bus.vehicle_type]?.toLowerCase()
   let color = "#3199b0"
   if (route?.route_short_name[0] === "M")
     color = "#9f611b"
@@ -68,29 +82,17 @@ export const tileLayer = {
   />
 }
 
-export const vehicleTypes = {
-  0: "Tram, Streetcar, Light rail",
-  1: "Subway, Metro",
-  2: "Rail",
-  3: "Bus",
-  4: "Ferry",
-  5: "Cable tram",
-  6: "Aerial lift",
-  7: "Funicular",
-  11: "Trolleybus",
-  12: "Monorail",
-}
 export const timeSince = date => {
-  let seconds = Math.floor((new Date() - date) / 1000);
+  const seconds = Math.floor((new Date() - date) / 1000);
   let interval = seconds / 31536000;
-  if (interval > 1) return Math.floor(interval) + " years";
+  if (interval > 1) return `${Math.floor(interval)} years`;
   interval = seconds / 2592000;
-  if (interval > 1) return Math.floor(interval) + " months";
+  if (interval > 1) return `${Math.floor(interval)} months`;
   interval = seconds / 86400;
-  if (interval > 1) return Math.floor(interval) + " days";
+  if (interval > 1) return `${Math.floor(interval)} days`;
   interval = seconds / 3600;
-  if (interval > 1) return Math.floor(interval) + " hours";
+  if (interval > 1) return `${Math.floor(interval)} hours`;
   interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + " minutes";
-  return Math.floor(seconds) + " seconds";
+  if (interval > 1) return `${Math.floor(interval)} minutes`;
+  return `${Math.floor(seconds)} seconds`;
 }

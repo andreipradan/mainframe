@@ -161,7 +161,8 @@ const Transport = () =>  {
                   type="button"
                   className={`btn btn-outline-${toggleStops ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
                   onClick={() => {
-                    if (selectedVehicle) alert("Can't show stops when a vehicle is selected!")
+                    if (selectedVehicle)
+                      toast.warning("Can't show stops when a vehicle is selected!", toastParams)
                     else setToggleStops(!toggleStops)
                   }}
                 >
@@ -255,7 +256,7 @@ const Transport = () =>  {
                         <strong>Updated</strong> {timeSince(new Date(bus.timestamp))} ago<br/>
                         {
                           fieldsBus?.filter(f => f.value).map(f => <div>
-                            <strong>{f.key}</strong> {bus[f.key]}
+                            <strong key={f.key}>{f.key}</strong> {bus[f.key]}
                           </div>)
                         }
                       </Popup>
