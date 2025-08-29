@@ -304,7 +304,13 @@ const Transport = () =>  {
                 fieldsBus?.map(fieldConfig =>
                   <Form.Check
                     key={fieldConfig.key}
-                    checked={fieldsBus.find(f => f.key === fieldConfig.key).value}
+// Transport.js — guard against undefined .find() results
+
+// Around line 306
+                    checked={fieldsBus.find(f => f.key === fieldConfig.key)?.value || false}
+
+// Around line 336
+                          checked={fieldsStop.find(f => f.key === fieldConfig.key)?.value || false}
                     type="switch"
                     id={`checkbox-toggle-${fieldConfig.key}`}
                     label={`${
