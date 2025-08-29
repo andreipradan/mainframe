@@ -6,6 +6,8 @@ import { Form } from "react-bootstrap";
 import { MapContainer, Marker, Popup, Polyline } from "react-leaflet";
 import { Circles } from "react-loader-spinner";
 
+import MarkerClusterGroup from "react-leaflet-cluster";
+
 import Errors from "../shared/Errors";
 import { TransitApi } from "../../api/transport";
 import { getDirectedRoute, getIconByType, tileLayer, timeSince } from "./utils";
@@ -28,17 +30,23 @@ const Transport = () =>  {
   const firstTimeBusFields = useRef(true)
   const firstTimeStopFields = useRef(true)
 
+  const [mode, setMode] = useState("buses");
   const [search, setSearch] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null)
 
   const [toggleActive, setToggleActive] = useState(true)
   const [toggleBikes, setToggleBikes] = useState(false)
+  const [toggleFields, setToggleFields] = useState(false)
   const [toggleMapType, setToggleMapType] = useState(false)
   const [toggleMetro, setToggleMetro] = useState(false)
   const [togglePollingEnabled, setTogglePollingEnabled] = useState(true)
   const [toggleWheelchair, setToggleWheelchair] = useState(false)
-  const [toggleStops, setToggleStops] = useState(false)
 
+  useEffect(() => {
+    if (mode === "stops") {
+      setTogglePollingEnabled(false)
+    }
+  }, [mode]);
   // set right panel field toggles
   useEffect(() => {
     if (firstTimeBusFields.current && state.vehicles?.[0]) {
@@ -128,59 +136,61 @@ const Transport = () =>  {
         </nav>
       </div>
       <div className="row">
-        <div className="col-lg-9 grid-margin stretch-card">
+        <div className={`col-lg-${toggleFields ? '9' : '12'} grid-margin stretch-card`}>
           <div className="card">
             <div className="card-body">
               <h4 className="card-title mb-0">
                 Live Map &nbsp;
-                <button
-                  type="button"
-                  className={`btn btn-outline-${togglePollingEnabled ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                  onClick={() => setTogglePollingEnabled(!togglePollingEnabled)}
-                >
-                  <i className={`mdi mdi-${togglePollingEnabled ? 'pause-circle-outline' : 'play-circle-outline'}`} />
-                </button> &nbsp;
-                <button
-                  type="button"
-                  className={`btn btn-outline-${toggleActive ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                  onClick={() => setToggleActive(!toggleActive)}
-                >
-                  <i className="mdi mdi-bus" />
-                </button> &nbsp;
                 <button type="button" className={`btn btn-outline-${toggleMapType ? 'success': 'danger'} btn-sm border-0 bg-transparent`} onClick={() => setToggleMapType(!toggleMapType)}>
                   <i className={`mdi mdi-map${toggleMapType ? '-check' : ''}`} />
                 </button> &nbsp;
+                {
+                  mode === "buses"
+                    ? <>
+                      <button
+                        type="button"
+                        className={`btn btn-outline-${togglePollingEnabled ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                        onClick={() => setTogglePollingEnabled(!togglePollingEnabled)}
+                      >
+                        <i className={`mdi mdi-${togglePollingEnabled ? 'pause-circle-outline' : 'play-circle-outline'}`} />
+                      </button> &nbsp;
+                      <button
+                        type="button"
+                        className={`btn btn-outline-${toggleActive ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                        onClick={() => setToggleActive(!toggleActive)}
+                      >
+                        <i className="mdi mdi-bus" />
+                      </button> &nbsp;
+                      <button
+                        type="button"
+                        className={`btn btn-outline-${toggleBikes ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                        onClick={() => setToggleBikes(!toggleBikes)}
+                      >
+                        <i className={`mdi mdi-bike`} />
+                      </button> &nbsp;
+                      <button
+                        type="button"
+                        className={`btn btn-outline-${toggleWheelchair ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                        onClick={() => setToggleWheelchair(!toggleWheelchair)}
+                      >
+                        <i className="mdi mdi-wheelchair" />
+                      </button> &nbsp;
+                      <button
+                        type="button"
+                        className={`btn btn-outline-${toggleMetro ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                        onClick={() => setToggleMetro(!toggleMetro)}
+                      >
+                        <i className="mdi mdi-bus-side" />
+                      </button> &nbsp;
+                    </>
+                    : null
+                }
                 <button
                   type="button"
-                  className={`btn btn-outline-${toggleBikes ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                  onClick={() => setToggleBikes(!toggleBikes)}
+                  className={`btn btn-outline-${toggleFields ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                  onClick={() => setToggleFields(!toggleFields)}
                 >
-                  <i className={`mdi mdi-bike`} />
-                </button> &nbsp;
-                <button
-                  type="button"
-                  className={`btn btn-outline-${toggleWheelchair ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                  onClick={() => setToggleWheelchair(!toggleWheelchair)}
-                >
-                  <i className="mdi mdi-wheelchair" />
-                </button> &nbsp;
-                <button
-                  type="button"
-                  className={`btn btn-outline-${toggleMetro ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                  onClick={() => setToggleMetro(!toggleMetro)}
-                >
-                  <i className="mdi mdi-bus-side" />
-                </button> &nbsp;
-                <button
-                  type="button"
-                  className={`btn btn-outline-${toggleStops ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                  onClick={() => {
-                    if (selectedVehicle)
-                      toast.warning("Can't show stops when a vehicle is selected!", toastParams)
-                    else setToggleStops(!toggleStops)
-                  }}
-                >
-                  <i className="mdi mdi-map-marker" />
+                  <i className="mdi mdi-cog" />
                 </button> &nbsp;
                 {
                   state.loading
@@ -225,10 +235,15 @@ const Transport = () =>  {
                   </div>
                   : null
               }
-              <MapContainer center={[46.77, 23.59]} zoom={13} style={{ height: "70vh", width: "100%" }}>
+              <MapContainer
+                center={[46.77, 23.59]}
+                zoom={13}
+                style={{ height: "70vh", width: "100%" }}
+                preferCanvas={true}
+              >
                 {tileLayer[toggleMapType]}
                 {
-                  state.vehicles?.filter(
+                  mode !== "stops" && state.vehicles?.filter(
                     b => b.latitude && b.longitude
                   ).filter(
                     b => selectedVehicle
@@ -264,7 +279,6 @@ const Transport = () =>  {
                           setSelectedVehicle(bus)
                           if (!e.target.isPopupOpen()) setSelectedVehicle(null)
                         },
-                        popupopen: () => setToggleStops(false),
                         popupclose: () => setSelectedVehicle(null),
                       }}
                     >
@@ -287,30 +301,43 @@ const Transport = () =>  {
                     : null
                 }
                 {
-                  toggleStops && state.stops?.map(s =>
-                    <Marker
-                      key={s.stop_id}
-                      position={[s.stop_lat, s.stop_lon]}
-                      icon={new L.divIcon({
-                        html: `<i class="mdi mdi-map-marker" style="font-size:24px;color:#3f2a2a;"></i>`,
-                        className: "custom-bus-icon",
-                        iconAnchor: [16, 32],
-                      })}
-                    >
-                      <Popup>
-                        <strong>{s.stop_name}</strong><br/>
-                        <strong>{s.stop_desc}</strong>
-                        {
-                          state.stop_times?.filter(st => st.stop_id === s.stop_id).map(st => <div key={st.trip_id}>
-                            <strong>{state.routes?.find(r => r.route_id === state.trips?.find(t => t.trip_id === st.trip_id)?.route_id)?.route_short_name}:</strong>&nbsp;
-                            {state.trips.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
-                            {fieldsStop.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
-                          </div>)
-                        }
-                      </Popup>
-                  </Marker>)
+                  mode === "stops" && <MarkerClusterGroup
+                    chunckedLoading
+                    disableClusteringAtZoom={16}
+                    maxClusterRadius={20}
+                  >
+                    {
+                      state.stops?.filter(
+                        s => search
+                          ? s.stop_name.toLowerCase().trim().includes(search)
+                          : s
+                      ).map(s =>
+                        <Marker
+                          key={s.stop_id}
+                          position={[s.stop_lat, s.stop_lon]}
+                          icon={new L.divIcon({
+                            html: `<i class="mdi mdi-map-marker" style="font-size:24px;color:#3f2a2a;"></i>`,
+                            className: "custom-bus-icon",
+                            iconAnchor: [16, 24],
+                          })}
+                        >
+                          <Popup>
+                            <strong>{s.stop_name}</strong><br/>
+                            <strong>{s.stop_desc}</strong>
+                            {
+                              state.stop_times?.filter(st => st.stop_id === s.stop_id).map(st => <div key={st.trip_id}>
+                                <strong>{state.routes?.find(r => r.route_id === state.trips?.find(t => t.trip_id === st.trip_id)?.route_id)?.route_short_name}:</strong>&nbsp;
+                                {state.trips.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
+                                {fieldsStop.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
+                              </div>)
+                            }
+                          </Popup>
+                      </Marker>)
+                    }
+                  </MarkerClusterGroup>
                 }
-                {/* Search bar overlay */}
+
+                {/* Controls overlay */}
                 <div
                   style={{
                     position: "absolute",
@@ -318,34 +345,50 @@ const Transport = () =>  {
                     left: "50%",
                     transform: "translateX(-50%)",
                     zIndex: 1000,
-                    background: "white",
-                    padding: "4px 8px",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                    display: "flex",
+                    gap: "10px",
                   }}
                 >
+                  {/* Search */}
                   <input
                     type="text"
-                    placeholder="Search bus line..."
+                    placeholder={`Search ${mode === "buses" ? "bus line" : "stop"}...`}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Escape")
-                        setSearch("")
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") setSearch("");
                     }}
-                    style={{ border: "none", outline: "none" }}
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
                   />
+
+                  {/* Switch */}
+                  <select
+                    value={mode}
+                    onChange={(e) => setMode(e.target.value)}
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <option value="buses">Buses</option>
+                    <option value="stops">Stops</option>
+                  </select>
                 </div>
               </MapContainer>
             </div>
           </div>
         </div>
-        <div className="col-lg-3 grid-margin stretch-card">
+        <div className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}>
           <div className="card">
             <div className="card-body">
               <h4 className="card-title">Bus fields</h4>
               {
-                fieldsBus?.map(fieldConfig =>
+                mode === "buses" && fieldsBus?.map(fieldConfig =>
                   <Form.Check
                     key={fieldConfig.key}
                     checked={fieldsBus.find(f => f.key === fieldConfig.key)?.value || false}
@@ -370,7 +413,7 @@ const Transport = () =>  {
                   )
               }
               {
-                toggleStops
+                mode === "stops"
                   ? <>
                     <br/>
                     <h4 className="card-title">Stop fields</h4>

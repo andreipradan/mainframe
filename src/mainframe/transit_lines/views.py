@@ -1,9 +1,9 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import environ
-import pytz
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -78,16 +78,15 @@ class TransitViewSet(viewsets.GenericViewSet):
         if entity == "vehicles":  # vehicles update often
             return self.handle_no_db(url, headers, entity)
 
-        now = datetime.now(pytz.timezone("UTC"))
         cache, _ = TranzyResponse.objects.get_or_create(endpoint=entity)
         if (
             etag
             and cache.etag
             and cache.etag == etag
-            and cache.updated_at + timedelta(days=1) > now
+            and cache.updated_at + timedelta(days=1) > timezone.now()
         ):
             logger.info(
-                "[%s] Matching ETag and recent updates (%s)",
+                "[%s] Matching ETag and recently updated (%s)",
                 entity,
                 cache.updated_at,
             )

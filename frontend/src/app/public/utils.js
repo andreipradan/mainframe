@@ -67,7 +67,7 @@ export const getIconByType = (bus, route) => {
                 ${label}
               </div>`,
     className: "custom-bus-icon",
-    iconAnchor: [16, 22],
+    iconAnchor: [16, 24],
 });
 }
 
