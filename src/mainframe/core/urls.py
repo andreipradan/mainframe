@@ -50,6 +50,10 @@ urlpatterns = [
         include(("mainframe.api.huey_tasks.routers", "api"), namespace="tasks"),
     ),
     path("telegram/", include(("mainframe.bots.routers", "api"), namespace="telegram")),
+    path(
+        "transit/",
+        include(("mainframe.transit_lines.routers", "api"), namespace="transit"),
+    ),
     path("users/", include(("mainframe.api.user.routers", "api"), namespace="users")),
     path(
         "watchers/", include(("mainframe.watchers.routers", "api"), namespace="watcher")

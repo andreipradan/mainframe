@@ -77,3 +77,10 @@ class Schedule(TimeStampedModel):
 
     def __str__(self):
         return f"{self.line} - {self.occurrence}"
+
+
+class TranzyResponse(TimeStampedModel):
+    endpoint = models.CharField(max_length=64, unique=True)
+    etag = models.CharField(max_length=125, blank=True)
+    data = models.JSONField(default=dict)
+    last_checked = models.DateTimeField(blank=True, null=True)
