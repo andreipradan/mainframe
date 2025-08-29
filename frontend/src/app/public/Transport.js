@@ -28,6 +28,7 @@ const Transport = () =>  {
   const firstTimeBusFields = useRef(true)
   const firstTimeStopFields = useRef(true)
 
+  const [search, setSearch] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState(null)
 
   const [toggleActive, setToggleActive] = useState(true)
@@ -137,7 +138,7 @@ const Transport = () =>  {
                   className={`btn btn-outline-${togglePollingEnabled ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
                   onClick={() => setTogglePollingEnabled(!togglePollingEnabled)}
                 >
-                  <i className={`mdi mdi-${togglePollingEnabled ? 'stop' : 'play'}`} />
+                  <i className={`mdi mdi-${togglePollingEnabled ? 'pause-circle-outline' : 'play-circle-outline'}`} />
                 </button> &nbsp;
                 <button
                   type="button"
@@ -249,6 +250,10 @@ const Transport = () =>  {
                     b => toggleMetro
                       ? getRoute(b.route_id)?.route_short_name[0] === "M"
                       : b
+                  ).filter(
+                    b => search
+                      ? getRoute(b.route_id)?.route_short_name?.toLowerCase()?.includes(search.trim())
+                      : b
                   ).map(bus =>
                     <Marker
                       key={bus.id}
@@ -305,6 +310,32 @@ const Transport = () =>  {
                       </Popup>
                   </Marker>)
                 }
+                {/* Search bar overlay */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 1000,
+                    background: "white",
+                    padding: "4px 8px",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Search bus line..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Escape")
+                        setSearch("")
+                    }}
+                    style={{ border: "none", outline: "none" }}
+                  />
+                </div>
               </MapContainer>
             </div>
           </div>

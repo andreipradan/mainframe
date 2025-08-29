@@ -51,10 +51,9 @@ class TransitViewSet(viewsets.GenericViewSet):
                 cache.updated_at,
             )
             return JsonResponse(data={entity: cache.data})
-        else:
-            return HttpResponse(
-                status=status.HTTP_400_BAD_REQUEST, data={"error": str(resp.content)}
-            )
+        return HttpResponse(
+            status=status.HTTP_400_BAD_REQUEST, data={"error": str(resp.content)}
+        )
 
     def list(self, request, *args, **kwargs):
         if not (entity := request.GET.get("entity")):
