@@ -3,14 +3,21 @@ import { useDispatch, useSelector } from "react-redux";
 
 import L from "leaflet";
 import { Form } from "react-bootstrap";
-import { MapContainer, Marker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, Marker, Popup, Polyline, Tooltip } from "react-leaflet";
 import { Circles } from "react-loader-spinner";
 
 import MarkerClusterGroup from "react-leaflet-cluster";
+import "leaflet/dist/leaflet.css";
 
 import Errors from "../shared/Errors";
 import { TransitApi } from "../../api/transport";
-import { getDirectedRoute, getIconByType, tileLayer, timeSince } from "./utils";
+import {
+  getDirectedRoute,
+  getIconByType,
+  getNumberIcon,
+  tileLayer,
+  timeSince
+} from "./utils";
 import {toast} from "react-toastify";
 import {toastParams} from "../../api/auth";
 
@@ -123,6 +130,7 @@ const Transport = () =>  {
 }, [dispatch, togglePollingEnabled]);
 
   const getRoute = routeId => state.routes ? state.routes.find(r => r.route_id === routeId) : null
+  const getStop = stopId => state.stops ? state.stops.find(s => s.stop_id === stopId) : null
 
   return (
     <div>
@@ -237,7 +245,7 @@ const Transport = () =>  {
               }
               <MapContainer
                 center={[46.77, 23.59]}
-                zoom={13}
+                zoom={14}
                 style={{ height: "70vh", width: "100%" }}
                 preferCanvas
               >
@@ -247,7 +255,7 @@ const Transport = () =>  {
                     b => b.latitude && b.longitude
                   ).filter(
                     b => selectedVehicle
-                      ? b.route_id === selectedVehicle.route_id
+                      ? b.id === selectedVehicle.id
                       : b
                   ).filter(
                     b => toggleActive
@@ -301,6 +309,20 @@ const Transport = () =>  {
                     : null
                 }
                 {
+                  selectedVehicle && state.stop_times && state.stops
+                    ? state.stop_times.filter(st => st.trip_id === selectedVehicle.trip_id).map(st =>
+                      <Marker
+                        key={`${st.trip_id}-${st.stop_id}-${st.stop_sequence}`}
+                        position={[getStop(st.stop_id).stop_lat, getStop(st.stop_id).stop_lon]}
+                        icon={getNumberIcon(st.stop_sequence)}
+                      >
+                        <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={true}>
+                          <strong>{getStop(st.stop_id).stop_name}</strong>
+                        </Tooltip>
+                      </Marker>)
+                    : null
+                }
+                {
                   mode === "stops" && <MarkerClusterGroup
                     chunkedLoading
                     disableClusteringAtZoom={16}
@@ -311,7 +333,6 @@ const Transport = () =>  {
                         s => search
                           ? s.stop_name.toLowerCase().trim().includes(search.trim().toLowerCase())
                           : s
-                      ).map(s =>
                       ).map(s =>
                         <Marker
                           key={s.stop_id}

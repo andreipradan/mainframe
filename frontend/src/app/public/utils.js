@@ -85,6 +85,29 @@ export const getIconByType = (bus, route) => {
 });
 }
 
+export const getNumberIcon = num => new L.divIcon({
+  html: `<div style="
+              position:absolute;
+              bottom:-5px;
+              right:-5px;
+              background:#3f2a2a;
+              color:white;
+              font-size:12px;
+              font-weight:bold;
+              width:15px;
+              height:15px;
+              border-radius:50%;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              box-shadow:0 1px 3px rgba(0,0,0,0.4);
+            ">
+              ${num + 1}
+            </div>`,
+  className: "custom-bus-icon",
+  iconAnchor: [16, 24],
+})
+
 export const tileLayer = {
   true: <TileLayer
     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
