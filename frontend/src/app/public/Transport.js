@@ -268,8 +268,8 @@ const Transport = () =>  {
                         <strong>Speed:</strong> {bus.speed} km/h<br/>
                         <strong>Updated</strong> {timeSince(new Date(bus.timestamp))} ago<br/>
                         {
-                          fieldsBus?.filter(f => f.value).map(f => <div>
-                            <strong key={f.key}>{f.key}</strong> {bus[f.key]}
+                          fieldsBus?.filter(f => f.value).map(f => <div key={f.key}>
+                            <strong>{f.key}</strong> {bus[f.key]}
                           </div>)
                         }
                       </Popup>
@@ -317,13 +317,7 @@ const Transport = () =>  {
                 fieldsBus?.map(fieldConfig =>
                   <Form.Check
                     key={fieldConfig.key}
-// Transport.js — guard against undefined .find() results
-
-// Around line 306
                     checked={fieldsBus.find(f => f.key === fieldConfig.key)?.value || false}
-
-// Around line 336
-                          checked={fieldsStop.find(f => f.key === fieldConfig.key)?.value || false}
                     type="switch"
                     id={`checkbox-toggle-${fieldConfig.key}`}
                     label={`${
@@ -353,7 +347,7 @@ const Transport = () =>  {
                       fieldsStop?.map(fieldConfig =>
                         <Form.Check
                           key={fieldConfig.key}
-                          checked={fieldsStop.find(f => f.key === fieldConfig.key).value}
+                          checked={fieldsStop.find(f => f.key === fieldConfig.key)?.value || false}
                           type="switch"
                           id={`checkbox-fields-stop-${fieldConfig.key}`}
                           label={`${

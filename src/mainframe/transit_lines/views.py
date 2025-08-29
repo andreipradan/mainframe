@@ -40,16 +40,17 @@ class TransitViewSet(viewsets.GenericViewSet):
             cache.data = resp.json()
             cache.save()
             data = {entity: cache.data or {}}
-            if cache.etag != headers["If-None-Match"]:
+            if cache.etag != headers.get("If-None-Match"):
                 data[f"{entity}_etag"] = cache.etag
             return JsonResponse(data=data)
-        elif cache:
+        if cache:
             logger.error(
                 "[%s] Unexpected status code: %s. Serving cached version from %s",
                 entity,
                 resp.status_code,
                 cache.updated_at,
             )
+            return JsonResponse(data={entity: cache.data})
         else:
             return HttpResponse(
                 status=status.HTTP_400_BAD_REQUEST, data={"error": str(resp.content)}
