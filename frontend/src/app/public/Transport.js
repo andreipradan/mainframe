@@ -284,7 +284,7 @@ const Transport = () =>  {
                         <strong>{s.stop_desc}</strong>
                         {
                           state.stop_times?.filter(st => st.stop_id === s.stop_id).map(st => <div key={st.trip_id}>
-                            <strong>{state.routes.find(r=> r.route_id === state.trips?.find(t => t.trip_id === st.trip_id).route_id).route_short_name}:</strong>&nbsp;
+                            <strong>{state.routes?.find(r => r.route_id === state.trips?.find(t => t.trip_id === st.trip_id)?.route_id)?.route_short_name}:</strong>&nbsp;
                             {state.trips.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
                             {fieldsStop.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
                           </div>)
