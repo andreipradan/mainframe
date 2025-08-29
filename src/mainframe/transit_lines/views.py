@@ -50,7 +50,10 @@ class TransitViewSet(viewsets.GenericViewSet):
                 resp.status_code,
                 cache.updated_at,
             )
-            return JsonResponse(data={entity: cache.data})
+            payload = {entity: cache.data}
+            if cache.etag:
+                payload[f"{entity}_etag"] = cache.etag
+            return JsonResponse(data=payload)
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST, data={"error": str(resp.content)}
         )
