@@ -1,12 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
 
-import L from "leaflet";
 import { Form } from "react-bootstrap";
 import { MapContainer, Marker, Popup, Polyline, Tooltip } from "react-leaflet";
 import { Circles } from "react-loader-spinner";
 
+import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
+
 import "leaflet/dist/leaflet.css";
 
 import Errors from "../shared/Errors";
@@ -18,8 +19,8 @@ import {
   tileLayer,
   timeSince
 } from "./utils";
-import {toast} from "react-toastify";
-import {toastParams} from "../../api/auth";
+import { toast } from "react-toastify";
+import { toastParams } from "../../api/auth";
 
 const POLLING_DISABLED_AFTER_SECONDS = 240
 
@@ -34,8 +35,12 @@ const Transport = () =>  {
   const [fieldsBus, setFieldsBus] = useState(null)
   const [fieldsStop, setFieldsStop] = useState(null)
 
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // refs
   const firstTimeBusFields = useRef(true)
   const firstTimeStopFields = useRef(true)
+  const mapRef = useRef(null);
 
   const [mode, setMode] = useState("buses");
   const [search, setSearch] = useState("");
@@ -49,6 +54,15 @@ const Transport = () =>  {
   const [toggleMetro, setToggleMetro] = useState(false)
   const [togglePollingEnabled, setTogglePollingEnabled] = useState(true)
   const [toggleWheelchair, setToggleWheelchair] = useState(false)
+
+  const toggleFullscreen = () => {
+    const elem = mapRef.current;
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().then(() => setFullscreen(true));
+    } else {
+      document.exitFullscreen().then(() => setFullscreen(false));
+    }
+  }
 
   useEffect(() => {
     if (mode === "stops") {
@@ -263,166 +277,180 @@ const Transport = () =>  {
                   </div>
                   : null
               }
-              <MapContainer
-                center={[46.77, 23.59]}
-                zoom={14}
-                style={{ height: "70vh", width: "100%" }}
-                preferCanvas
-              >
-                {tileLayer[toggleMapType]}
-                {
-                  mode !== "stops" && state.vehicles?.filter(
-                    b => b.latitude && b.longitude
-                  ).filter(
-                    b => selectedVehicle
-                      ? b.id === selectedVehicle.id
-                      : b
-                  ).filter(
-                    b => toggleActive
-                      ? b.trip_id
-                      : b
-                  ).filter(
-                    b => toggleBikes
-                      ? b.bike_accessible === "BIKE_ACCESSIBLE"
-                      : b
-                  ).filter(
-                    b => toggleWheelchair
-                      ? b.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE"
-                      : b
-                  ).filter(
-                    b => toggleMetro
-                      ? getRoute(b.route_id)?.route_short_name[0] === "M"
-                      : b
-                  ).filter(
-                    b => search
-                      ? getRoute(b.route_id)?.route_short_name?.toLowerCase()?.includes(search.trim())
-                      : b
-                  ).map(bus =>
-                    <Marker
-                      key={bus.id}
-                      position={[bus.latitude, bus.longitude]}
-                      icon={getIconByType(bus, getRoute(bus.route_id))}
-                      eventHandlers={{
-                        popupopen: () => setSelectedVehicle(bus),
-                        popupclose: () => setSelectedVehicle(null),
+              <div ref={mapRef} style={{ height: '100vh', width: '100%' }}>
+                <MapContainer
+                  center={[46.77, 23.59]}
+                  zoom={14}
+                  style={{ height: "100%", width: "100%" }}
+                  preferCanvas
+                >
+                  {tileLayer[toggleMapType]}
+                  {
+                    mode !== "stops" && state.vehicles?.filter(
+                      b => b.latitude && b.longitude
+                    ).filter(
+                      b => selectedVehicle
+                        ? b.id === selectedVehicle.id
+                        : b
+                    ).filter(
+                      b => toggleActive
+                        ? b.trip_id
+                        : b
+                    ).filter(
+                      b => toggleBikes
+                        ? b.bike_accessible === "BIKE_ACCESSIBLE"
+                        : b
+                    ).filter(
+                      b => toggleWheelchair
+                        ? b.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE"
+                        : b
+                    ).filter(
+                      b => toggleMetro
+                        ? getRoute(b.route_id)?.route_short_name[0] === "M"
+                        : b
+                    ).filter(
+                      b => search
+                        ? getRoute(b.route_id)?.route_short_name?.toLowerCase()?.includes(search.trim())
+                        : b
+                    ).map(bus =>
+                      <Marker
+                        key={bus.id}
+                        position={[bus.latitude, bus.longitude]}
+                        icon={getIconByType(bus, getRoute(bus.route_id))}
+                        eventHandlers={{
+                          popupopen: () => setSelectedVehicle(bus),
+                          popupclose: () => setSelectedVehicle(null),
+                        }}
+                      >
+                        <Popup offset={[-20, -25]}>
+                          <strong>{getRoute(bus.route_id)?.route_short_name || bus.label}</strong> {getDirectedRoute(bus.trip_id, getRoute(bus.route_id)?.route_long_name)}<br />
+                          <strong>Speed:</strong> {bus.speed} km/h<br/>
+                          <strong>Updated</strong> {timeSince(new Date(bus.timestamp))} ago<br/>
+                          {
+                            fieldsBus?.filter(f => f.value).map(f => <div key={f.key}>
+                              <strong>{f.key}</strong> {bus[f.key]}
+                            </div>)
+                          }
+                        </Popup>
+                      </Marker>
+                    )
+                  }
+                  {
+                    selectedVehicle && state.shapes
+                      ? <Polyline positions={state.shapes.filter(s => s.shape_id ===selectedVehicle.trip_id ).map(s => [s.shape_pt_lat, s.shape_pt_lon])} color="blue" weight={4} />
+                      : null
+                  }
+                  {
+                    selectedVehicle && state.stop_times && state.stops
+                      ? state.stop_times.filter(st => st.trip_id === selectedVehicle.trip_id).map(st =>
+                        <Marker
+                          key={`${st.trip_id}-${st.stop_id}-${st.stop_sequence}`}
+                          position={[getStop(st.stop_id).stop_lat, getStop(st.stop_id).stop_lon]}
+                          icon={getNumberIcon(st.stop_sequence)}
+                        >
+                          {
+                            toggleLabels
+                              ? <Tooltip direction="right" offset={[7, -15]} opacity={1} permanent={true}>
+                                  <strong>{getStop(st.stop_id).stop_name}</strong>
+                                </Tooltip>
+                              : null
+                          }
+                        </Marker>)
+                      : null
+                  }
+                  {
+                    mode === "stops" && <MarkerClusterGroup
+                      chunkedLoading
+                      disableClusteringAtZoom={16}
+                      maxClusterRadius={20}
+                    >
+                      {
+                        state.stops?.filter(
+                          s => search
+                            ? s.stop_name.toLowerCase().trim().includes(search.trim().toLowerCase())
+                            : s
+                        ).map(s =>
+                          <Marker
+                            key={s.stop_id}
+                            position={[s.stop_lat, s.stop_lon]}
+                            icon={new L.divIcon({
+                              html: '<i class="mdi mdi-map-marker" style="font-size:24px;color:#3f2a2a;"></i>',
+                              className: "custom-bus-icon",
+                              iconAnchor: [16, 24],
+                            })}
+                          >
+                            <Popup>
+                              <strong>{s.stop_name}</strong><br/>
+                              <strong>{s.stop_desc}</strong>
+                              {
+                                state.stop_times?.filter(st => st.stop_id === s.stop_id).map(st => <div key={st.trip_id}>
+                                  <strong>{state.routes?.find(r => r.route_id === state.trips?.find(t => t.trip_id === st.trip_id)?.route_id)?.route_short_name}:</strong>&nbsp;
+                                  {state.trips?.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
+                                  {fieldsStop?.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
+                                </div>)
+                              }
+                            </Popup>
+                        </Marker>)
+                      }
+                    </MarkerClusterGroup>
+                  }
+
+                  {/* Controls overlay */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      zIndex: 1000,
+                      display: "flex",
+                      gap: "10px",
+                    }}
+                  >
+                    {/* Search */}
+                    <input
+                      type="text"
+                      placeholder={`Search ${mode === "buses" ? "bus line" : "stop"}...`}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") setSearch("");
+                      }}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                      }}
+                    />
+
+                    {/* Switch */}
+                    <select
+                      value={mode}
+                      onChange={(e) => setMode(e.target.value)}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
                       }}
                     >
-                      <Popup offset={[-20, -25]}>
-                        <strong>{getRoute(bus.route_id)?.route_short_name || bus.label}</strong> {getDirectedRoute(bus.trip_id, getRoute(bus.route_id)?.route_long_name)}<br />
-                        <strong>Speed:</strong> {bus.speed} km/h<br/>
-                        <strong>Updated</strong> {timeSince(new Date(bus.timestamp))} ago<br/>
-                        {
-                          fieldsBus?.filter(f => f.value).map(f => <div key={f.key}>
-                            <strong>{f.key}</strong> {bus[f.key]}
-                          </div>)
-                        }
-                      </Popup>
-                    </Marker>
-                  )
-                }
-                {
-                  selectedVehicle && state.shapes
-                    ? <Polyline positions={state.shapes.filter(s => s.shape_id ===selectedVehicle.trip_id ).map(s => [s.shape_pt_lat, s.shape_pt_lon])} color="blue" weight={4} />
-                    : null
-                }
-                {
-                  selectedVehicle && state.stop_times && state.stops
-                    ? state.stop_times.filter(st => st.trip_id === selectedVehicle.trip_id).map(st =>
-                      <Marker
-                        key={`${st.trip_id}-${st.stop_id}-${st.stop_sequence}`}
-                        position={[getStop(st.stop_id).stop_lat, getStop(st.stop_id).stop_lon]}
-                        icon={getNumberIcon(st.stop_sequence)}
-                      >
-                        {
-                          toggleLabels
-                            ? <Tooltip direction="right" offset={[7, -15]} opacity={1} permanent={true}>
-                                <strong>{getStop(st.stop_id).stop_name}</strong>
-                              </Tooltip>
-                            : null
-                        }
-                      </Marker>)
-                    : null
-                }
-                {
-                  mode === "stops" && <MarkerClusterGroup
-                    chunkedLoading
-                    disableClusteringAtZoom={16}
-                    maxClusterRadius={20}
-                  >
-                    {
-                      state.stops?.filter(
-                        s => search
-                          ? s.stop_name.toLowerCase().trim().includes(search.trim().toLowerCase())
-                          : s
-                      ).map(s =>
-                        <Marker
-                          key={s.stop_id}
-                          position={[s.stop_lat, s.stop_lon]}
-                          icon={new L.divIcon({
-                            html: '<i class="mdi mdi-map-marker" style="font-size:24px;color:#3f2a2a;"></i>',
-                            className: "custom-bus-icon",
-                            iconAnchor: [16, 24],
-                          })}
-                        >
-                          <Popup>
-                            <strong>{s.stop_name}</strong><br/>
-                            <strong>{s.stop_desc}</strong>
-                            {
-                              state.stop_times?.filter(st => st.stop_id === s.stop_id).map(st => <div key={st.trip_id}>
-                                <strong>{state.routes?.find(r => r.route_id === state.trips?.find(t => t.trip_id === st.trip_id)?.route_id)?.route_short_name}:</strong>&nbsp;
-                                {state.trips?.filter(t => t.trip_id === st.trip_id).map(t => <span key={t.trip_id}>{t.trip_headsign}</span>)}
-                                {fieldsStop?.filter(f => f.value).map(f => ` ${f.key}: ${st[f.key]} `)}
-                              </div>)
-                            }
-                          </Popup>
-                      </Marker>)
-                    }
-                  </MarkerClusterGroup>
-                }
+                      <option value="buses">Buses</option>
+                      <option value="stops">Stops</option>
+                    </select>
 
-                {/* Controls overlay */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    zIndex: 1000,
-                    display: "flex",
-                    gap: "10px",
-                  }}
-                >
-                  {/* Search */}
-                  <input
-                    type="text"
-                    placeholder={`Search ${mode === "buses" ? "bus line" : "stop"}...`}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") setSearch("");
-                    }}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-
-                  {/* Switch */}
-                  <select
-                    value={mode}
-                    onChange={(e) => setMode(e.target.value)}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                    }}
-                  >
-                    <option value="buses">Buses</option>
-                    <option value="stops">Stops</option>
-                  </select>
-                </div>
-              </MapContainer>
+                    {/*  Full screen*/}
+                    <button
+                      onClick={toggleFullscreen}
+                      style={{
+                        border: "solid ccc",
+                        borderRadius: "8px",
+                        padding: "4px 8px",
+                      }}
+                    >
+                      {fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                    </button>
+                  </div>
+                </MapContainer>
+              </div>
             </div>
           </div>
         </div>
