@@ -44,6 +44,7 @@ const Transport = () =>  {
   const [toggleActive, setToggleActive] = useState(true)
   const [toggleBikes, setToggleBikes] = useState(false)
   const [toggleFields, setToggleFields] = useState(false)
+  const [toggleLabels, setToggleLabels] = useState(false)
   const [toggleMapType, setToggleMapType] = useState(false)
   const [toggleMetro, setToggleMetro] = useState(false)
   const [togglePollingEnabled, setTogglePollingEnabled] = useState(true)
@@ -162,38 +163,55 @@ const Transport = () =>  {
                       >
                         <i className={`mdi mdi-${togglePollingEnabled ? 'pause-circle-outline' : 'play-circle-outline'}`} />
                       </button> &nbsp;
-                      <button
-                        type="button"
-                        className={`btn btn-outline-${toggleActive ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                        onClick={() => setToggleActive(!toggleActive)}
-                      >
-                        <i className="mdi mdi-bus" />
-                      </button> &nbsp;
-                      <button
-                        type="button"
-                        className={`btn btn-outline-${toggleBikes ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                        onClick={() => setToggleBikes(!toggleBikes)}
-                      >
-                        <i className="mdi mdi-bike" />
-                      </button> &nbsp;
-                      <button
-                        type="button"
-                        className={`btn btn-outline-${toggleWheelchair ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                        onClick={() => setToggleWheelchair(!toggleWheelchair)}
-                      >
-                        <i className="mdi mdi-wheelchair" />
-                      </button> &nbsp;
-                      <button
-                        type="button"
-                        className={`btn btn-outline-${toggleMetro ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                        onClick={() => setToggleMetro(!toggleMetro)}
-                      >
-                        <i className="mdi mdi-bus-side" />
-                      </button> &nbsp;
+                      {
+                        !selectedVehicle
+                          ? <>
+                            <button
+                              type="button"
+                              className={`btn btn-outline-${toggleActive ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                              onClick={() => setToggleActive(!toggleActive)}
+                            >
+                              <i className="mdi mdi-bus" />
+                            </button> &nbsp;
+                            <button
+                              type="button"
+                              className={`btn btn-outline-${toggleBikes ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                              onClick={() => setToggleBikes(!toggleBikes)}
+                            >
+                              <i className="mdi mdi-bike" />
+                            </button> &nbsp;
+                            <button
+                              type="button"
+                              className={`btn btn-outline-${toggleWheelchair ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                              onClick={() => setToggleWheelchair(!toggleWheelchair)}
+                            >
+                              <i className="mdi mdi-wheelchair" />
+                            </button> &nbsp;
+                            <button
+                              type="button"
+                              className={`btn btn-outline-${toggleMetro ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                              onClick={() => setToggleMetro(!toggleMetro)}
+                            >
+                              <b>M</b>
+                            </button> &nbsp;
+                          </>
+                          : null
+                      }
                     </>
                     : null
                 }
-                <button
+                {
+                  selectedVehicle
+                    ? <button
+                        type="button"
+                        className={`btn btn-outline-${toggleLabels ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
+                        onClick={() => setToggleLabels(!toggleLabels)}
+                      >
+                        <i className="mdi mdi-label" />
+                      </button>
+                    : null
+                }
+                &nbsp;<button
                   type="button"
                   className={`btn btn-outline-${toggleFields ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
                   onClick={() => setToggleFields(!toggleFields)}
@@ -217,7 +235,7 @@ const Transport = () =>  {
               <Errors errors={state.errors}/>
 
               <div className={
-                `${!togglePollingEnabled ? 'mb-1 ' : ''}text-small text-${
+                `text-small text-${
                   togglePollingEnabled
                     ? Math.floor((new Date() - new Date(state.last_update)) / 1000) >= 15
                       ? Math.floor((new Date() - new Date(state.last_update)) / 1000) >= 40
@@ -235,7 +253,7 @@ const Transport = () =>  {
                     : 'polling disabled'
                 }
               </div>
-              <div className="text-small text-muted">
+              <div className={`${!togglePollingEnabled ? 'mb-2 ' : ''}text-small text-muted`}>
                 Last check: {state.last_check ? state.last_check : '-'}
               </div>
               {
@@ -315,9 +333,13 @@ const Transport = () =>  {
                         position={[getStop(st.stop_id).stop_lat, getStop(st.stop_id).stop_lon]}
                         icon={getNumberIcon(st.stop_sequence)}
                       >
-                        <Tooltip direction="right" offset={[7, -15]} opacity={1} permanent={true}>
-                          <strong>{getStop(st.stop_id).stop_name}</strong>
-                        </Tooltip>
+                        {
+                          toggleLabels
+                            ? <Tooltip direction="right" offset={[7, -15]} opacity={1} permanent={true}>
+                                <strong>{getStop(st.stop_id).stop_name}</strong>
+                              </Tooltip>
+                            : null
+                        }
                       </Marker>)
                     : null
                 }
@@ -404,71 +426,75 @@ const Transport = () =>  {
             </div>
           </div>
         </div>
-        <div className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}>
-          <div className="card">
-            <div className="card-body">
-              <h4 className="card-title">Bus fields</h4>
-              {
-                mode === "buses" && fieldsBus?.map(fieldConfig =>
-                  <Form.Check
-                    key={fieldConfig.key}
-                    checked={Boolean(fieldsBus?.find(f => f.key === fieldConfig.key)?.value)}
-                    type="switch"
-                    id={`checkbox-toggle-${fieldConfig.key}`}
-                    label={`${
-                      fieldConfig.key.includes("_")
-                        ? `${fieldConfig.key.split("_")[0]} ${fieldConfig.key.split("_")[1]}`
-                        : fieldConfig.key
-                    }`}
-                    onChange={
-                      () =>
-                        setFieldsBus(
-                          fieldsBus.map(
-                            f => f.key === fieldConfig.key
-                              ? ({key: f.key, value: !f.value})
-                              : f
-                          )
-                        )
-                    }
-                  />
-                  )
-              }
-              {
-                mode === "stops"
-                  ? <>
-                    <br/>
-                    <h4 className="card-title">Stop fields</h4>
-                    {
-                      fieldsStop?.map(fieldConfig =>
-                        <Form.Check
-                          key={fieldConfig.key}
-                          checked={Boolean(fieldsStop?.find(f => f.key === fieldConfig.key)?.value)}
-                          type="switch"
-                          id={`checkbox-fields-stop-${fieldConfig.key}`}
-                          label={`${
-                            fieldConfig.key.includes("_")
-                              ? `${fieldConfig.key.split("_")[0]} ${fieldConfig.key.split("_")[1]}`
-                              : fieldConfig.key
-                          }`}
-                          onChange={
-                            () =>
-                              setFieldsStop(
-                                fieldsStop.map(
-                                  f => f.key === fieldConfig.key
-                                    ? ({key: f.key, value: !f.value})
-                                    : f
-                                )
+        {
+          toggleFields && <>
+            <div className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}>
+              <div className="card">
+                <div className="card-body">
+                  <h4 className="card-title">Bus fields</h4>
+                  {
+                    mode === "buses" && fieldsBus?.map(fieldConfig =>
+                      <Form.Check
+                        key={fieldConfig.key}
+                        checked={Boolean(fieldsBus?.find(f => f.key === fieldConfig.key)?.value)}
+                        type="switch"
+                        id={`checkbox-toggle-${fieldConfig.key}`}
+                        label={`${
+                          fieldConfig.key.includes("_")
+                            ? `${fieldConfig.key.split("_")[0]} ${fieldConfig.key.split("_")[1]}`
+                            : fieldConfig.key
+                        }`}
+                        onChange={
+                          () =>
+                            setFieldsBus(
+                              fieldsBus.map(
+                                f => f.key === fieldConfig.key
+                                  ? ({key: f.key, value: !f.value})
+                                  : f
                               )
-                          }
-                        />
-                        )
-                    }
-                    </>
-                  : null
-              }
+                            )
+                        }
+                      />
+                      )
+                  }
+                  {
+                    toggleFields && mode === "stops"
+                      ? <>
+                        <br/>
+                        <h4 className="card-title">Stop fields</h4>
+                        {
+                          fieldsStop?.map(fieldConfig =>
+                            <Form.Check
+                              key={fieldConfig.key}
+                              checked={Boolean(fieldsStop?.find(f => f.key === fieldConfig.key)?.value)}
+                              type="switch"
+                              id={`checkbox-fields-stop-${fieldConfig.key}`}
+                              label={`${
+                                fieldConfig.key.includes("_")
+                                  ? `${fieldConfig.key.split("_")[0]} ${fieldConfig.key.split("_")[1]}`
+                                  : fieldConfig.key
+                              }`}
+                              onChange={
+                                () =>
+                                  setFieldsStop(
+                                    fieldsStop.map(
+                                      f => f.key === fieldConfig.key
+                                        ? ({key: f.key, value: !f.value})
+                                        : f
+                                    )
+                                  )
+                              }
+                            />
+                            )
+                        }
+                        </>
+                      : null
+                  }
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        }
       </div>
     </div>
   )
