@@ -19,7 +19,10 @@ class TransitViewSet(viewsets.GenericViewSet):
     @staticmethod
     def handle_no_db(url, request_headers, entity, cache=None):
         resp, error = fetch(
-            f"{url}/{entity}", logger=logger, soup=False, headers=request_headers
+            f"{url}/{entity}",
+            logger=logger,
+            soup=False,
+            headers=request_headers,
         )
         if error:
             return JsonResponse(
