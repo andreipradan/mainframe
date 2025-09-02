@@ -17,9 +17,9 @@ class TransitViewSet(viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
-    def handle_no_db(url, headers, entity, cache=None):
+    def handle_no_db(url, request_headers, entity, cache=None):
         resp, error = fetch(
-            f"{url}/{entity}", logger=logger, soup=False, headers=headers
+            f"{url}/{entity}", logger=logger, soup=False, headers=request_headers
         )
         if error:
             return JsonResponse(
@@ -32,19 +32,15 @@ class TransitViewSet(viewsets.GenericViewSet):
             logger.info("[%s] No changes in external api", entity)
             return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
         if resp.status_code == status.HTTP_200_OK:
+            headers = {"ETag": resp.headers.get("ETag")}
             if not cache:
-                return JsonResponse(
-                    data={entity: resp.json(), f"{entity}_etag": resp.headers["ETag"]}
-                )
+                return JsonResponse(data={entity: resp.json()}, headers=headers)
 
             cache.etag = resp.headers.get("ETag")
             cache.data = resp.json()
             cache.last_checked = timezone.now()
             cache.save()
-            data = {entity: cache.data or {}}
-            if cache.etag != headers.get("If-None-Match"):
-                data[f"{entity}_etag"] = cache.etag
-            return JsonResponse(data=data)
+            return JsonResponse(data={entity: cache.data or {}}, headers=headers)
         if cache:
             logger.error(
                 "[%s] Unexpected status code: %s. Serving cached version from %s",
@@ -52,10 +48,10 @@ class TransitViewSet(viewsets.GenericViewSet):
                 resp.status_code,
                 cache.updated_at,
             )
-            payload = {entity: cache.data}
+            headers = {}
             if cache.etag:
-                payload[f"{entity}_etag"] = cache.etag
-            return JsonResponse(data=payload)
+                headers["ETag"] = cache.etag
+            return JsonResponse(data={entity: cache.data}, headers=headers)
         return HttpResponse(
             status=status.HTTP_400_BAD_REQUEST, data={"error": str(resp.content)}
         )
@@ -72,8 +68,6 @@ class TransitViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"error": f"unsupported entity '{entity}'"},
             )
-
-        # …rest of method…
 
         config = environ.Env()
         headers = {

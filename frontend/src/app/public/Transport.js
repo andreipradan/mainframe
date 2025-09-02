@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 import { toastParams } from "../../api/auth";
 
 const POLLING_DISABLED_AFTER_SECONDS = 240
-
+const entities = ["vehicles", "routes", "shapes", "stops", "stop_times", "trips"];
 
 const Transport = () =>  {
   const dispatch = useDispatch();
@@ -41,6 +41,8 @@ const Transport = () =>  {
   const firstTimeBusFields = useRef(true)
   const firstTimeStopFields = useRef(true)
   const mapRef = useRef(null);
+
+  const [fetchEntity, setFetchEntity] = useState(entities[1])
 
   const [mode, setMode] = useState("buses");
   const [search, setSearch] = useState("");
@@ -116,7 +118,7 @@ const Transport = () =>  {
   // initial
   useEffect(() => {
   const fetchTransit = async (what = "vehicles") => {
-    const etag = stateRef.current[`${what}_etag`]; // always fresh
+    const etag = stateRef.current[`${what}_etag`];
     if (stateRef.current.loading) return
     if (togglePollingEnabled && startPollingTimeRef.current && Date.now() - startPollingTimeRef.current > POLLING_DISABLED_AFTER_SECONDS * 1000 ) {
       startPollingTimeRef.current = null
@@ -130,7 +132,7 @@ const Transport = () =>  {
   };
 
   if (togglePollingEnabled) {
-    ["vehicles", "routes", "shapes", "stops", "stop_times", "trips"].forEach(fetchTransit);
+    entities.forEach(fetchTransit);
     startPollingTimeRef.current = new Date()
   }
   else return
@@ -251,8 +253,8 @@ const Transport = () =>  {
               <div className={
                 `text-small text-${
                   togglePollingEnabled
-                    ? Math.floor((new Date() - new Date(state.last_update)) / 1000) >= 15
-                      ? Math.floor((new Date() - new Date(state.last_update)) / 1000) >= 40
+                    ? Math.floor((new Date() - new Date(state.vehicles_last_update)) / 1000) >= 15
+                      ? Math.floor((new Date() - new Date(state.vehicles_last_update)) / 1000) >= 40
                         ? 'danger'
                         : 'warning'
                       : 'success'
@@ -261,14 +263,14 @@ const Transport = () =>  {
               }>
                 Last update: {
                   togglePollingEnabled
-                    ? state.last_update
-                      ? timeSince(new Date(state.last_update))
+                    ? state.vehicles_last_update
+                      ? timeSince(new Date(state.vehicles_last_update))
                       : '-'
                     : 'polling disabled'
                 }
               </div>
               <div className={`${!togglePollingEnabled ? 'mb-2 ' : ''}text-small text-muted`}>
-                Last check: {state.last_check ? state.last_check : '-'}
+                Last check: {state.vehicles_last_check ? state.vehicles_last_check : '-'}
               </div>
               {
                 togglePollingEnabled
@@ -459,6 +461,47 @@ const Transport = () =>  {
             <div className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}>
               <div className="card">
                 <div className="card-body">
+                  <div className="mb-2">
+                    <h4 className="card-title">Actions</h4>
+                    <button
+                      type="button"
+                      className={`mr-1 btn btn-outline-warning btn-sm bg-transparent`}
+                      onClick={() => dispatch(api.getList(fetchEntity, state[`${fetchEntity}_etag`]))}
+                    >
+                      <i className="mdi mdi-download-outline" /> Fetch
+                    </button>
+                    <select
+                      value={fetchEntity}
+                      onChange={(e) => setFetchEntity(e.target.value)}
+                      style={{ padding: "2px 3px", borderRadius: "8px" }}
+                    >
+                      {
+                        entities.map(e => <option key={e}>{e}</option>)
+                      }
+                    </select>
+                    <div className={
+                      `mt-1 text-small text-${
+                        Math.floor((new Date() - new Date(state[`${fetchEntity}_last_update`])) / 1000) >= 15
+                          ? Math.floor((new Date() - new Date(state[`${fetchEntity}_last_update`])) / 1000) >= 40
+                            ? 'danger'
+                            : 'warning'
+                          : 'success'
+                      }`
+                    }>
+                      Last {fetchEntity} update: {
+                        state[`${fetchEntity}_last_update`]
+                          ? timeSince(new Date(state[`${fetchEntity}_last_update`]))
+                          : '-'
+                      }
+                    </div>
+                    <div className={"text-small text-muted"}>
+                      Last {fetchEntity} check: {
+                        state[`${fetchEntity}_last_check`]
+                          ? timeSince(new Date(state[`${fetchEntity}_last_check`]))
+                          : '-'
+                      }
+                    </div>
+                  </div>
                   <h4 className="card-title">Bus fields</h4>
                   {
                     mode === "buses" && fieldsBus?.map(fieldConfig =>

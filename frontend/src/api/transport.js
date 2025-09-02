@@ -20,23 +20,28 @@ export class TransitApi extends mix(TokenMixin) {
     dispatch(this.constructor.methods.setLoading());
     const headers = { Authorization: this.token}
     if (etag) headers["If-None-Match"] = etag
+    const now = new Date()
     axios
       .get(`${this.constructor.baseUrl}/?entity=${what}`, { headers })
       .then(
-        response => dispatch(this.constructor.methods.set(
-          {
-            ...response.data,
-            last_update: new Date().toISOString(),
-            last_check: new Date().toLocaleString(),
-          }
-        )))
+        response => {
+          dispatch(this.constructor.methods.set(
+            {
+              ...response.data,
+              [`${what}_etag`]: response.headers.get("ETag"),
+              [`${what}_last_update`]: now.toLocaleString(),
+            }
+          ))
+        })
       .catch(
         err => {
           if (err.response?.status !== 304)
             handleErrors(err, dispatch, this.constructor.methods.setErrors, this.constructor.methods.setLoading)
-          else
-            dispatch(this.constructor.methods.set({last_check: new Date().toLocaleString()}))
-        }
-      );
-  };
+        })
+      .finally(() => {
+        dispatch(this.constructor.methods.set({
+          [`${what}_last_check`]: now.toLocaleString()
+        }))
+      })
+  }
 }
