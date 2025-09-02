@@ -2,13 +2,15 @@ import React, {useEffect, useRef, useState} from 'react'
 import { useDispatch, useSelector } from "react-redux";
 
 import { Form } from "react-bootstrap";
-import { MapContainer, Marker, Popup, Polyline, Tooltip } from "react-leaflet";
+import { MapContainer, Marker, Popup, Polyline, Tooltip, useMap } from "react-leaflet";
 import { Circles } from "react-loader-spinner";
 
 import L from "leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 
 import "leaflet/dist/leaflet.css";
+import "leaflet.fullscreen";
+import "leaflet.fullscreen/Control.FullScreen.css";
 
 import Errors from "../shared/Errors";
 import { TransitApi } from "../../api/transport";
@@ -25,6 +27,21 @@ import { toastParams } from "../../api/auth";
 const POLLING_DISABLED_AFTER_SECONDS = 240
 const entities = ["vehicles", "routes", "shapes", "stops", "stop_times", "trips"];
 
+const FullscreenControl = () => {
+  const map = useMap()
+  useEffect(() => {
+    if (!map) return
+    const control = L.control.fullscreen({
+      position: "topright",
+      title: "Fullscreen",
+      titleCancel: "Exit Fullscreen",
+      forceSeparateButton: true,
+    })
+    control.addTo(map)
+    return () => map.removeControl(control)
+  }, [map])
+  return null
+}
 const Transport = () =>  {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token)
@@ -34,8 +51,6 @@ const Transport = () =>  {
 
   const [fieldsBus, setFieldsBus] = useState(null)
   const [fieldsStop, setFieldsStop] = useState(null)
-
-  const [fullscreen, setFullscreen] = useState(false);
 
   // refs
   const firstTimeBusFields = useRef(true)
@@ -56,15 +71,6 @@ const Transport = () =>  {
   const [toggleMetro, setToggleMetro] = useState(false)
   const [togglePollingEnabled, setTogglePollingEnabled] = useState(true)
   const [toggleWheelchair, setToggleWheelchair] = useState(false)
-
-  const toggleFullscreen = () => {
-    const elem = mapRef.current;
-    if (!document.fullscreenElement) {
-      elem.requestFullscreen().then(() => setFullscreen(true));
-    } else {
-      document.exitFullscreen().then(() => setFullscreen(false));
-    }
-  }
 
   useEffect(() => {
     if (mode === "stops") {
@@ -117,34 +123,34 @@ const Transport = () =>  {
 
   // initial
   useEffect(() => {
-  const fetchTransit = async (what = "vehicles") => {
-    const etag = stateRef.current[`${what}_etag`];
-    if (stateRef.current.loading) return
-    if (togglePollingEnabled && startPollingTimeRef.current && Date.now() - startPollingTimeRef.current > POLLING_DISABLED_AFTER_SECONDS * 1000 ) {
-      startPollingTimeRef.current = null
-      setTogglePollingEnabled(false)
-      toast.warning(<span>Polling disabled - Press <i className="mdi mdi-play" /> to start it back </span>, toastParams)
+    const fetchTransit = async (what = "vehicles") => {
+      const etag = stateRef.current[`${what}_etag`];
+      if (stateRef.current.loading) return
+      if (togglePollingEnabled && startPollingTimeRef.current && Date.now() - startPollingTimeRef.current > POLLING_DISABLED_AFTER_SECONDS * 1000 ) {
+        startPollingTimeRef.current = null
+        setTogglePollingEnabled(false)
+        toast.warning(<span>Polling disabled - Press <i className="mdi mdi-play" /> to start it back </span>, toastParams)
 
-      return
+        return
+      }
+      dispatch(api.getList(what, etag));
+      lastFetchRef.current = Date.now()
+    };
+
+    if (togglePollingEnabled) {
+      entities.forEach(fetchTransit);
+      startPollingTimeRef.current = new Date()
     }
-    dispatch(api.getList(what, etag));
-    lastFetchRef.current = Date.now()
-  };
+    else return
 
-  if (togglePollingEnabled) {
-    entities.forEach(fetchTransit);
-    startPollingTimeRef.current = new Date()
-  }
-  else return
-
-  let interval;
-  if (togglePollingEnabled) {
-    interval = setInterval(() => fetchTransit("vehicles"), 5000);
-  }
-  return () => {
-    if (interval) clearInterval(interval);
-  };
-}, [dispatch, togglePollingEnabled]);
+    let interval;
+    if (togglePollingEnabled) {
+      interval = setInterval(() => fetchTransit("vehicles"), 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [dispatch, togglePollingEnabled]);
 
   const getRoute = routeId => state.routes ? state.routes.find(r => r.route_id === routeId) : null
   const getStop = stopId => state.stops ? state.stops.find(s => s.stop_id === stopId) : null
@@ -164,7 +170,7 @@ const Transport = () =>  {
         <div className={`col-lg-${toggleFields ? '9' : '12'} grid-margin stretch-card`}>
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title mb-0">
+              <h4 className="card-title mb-1">
                 Live Map &nbsp;
                 <button type="button" className={`btn btn-outline-${toggleMapType ? 'success': 'danger'} btn-sm border-0 bg-transparent`} onClick={() => setToggleMapType(!toggleMapType)}>
                   <i className={`mdi mdi-map${toggleMapType ? '-check' : ''}`} />
@@ -249,37 +255,7 @@ const Transport = () =>  {
                 }
               </h4>
               <Errors errors={state.errors}/>
-
-              <div className={
-                `text-small text-${
-                  togglePollingEnabled
-                    ? Math.floor((new Date() - new Date(state.vehicles_last_update)) / 1000) >= 15
-                      ? Math.floor((new Date() - new Date(state.vehicles_last_update)) / 1000) >= 40
-                        ? 'danger'
-                        : 'warning'
-                      : 'success'
-                    : 'muted'
-                }`
-              }>
-                Last update: {
-                  togglePollingEnabled
-                    ? state.vehicles_last_update
-                      ? timeSince(new Date(state.vehicles_last_update))
-                      : '-'
-                    : 'polling disabled'
-                }
-              </div>
-              <div className={`${!togglePollingEnabled ? 'mb-2 ' : ''}text-small text-muted`}>
-                Last check: {state.vehicles_last_check ? state.vehicles_last_check : '-'}
-              </div>
-              {
-                togglePollingEnabled
-                  ? <div className="text-small text-muted mb-2">
-                    Polling stops in: {countdown} seconds
-                  </div>
-                  : null
-              }
-              <div ref={mapRef} style={{ height: '100vh', width: '100%' }}>
+              <div ref={mapRef} style={{ height: '75vh', width: '100%' }}>
                 <MapContainer
                   center={[46.77, 23.59]}
                   zoom={14}
@@ -400,13 +376,13 @@ const Transport = () =>  {
                   {/* Controls overlay */}
                   <div
                     style={{
-                      position: "absolute",
-                      top: "10px",
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      zIndex: 1000,
                       display: "flex",
                       gap: "10px",
+                      left: "50%",
+                      position: "absolute",
+                      top: "10px",
+                      transform: "translateX(-50%)",
+                      zIndex: 1000,
                     }}
                   >
                     {/* Search */}
@@ -424,6 +400,24 @@ const Transport = () =>  {
                         border: "1px solid #ccc",
                       }}
                     />
+                    {
+                      search && <button
+                        onClick={() => setSearch("")}
+                        style={{
+                          position: "absolute",
+                          right: "75px",
+                          top: "50%",
+                          transform: "translateY(-55%)",
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          color: "#888",
+                        }}
+                      >
+                        ×
+                      </button>
+                    }
 
                     {/* Switch */}
                     <select
@@ -438,19 +432,48 @@ const Transport = () =>  {
                       <option value="buses">Buses</option>
                       <option value="stops">Stops</option>
                     </select>
-
-                    {/*  Full screen*/}
-                    <button
-                      onClick={toggleFullscreen}
+                    <div
                       style={{
-                        border: "solid ccc",
-                        borderRadius: "8px",
-                        padding: "4px 8px",
+                        background: "gray",
+                        borderRadius: "5px",
+                        border: "none",
+                        left: 2,
+                        opacity: "90%",
+                        padding: "6px",
+                        position: "absolute",
+                        top: "120%",
                       }}
                     >
-                      {fullscreen ? "Exit Fullscreen" : "Fullscreen"}
-                    </button>
+                      <div className={`${!togglePollingEnabled ? 'mb-2 ' : ''}text-small`}>
+                        Checked {state.vehicles_last_check ? timeSince(new Date(state.vehicles_last_check)) : '-'}
+                      </div>
+                      <div>
+                        Updated {
+                          state.vehicles_last_update
+                            ? <span
+                                className={
+                                  `text-small text-${
+                                    togglePollingEnabled
+                                      ? Math.floor((new Date() - new Date(state.vehicles_last_update)) / 1000) >= 15
+                                        ? Math.floor((new Date() - new Date(state.vehicles_last_update)) / 1000) >= 40
+                                          ? 'danger'
+                                          : 'warning'
+                                        : 'success'
+                                      : 'secondary'}`
+                              }>
+                                {timeSince(new Date(state.vehicles_last_update))}
+                              </span>
+                            : '-'
+                        }
+                      </div>
+                      {
+                        togglePollingEnabled
+                          ? <div>Polling: {countdown} seconds left</div>
+                          : null
+                      }
+                    </div>
                   </div>
+                  <FullscreenControl />
                 </MapContainer>
               </div>
             </div>

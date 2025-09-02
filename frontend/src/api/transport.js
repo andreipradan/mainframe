@@ -29,7 +29,7 @@ export class TransitApi extends mix(TokenMixin) {
             {
               ...response.data,
               [`${what}_etag`]: response.headers.get("ETag"),
-              [`${what}_last_update`]: now.toLocaleString(),
+              [`${what}_last_update`]: now.toISOString(),
             }
           ))
         })
@@ -40,7 +40,7 @@ export class TransitApi extends mix(TokenMixin) {
         })
       .finally(() => {
         dispatch(this.constructor.methods.set({
-          [`${what}_last_check`]: now.toLocaleString()
+          [`${what}_last_check`]: now.toISOString()
         }))
       })
   }
