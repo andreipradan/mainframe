@@ -272,31 +272,6 @@ const Transport = () => {
                         >
                           <i className='mdi mdi-bus' />
                         </button>{' '}
-                        &nbsp;
-                        <button
-                          type='button'
-                          className={`btn btn-outline-${toggleBikes ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                          onClick={() => setToggleBikes(!toggleBikes)}
-                        >
-                          <i className='mdi mdi-bike' />
-                        </button>{' '}
-                        &nbsp;
-                        <button
-                          type='button'
-                          className={`btn btn-outline-${toggleWheelchair ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                          onClick={() => setToggleWheelchair(!toggleWheelchair)}
-                        >
-                          <i className='mdi mdi-wheelchair' />
-                        </button>{' '}
-                        &nbsp;
-                        <button
-                          type='button'
-                          className={`btn btn-outline-${toggleMetro ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
-                          onClick={() => setToggleMetro(!toggleMetro)}
-                        >
-                          <b>M</b>
-                        </button>{' '}
-                        &nbsp;
                       </>
                     ) : null}
                   </>
@@ -366,7 +341,7 @@ const Transport = () => {
                         search
                           ? getRoute(b.route_id)
                               ?.route_short_name?.toLowerCase()
-                              ?.includes(search.trim())
+                              ?.includes(search.trim().toLowerCase())
                           : b
                       )
                       .map((bus) => (
@@ -514,7 +489,7 @@ const Transport = () => {
                   <div
                     style={{
                       display: 'flex',
-                      gap: '10px',
+                      gap: '5px',
                       left: '50%',
                       position: 'absolute',
                       top: '10px',
@@ -525,7 +500,7 @@ const Transport = () => {
                     {/* Search */}
                     <input
                       type='text'
-                      placeholder={`Search ${mode === 'buses' ? 'bus line' : 'stop'}...`}
+                      placeholder={`Search...`}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       onKeyDown={(e) => {
@@ -535,6 +510,7 @@ const Transport = () => {
                         padding: '4px 8px',
                         borderRadius: '8px',
                         border: '1px solid #ccc',
+                        width: '50%',
                       }}
                     />
                     {search && (
@@ -629,6 +605,44 @@ const Transport = () => {
                         <div>Polling: {countdown} seconds left</div>
                       ) : null}
                     </div>
+                  </div>
+                  <div
+                    style={{
+                      gap: '5px',
+                      right: 10,
+                      position: 'absolute',
+                      top: '60px',
+                      zIndex: 1000,
+                    }}
+                  >
+                    <button
+                      type='button'
+                      className={`btn btn-sm border-0 bg-transparent mb-3`}
+                      onClick={() => setToggleBikes(!toggleBikes)}
+                    >
+                      <i
+                        className={`mdi mdi-bike text-${toggleBikes ? 'success' : 'danger'}`}
+                      />
+                    </button>
+                    <br />
+                    <button
+                      type='button'
+                      className={`btn btn-sm border-0 bg-transparent mb-3`}
+                      onClick={() => setToggleWheelchair(!toggleWheelchair)}
+                    >
+                      <i
+                        className={`mdi mdi-wheelchair text-${toggleWheelchair ? 'success' : 'danger'}`}
+                      />
+                    </button>
+                    <br />
+                    <button
+                      type='button'
+                      className={`btn btn-sm border-0 bg-transparent text-${toggleMetro ? 'success' : 'danger'}`}
+                      onClick={() => setToggleMetro(!toggleMetro)}
+                    >
+                      <b>M</b>
+                    </button>{' '}
+                    &nbsp;
                   </div>
                   <FullscreenControl />
                 </MapContainer>
