@@ -105,6 +105,10 @@ export const getBaseSliceOptions = (name, extraInitialState={}, extraReducers={}
         ? [action.payload]
         : [...new Set([...state.loadingItems, action.payload])];
     },
+    setOnly: (state, action) => {
+      for (const key of Object.keys(action.payload))
+        state[key] = action.payload[key]
+    },
     setModalOpen: (state, action) => {state.modalOpen = action.payload},
     update: (state, action) => {
       state.errors = null

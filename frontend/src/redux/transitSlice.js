@@ -1,11 +1,11 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { getBaseSliceOptions } from "./shared";
+import { createSlice } from '@reduxjs/toolkit';
+import { getBaseSliceOptions } from './shared';
 
-export const transitSlice = createSlice(getBaseSliceOptions("transit"));
-export const {
-  set,
-  setErrors,
-  setLoading,
-  setKwargs,
-} = transitSlice.actions;
+export const transitSlice = createSlice(
+  getBaseSliceOptions('transit', {
+    pollingEnabled: true,
+  })
+);
+export const { set, setErrors, setLoading, setKwargs, setOnly } =
+  transitSlice.actions;
 export default transitSlice.reducer;
