@@ -367,7 +367,7 @@ const Transport = () => {
                             <strong>Speed:</strong> {bus.speed} km/h
                             <br />
                             <strong>Updated</strong>{' '}
-                            {timeSince(new Date(bus.timestamp))} ago
+                            {timeSince(new Date(bus.timestamp))}
                             <br />
                             {fieldsBus
                               ?.filter((f) => f.value)
