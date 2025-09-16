@@ -1,67 +1,92 @@
-import L from "leaflet";
-import {TileLayer} from "react-leaflet";
-import React from "react";
+import L from 'leaflet';
+import { TileLayer, useMap } from 'react-leaflet';
+import React, { useEffect } from 'react';
 
-const escapeHtml = str => {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+// components
+export const FullscreenControl = () => {
+  const map = useMap();
+  useEffect(() => {
+    if (!map) return;
+    const control = L.control.fullscreen({
+      position: 'topright',
+      title: 'Fullscreen',
+      titleCancel: 'Exit Fullscreen',
+      forceSeparateButton: true,
+    });
+    control.addTo(map);
+    return () => map.removeControl(control);
+  }, [map]);
+  return null;
+};
 
+// constants
+export const entities = [
+  'vehicles',
+  'routes',
+  'shapes',
+  'stops',
+  'stop_times',
+  'trips',
+];
 export const vehicleTypes = {
-  0: "Tram, Streetcar, Light rail",
-  1: "Subway, Metro",
-  2: "Rail",
-  3: "Bus",
-  4: "Ferry",
-  5: "Cable tram",
-  6: "Aerial lift",
-  7: "Funicular",
-  11: "Trolleybus",
-  12: "Monorail",
-}
+  0: 'Tram, Streetcar, Light rail',
+  1: 'Subway, Metro',
+  2: 'Rail',
+  3: 'Bus',
+  4: 'Ferry',
+  5: 'Cable tram',
+  6: 'Aerial lift',
+  7: 'Funicular',
+  11: 'Trolleybus',
+  12: 'Monorail',
+};
+
+// methods
+const escapeHtml = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 export const getDirectedRoute = (tripId, routeName) => {
-  if (!tripId || !routeName) return routeName
-  const [start, end] = routeName.split(" - ")
-  return tripId.split("_")[1] === "0"
+  if (!tripId || !routeName) return routeName;
+  const [start, end] = routeName.split(' - ');
+  return tripId.split('_')[1] === '0'
     ? `${start} > ${end}`
-    : `${end} > ${start}`
-}
+    : `${end} > ${start}`;
+};
 
 export const getIconByType = (bus, route) => {
-  const vType = vehicleTypes[bus.vehicle_type]?.toLowerCase()
-  let color = "#3199b0"
-  if (route?.route_short_name?.[0] === "M")
-    color = "#9f611b"
-  else if (bus.bike_accessible === "BIKE_ACCESSIBLE")
-    color = "#e5a823"
-  else if (vType !== "bus") {
-    color = "#42c41d"
+  const vType = vehicleTypes[bus.vehicle_type]?.toLowerCase();
+  let color = '#3199b0';
+  if (route?.route_short_name?.[0] === 'M') color = '#9f611b';
+  else if (bus.bike_accessible === 'BIKE_ACCESSIBLE') color = '#e5a823';
+  else if (vType !== 'bus') {
+    color = '#42c41d';
   }
 
   let label = route?.route_short_name
     ? escapeHtml(route?.route_short_name)
     : bus.route_id
       ? `?R ${escapeHtml(bus.route_id)}`
-      : `?L ${escapeHtml(bus.label)}`
-  let labelWidth = 15 * label.length
-  if (bus.bike_accessible === "BIKE_ACCESSIBLE") {
-    label += "🚴"
-    labelWidth += 10
+      : `?L ${escapeHtml(bus.label)}`;
+  let labelWidth = 15 * label.length;
+  if (bus.bike_accessible === 'BIKE_ACCESSIBLE') {
+    label += '🚴';
+    labelWidth += 10;
   }
-  // if (bus.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE") {
-  //   label += "♿"
-  //   labelWidth += 10
-  // }
 
-  const smallBusNumbers = ["9"]
-  if (smallBusNumbers.includes(route?.route_short_name) && bus.bike_accessible === "BIKE_ACCESSIBLE" && bus.wheelchair_accessible === "WHEELCHAIR_ACCESSIBLE")
-    labelWidth += 10
+  const smallBusNumbers = ['9'];
+  if (
+    smallBusNumbers.includes(route?.route_short_name) &&
+    bus.bike_accessible === 'BIKE_ACCESSIBLE' &&
+    bus.wheelchair_accessible === 'WHEELCHAIR_ACCESSIBLE'
+  )
+    labelWidth += 10;
   return new L.divIcon({
     html: `<div style="
                 position:absolute;
@@ -82,13 +107,14 @@ export const getIconByType = (bus, route) => {
               ">
                 ${label}
               </div>`,
-    className: "custom-bus-icon",
+    className: 'custom-bus-icon',
     iconAnchor: [16, 24],
-});
-}
+  });
+};
 
-export const getNumberIcon = num => new L.divIcon({
-  html: `<div style="
+export const getNumberIcon = (num) =>
+  new L.divIcon({
+    html: `<div style="
               position:absolute;
               bottom:-5px;
               right:-5px;
@@ -106,23 +132,27 @@ export const getNumberIcon = num => new L.divIcon({
             ">
               ${num + 1}
             </div>`,
-  className: "custom-bus-icon",
-  iconAnchor: [16, 24],
-})
+    className: 'custom-bus-icon',
+    iconAnchor: [16, 24],
+  });
 
 export const tileLayer = {
-  true: <TileLayer
-    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
-    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  />,
-  false: <TileLayer
-    attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-    subdomains={['a','b','c','d']}
-  />
-}
+  true: (
+    <TileLayer
+      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+      url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    />
+  ),
+  false: (
+    <TileLayer
+      attribution='&copy; OpenStreetMap contributors &copy; CARTO'
+      url='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+      subdomains={['a', 'b', 'c', 'd']}
+    />
+  ),
+};
 
-export const timeSince = date => {
+export const timeSince = (date) => {
   const seconds = Math.floor((new Date() - date) / 1000);
   let interval = seconds / 31536000;
   if (interval > 1) return `${Math.floor(interval)} years ago`;
@@ -136,5 +166,5 @@ export const timeSince = date => {
   if (interval > 1) return `${Math.floor(interval)} minutes ago`;
   return Math.floor(seconds) !== 0
     ? `${Math.floor(seconds)} seconds ago`
-    : "just now"
-}
+    : 'just now';
+};

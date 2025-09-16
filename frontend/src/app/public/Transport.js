@@ -2,14 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Form } from 'react-bootstrap';
-import {
-  MapContainer,
-  Marker,
-  Popup,
-  Polyline,
-  Tooltip,
-  useMap,
-} from 'react-leaflet';
+import { MapContainer, Marker, Popup, Polyline, Tooltip } from 'react-leaflet';
 import { Circles } from 'react-loader-spinner';
 import { toast } from 'react-toastify';
 
@@ -21,6 +14,8 @@ import 'leaflet.fullscreen';
 import 'leaflet.fullscreen/Control.FullScreen.css';
 
 import {
+  entities,
+  FullscreenControl,
   getDirectedRoute,
   getIconByType,
   getNumberIcon,
@@ -34,30 +29,6 @@ import { TransitApi } from '../../api/transport';
 import Errors from '../shared/Errors';
 
 const POLLING_DURATION = 240;
-const entities = [
-  'vehicles',
-  'routes',
-  'shapes',
-  'stops',
-  'stop_times',
-  'trips',
-];
-
-const FullscreenControl = () => {
-  const map = useMap();
-  useEffect(() => {
-    if (!map) return;
-    const control = L.control.fullscreen({
-      position: 'topright',
-      title: 'Fullscreen',
-      titleCancel: 'Exit Fullscreen',
-      forceSeparateButton: true,
-    });
-    control.addTo(map);
-    return () => map.removeControl(control);
-  }, [map]);
-  return null;
-};
 
 const Transport = () => {
   const dispatch = useDispatch();
@@ -150,7 +121,6 @@ const Transport = () => {
   // countdown timer
   useEffect(() => {
     const tick = () => {
-      // If polling isn’t enabled or hasn’t started yet, reset to full timeout
       if (!stateRef.current.pollingEnabled || !startPollingTimeRef.current) {
         setCountdown(POLLING_DURATION);
         return;
@@ -188,7 +158,7 @@ const Transport = () => {
             Polling disabled - Press <i className='mdi mdi-play' /> to start it
             back{' '}
           </span>,
-          toastParams
+          { ...toastParams, autoClose: false }
         );
 
         return;
@@ -210,7 +180,7 @@ const Transport = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [dispatch, stateRef.current.pollingEnabled]);
+  }, [dispatch, state.pollingEnabled]);
 
   return (
     <div>
@@ -367,7 +337,7 @@ const Transport = () => {
                             <strong>Speed:</strong> {bus.speed} km/h
                             <br />
                             <strong>Updated</strong>{' '}
-                            {timeSince(new Date(bus.timestamp))} ago
+                            {timeSince(new Date(bus.timestamp))}
                             <br />
                             {fieldsBus
                               ?.filter((f) => f.value)
