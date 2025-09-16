@@ -10,7 +10,6 @@ class Pension(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
     number = models.PositiveIntegerField(blank=True, null=True)
     start_date = models.DateField()
-    total_units = models.DecimalField(decimal_places=6, default=0, max_digits=13)
 
     class Meta:
         ordering = ("name",)

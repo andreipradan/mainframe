@@ -21,6 +21,7 @@ class PensionSerializer(serializers.ModelSerializer):
     contributions = ContributionSerializer(many=True, read_only=True)
     latest_unit_value = serializers.CharField()
     latest_unit_value_date = serializers.CharField()
+    total_units = serializers.DecimalField(decimal_places=6, max_digits=12)
 
     class Meta:
         depth = 1

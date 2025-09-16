@@ -1,569 +1,643 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from 'react-redux';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
-import Form from "react-bootstrap/Form";
+import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import { Circles, ColorRing } from 'react-loader-spinner';
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css';
 
-import Errors from "../../shared/Errors";
-import ListItem from "../../shared/ListItem";
-import { selectItem, setModalOpen } from "../../../redux/pensionSlice";
+import Errors from '../../shared/Errors';
+import ListItem from '../../shared/ListItem';
+import { selectItem, setModalOpen } from '../../../redux/pensionSlice';
 import { PensionApi } from '../../../api/finance';
 import { useHistory } from 'react-router-dom';
 
 export const getEvaluation = (p, justValue = false) => {
-  const evaluation = parseFloat(p.latest_unit_value || 0) * (p.total_units || 0)
-  if (justValue) return evaluation
-  return <span>{evaluation.toFixed(2)} {p.contributions?.[0]?.currency}</span>
-}
+  const evaluation =
+    parseFloat(p.latest_unit_value || 0) * parseFloat(p.total_units || 0);
+  if (justValue) return evaluation;
+  return (
+    <span>
+      {evaluation.toFixed(2)} {p.contributions?.[0]?.currency}
+    </span>
+  );
+};
 export const getPnl = (p, justValue = false) => {
-  const pnl = parseFloat(p.latest_unit_value || 0) *
-    (p.total_units || 0) -
-    p.contributions?.map(c => c.amount).reduce((accumulator, currentValue) =>
-      accumulator + parseFloat(currentValue), 0
-  )
-  if (justValue) return pnl
-  return <span className={`text-${pnl > 0 ? 'success' : pnl === 0 ? 'muted' : 'danger'}`}>{pnl.toFixed(2)} {p.contributions?.[0]?.currency}</span>
-}
+  const pnl =
+    parseFloat(p.latest_unit_value || 0) * (p.total_units || 0) -
+    p.contributions
+      ?.map((c) => c.amount)
+      .reduce(
+        (accumulator, currentValue) => accumulator + parseFloat(currentValue),
+        0
+      );
+  if (justValue) return pnl;
+  return (
+    <span
+      className={`text-${pnl > 0 ? 'success' : pnl === 0 ? 'muted' : 'danger'}`}
+    >
+      {pnl.toFixed(2)} {p.contributions?.[0]?.currency}
+    </span>
+  );
+};
 
 const Pension = () => {
   const dispatch = useDispatch();
-  const history = useHistory()
+  const history = useHistory();
 
-  const pension = useSelector(state => state.pension)
-  const token = useSelector((state) => state.auth.token)
+  const pension = useSelector((state) => state.pension);
+  const token = useSelector((state) => state.auth.token);
 
-  const api = new PensionApi(token)
+  const api = new PensionApi(token);
 
-  const [name, setName] = useState('')
-  const [startDate, setStartDate] = useState(new Date())
-  const [totalUnits, setTotalUnits] = useState(0)
+  const [name, setName] = useState('');
+  const [startDate, setStartDate] = useState(new Date());
 
-  const [pensionOpen, setPensionOpen] = useState(null)
+  const [pensionOpen, setPensionOpen] = useState(null);
 
+  const [contribAmount, setContribAmount] = useState(0);
+  const [contribDate, setContribDate] = useState(new Date());
+  const [contribUnits, setContribUnits] = useState(0);
 
-  const [contribAmount, setContribAmount] = useState(0)
-  const [contribDate, setContribDate] = useState(new Date())
-  const [contribUnits, setContribUnits] = useState(0)
-
-  const [contribAddOpen, setContribAddOpen] = useState(false)
-  const [contribToEdit, setContribToEdit] = useState(null)
-  const [contribToDelete, setContribToDelete] = useState(null)
+  const [contribAddOpen, setContribAddOpen] = useState(false);
+  const [contribToEdit, setContribToEdit] = useState(null);
+  const [contribToDelete, setContribToDelete] = useState(null);
 
   const clearModal = () => {
-    setName("")
-    setStartDate(new Date())
-    setTotalUnits(0)
-  }
+    setName('');
+    setStartDate(new Date());
+  };
   const closeModal = () => {
-    dispatch(selectItem())
-    dispatch(setModalOpen(false))
-    clearModal()
-  }
+    dispatch(selectItem());
+    dispatch(setModalOpen(false));
+    clearModal();
+  };
 
   const onEditContribution = (c) => {
-    setContribAmount(c.amount)
-    setContribDate(new Date(c.date))
-    setContribUnits(c.units)
+    setContribAmount(c.amount);
+    setContribDate(new Date(c.date));
+    setContribUnits(c.units);
     setContribToEdit(c.id);
-  }
+  };
 
   const onUpdateContribution = (pensionId, contributionId) => {
-    dispatch(api.updateContribution(
-      pensionId,
-      contributionId,
-      {
+    dispatch(
+      api.updateContribution(pensionId, contributionId, {
         amount: contribAmount,
-        date: contribDate.toISOString().split("T")[0],
-        units: contribUnits
-      }
-    ))
-    setContribToEdit(null)
-  }
+        date: contribDate.toISOString().split('T')[0],
+        units: contribUnits,
+      })
+    );
+    setContribToEdit(null);
+  };
 
-  const onSubmit = e => {
+  const onSubmit = (e) => {
     e.preventDefault();
     const data = {
       name,
-      start_date: startDate.toISOString().split("T")[0],
-      total_units: totalUnits,
-    }
-    if (pension.selectedItem) dispatch(api.update(pension.selectedItem.id, data))
-    else dispatch(api.create(data))
-  }
+      start_date: startDate.toISOString().split('T')[0],
+    };
+    if (pension.selectedItem)
+      dispatch(api.update(pension.selectedItem.id, data));
+    else dispatch(api.create(data));
+  };
 
   const onSubmitContrib = (e, pensionId) => {
-    e.preventDefault()
+    e.preventDefault();
     const data = {
       amount: contribAmount,
-      date: contribDate.toISOString().split("T")[0],
+      date: contribDate.toISOString().split('T')[0],
       units: contribUnits,
-    }
-    dispatch(api.createContribution(pensionId, data))
-    setContribAddOpen(false)
-  }
+    };
+    dispatch(api.createContribution(pensionId, data));
+    setContribAddOpen(false);
+  };
 
   // Contrib forms open/close
   useEffect(() => {
     if (contribAddOpen) {
-      setContribToEdit(null)
-      setContribToDelete(null)
-      setContribDate(new Date())
-      setContribAmount(0)
-      setContribUnits(0)
+      setContribToEdit(null);
+      setContribToDelete(null);
+      setContribDate(new Date());
+      setContribAmount(0);
+      setContribUnits(0);
     }
   }, [contribAddOpen]);
   useEffect(() => {
     if (contribToDelete) {
-      setContribToEdit(null)
-      setContribAddOpen(false)
+      setContribAddOpen(false);
+      setContribToEdit(null);
     }
   }, [contribToDelete]);
   useEffect(() => {
     if (contribToEdit) {
-      setContribAddOpen(false)
-      setContribToDelete(null)
+      setContribAddOpen(false);
+      setContribToDelete(null);
     }
   }, [contribToEdit]);
 
   useEffect(() => {
-    if (!pensionOpen || !pension.results) return
+    if (!pensionOpen || !pension.results) return;
 
-    const pensionOpenChanged = pension.results.find(p => p.id === pensionOpen.id)
-    if (pensionOpenChanged) setPensionOpen(pensionOpenChanged)
+    const pensionOpenChanged = pension.results.find(
+      (p) => p.id === pensionOpen.id
+    );
+    if (pensionOpenChanged) setPensionOpen(pensionOpenChanged);
   }, [pensionOpen, pension.results]);
 
   useEffect(() => {
     if (pension.selectedItem) {
-      setName(pension.selectedItem.name)
-      setStartDate(new Date(pension.selectedItem.start_date))
-      setTotalUnits(pension.selectedItem.total_units)
+      setName(pension.selectedItem.name);
+      setStartDate(new Date(pension.selectedItem.start_date));
     }
-    return clearModal
-  }, [pension.selectedItem])
+    return clearModal;
+  }, [pension.selectedItem]);
 
   useEffect(() => {
-    if (!pension.results?.length)
-      dispatch(api.getList(pension.kwargs))
-  }, [])
+    if (!pension.results?.length) dispatch(api.getList(pension.kwargs));
+  }, []);
 
-  return <div>
-    <div className="page-header mb-0">
-      <h3 className="page-title">
-        Pension funds
-        {
-          pension.loading
-          ? <Circles height={15} width={15} wrapperStyle={{ display: 'default' }} wrapperClass="btn" />
-          : <>
-              <button type="button"
-                className="btn btn-outline-success btn-sm border-0 bg-transparent p-1"
+  return (
+    <div>
+      <div className='page-header mb-0'>
+        <h3 className='page-title'>
+          Pension funds
+          {pension.loading ? (
+            <Circles
+              height={15}
+              width={15}
+              wrapperStyle={{ display: 'default' }}
+              wrapperClass='btn'
+            />
+          ) : (
+            <>
+              <button
+                type='button'
+                className='btn btn-outline-success btn-sm border-0 bg-transparent p-1'
                 onClick={() => dispatch(api.getList(pension.kwargs))}
               >
-                <i className="mdi mdi-refresh" />
+                <i className='mdi mdi-refresh' />
               </button>
               <button
-                type="button"
-                className="btn btn-outline-primary btn-sm border-0 bg-transparent p-0"
+                type='button'
+                className='btn btn-outline-primary btn-sm border-0 bg-transparent p-0'
                 onClick={() => dispatch(setModalOpen(true))}
               >
-                <i className="mdi mdi-plus-circle-outline "/>
+                <i className='mdi mdi-plus-circle-outline ' />
               </button>
             </>
-        }
-      </h3>
-      <nav aria-label="breadcrumb">
-        <ol className="breadcrumb">
-          <li className="breadcrumb-item">
-            <span
-              className={"cursor-pointer text-primary"}
-              onClick={() => history.push("/investments/summary")}
-            >
-              Investments
-            </span>
-          </li>
-          <li className="breadcrumb-item active" aria-current="page">Pension</li>
-        </ol>
-      </nav>
-    </div>
-    <b className={"text-small text-muted"}>
-      <div>
-        Total: {
-          pension.results?.map(p => getEvaluation(p, true)).reduce((accumulator, currentValue) =>
-            accumulator + parseFloat(currentValue), 0
-          ).toFixed(2)
-        } {pension.results?.[0].contributions?.[0]?.currency}
+          )}
+        </h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <span
+                className={'cursor-pointer text-primary'}
+                onClick={() => history.push('/investments/summary')}
+              >
+                Investments
+              </span>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Pension
+            </li>
+          </ol>
+        </nav>
       </div>
-      <div className={"mb-1"}>
-        PnL: {
-          pension.results?.map(p => getPnl(p, true)).reduce((acc, val) => acc + parseFloat(val), 0).toFixed(2)
-        } {pension.results?.[0].contributions?.[0]?.currency}
-      </div>
-    </b>
+      <b className={'text-small text-muted'}>
+        <div>
+          Total:{' '}
+          {pension.results
+            ?.map((p) => getEvaluation(p, true))
+            .reduce(
+              (accumulator, currentValue) =>
+                accumulator + parseFloat(currentValue),
+              0
+            )
+            .toFixed(2)}{' '}
+          {pension.results?.[0].contributions?.[0]?.currency}
+        </div>
+        <div className={'mb-1'}>
+          PnL:{' '}
+          {pension.results
+            ?.map((p) => getPnl(p, true))
+            .reduce((acc, val) => acc + parseFloat(val), 0)
+            .toFixed(2)}{' '}
+          {pension.results?.[0].contributions?.[0]?.currency}
+        </div>
+      </b>
 
-    {/* Top cards */}
-    <div className="row">
-    {
-      pension.results?.map(p =>
-        <div className="col-sm-12 col-md-6 col-xxl-3 grid-margin" key={`pension-transactions-${p.id}`}>
-          <div className="card">
-            <div className="card-body">
-              <div className="table-responsive">
-                <h6 className="text-secondary">
-                  {p.name}
-                  {
-                    pension.loadingItems?.includes(p.id)
-                      ? <Circles height={20} width={20} wrapperStyle={{display: "default"}} wrapperClass="btn"/>
-                      : <>
-                          <button
-                            type="button"
-                            className="btn btn-outline-success btn-sm border-0 bg-transparent p-1"
-                            onClick={() => dispatch(api.getItem(p.id))}
-                          >
-                            <i className="mdi mdi-refresh" />
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-outline-warning btn-sm border-0 bg-transparent p-0"
-                            onClick={() => dispatch(selectItem(p.id))}
-                          >
-                            <i className="mdi mdi-pencil" />
-                          </button>
-                        </>
-                  }
-                  <div className={'text-muted'}>
-                    {
-                      p.latest_unit_value_date
-                        ? <p className={"text-muted mb-0 text-small"}>
-                            Last update: {new Date(p.latest_unit_value_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}<br/>
-                          </p>
-                        : null
-                    }
-                    {
-                      p.latest_unit_value
-                        ? <p className={"text-muted text-small"}>
-                            Last value: {p.latest_unit_value}
-                          </p>
-                        : null
-                    }
-                  </div>
+      {/* Top cards */}
+      <div className='row'>
+        {pension.results?.map((p) => (
+          <div
+            className='col-sm-12 col-md-6 col-xxl-3 grid-margin'
+            key={`pension-transactions-${p.id}`}
+          >
+            <div className='card'>
+              <div className='card-body'>
+                <div className='table-responsive'>
+                  <h6 className='text-secondary'>
+                    {p.name}
+                    {pension.loadingItems?.includes(p.id) ? (
+                      <Circles
+                        height={20}
+                        width={20}
+                        wrapperStyle={{ display: 'default' }}
+                        wrapperClass='btn'
+                      />
+                    ) : (
+                      <>
+                        <button
+                          type='button'
+                          className='btn btn-outline-success btn-sm border-0 bg-transparent p-1'
+                          onClick={() => dispatch(api.getItem(p.id))}
+                        >
+                          <i className='mdi mdi-refresh' />
+                        </button>
+                        <button
+                          type='button'
+                          className='btn btn-outline-warning btn-sm border-0 bg-transparent p-0'
+                          onClick={() => dispatch(selectItem(p.id))}
+                        >
+                          <i className='mdi mdi-pencil' />
+                        </button>
+                      </>
+                    )}
+                    <div className={'text-muted'}>
+                      {p.latest_unit_value_date ? (
+                        <p className={'text-muted mb-0 text-small'}>
+                          Last update:{' '}
+                          {new Date(
+                            p.latest_unit_value_date
+                          ).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                          <br />
+                        </p>
+                      ) : null}
+                      {p.latest_unit_value ? (
+                        <p className={'text-muted text-small'}>
+                          Last value: {p.latest_unit_value}
+                        </p>
+                      ) : null}
+                    </div>
 
-                  {/* Pension fund details */}
-                  <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                    <ListItem
-                      label={'Started'}
-                      value={new Date(p.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      textType={'primary'}
-                    />
-                    <ListItem
-                      label={'Units'}
-                      value={p.total_units}
-                    />
-                    <ListItem
-                      label={'Evaluation'}
-                      value={getEvaluation(p)}
-                      textType={'success'}
-                    />
-                    <ListItem label={'Profit / Loss'} value={getPnl(p)} />
-                  </div>
-                </h6>
-                <button
-                  type={"button"}
-                  className={`ml-2 btn btn-sm btn-rounded btn-outline-${pensionOpen?.id === p.id ? 'info' : 'primary'}`}
-                  onClick={() => setPensionOpen(pensionOpen?.id === p.id ? null : p)}
-                >
-                  {pensionOpen?.id === p.id ? 'Deselect' : 'Select'}
-                </button>
+                    {/* Pension fund details */}
+                    <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+                      <ListItem
+                        label={'Started'}
+                        value={new Date(p.start_date).toLocaleDateString(
+                          'en-US',
+                          { year: 'numeric', month: 'short', day: 'numeric' }
+                        )}
+                        textType={'primary'}
+                      />
+                      <ListItem label={'Units'} value={p.total_units} />
+                      <ListItem
+                        label={'Evaluation'}
+                        value={getEvaluation(p)}
+                        textType={'success'}
+                      />
+                      <ListItem label={'Profit / Loss'} value={getPnl(p)} />
+                    </div>
+                  </h6>
+                  <button
+                    type={'button'}
+                    className={`ml-2 btn btn-sm btn-rounded btn-outline-${pensionOpen?.id === p.id ? 'info' : 'primary'}`}
+                    onClick={() =>
+                      setPensionOpen(pensionOpen?.id === p.id ? null : p)
+                    }
+                  >
+                    {pensionOpen?.id === p.id ? 'Deselect' : 'Select'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )
-    }
-    </div>
-    {pension.modalOpen ? null : <Errors errors={pension.errors}/>}
+        ))}
+      </div>
+      {pension.modalOpen ? null : <Errors errors={pension.errors} />}
 
-    {/* Contributions table */}
-    <div className="row">
-      <div className={`col-12 grid-margin`}>
-        <div className="card">
-          <div className="card-body">
-            <div className="table-responsive">
-              <h6 className="text-secondary">
-                {
-                  pensionOpen
-                    ? <span>{pensionOpen.name}</span>
-                    : null
-                }
-                {
-                  pensionOpen
-                    ? <button
-                        type="button"
-                        className="btn btn-outline-primary btn-sm border-0 bg-transparent"
-                        onClick={() => setContribAddOpen(!contribAddOpen)}
-                      >
-                        <i className="mdi mdi-plus" />
-                      </button>
-                    : null
-                }
-              </h6>
-              <div className={"sticky-table"}>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Date</th>
-                      <th>
-                        Amount{
-                          pensionOpen
-                            ? <sup>{pensionOpen.contributions?.map(c => c.amount)
-                              .reduce((accumulator, currentValue) =>
-                                accumulator + parseFloat(currentValue), 0
-                              ).toFixed(3)}</sup>
-                            : null
-                        }
-                      </th>
-                      <th>
-                        Units{
-                          pensionOpen
-                            ? <sup>{pensionOpen.contributions?.map(c => c.units)
-                              .reduce((accumulator, currentValue) =>
-                                accumulator + parseFloat(currentValue), 0
-                              ).toFixed(3)}</sup>
-                            : null
-                        }
-                      </th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      {/* Add contribution form */}
-                      {
-                        pensionOpen && contribAddOpen
-                          ? <>
-                              <td>{'<'}new{'>'}</td>
-                              <td>
-                                <DatePicker
-                                  className="btn btn-outline-secondary rounded btn-sm"
-                                  dateFormat={'MMM yyyy'}
-                                  isClearable={false}
-                                  onChange={date => setContribDate(date)}
-                                  readOnly={pension.loading}
-                                  scrollableYearDropdown
-                                  selected={contribDate}
-                                  showIcon
-                                  showYearDropdown
-                                  showMonthYearPicker
-                                />
-                              </td>
-                              <td>
+      {/* Contributions table */}
+      <div className='row'>
+        <div className={`col-12 grid-margin`}>
+          <div className='card'>
+            <div className='card-body'>
+              <div className='table-responsive'>
+                <h6 className='text-secondary'>
+                  {pensionOpen ? <span>{pensionOpen.name}</span> : null}
+                  {pensionOpen ? (
+                    <button
+                      type='button'
+                      className='btn btn-outline-primary btn-sm border-0 bg-transparent'
+                      onClick={() => setContribAddOpen(!contribAddOpen)}
+                    >
+                      <i className='mdi mdi-plus' />
+                    </button>
+                  ) : null}
+                </h6>
+                <div className={'sticky-table'}>
+                  <table className='table'>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>
+                          Amount
+                          {pensionOpen ? (
+                            <sup>
+                              {pensionOpen.contributions
+                                ?.map((c) => c.amount)
+                                .reduce(
+                                  (accumulator, currentValue) =>
+                                    accumulator + parseFloat(currentValue),
+                                  0
+                                )
+                                .toFixed(3)}
+                            </sup>
+                          ) : null}
+                        </th>
+                        <th>
+                          Units
+                          {pensionOpen ? (
+                            <sup>
+                              {pensionOpen.contributions
+                                ?.map((c) => c.units)
+                                .reduce(
+                                  (accumulator, currentValue) =>
+                                    accumulator + parseFloat(currentValue),
+                                  0
+                                )
+                                .toFixed(3)}
+                            </sup>
+                          ) : null}
+                        </th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {/* Add contribution form */}
+                        {pensionOpen && contribAddOpen ? (
+                          <>
+                            <td>
+                              {'<'}new{'>'}
+                            </td>
+                            <td>
+                              <DatePicker
+                                className='btn btn-outline-secondary rounded btn-sm'
+                                dateFormat={'MMM yyyy'}
+                                isClearable={false}
+                                onChange={(date) => setContribDate(date)}
+                                readOnly={pension.loading}
+                                scrollableYearDropdown
+                                selected={contribDate}
+                                showIcon
+                                showYearDropdown
+                                showMonthYearPicker
+                              />
+                            </td>
+                            <td>
+                              <input
+                                autoFocus
+                                onChange={(e) =>
+                                  setContribAmount(e.target.value)
+                                }
+                                type='text'
+                                value={contribAmount}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                autoFocus
+                                onChange={(e) =>
+                                  setContribUnits(e.target.value)
+                                }
+                                type='text'
+                                value={contribUnits}
+                              />
+                            </td>
+                            <td>
+                              {contribAddOpen ? (
+                                <>
+                                  <i
+                                    className='cursor-pointer mdi mdi-cancel text-danger mr-2'
+                                    onClick={() => setContribAddOpen(false)}
+                                  />
+                                  <i
+                                    className='cursor-pointer mdi mdi-check text-success mr-2'
+                                    onClick={(e) =>
+                                      onSubmitContrib(e, pensionOpen.id)
+                                    }
+                                  />
+                                </>
+                              ) : null}
+                            </td>
+                          </>
+                        ) : null}
+                      </tr>
+
+                      {/* Contribution rows */}
+                      {pension.loading ||
+                      pension.loadingItems?.includes(pensionOpen?.id) ? (
+                        <tr>
+                          <td>
+                            <Circles
+                              visible
+                              width='100%'
+                              ariaLabel='ball-triangle-loading'
+                              wrapperStyle={{ float: 'right' }}
+                              color='orange'
+                            />
+                          </td>
+                        </tr>
+                      ) : pensionOpen ? (
+                        pensionOpen.contributions.map((c, i) => (
+                          <tr key={`contrib-${c.id}`}>
+                            <td>{i + 1}</td>
+                            <td>
+                              {contribToEdit === c.id ? (
+                                <div>
+                                  <DatePicker
+                                    className='btn btn-outline-secondary rounded btn-sm'
+                                    dateFormat={'MMM yyyy'}
+                                    isClearable={false}
+                                    onChange={(date) => setContribDate(date)}
+                                    readOnly={pension.loading}
+                                    scrollableYearDropdown
+                                    selected={contribDate}
+                                    showIcon
+                                    showYearDropdown
+                                    showMonthYearPicker
+                                    onClickOutside={() => setContribDate(null)}
+                                  />
+                                </div>
+                              ) : (
+                                new Date(c.date).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                })
+                              )}
+                            </td>
+                            <td>
+                              {contribToEdit === c.id ? (
                                 <input
                                   autoFocus
-                                  onChange={(e) => setContribAmount(e.target.value)}
-                                  type="text"
+                                  onChange={(e) =>
+                                    setContribAmount(e.target.value)
+                                  }
+                                  type='text'
                                   value={contribAmount}
                                 />
-                              </td>
-                              <td>
+                              ) : (
+                                <span>
+                                  {c.amount} {c.currency}
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {contribToEdit === c.id ? (
                                 <input
                                   autoFocus
-                                  onChange={(e) => setContribUnits(e.target.value)}
-                                  type="text"
+                                  onChange={(e) =>
+                                    setContribUnits(e.target.value)
+                                  }
+                                  type='text'
                                   value={contribUnits}
                                 />
-                              </td>
-                              <td>
-                                {
-                                  contribAddOpen
-                                    ? <>
-                                        <i
-                                          className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                          onClick={() => setContribAddOpen(false)}
-                                        />
-                                        <i
-                                          className="cursor-pointer mdi mdi-check text-success mr-2"
-                                          onClick={(e) => onSubmitContrib(e, pensionOpen.id)}
-                                        />
-                                      </>
-                                    : null
-                                }
-                              </td>
-                            </>
-                          : null
-                      }
-
-                    </tr>
-
-                    {/* Contribution rows */}
-                    {
-                      pension.loading || pension.loadingItems?.includes(pensionOpen?.id)
-                        ? <tr><td><Circles
-                            visible
-                            width="100%"
-                            ariaLabel="ball-triangle-loading"
-                            wrapperStyle={{ float: 'right' }}
-                            color="orange"
-                          /></td></tr>
-                        : pensionOpen
-                          ? pensionOpen.contributions.map((c, i) =>
-                            <tr key={`contrib-${c.id}`}>
-                              <td>{i + 1}</td>
-                              <td>
-                                {
-                                  contribToEdit === c.id
-                                    ? <div>
-                                        <DatePicker
-                                          className="btn btn-outline-secondary rounded btn-sm"
-                                          dateFormat={'MMM yyyy'}
-                                          isClearable={false}
-                                          onChange={date => setContribDate(date)}
-                                          readOnly={pension.loading}
-                                          scrollableYearDropdown
-                                          selected={contribDate}
-                                          showIcon
-                                          showYearDropdown
-                                          showMonthYearPicker
-                                          onClickOutside={() => setContribDate(null)}
-                                        />
-                                      </div>
-                                    : new Date(c.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long'})
-                                }
-
-                              </td>
-                              <td>
-                                {
-                                  contribToEdit === c.id
-                                    ? <input
-                                        autoFocus
-                                        onChange={(e) => setContribAmount(e.target.value)}
-                                        type="text"
-                                        value={contribAmount}
-                                      />
-                                    : <span>{c.amount} {c.currency}</span>
-                                }
-                              </td>
-                              <td>
-                                {
-                                  contribToEdit === c.id
-                                    ? <input
-                                        autoFocus
-                                        onChange={(e) => setContribUnits(e.target.value)}
-                                        type="text"
-                                        value={contribUnits}
-                                      />
-                                    : <span>{c.units}</span>
-                                }
-                              </td>
-                              <td>
-                                {
-                                  contribToEdit === c.id
-                                    ? <>
-                                        <i
-                                          className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                          onClick={() => setContribToEdit(null)}
-                                        />
-                                        <i
-                                          className="cursor-pointer mdi mdi-check text-success mr-2"
-                                          onClick={() => onUpdateContribution(pensionOpen.id, c.id)}
-                                        />
-                                      </>
-                                    : contribToDelete === c.id
-                                      ? <>
-                                          <div className={"text-danger mb-2"}>Delete?</div>
-                                          <div>
-                                            <i
-                                              className="cursor-pointer mdi mdi-cancel text-danger mr-2"
-                                              onClick={() => setContribToDelete(null)}
-                                            />
-                                            <i
-                                              className="cursor-pointer mdi mdi-check text-success mr-2"
-                                              onClick={() => dispatch(api.deleteContribution(
-                                                pensionOpen.id,
-                                                c.id,
-                                                `${pensionOpen.name} for ${new Date(c.date).toLocaleDateString(
-                                                  "en-US",
-                                                  {month: "short", year: "numeric"}
-                                                )}`))}
-                                            />
-                                          </div>
-                                        </>
-                                      : <>
-                                          <i
-                                            className="cursor-pointer mdi mdi-pencil text-warning mr-2"
-                                            onClick={() => onEditContribution(c)}
-                                          />
-                                          <i
-                                            className="cursor-pointer mdi mdi-delete text-danger"
-                                            onClick={() => setContribToDelete(c.id)}
-                                          />
-                                      </>
-                                }
-                              </td>
-                            </tr>)
-                          : <tr><td colSpan={4} className={"text-center"}>Please select a pension fund</td></tr>
-                    }
-                  </tbody>
-                </table>
+                              ) : (
+                                <span>{c.units}</span>
+                              )}
+                            </td>
+                            <td>
+                              {contribToEdit === c.id ? (
+                                <>
+                                  <i
+                                    className='cursor-pointer mdi mdi-cancel text-danger mr-2'
+                                    onClick={() => setContribToEdit(null)}
+                                  />
+                                  <i
+                                    className='cursor-pointer mdi mdi-check text-success mr-2'
+                                    onClick={() =>
+                                      onUpdateContribution(pensionOpen.id, c.id)
+                                    }
+                                  />
+                                </>
+                              ) : contribToDelete === c.id ? (
+                                <>
+                                  <div className={'text-danger mb-2'}>
+                                    Delete?
+                                  </div>
+                                  <div>
+                                    <i
+                                      className='cursor-pointer mdi mdi-cancel text-danger mr-2'
+                                      onClick={() => setContribToDelete(null)}
+                                    />
+                                    <i
+                                      className='cursor-pointer mdi mdi-check text-success mr-2'
+                                      onClick={() =>
+                                        dispatch(
+                                          api.deleteContribution(
+                                            pensionOpen.id,
+                                            c.id,
+                                            `${pensionOpen.name} for ${new Date(
+                                              c.date
+                                            ).toLocaleDateString('en-US', {
+                                              month: 'short',
+                                              year: 'numeric',
+                                            })}`
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <i
+                                    className='cursor-pointer mdi mdi-pencil text-warning mr-2'
+                                    onClick={() => onEditContribution(c)}
+                                  />
+                                  <i
+                                    className='cursor-pointer mdi mdi-delete text-danger'
+                                    onClick={() => setContribToDelete(c.id)}
+                                  />
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className={'text-center'}>
+                            Please select a pension fund
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {pensionOpen ? (
+                  <b className={'text-small text-secondary'}>
+                    Total: {pensionOpen?.contributions?.length || 0}
+                  </b>
+                ) : null}
               </div>
-              {
-                pensionOpen
-                  ? <b className={"text-small text-secondary"}>Total: {pensionOpen?.contributions?.length || 0}</b>
-                  : null
-              }
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    {/* Add / edit pension Modal */}
-    <Modal centered show={Boolean(pension.selectedItem) || pension.modalOpen} onHide={closeModal}>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <div className="row">
-            <div className="col-lg-12 grid-margin stretch-card">
-              {pension.selectedItem ? 'Edit' : 'Add new pension fund'} {pension.selectedItem?.name} ?
+      {/* Add / edit pension Modal */}
+      <Modal
+        centered
+        show={Boolean(pension.selectedItem) || pension.modalOpen}
+        onHide={closeModal}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <div className='row'>
+              <div className='col-lg-12 grid-margin stretch-card'>
+                {pension.selectedItem ? 'Edit' : 'Add new pension fund'}{' '}
+                {pension.selectedItem?.name} ?
+              </div>
             </div>
-          </div>
-          {
-            pension.selectedItem
-              ? <p className="text-muted mb-0">
-                {pension.selectedItem.employer}
-              </p>
-              : null
-          }
-          {pension.modalOpen ? <Errors errors={pension.errors} /> : null}
-
-        </Modal.Title>
-      </Modal.Header>
-      {
-        pension.loadingItems?.includes(pension.selectedItem?.id)
-          ? <ColorRing
-            width="100%"
-            height="50"
+            {pension.selectedItem ? (
+              <p className='text-muted mb-0'>{pension.selectedItem.employer}</p>
+            ) : null}
+            {pension.modalOpen ? <Errors errors={pension.errors} /> : null}
+          </Modal.Title>
+        </Modal.Header>
+        {pension.loadingItems?.includes(pension.selectedItem?.id) ? (
+          <ColorRing
+            width='100%'
+            height='50'
             wrapperStyle={{ width: '100%' }}
           />
-          : <Modal.Body>
+        ) : (
+          <Modal.Body>
             <Form onSubmit={onSubmit}>
-              <Form.Group className="mb-3">
+              <Form.Group className='mb-3'>
                 <Form.Label>Name</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Pension fund name"
+                  type='text'
+                  placeholder='Pension fund name'
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </Form.Group>
-              <Form.Group className="mb-3">
+              <Form.Group className='mb-3'>
                 <Form.Label>Start date</Form.Label>
                 <div>
                   <DatePicker
-                    className="btn btn-outline-secondary rounded btn-sm"
+                    className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd-MM-yyyy'}
                     isClearable={false}
-                    onChange={date => setStartDate(date)}
+                    onChange={(date) => setStartDate(date)}
                     readOnly={pension.loading}
                     scrollableYearDropdown
                     selected={startDate}
@@ -572,38 +646,38 @@ const Pension = () => {
                   />
                 </div>
               </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Total Units</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={totalUnits}
-                  onChange={e => setTotalUnits(e.target.value)}
-                />
-              </Form.Group>
             </Form>
           </Modal.Body>
-      }
-      <Modal.Footer>
-        {
-          Boolean(pension.selectedItem) &&
-          <Button variant="danger" className="float-left" onClick={() => dispatch(api.delete(pension.selectedItem.id, pension.selectedItem.name))}>
-            Delete
-          </Button>
-        }
+        )}
+        <Modal.Footer>
+          {Boolean(pension.selectedItem) && (
+            <Button
+              variant='danger'
+              className='float-left'
+              onClick={() =>
+                dispatch(
+                  api.delete(pension.selectedItem.id, pension.selectedItem.name)
+                )
+              }
+            >
+              Delete
+            </Button>
+          )}
 
-        <Button variant="secondary" onClick={closeModal}>
-          Close
-        </Button>
-        <Button
-          variant="primary"
-        onClick={onSubmit}
-        disabled={!name || !startDate || !totalUnits}
-      >
-        {pension.selectedItem ? "Update" : "Add"}
-      </Button>
-    </Modal.Footer>
-  </Modal>
-  </div>
-}
+          <Button variant='secondary' onClick={closeModal}>
+            Close
+          </Button>
+          <Button
+            variant='primary'
+            onClick={onSubmit}
+            disabled={!name || !startDate}
+          >
+            {pension.selectedItem ? 'Update' : 'Add'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
 
 export default Pension;

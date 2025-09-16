@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import OuterRef, Prefetch, Subquery
+from django.db.models import OuterRef, Prefetch, Subquery, Sum
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
@@ -13,29 +13,33 @@ from mainframe.finance.serializers import ContributionSerializer, PensionSeriali
 
 class PensionViewSet(ModelViewSet):
     permission_classes = (IsAdminUser,)
-    queryset = Pension.objects.annotate(
-        latest_unit_value=Subquery(
-            UnitValue.objects.filter(pension_id=OuterRef("pk"))
-            .order_by("-date")
-            .values("value")[:1]
-        ),
-        latest_unit_value_date=Subquery(
-            UnitValue.objects.filter(pension_id=OuterRef("pk"))
-            .order_by("-date")
-            .values("date")[:1]
-        ),
-    ).prefetch_related(
-        Prefetch(
-            "contribution_set",
-            Contribution.objects.annotate(
-                unit_value=Subquery(
-                    UnitValue.objects.filter(
-                        pension=OuterRef("pension"), date__lte=OuterRef("date")
-                    ).values("value")[:1]
-                )
+    queryset = (
+        Pension.objects.annotate(
+            latest_unit_value=Subquery(
+                UnitValue.objects.filter(pension_id=OuterRef("pk"))
+                .order_by("-date")
+                .values("value")[:1]
             ),
-            to_attr="contributions",
-        ),
+            latest_unit_value_date=Subquery(
+                UnitValue.objects.filter(pension_id=OuterRef("pk"))
+                .order_by("-date")
+                .values("date")[:1]
+            ),
+        )
+        .prefetch_related(
+            Prefetch(
+                "contribution_set",
+                Contribution.objects.annotate(
+                    unit_value=Subquery(
+                        UnitValue.objects.filter(
+                            pension=OuterRef("pension"), date__lte=OuterRef("date")
+                        ).values("value")[:1]
+                    )
+                ),
+                to_attr="contributions",
+            ),
+        )
+        .annotate(total_units=Sum("contribution__units"))
     )
     serializer_class = PensionSerializer
 
