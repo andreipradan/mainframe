@@ -19,7 +19,6 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
 
         logger.info("Importing transit lines")
-        healthchecks.ping(logger, "transit")
 
         lines = []
         client = CTPClient(logger=logger)
@@ -41,3 +40,4 @@ class Command(BaseCommand):
         msg = f"Synced {len(lines)} transit lines and {len(schedules)} schedules"
         logger.info(msg)
         self.stdout.write(self.style.SUCCESS(msg))
+        healthchecks.ping(logger, "transit")
