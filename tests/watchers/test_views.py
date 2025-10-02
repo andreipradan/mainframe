@@ -98,4 +98,5 @@ class TestWatcherViews:
                     "url": "",
                 }
             ],
+            "types": [[1, "API"], [2, "Web"]],
         }
