@@ -4,7 +4,7 @@ from requests import Response
 
 
 def fetch(
-    url, logger, retries=0, soup=True, timeout=45, **kwargs
+    url, logger, retries=0, soup=True, timeout=10, **kwargs
 ) -> tuple[BeautifulSoup | Response | None, Exception | None]:
     method = kwargs.pop("method", "GET")
     logger.info("Sending '%s' request to '%s'", method, url)
