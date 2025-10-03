@@ -117,11 +117,13 @@ class Watcher(TimeStampedModel):
         else:
             raise WatcherError(f"Unexpected watcher type: {self.type}")
 
-        if not self.latest.get("title"):
+        if not self.latest.get("url"):
             return results[:5]
 
         for i, result in enumerate(results):
-            if result["title"] == self.latest["title"]:
+            if result["url"] == self.latest["url"]:
+                if result["title"] != self.latest["title"]:
+                    return results[: i + 1][:5]
                 return results[:i][:5]
 
         return results[:5]
