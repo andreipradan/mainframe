@@ -154,7 +154,7 @@ class Watcher(TimeStampedModel):
             url = self.url
             if ".json" in url:
                 url = url[: url.index(".json")]
-            text = text + f"\n\nMore articles: <a href='{url}'>here</a>"
+            text = text + f"\nMore articles: <a href='{url}'>here</a>"
             kwargs = {"parse_mode": ParseMode.HTML}
             if self.chat_id:
                 kwargs["chat_id"] = self.chat_id
