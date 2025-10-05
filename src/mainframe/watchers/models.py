@@ -151,7 +151,10 @@ class Watcher(TimeStampedModel):
                     for i, result in enumerate(results)
                 ]
             )
-            text = text + f"\n\nMore articles: <a href='{self.url}'>here</a>"
+            url = self.url
+            if ".json" in url:
+                url = url[: url.index(".json")]
+            text = text + f"\n\nMore articles: <a href='{url}'>here</a>"
             kwargs = {"parse_mode": ParseMode.HTML}
             if self.chat_id:
                 kwargs["chat_id"] = self.chat_id
@@ -163,13 +166,13 @@ class Watcher(TimeStampedModel):
 
 
 @receiver(signals.post_delete, sender=Watcher)
-def post_delete(sender, instance, **kwargs):  # noqa: PYL-W0613
+def post_delete(sender, instance, **kwargs):  # noqa: PYL-W0613,
     instance.cron = ""
     schedule_task(instance)
 
 
 @receiver(signals.post_save, sender=Watcher)
-def post_save(sender, instance, **kwargs):  # noqa: PYL-W0613
+def post_save(sender, instance, **kwargs):  # noqa: PYL-W0613,
     if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
         instance.cron = ""
     schedule_task(instance)
