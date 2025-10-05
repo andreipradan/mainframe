@@ -1,4 +1,4 @@
-import axios from './index';
+import axios, { ngrokAxios } from './index';
 import {
   create,
   deleteItem,
@@ -44,7 +44,7 @@ class WatchersApi extends mix(
   };
   static run = (token, id) => (dispatch) => {
     dispatch(setLoadingItems(id));
-    axios
+    ngrokAxios
       .put(`${base}${id}/run/`, {}, { headers: { Authorization: token } })
       .then((response) => {
         if (Object.keys(response.data).length) {
