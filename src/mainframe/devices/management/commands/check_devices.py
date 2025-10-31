@@ -19,8 +19,6 @@ def should_notify(devices):
 
 class Command(BaseCommand):
     def handle(self, *_, **options):
-        healthchecks.ping(logger, "devices")
-
         client = DevicesClient(Source.objects.default(), logger=logger)
         new_devices, went_online, went_offline = client.run()
         msg = ""
@@ -48,3 +46,4 @@ class Command(BaseCommand):
             )
 
         logger.info("Done")
+        healthchecks.ping(logger, "devices")
