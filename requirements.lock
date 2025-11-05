@@ -36,6 +36,7 @@ cffi==1.16.0
 charset-normalizer==3.3.2
     # via requests
 cron-descriptor==1.4.5
+croniter==6.0.0
 cryptography==42.0.5
     # via pyjwt
 dacite==1.8.1
@@ -231,10 +232,12 @@ pyparsing==3.1.4
 pypdf2==3.0.1
 python-crontab==2.7.1
 python-dateutil==2.9.0.post0
+    # via croniter
     # via python-crontab
 python-dotenv==1.0.0
 python-telegram-bot==21.7
 pytz==2025.1
+    # via croniter
 pyyaml==6.0.2
     # via responses
 redis==5.0.0

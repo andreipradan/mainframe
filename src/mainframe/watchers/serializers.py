@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class WatcherSerializer(ScheduleTaskIsRenamedSerializer):
     cron_description = serializers.SerializerMethodField()
+    cron_notification_description = serializers.SerializerMethodField()
     redis = serializers.SerializerMethodField()
 
     class Meta:
@@ -23,6 +24,10 @@ class WatcherSerializer(ScheduleTaskIsRenamedSerializer):
     @staticmethod
     def get_cron_description(obj: Watcher) -> str:
         return get_description(obj.cron) if obj.cron else ""
+
+    @staticmethod
+    def get_cron_notification_description(obj: Watcher) -> str:
+        return get_description(obj.cron_notification) if obj.cron_notification else ""
 
     @staticmethod
     def get_redis(obj):

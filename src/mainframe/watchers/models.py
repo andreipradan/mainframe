@@ -1,7 +1,9 @@
 import asyncio
 import logging
+from typing import TypedDict
 from urllib.parse import urljoin
 
+from croniter import croniter
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -13,6 +15,11 @@ from mainframe.clients.scraper import fetch
 from mainframe.core.logs import capture_command_logs
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
+
+
+class Link(TypedDict):
+    title: str
+    url: str
 
 
 class WatcherError(Exception): ...
@@ -27,7 +34,7 @@ def extract(structure, keys):
     return extract(structure[keys[0]], keys[1:])
 
 
-def fetch_api(watcher, logger):
+def fetch_api(watcher, logger) -> list[Link]:
     response, error = fetch(
         watcher.url, logger, retries=1, soup=False, **watcher.request
     )
@@ -58,7 +65,7 @@ def fetch_api(watcher, logger):
         raise WatcherError(e) from e
 
 
-def fetch_web(watcher, logger, retry=False):
+def fetch_web(watcher, logger, retry=False) -> list[Link]:
     def get_title(element):
         return (
             element.text.strip()
@@ -71,7 +78,7 @@ def fetch_web(watcher, logger, retry=False):
         return [
             {
                 "title": get_title(e),
-                "url": urljoin(watcher.url, e.attrs["href"])
+                "url": str(urljoin(watcher.url, e.attrs["href"]))
                 if not e.attrs["href"].startswith("http")
                 else e.attrs["href"],
             }
@@ -94,6 +101,7 @@ class Watcher(TimeStampedModel):
 
     chat_id = models.BigIntegerField(blank=True, null=True)
     cron = models.CharField(blank=True, max_length=32)
+    cron_notification = models.CharField(blank=True, max_length=32)
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
     log_level = models.IntegerField(default=logging.WARNING)
@@ -117,12 +125,15 @@ class Watcher(TimeStampedModel):
         else:
             raise WatcherError(f"Unexpected watcher type: {self.type}")
 
-        if not self.latest.get("url"):
+        if not (self.latest and self.latest.get("timestamp")):
+            return results[:5]
+
+        if not ((latest := next(iter(self.latest.get("data") or []), {})).get("url")):
             return results[:5]
 
         for i, result in enumerate(results):
-            if result["url"] == self.latest["url"]:
-                if result["title"] != self.latest["title"]:
+            if result["url"] == latest["url"]:
+                if result["title"] != latest["title"]:
                     return results[: i + 1][:5]
                 return results[:i][:5]
 
@@ -134,35 +145,38 @@ class Watcher(TimeStampedModel):
             results = self.fetch(logger)
             if not results:
                 logger.info("No new items")
-                return False
-
-            self.latest = {
-                "title": results[0]["title"],
-                "url": results[0]["url"],
-                "timestamp": timezone.now().isoformat(),
-            }
-            self.save()
+                return None
 
             logger.info("Found new items!")
-            text = "\n".join(
-                [
-                    f"{f'{i + 1}. ' if len(results) > 1 else ''}"
-                    f"<a href='{result['url']}' target='_blank'>{result['title']}</a>"
-                    for i, result in enumerate(results)
-                ]
-            )
-            url = self.url
-            if ".json" in url:
-                url = url[: url.index(".json")]
-            text = text + f"\nMore articles: <a href='{url}'>here</a>"
-            kwargs = {"parse_mode": ParseMode.HTML}
-            if self.chat_id:
-                kwargs["chat_id"] = self.chat_id
-            asyncio.run(
-                send_telegram_message(f"📣 <b>{self.name}</b> 📣\n{text}", **kwargs)
-            )
+            now = timezone.now()
+
+            self.latest = {"data": results, "timestamp": now.isoformat()}
+            self.save()
+
+            if self.cron_notification and croniter.match(self.cron_notification, now):
+                self.send_notification(results)
+
             logger.info("Done")
             return self
+
+    def send_notification(self, results):
+        text = "\n".join(
+            [
+                f"{f'{i + 1}. ' if len(results) > 1 else ''}"
+                f"<a href='{result['url']}' target='_blank'>{result['title']}</a>"
+                for i, result in enumerate(results)
+            ]
+        )
+        url = self.url
+        if ".json" in url:
+            url = url[: url.index(".json")]
+        text = text + f"\nMore articles: <a href='{url}'>here</a>"
+        kwargs = {"parse_mode": ParseMode.HTML}
+        if self.chat_id:
+            kwargs["chat_id"] = self.chat_id
+        asyncio.run(
+            send_telegram_message(f"📣 <b>{self.name}</b> 📣\n{text}", **kwargs)
+        )
 
 
 @receiver(signals.post_delete, sender=Watcher)
