@@ -4,6 +4,7 @@ from typing import TypedDict
 from urllib.parse import urljoin
 
 from croniter import croniter
+from django.conf import settings
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -152,8 +153,16 @@ class Watcher(TimeStampedModel):
 
             self.latest = {"data": results, "timestamp": now.isoformat()}
             self.save()
+            is_breaking_news = any(
+                result["title"].lower().startswith("breaking") for result in results
+            )
 
-            if self.cron_notification and croniter.match(self.cron_notification, now):
+            if (
+                is_breaking_news
+                or not self.cron_notification
+                or self.cron_notification
+                and croniter.match(self.cron_notification, now)
+            ):
                 self.send_notification(results)
 
             logger.info("Done")
@@ -181,12 +190,14 @@ class Watcher(TimeStampedModel):
 
 @receiver(signals.post_delete, sender=Watcher)
 def post_delete(sender, instance, **kwargs):  # noqa: PYL-W0613,
-    instance.cron = ""
-    schedule_task(instance)
+    if settings.ENV != "local":
+        instance.cron = ""
+        schedule_task(instance)
 
 
 @receiver(signals.post_save, sender=Watcher)
 def post_save(sender, instance, **kwargs):  # noqa: PYL-W0613,
-    if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
-        instance.cron = ""
-    schedule_task(instance)
+    if settings.ENV != "local":
+        if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
+            instance.cron = ""
+        schedule_task(instance)

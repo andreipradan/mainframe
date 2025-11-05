@@ -34,6 +34,7 @@ const Watchers = () => {
 
   const [chatId, setChatId] = useState('');
   const [cron, setCron] = useState('');
+  const [cronNotification, setCronNotification] = useState('');
   const [isActive, setIsActive] = useState(false);
   const [logLevel, setLogLevel] = useState(null);
   const [name, setName] = useState('');
@@ -57,6 +58,7 @@ const Watchers = () => {
     if (selectedItem) {
       setChatId(selectedItem.chat_id || '');
       setCron(selectedItem.cron);
+      setCronNotification(selectedItem.cron_notification || '');
       setIsActive(selectedItem.is_active);
       setLatest(JSON.stringify(selectedItem.latest, null, '\t'));
       setLogLevel(logLevels[selectedItem.log_level]);
@@ -99,6 +101,7 @@ const Watchers = () => {
   const clearModal = () => {
     setChatId('');
     setCron('* * * * *');
+    setCronNotification('* * * * *');
     setIsActive(false);
     setLatest('{}');
     setLogLevel(logLevels[3]);
@@ -116,6 +119,7 @@ const Watchers = () => {
   const duplicate = (watcher) => {
     setChatId(watcher.chat_id || '');
     setCron(watcher.cron);
+    setCronNotification(watcher.cron_notification);
     setIsActive(watcher.is_active);
     setLatest(JSON.stringify(watcher.latest, null, '\t'));
     setLogLevel(logLevels[watcher.log_level]);
@@ -142,7 +146,7 @@ const Watchers = () => {
               </a>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
-              Crons
+              Watchers
             </li>
           </ol>
         </nav>
@@ -180,6 +184,7 @@ const Watchers = () => {
                       <th> # </th>
                       <th> Name </th>
                       <th> Cron </th>
+                      <th> Cron Notification </th>
                       <th> Is Active? </th>
                       <th> Log level </th>
                       <th> URL </th>
@@ -211,6 +216,12 @@ const Watchers = () => {
                                 onClick={() => dispatch(selectItem(watcher.id))}
                               >
                                 {watcher.cron_description}
+                              </td>
+                              <td
+                                className='cursor-pointer'
+                                onClick={() => dispatch(selectItem(watcher.id))}
+                              >
+                                {watcher.cron_notification_description}
                               </td>
                               <td
                                 onClick={() => dispatch(selectItem(watcher.id))}
@@ -503,6 +514,14 @@ const Watchers = () => {
               />
             </Form.Group>
             <Form.Group className='mb-3'>
+              <Form.Label>Cron Notification</Form.Label>
+              <Form.Control
+                type='text'
+                value={cronNotification}
+                onChange={(e) => setCronNotification(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className='mb-3'>
               <Form.Label>URL</Form.Label>
               <Form.Control
                 type='text'
@@ -623,6 +642,7 @@ const Watchers = () => {
                     api.update(selectedItem?.id, {
                       chat_id: chatId || null,
                       cron,
+                      cron_notification: cronNotification,
                       is_active: isActive,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
                       log_level: logLevel.value,
@@ -649,6 +669,7 @@ const Watchers = () => {
                   api.create({
                     chat_id: chatId || null,
                     cron,
+                    cron_notification: cronNotification,
                     is_active: isActive,
                     latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
                     log_level: logLevel.value,
