@@ -27,6 +27,8 @@ class TestWatcherViews:
             "created_at": mock.ANY,
             "cron": "",
             "cron_description": "",
+            "cron_notification": "",
+            "cron_notification_description": "",
             "id": mock.ANY,
             "is_active": False,
             "latest": {},
@@ -53,6 +55,8 @@ class TestWatcherViews:
             "cron": "0 0 31 2 0",
             "cron_description": "At 12:00 AM, on day 31 of the month, "
             "only on Sunday, only in February",
+            "cron_notification": "",
+            "cron_notification_description": "",
             "id": watcher.id,
             "is_active": False,
             "latest": {},
@@ -85,6 +89,8 @@ class TestWatcherViews:
                     "cron": "0 0 31 2 0",
                     "cron_description": "At 12:00 AM, on day 31 of the month, "
                     "only on Sunday, only in February",
+                    "cron_notification": "",
+                    "cron_notification_description": "",
                     "id": watcher.id,
                     "is_active": False,
                     "latest": {},
