@@ -66,7 +66,7 @@ def fetch_api(watcher, logger) -> list[Link]:
         raise WatcherError(e) from e
 
 
-def fetch_web(watcher, logger, retry=False) -> list[Link]:
+def fetch_web(watcher, logger) -> list[Link]:
     def get_title(element):
         return (
             element.text.strip()
@@ -88,9 +88,6 @@ def fetch_web(watcher, logger, retry=False) -> list[Link]:
         ]
     if error:
         raise WatcherError(error)
-    if retry:
-        logger.warning("Elements not found ('%s') - retrying", watcher.selector)
-        return fetch_web(watcher, logger, retry=False)
     raise WatcherElementsNotFound(f"[{watcher.name}] No elements found")
 
 
@@ -103,6 +100,7 @@ class Watcher(TimeStampedModel):
     chat_id = models.BigIntegerField(blank=True, null=True)
     cron = models.CharField(blank=True, max_length=32)
     cron_notification = models.CharField(blank=True, max_length=32)
+    has_new_data = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
     log_level = models.IntegerField(default=logging.WARNING)
@@ -119,13 +117,14 @@ class Watcher(TimeStampedModel):
         return self.name
 
     def fetch(self, logger):
-        if self.type == self.TYPE_API:
-            results = fetch_api(self, logger)
-        elif self.type == self.TYPE_WEB:
-            results = fetch_web(self, logger, retry=True)
-        else:
+        fetcher = {
+            self.TYPE_API: fetch_api,
+            self.TYPE_WEB: fetch_web,
+        }.get(self.type)
+        if not fetcher:
             raise WatcherError(f"Unexpected watcher type: {self.type}")
 
+        results = fetcher(self, logger)
         if not (self.latest and self.latest.get("timestamp")):
             return results[:5]
 
@@ -143,28 +142,33 @@ class Watcher(TimeStampedModel):
     def run(self, is_manual=False):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
-            results = self.fetch(logger)
-            if not results:
+            if not (results := self.fetch(logger)):
+                if not is_manual and self.has_new_data:
+                    self.send_notification(self.latest["data"])
+                    self.has_new_data = False
+                    self.save()
+                    return None
                 logger.info("No new items")
                 return None
 
             logger.info("Found new items!")
-            now = timezone.now()
 
-            self.latest = {"data": results, "timestamp": now.isoformat()}
-            self.save()
+            now = timezone.now()
             is_breaking_news = any(
                 result["title"].lower().startswith("breaking") for result in results
             )
-
             if (
                 is_manual
                 or is_breaking_news
                 or not self.cron_notification
-                or self.cron_notification
-                and croniter.match(self.cron_notification, now)
+                or croniter.match(self.cron_notification, now)
             ):
                 self.send_notification(results)
+            else:
+                self.has_new_data = True
+
+            self.latest = {"data": results, "timestamp": now.isoformat()}
+            self.save()
 
             logger.info("Done")
             return self
