@@ -155,7 +155,9 @@ class Watcher(TimeStampedModel):
 
             now = timezone.now()
             is_breaking_news = any(
-                result["title"].lower().startswith("breaking") for result in results
+                result["title"].lower().startswith("breaking")
+                or result["title"].lower().startswith("ultima or")
+                for result in results
             )
             if (
                 is_manual
