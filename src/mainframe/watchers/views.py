@@ -24,9 +24,9 @@ class WatcherViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["PUT"])
     def run(self, request, pk=None):
-        obj = self.get_object()
+        obj: Watcher = self.get_object()
         try:
-            obj = obj.run()
+            obj = obj.run(is_manual=True)
         except WatcherError as e:
             raise ValidationError(str(e)) from ValueError
         if not obj:

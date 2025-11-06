@@ -140,7 +140,7 @@ class Watcher(TimeStampedModel):
 
         return results[:5]
 
-    def run(self):
+    def run(self, is_manual=False):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
             results = self.fetch(logger)
@@ -158,7 +158,8 @@ class Watcher(TimeStampedModel):
             )
 
             if (
-                is_breaking_news
+                is_manual
+                or is_breaking_news
                 or not self.cron_notification
                 or self.cron_notification
                 and croniter.match(self.cron_notification, now)
