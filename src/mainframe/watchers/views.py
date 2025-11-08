@@ -26,7 +26,7 @@ class WatcherViewSet(viewsets.ModelViewSet):
     def run(self, request, pk=None):
         obj: Watcher = self.get_object()
         try:
-            obj = obj.run(is_manual=True)
+            obj = obj.run()
         except WatcherError as e:
             raise ValidationError(str(e)) from ValueError
         if not obj:

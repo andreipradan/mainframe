@@ -139,37 +139,26 @@ class Watcher(TimeStampedModel):
 
         return results[:5]
 
-    def run(self, is_manual=False):
+    def run(self):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
             if not (results := self.fetch(logger)):
-                if not is_manual and self.has_new_data:
+                logger.info("No new items")
+                if self.should_notify():
                     self.send_notification(self.latest["data"])
                     self.has_new_data = False
                     self.save()
                     return None
-                logger.info("No new items")
                 return None
 
             logger.info("Found new items!")
-
-            now = timezone.now()
-            is_breaking_news = any(
-                result["title"].lower().startswith("breaking")
-                or result["title"].lower().startswith("ultima or")
-                for result in results
-            )
-            if (
-                is_manual
-                or is_breaking_news
-                or not self.cron_notification
-                or croniter.match(self.cron_notification, now)
-            ):
+            if self.should_notify(results):
                 self.send_notification(results)
+                self.has_new_data = False
             else:
                 self.has_new_data = True
 
-            self.latest = {"data": results, "timestamp": now.isoformat()}
+            self.latest = {"data": results, "timestamp": timezone.now().isoformat()}
             self.save()
 
             logger.info("Done")
@@ -193,6 +182,22 @@ class Watcher(TimeStampedModel):
         asyncio.run(
             send_telegram_message(f"📣 <b>{self.name}</b> 📣\n{text}", **kwargs)
         )
+
+    def should_notify(self, results=None) -> bool:
+        if not results:
+            return self.has_new_data
+
+        if not self.cron_notification:
+            return True
+
+        if any(
+            result["title"].lower().startswith("breaking")
+            or result["title"].lower().startswith("ultima or")
+            for result in results
+        ):
+            return True
+
+        return croniter.match(self.cron_notification, timezone.now())
 
 
 @receiver(signals.post_delete, sender=Watcher)
