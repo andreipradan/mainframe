@@ -4,6 +4,7 @@ react-ui/.env
 .DS_Store
 /pradan-dev-storage.json
 /mainframe-pradan-dev-a93167ad1ec9.json
+/calendar-key.json
 dump.rdb
 
 # Byte-compiled / optimized / DLL files
@@ -115,7 +116,6 @@ celerybeat.pid
 ENV/
 env/
 env.bak/
-src/mainframe/.env
 src/mainframe/.env
 venv/
 venv.bak/

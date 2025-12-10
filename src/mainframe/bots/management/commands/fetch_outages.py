@@ -1,3 +1,4 @@
+import hashlib
 import logging
 from datetime import datetime
 from typing import Dict, List
@@ -12,6 +13,10 @@ from mainframe.clients.calendar import CalendarClient
 from mainframe.clients.scraper import fetch
 
 logger = logging.getLogger(__name__)
+
+TYPE_ACCIDENTAL = "Accidental"
+TYPE_PLANNED_15_DAYS = "Planned (15 days)"
+TYPE_PLANNED_TODAY = "Planned (today)"
 
 
 class Outage(BaseModel):
@@ -44,7 +49,7 @@ class Outage(BaseModel):
         return cls(
             additional_data=event,
             addresses=list(set(addresses.split("<br />"))),
-            county=county,
+            county=county.title(),
             duration=duration,
             end=clean_date(end),
             external_id=external_id,
@@ -65,11 +70,11 @@ class Command(BaseCommand):
         url = options["url"]
 
         if url.endswith("/0"):
-            outage_type = "Accidental"
+            outage_type = TYPE_ACCIDENTAL
         elif url.endswith("/0/15"):
-            outage_type = "Planned (15 days)"
+            outage_type = TYPE_PLANNED_15_DAYS
         elif url.endswith("/0/azi"):
-            outage_type = "Planned (today)"
+            outage_type = TYPE_PLANNED_TODAY
         else:
             raise CommandError("Invalid outage type in URL")
 
@@ -103,28 +108,46 @@ class Command(BaseCommand):
 
         if filtered_outages:
 
+            def generate_id(event: Outage) -> str:
+                hash_input = f"{county}-{event.start.isoformat()}-{event.external_id}"
+                return hashlib.sha256(hash_input.encode()).hexdigest()
+
+            def parse_description(event: Outage) -> str:
+                return (
+                    f"<b>Affected locations<b/>"
+                    f"<ul>{''.join(f'<li>{add}</li>' for add in event.addresses)}</ul>"
+                    f"<i>Headquarters: {event.county}<br />"
+                    f"Type: {event.type}<br />"
+                    f"Duration: {event.duration}<br />"
+                    f"External ID: {event.external_id}<br />"
+                )
+
             def parse_title(event: Outage) -> str:
-                first, *other = event.addresses
-                prefix = f"{event.duration} " if event.duration else ""
-                if not other:
-                    return f"{prefix}Outage on {first}"
-                return f"{prefix}Outage on {first} + {len(event.addresses) - 1} others"
+                suffix = (
+                    f" (and {len(event.addresses) - 1} other location"
+                    f"{'s' if len(event.addresses) - 1 > 1 else ''})"
+                    if len(event.addresses) > 1
+                    else ""
+                )
+                return f"Outage in {event.addresses[0]}{suffix}"
 
             client = CalendarClient()
-            client.clear_all()
+            client.clear_events(outage_type)
             client.create_events(
                 [
                     {
+                        "id": generate_id(event),
                         "summary": parse_title(event),
-                        "description": "Addresses affected:\n"
-                        + "\n".join(event.addresses),
+                        "location": event.addresses[0],
+                        "description": parse_description(event),
                         "start": {"dateTime": event.start.isoformat()},
                         "end": {"dateTime": event.end.isoformat()},
+                        "extendedProperties": {"private": {"type": outage_type}},
                     }
                     for event in filtered_outages
                 ]
             )
-            logger.info("[Outages] Created %d calendar events", len(filtered_outages))
+            logger.info("[Outages] Processed %d calendar events", len(filtered_outages))
         else:
             logger.info("[Outages] No calendar events created")
         logger.info("[Outages] Done")
