@@ -82,6 +82,7 @@ class CalendarClient:
             )
             batch.add(request, request_id=event["id"])
         batch.execute()
+        logger.info("Processed '%d' events", len(events))
 
     def event_callback(self, request_id, response, exception):
         if exception:

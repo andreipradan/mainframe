@@ -9,6 +9,7 @@
 .github
 .gitignore
 .idea
+.keys
 .pre-commit-config.yaml
 .pytest_cache
 .python-version

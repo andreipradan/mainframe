@@ -57,12 +57,42 @@ class Outage(BaseModel):
             type=outage_type,
         )
 
+    def to_calendar_event(self) -> dict:
+        def generate_id() -> str:
+            hash_input = f"{self.county}-{self.start.isoformat()}-{self.external_id}"
+            return hashlib.sha256(hash_input.encode()).hexdigest()
+
+        def parse_description() -> str:
+            return (
+                f"<b>Affected locations<b/>"
+                f"<ul>{''.join(f'<li>{add}</li>' for add in self.addresses)}</ul>"
+                f"<i>Headquarters: {self.county}<br />"
+                f"Type: {self.type}<br />"
+                f"Duration: {self.duration}<br />"
+                f"External ID: {self.external_id}<br />"
+            )
+
+        def parse_summary() -> str:
+            pre = "Outages" if len(self.addresses) > 1 else "Outage"
+            loc = "locations" if len(self.addresses) > 1 else "location"
+            return f"{pre} affecting {len(self.addresses)} {loc} in {self.county}"
+
+        return {
+            "id": generate_id(),
+            "summary": parse_summary(),
+            "location": self.addresses[0],
+            "description": parse_description(),
+            "start": {"dateTime": self.start.isoformat()},
+            "end": {"dateTime": self.end.isoformat()},
+            "extendedProperties": {"private": {"type": self.type}},
+        }
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--county", required=True, type=str)
         parser.add_argument("--url", required=True, type=str)
-        parser.add_argument("--streets", nargs="+", required=True, type=str)
+        parser.add_argument("--streets", nargs="+", default=[], type=str)
 
     def handle(self, *_, **options):
         county = options["county"]
@@ -87,68 +117,37 @@ class Command(BaseCommand):
         data = response.json()
         all_outages = [Outage.from_event(event, outage_type) for event in data]
         county_outages = [o for o in all_outages if o.county.lower() == county.lower()]
-        filtered_outages = [
-            outage
-            for outage in county_outages
-            if any(
-                any(street in addr.lower() for street in streets)
-                for addr in outage.addresses
-            )
-        ]
+        outages = (
+            county_outages[:]
+            if not streets
+            else [
+                outage
+                for outage in county_outages
+                if any(
+                    any(street in addr.lower() for street in streets)
+                    for addr in outage.addresses
+                )
+            ]
+        )
 
         logger.info(
-            "[Outages] Found '%s' events in '%s' on streets: %s "
-            "(from a total of '%s', '%s' in county)",
-            len(filtered_outages),
-            county,
+            "[Outages][%s - %s] %s events (Total: %s, %s: %s)",
+            county.title(),
             ", ".join(streets),
+            len(outages) or "No",
             len(data),
+            county.title(),
             len(county_outages),
         )
 
-        if filtered_outages:
+        client = CalendarClient()
+        client.clear_events(outage_type)
 
-            def generate_id(event: Outage) -> str:
-                hash_input = f"{county}-{event.start.isoformat()}-{event.external_id}"
-                return hashlib.sha256(hash_input.encode()).hexdigest()
+        if not outages:
+            logger.info("[Outages] No events to process")
+            healthchecks.ping(logger, "outages")
+            return
 
-            def parse_description(event: Outage) -> str:
-                return (
-                    f"<b>Affected locations<b/>"
-                    f"<ul>{''.join(f'<li>{add}</li>' for add in event.addresses)}</ul>"
-                    f"<i>Headquarters: {event.county}<br />"
-                    f"Type: {event.type}<br />"
-                    f"Duration: {event.duration}<br />"
-                    f"External ID: {event.external_id}<br />"
-                )
-
-            def parse_title(event: Outage) -> str:
-                suffix = (
-                    f" (and {len(event.addresses) - 1} other location"
-                    f"{'s' if len(event.addresses) - 1 > 1 else ''})"
-                    if len(event.addresses) > 1
-                    else ""
-                )
-                return f"Outage in {event.addresses[0]}{suffix}"
-
-            client = CalendarClient()
-            client.clear_events(outage_type)
-            client.create_events(
-                [
-                    {
-                        "id": generate_id(event),
-                        "summary": parse_title(event),
-                        "location": event.addresses[0],
-                        "description": parse_description(event),
-                        "start": {"dateTime": event.start.isoformat()},
-                        "end": {"dateTime": event.end.isoformat()},
-                        "extendedProperties": {"private": {"type": outage_type}},
-                    }
-                    for event in filtered_outages
-                ]
-            )
-            logger.info("[Outages] Processed %d calendar events", len(filtered_outages))
-        else:
-            logger.info("[Outages] No calendar events created")
+        client.create_events([event.to_calendar_event() for event in outages])
         logger.info("[Outages] Done")
         healthchecks.ping(logger, "outages")

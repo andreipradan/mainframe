@@ -3,6 +3,7 @@ venv
 react-ui/.env
 .DS_Store
 /pradan-dev-storage.json
+.keys
 /mainframe-pradan-dev-a93167ad1ec9.json
 /calendar-key.json
 dump.rdb

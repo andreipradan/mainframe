@@ -7,7 +7,7 @@ def fetch(
     url, logger, retries=0, soup=True, timeout=10, **kwargs
 ) -> tuple[BeautifulSoup | Response | None, Exception | None]:
     method = kwargs.pop("method", "GET")
-    logger.info("Sending '%s' request to '%s'", method, url)
+    logger.info("[fetch] Sending '%s' request to '%s'", method, url)
     try:
         response = requests.request(method, url, timeout=timeout, **kwargs)
         response.raise_for_status()
