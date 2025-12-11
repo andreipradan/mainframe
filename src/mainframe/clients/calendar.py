@@ -29,7 +29,7 @@ class CalendarClient:
         self.service = build("calendar", "v3", credentials=creds)
         self.events = {}
 
-    def clear_events(self, event_type):
+    def clear_events(self, event_type, **filters):
         interval = {}
         if event_type != TYPE_ACCIDENTAL:
             interval["timeMin"] = datetime.utcnow().isoformat() + "Z"
@@ -48,7 +48,10 @@ class CalendarClient:
                 calendarId=self.calendar_id,
                 singleEvents=True,
                 orderBy="startTime",
-                privateExtendedProperty=f"type={event_type}",
+                privateExtendedProperty=[
+                    f"type={event_type}",
+                    *[f"{k}={v}" for k, v in filters.items() if v],
+                ],
                 **interval,
             )
             .execute()

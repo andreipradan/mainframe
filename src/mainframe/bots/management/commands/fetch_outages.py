@@ -57,7 +57,7 @@ class Outage(BaseModel):
             type=outage_type,
         )
 
-    def to_calendar_event(self) -> dict:
+    def to_calendar_event(self, addresses_query) -> dict:
         def generate_id() -> str:
             hash_input = f"{self.county}-{self.start.isoformat()}-{self.external_id}"
             return hashlib.sha256(hash_input.encode()).hexdigest()
@@ -84,19 +84,25 @@ class Outage(BaseModel):
             "description": parse_description(),
             "start": {"dateTime": self.start.isoformat()},
             "end": {"dateTime": self.end.isoformat()},
-            "extendedProperties": {"private": {"type": self.type}},
+            "extendedProperties": {
+                "private": {
+                    "type": self.type,
+                    "branch": self.county,
+                    "addresses": addresses_query,
+                }
+            },
         }
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument("--county", required=True, type=str)
+        parser.add_argument("--addresses", nargs="+", default=[], type=str)
+        parser.add_argument("--branch", required=True, type=str)
         parser.add_argument("--url", required=True, type=str)
-        parser.add_argument("--streets", nargs="+", default=[], type=str)
 
     def handle(self, *_, **options):
-        county = options["county"]
-        streets = options["streets"]
+        branch = options["branch"]
+        addresses = options["addresses"]
         url = options["url"]
 
         if url.endswith("/0"):
@@ -116,38 +122,42 @@ class Command(BaseCommand):
 
         data = response.json()
         all_outages = [Outage.from_event(event, outage_type) for event in data]
-        county_outages = [o for o in all_outages if o.county.lower() == county.lower()]
+        county_outages = [o for o in all_outages if o.county.lower() == branch.lower()]
         outages = (
             county_outages[:]
-            if not streets
+            if not addresses
             else [
                 outage
                 for outage in county_outages
                 if any(
-                    any(street in addr.lower() for street in streets)
+                    any(street in addr.lower() for street in addresses)
                     for addr in outage.addresses
                 )
             ]
         )
 
         logger.info(
-            "[Outages][%s - %s] %s events (Total: %s, %s: %s)",
-            county.title(),
-            ", ".join(streets),
+            "[Outages][%s%s] %s events (Total: %s, %s: %s)",
+            branch.title(),
+            f" - {', '.join(addresses)}" if addresses else "",
             len(outages) or "No",
             len(data),
-            county.title(),
+            branch.title(),
             len(county_outages),
         )
 
         client = CalendarClient()
-        client.clear_events(outage_type)
+        client.clear_events(
+            event_type=outage_type,
+            branch=branch.title(),
+            addresses=addresses,
+        )
 
         if not outages:
             logger.info("[Outages] No events to process")
             healthchecks.ping(logger, "outages")
             return
 
-        client.create_events([event.to_calendar_event() for event in outages])
+        client.create_events([event.to_calendar_event(addresses) for event in outages])
         logger.info("[Outages] Done")
         healthchecks.ping(logger, "outages")
