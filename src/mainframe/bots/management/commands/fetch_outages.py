@@ -114,9 +114,11 @@ class Command(BaseCommand):
         else:
             raise CommandError("Invalid outage type in URL")
 
-        logger.info("[Outages] Fetching '%s' outages", outage_type)
+        prefix = f"[Outages][{branch.title()}][{outage_type}]"
 
-        response, error = fetch(url, logger=logger, timeout=15, soup=False)
+        response, error = fetch(
+            url, logger=logger, prefix=prefix, timeout=15, soup=False
+        )
         if error:
             raise CommandError(error)
 
@@ -137,27 +139,25 @@ class Command(BaseCommand):
         )
 
         logger.info(
-            "[Outages][%s%s] %s events (Total: %s, %s: %s)",
-            branch.title(),
-            f" - {', '.join(addresses)}" if addresses else "",
+            "%s %s event(s)%s (Total: %s, %s: %s)",
+            prefix,
             len(outages) or "No",
+            f" on '{', '.join(addresses)}'" if addresses else "",
             len(data),
             branch.title(),
             len(county_outages),
         )
 
-        client = CalendarClient()
+        client = CalendarClient(logger=logger, prefix=prefix)
         client.clear_events(
-            event_type=outage_type,
-            branch=branch.title(),
-            addresses=addresses,
+            event_type=outage_type, branch=branch.title(), addresses=addresses
         )
 
         if not outages:
-            logger.info("[Outages] No events to process")
+            logger.info("%s No events to process", prefix)
             healthchecks.ping(logger, "outages")
             return
 
         client.create_events([event.to_calendar_event(addresses) for event in outages])
-        logger.info("[Outages] Done")
+        logger.info("%s Done", prefix)
         healthchecks.ping(logger, "outages")

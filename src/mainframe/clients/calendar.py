@@ -12,22 +12,31 @@ TYPE_ACCIDENTAL = "Accidental"
 TYPE_PLANNED_15_DAYS = "Planned (15 days)"
 TYPE_PLANNED_TODAY = "Planned (today)"
 
-logger = logging.getLogger(__name__)
-
 
 class CalendarClient:
     url = "https://www.googleapis.com/batch/calendar/v3"
 
-    def __init__(self):
+    def __init__(self, logger=None, prefix=None):
         config = environ.Env()
         creds = Credentials.from_service_account_file(
             config("GOOGLE_CALENDAR_SERVICE_ACCOUNT_FILE"),
             scopes=["https://www.googleapis.com/auth/calendar"],
         )
-
         self.calendar_id = config("GOOGLE_CALENDAR_ID")
-        self.service = build("calendar", "v3", credentials=creds)
         self.events = {}
+        self.logger = logger or logging.getLogger(__name__)
+        self.prefix = f"{prefix or ''}[Calendar]"
+        self.service = build("calendar", "v3", credentials=creds)
+
+    def _setup(self, owner_email, summary, time_zone):
+        calendar_payload = {"summary": summary, "timeZone": time_zone}
+        response = self.service.calendars().insert(body=calendar_payload).execute()
+
+        acl_payload = {
+            "role": "owner",
+            "scope": {"type": "user", "value": owner_email},
+        }
+        self.service.acl().insert(calendarId=response["id"], body=acl_payload).execute()
 
     def clear_events(self, event_type, **filters):
         interval = {}
@@ -55,13 +64,13 @@ class CalendarClient:
                 **interval,
             )
             .execute()
+            .get("items")
         )
-        if not events.get("items"):
-            logger.info("No existing '%s' events to delete", event_type)
+        if not events:
             return
 
         batch = BatchHttpRequest(batch_uri=self.url)
-        for event in events.get("items", []):
+        for event in events:
             batch.add(
                 self.service.events().delete(
                     calendarId=self.calendar_id, eventId=event["id"]
@@ -69,11 +78,7 @@ class CalendarClient:
             )
 
         batch.execute()
-        logger.info(
-            "Deleted '%d' '%s' existing events",
-            len(events.get("items", [])),
-            event_type,
-        )
+        self.logger.info("%s Deleted '%d' existing event(s)", self.prefix, len(events))
 
     def create_events(self, events):
         self.events = {event["id"]: event for event in events}
@@ -85,7 +90,6 @@ class CalendarClient:
             )
             batch.add(request, request_id=event["id"])
         batch.execute()
-        logger.info("Processed '%d' events", len(events))
 
     def event_callback(self, request_id, response, exception):
         if exception:
@@ -93,15 +97,21 @@ class CalendarClient:
                 hasattr(exception, "resp")
                 and exception.resp.status == status.HTTP_409_CONFLICT
             ):
-                logger.info(
-                    "Event with ID '%s' already exists, updating",
-                    request_id,
-                )
                 self.update(request_id)
             else:
-                logger.error("Request '%s' failed: %s", request_id, exception)
+                self.logger.error(
+                    "%s[create][%s] Request failed: %s",
+                    self.prefix,
+                    request_id,
+                    exception,
+                )
         else:
-            logger.info("Request '%s' succeeded: %s", request_id, response["status"])
+            self.logger.info(
+                "%s Request '%s': '%s'",
+                self.prefix,
+                request_id,
+                response["status"],
+            )
 
     def update(self, event_id):
         event = self.events[event_id]
@@ -111,18 +121,32 @@ class CalendarClient:
             ).execute()
         except HttpError as e:
             if e.resp.status == status.HTTP_404_NOT_FOUND:
-                logger.error("Event with ID '%s' not found for update", event_id)
+                self.logger.error(
+                    "%s[update][%s] Event not found, creating...",
+                    self.prefix,
+                    event_id,
+                )
                 try:
                     self.service.events().insert(
                         calendarId=self.calendar_id, body=event, sendUpdates="none"
                     ).execute()
                 except HttpError as e:
-                    logger.error("Failed to create event '%s': %s", event, e)
+                    self.logger.error(
+                        "%s[update] Failed to create event '%s': %s",
+                        self.prefix,
+                        event,
+                        e,
+                    )
                 else:
-                    logger.info("Created event '%s'", event["id"])
+                    self.logger.info(
+                        "%s[update][%s] Created.", self.prefix, event["id"]
+                    )
             else:
-                logger.error(
-                    "Failed to update event '%s': %s", self.events[event_id], e
+                self.logger.error(
+                    "%s[update][%s] Failed to update: %s",
+                    self.prefix,
+                    self.events[event_id],
+                    e,
                 )
         else:
-            logger.info("Updated existing event '%s'", event_id)
+            self.logger.info("%s[update][%s] Done.", self.prefix, event_id)
