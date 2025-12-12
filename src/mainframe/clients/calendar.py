@@ -39,9 +39,7 @@ class CalendarClient:
         self.service.acl().insert(calendarId=response["id"], body=acl_payload).execute()
 
     def clear_events(self, event_type, **filters):
-        interval = {}
-        if event_type != TYPE_ACCIDENTAL:
-            interval["timeMin"] = datetime.utcnow().isoformat() + "Z"
+        interval = {"timeMin": datetime.utcnow().isoformat() + "Z"}
         if event_type == TYPE_PLANNED_15_DAYS:
             interval["timeMax"] = (
                 datetime.utcnow() + timedelta(days=15)
@@ -78,7 +76,7 @@ class CalendarClient:
             )
 
         batch.execute()
-        self.logger.info("%s Deleted '%d' existing event(s)", self.prefix, len(events))
+        self.logger.info("%s[delete] %d existing event(s)", self.prefix, len(events))
 
     def create_events(self, events):
         self.events = {event["id"]: event for event in events}
@@ -107,7 +105,7 @@ class CalendarClient:
                 )
         else:
             self.logger.info(
-                "%s Request '%s': '%s'",
+                "%s[create] Request '%s': '%s'",
                 self.prefix,
                 request_id,
                 response["status"],
