@@ -132,7 +132,8 @@ class Command(BaseCommand):
                 outage
                 for outage in county_outages
                 if any(
-                    any(street in addr.lower() for street in addresses)
+                    all(term in addr.lower() for term in street.split("&"))
+                    for street in addresses
                     for addr in outage.addresses
                 )
             ]

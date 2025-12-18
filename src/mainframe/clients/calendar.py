@@ -104,15 +104,15 @@ class CalendarClient:
                     exception,
                 )
         else:
-            self.logger.info(
-                "%s[create] Request '%s': '%s'",
-                self.prefix,
-                request_id,
-                response["status"],
-            )
+            event = self.events[request_id]
+            prefix = f"[{event['location']}][{event['start']['dateTime']}]"
+            self.logger.info("%s[create]%s Created", self.prefix, prefix)
 
     def update(self, event_id):
         event = self.events[event_id]
+        prefix = (
+            f"{self.prefix}[update][{event['location']}][{event['start']['dateTime']}]"
+        )
         try:
             self.service.events().update(
                 calendarId=self.calendar_id, eventId=event_id, body=event
@@ -136,9 +136,7 @@ class CalendarClient:
                         e,
                     )
                 else:
-                    self.logger.info(
-                        "%s[update][%s] Created.", self.prefix, event["id"]
-                    )
+                    self.logger.info("%s Created.", prefix)
             else:
                 self.logger.error(
                     "%s[update][%s] Failed to update: %s",
@@ -147,4 +145,4 @@ class CalendarClient:
                     e,
                 )
         else:
-            self.logger.info("%s[update][%s] Done.", self.prefix, event_id)
+            self.logger.info("%s Done.", prefix)
