@@ -21,7 +21,6 @@ async-timeout==4.0.3
     # via redis
 attrs==23.2.0
     # via aiohttp
-axiom-py==0.8.1
 beautifulsoup4==4.11.1
 cachetools==4.2.2
     # via google-auth
@@ -39,8 +38,6 @@ cron-descriptor==1.4.5
 croniter==6.0.0
 cryptography==42.0.5
     # via pyjwt
-dacite==1.8.1
-    # via axiom-py
 defusedxml==0.7.1
 deprecated==1.2.14
     # via opentelemetry-api
@@ -129,8 +126,6 @@ ifaddr==0.2.0
     # via yeelight
 importlib-metadata==8.5.0
     # via opentelemetry-api
-iso8601==2.1.0
-    # via axiom-py
 logfire==3.4.0
 logtail-python==0.3.2
 lxml==5.2.2
@@ -143,8 +138,6 @@ msgpack==1.1.0
 multidict==6.0.5
     # via aiohttp
     # via yarl
-ndjson==0.3.1
-    # via axiom-py
 openpyxl==3.1.2
 opentelemetry-api==1.29.0
     # via opentelemetry-exporter-otlp-proto-http
@@ -221,8 +214,6 @@ pydantic-core==2.20.1
 pygithub==2.3.0
 pygments==2.19.1
     # via rich
-pyhumps==3.8.0
-    # via axiom-py
 pyjwt==2.10.1
     # via pygithub
 pynacl==1.5.0
@@ -242,16 +233,12 @@ pyyaml==6.0.2
     # via responses
 redis==5.0.0
 requests==2.32.3
-    # via axiom-py
     # via google-api-core
     # via google-cloud-storage
     # via logtail-python
     # via opentelemetry-exporter-otlp-proto-http
     # via pygithub
-    # via requests-toolbelt
     # via responses
-requests-toolbelt==1.0.0
-    # via axiom-py
 responses==0.25.6
 rich==13.9.4
     # via logfire
@@ -283,8 +270,6 @@ typing-extensions==4.11.0
     # via pydantic-core
     # via pygithub
     # via rich
-ujson==5.10.0
-    # via axiom-py
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.18

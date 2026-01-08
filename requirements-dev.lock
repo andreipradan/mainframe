@@ -23,7 +23,6 @@ async-timeout==4.0.3
     # via redis
 attrs==23.2.0
     # via aiohttp
-axiom-py==0.8.1
 beautifulsoup4==4.11.1
 black==24.4.2
 cachetools==4.2.2
@@ -48,8 +47,6 @@ cron-descriptor==1.4.5
 croniter==6.0.0
 cryptography==42.0.5
     # via pyjwt
-dacite==1.8.1
-    # via axiom-py
 decorator==5.1.1
     # via ipython
 defusedxml==0.7.1
@@ -157,8 +154,6 @@ importlib-metadata==8.5.0
 iniconfig==2.0.0
     # via pytest
 ipython==8.24.0
-iso8601==2.1.0
-    # via axiom-py
 jedi==0.19.1
     # via ipython
 logfire==3.4.0
@@ -177,8 +172,6 @@ multidict==6.0.5
     # via yarl
 mypy-extensions==1.0.0
     # via black
-ndjson==0.3.1
-    # via axiom-py
 nodeenv==1.9.0
     # via pre-commit
 openpyxl==3.1.2
@@ -278,8 +271,6 @@ pygithub==2.3.0
 pygments==2.17.2
     # via ipython
     # via rich
-pyhumps==3.8.0
-    # via axiom-py
 pyjwt==2.10.1
     # via pygithub
 pynacl==1.5.0
@@ -312,16 +303,12 @@ pyyaml==6.0.1
     # via responses
 redis==5.0.0
 requests==2.32.3
-    # via axiom-py
     # via google-api-core
     # via google-cloud-storage
     # via logtail-python
     # via opentelemetry-exporter-otlp-proto-http
     # via pygithub
-    # via requests-toolbelt
     # via responses
-requests-toolbelt==1.0.0
-    # via axiom-py
 responses==0.25.6
 rich==13.9.4
     # via logfire
@@ -366,8 +353,6 @@ typing-extensions==4.11.0
     # via pydantic-core
     # via pygithub
     # via rich
-ujson==5.10.0
-    # via axiom-py
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.18

@@ -124,7 +124,11 @@ class Watcher(TimeStampedModel):
         if not fetcher:
             raise WatcherError(f"Unexpected watcher type: {self.type}")
 
-        results = fetcher(self, logger)
+        try:
+            results = fetcher(self, logger)
+        except WatcherElementsNotFound as e:
+            logger.warning(e)
+            return []
         if not (self.latest and self.latest.get("timestamp")):
             return results[:5]
 

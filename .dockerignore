@@ -23,7 +23,6 @@ deploy
 dump.rdb
 env.sample
 frontend
-mainframe-pradan-dev-a93167ad1ec9.json
 calendar-key.json
 src/manage.py
 pyproject.toml

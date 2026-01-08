@@ -1,7 +1,27 @@
-.idea
-venv
-react-ui/.env
+# An .aiignore file follows the same syntax as a .gitignore file.
+# .gitignore documentation: https://git-scm.com/docs/gitignore
+# Junie will ask for explicit approval before view or edit the file or file within a directory listed in .aiignore.
+# Only files contents is protected, Junie is still allowed to view file names even if they are listed in .aiignore.
+# Be aware that the files you included in .aiignore can still be accessed by Junie in two cases:
+# - If Brave Mode is turned on.
+# - If a command has been added to the Allowlist — Junie will not ask for confirmation, even if it accesses - files and folders listed in .aiignore.
+frontend/node_modules/
+
+*.pyc
+*.pyo
+*.db
 .DS_Store
+.cache
+.deepsource.toml
+.dockerignore
+.git
+.pytest_cache
+.ruff_cache
+__pycache__
+env.sample
+src/mainframe/.env
+
+.idea
 /pradan-dev-storage.json
 .keys
 /calendar-key.json
@@ -53,7 +73,6 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-.cache
 nosetests.xml
 coverage.xml
 *.cover
@@ -67,7 +86,6 @@ coverage.xml
 
 # Django stuff:
 *.log
-local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
@@ -116,19 +134,8 @@ celerybeat.pid
 ENV/
 env/
 env.bak/
-src/mainframe/.env
 venv/
 venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
 
 # mypy
 .mypy_cache/
@@ -138,8 +145,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .env__
-/mainframe.json
+mainframe.json
 
-/src/mainframe/.env
-/src/mainframe/finance/data/model/latest_model.pkl
-/src/mainframe/finance/data/model/latest_vectorizer.pkl
+src/mainframe/finance/data/model/latest_model.pkl
+src/mainframe/finance/data/model/latest_vectorizer.pkl

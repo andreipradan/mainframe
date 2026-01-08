@@ -7,7 +7,6 @@ authors = [
 ]
 dependencies = [
     "aiohttp>=3.9.0",
-    "axiom-py>=0.8.1",
     "beautifulsoup4==4.11.1",
     "certifi>=2023.7.22",
     "cron-descriptor>=1.4.5",
