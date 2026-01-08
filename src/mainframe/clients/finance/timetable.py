@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 
 from mainframe.finance.models import Account, Credit, Timetable
 from mainframe.finance.tasks import backup_finance_model
@@ -32,10 +32,9 @@ def extract_first_page(first_page, logger):
         raise TimetableImportError("Could not extract details on first page") from e
     fields, _, *rows, footer, __ = [x for x in contents.split("\n") if x]
     if fields != (
-        "Data următoarei plăţi "
-        "Suma de plată "
-        "Dobânda "
-        "Rata capital Capital datorat la sfârşitul perioadei"
+        "Data următoarei plăţi"
+        "Suma de plată"
+        "Dobânda Rata capital Capital datorat la sfârşitul perioadei"
         "Primă asigurare"
     ):
         raise TimetableImportError("Format has changed, please update extraction logic")
@@ -57,9 +56,10 @@ def extract_first_page(first_page, logger):
 
     credit, created = Credit.objects.get_or_create(
         account_id=account.id,
-        currency=summary["credit__currency"],
+        currency_id=summary["credit__currency"],
         date=datetime.strptime(summary["credit__date"], "%d.%m.%Y").date(),
         number=summary["credit__number"],
+        number_of_months=summary["credit__number_of_months"],
         total=summary["credit__total"],
     )
 
@@ -98,16 +98,18 @@ def extract_summary(summary):
         r"Cod Client (\d+)",
         r"Numele ([^>]+) Prenumele ([^>]+)",
         r"Număr cont (\d+)",
-        r"Număr şi data contract credit(\d+) -",
-        r"(\d{2}\.\d{2}\.\d{4})Rata dobânzii fixă [iî]",
-        r"primii 5 ani:(\d+\,\d+)",
-        r"Rata dobânzii  variabilă folosită",
+        r"Număr şi data contract credit (\d+) -",
+        r"(\d{2}\.\d{2}\.\d{4})",
+        r"Rata dobânzii fixă [iî]",
+        r"primii 5 ani: (\d+\,\d+)",
+        r"Rata dobânzii variabilă folosită",
         r"începând cu al 6\xadlea an al duratei",
-        r"creditului(\d+\.\d+) compusă din:",
+        r"creditului",
+        r"(\d+\.\d+) compusă din:",
         r"Marjă: \+(\d+\.\d+)\s+şi\s+Indice\s+IRCC\s*:\s*(\d+\.\d+)",
         r"Valoare credit (\d+\.\d+\,\d+) Moneda ([^>]{3})",
         r"Scadenţarul este generat pentru o",
-        r"perioadă de(\d+) luni",
+        r"perioadă de (\d+) luni",
     ]
     extracted_values = []
 
@@ -125,6 +127,7 @@ def extract_summary(summary):
         "credit__currency": extracted_values[11],
         "credit__date": extracted_values[5],
         "credit__number": extracted_values[4],
+        "credit__number_of_months": extracted_values[12],
         "credit__total": extracted_values[10].replace(".", "").replace(",", "."),
         "margin": extracted_values[8],
         "interest": extracted_values[6].replace(",", "."),

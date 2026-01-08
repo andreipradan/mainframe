@@ -277,7 +277,7 @@ pynacl==1.5.0
     # via pygithub
 pyparsing==3.1.4
     # via httplib2
-pypdf2==3.0.1
+pypdf==6.5.0
 pytest==8.2.0
     # via pytest-asyncio
     # via pytest-cov
@@ -352,6 +352,7 @@ typing-extensions==4.11.0
     # via pydantic
     # via pydantic-core
     # via pygithub
+    # via pypdf
     # via rich
 uritemplate==4.1.1
     # via google-api-python-client

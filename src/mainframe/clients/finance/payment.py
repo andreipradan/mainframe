@@ -4,7 +4,7 @@ from functools import cached_property
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 
 from mainframe.finance.models import Payment, Timetable
 from mainframe.finance.tasks import backup_finance_model
@@ -37,7 +37,7 @@ def parse_date(day, month, year):
 
 def parse_installment(rows):
     payment_type = "Rata credit"
-    row = rows.pop(0).replace(f"{payment_type} ", "")
+    row = rows.pop(0).replace(f"{payment_type}", "")
     day, month, year, total, remaining = row.split()
     validate_starts_with(rows.pop(0), payment_type, "Data", 1)
     principal = validate_starts_with(rows.pop(0), payment_type, "Principal", 2)
@@ -57,7 +57,7 @@ def parse_installment(rows):
 
 def parse_interest(rows):
     payment_type = "Dobanda datorata"
-    row = rows.pop(0).replace(f"{payment_type} ", "")
+    row = rows.pop(0).replace(f"{payment_type}", "")
     day, month, year, total, remaining = row.split()
     account = validate_starts_with(rows.pop(0), payment_type, "Din contul", 1)
     interest = validate_starts_with(rows.pop(0), payment_type, "Dobanda", 2)
@@ -85,7 +85,7 @@ class PaymentsImporter:
     def extract_payments(self, pages):
         payments = []
         for page in pages:
-            header = "Balanta Debit Credit Detalii tranzactie Data"
+            header = "BalantaDebit CreditDetalii tranzactieData"
             contents = page.extract_text().split(header)[1].strip().split("\n \n")[0]
             rows = [
                 r for r in contents.split("\n")[:-1] if "Alocare fonduri" not in r and r
@@ -109,7 +109,7 @@ class PaymentsImporter:
 
     def parse_prepayment(self, rows):
         payment_type = "Rambursare anticipata de principal"
-        row = rows.pop(0).replace(f"{payment_type} ", "")
+        row = rows.pop(0).replace(f"{payment_type}", "")
         day, month, year, total, remaining = row.split()
         date = parse_date(day, month, year)
         validate_starts_with(rows.pop(0), payment_type, "Data", 1)
@@ -133,11 +133,11 @@ class PaymentsImporter:
     def parse_rows(self, rows):
         payments = []
         while rows:
-            if rows[0].startswith("Rata credit "):
+            if rows[0].startswith("Rata credit"):
                 payments.append(parse_installment(rows))
-            elif rows[0].startswith("Rambursare anticipata de principal "):
+            elif rows[0].startswith("Rambursare anticipata de principal"):
                 payments.append(self.parse_prepayment(rows))
-            elif rows[0].startswith("Dobanda datorata "):
+            elif rows[0].startswith("Dobanda datorata"):
                 payments.append(parse_interest(rows))
             else:
                 raise ValidationError(f"Unexpected row type: {rows[0]}")
