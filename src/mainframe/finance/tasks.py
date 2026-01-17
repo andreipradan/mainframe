@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.core.management import call_command
 from huey.contrib.djhuey import db_task
@@ -6,12 +8,14 @@ from huey.signals import SIGNAL_ERROR
 from mainframe.core.tasks import log_status
 from mainframe.finance.models import Category, Transaction
 
+logger = logging.getLogger(settings.LOGGER_NAME)
+
 
 def backup_finance_model(model):
     if settings.ENV != "local":
         backup_finance(model)
         return
-    call_command("backup", app="finance", model=model)
+    logger.warning("Attempted to backup '%s' in local env", model)
 
 
 @db_task(expires=30)

@@ -55,11 +55,11 @@ def extract_first_page(first_page, logger):
         backup_finance_model(model="Account")
 
     credit, created = Credit.objects.get_or_create(
+        defaults={"number_of_months": summary["credit__number_of_months"]},
         account_id=account.id,
         currency_id=summary["credit__currency"],
         date=datetime.strptime(summary["credit__date"], "%d.%m.%Y").date(),
         number=summary["credit__number"],
-        number_of_months=summary["credit__number_of_months"],
         total=summary["credit__total"],
     )
 
