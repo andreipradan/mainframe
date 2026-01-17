@@ -8,7 +8,7 @@ from huey.signals import SIGNAL_ERROR
 from mainframe.core.tasks import log_status
 from mainframe.finance.models import Category, Transaction
 
-logger = logging.getLogger(settings.LOGGER_NAME)
+logger = logging.getLogger(__name__)
 
 
 def backup_finance_model(model):
