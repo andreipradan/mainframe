@@ -34,9 +34,12 @@ def extract_terminals(route, separators):
         raise FetchTransitLinesException(
             f"Couldn't extract terminals from route: {route}"
         )
+    separator = separators.pop()
+    if route.count(separator) > 1:
+        return route.split(separator)[:2]
 
     try:
-        terminal1, terminal2 = route.split(separators.pop())
+        terminal1, terminal2 = route.split(separator)
     except ValueError:
         return extract_terminals(route, separators)
 

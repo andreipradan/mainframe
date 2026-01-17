@@ -16,7 +16,6 @@ class TransitLine(TimeStampedModel):
     LINE_TYPE_CHOICES = (
         (LINE_TYPE_METROPOLITAN, "Metropolitan"),
         (LINE_TYPE_URBAN, "Urban"),
-        (LINE_TYPE_EXPRESS, "Express"),
     )
     name = models.CharField(max_length=16, unique=True)
     line_type = models.CharField(choices=LINE_TYPE_CHOICES, max_length=16)
