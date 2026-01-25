@@ -30,7 +30,7 @@ dependencies = [
     "openpyxl==3.1.2",
     "pillow>=11.1.0",
     "psutil==5.9.5",
-    "psycopg2-binary==2.9.5",
+    "psycopg2-binary>=2.9.9",
     "pygithub>=2.3.0",
     "pyjwt>=2.10.1",
     "pypdf>=6.5.0",
@@ -84,9 +84,11 @@ pythonpath = "src"
 [tool.pytest_env]
 ENV = { value = "test", skip_if_set = true }
 
-[tool.rye]
-managed = true
-dev-dependencies = [
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
     "black>=24.4.2",
     "django-debug-toolbar>=4.3.0",
     "factory-boy>=3.3.0",
@@ -99,17 +101,6 @@ dev-dependencies = [
     "pre-commit>=3.7.1",
     "pytest-asyncio>=0.24.0",
 ]
-virtual = true
-
-[tool.rye.scripts]
-dev = "python src/manage.py runserver"
-frontend = "npm start --prefix=frontend"
-huey = "python src/manage.py run_huey"
-migrate = { chain = [
-    "python src/manage.py makemigrations",
-    "python src/manage.py migrate"
-]}
-shell = "python src/manage.py shell_plus"
 
 [tool.ruff]
 exclude = [

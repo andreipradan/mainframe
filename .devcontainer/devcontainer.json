@@ -6,5 +6,5 @@
 			"version": "20"
 		}
 	},
-	"postCreateCommand": "curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION=\"--yes\" bash && echo 'source \"$HOME/.rye/env\"' >> ~/.bashrc && export PATH=\"$HOME/.rye/shims:$PATH\" && rye sync"
+	"postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\" && uv sync"
 }

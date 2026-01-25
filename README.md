@@ -48,19 +48,18 @@ Personal automation and monitoring platform built with Django REST Framework and
 
 ### Using Dev Container (Recommended)
 
-Open this repository in VS Code with the Dev Containers extension or in Gitpod. The dev container includes Python 3.12 and Node.js 20, and automatically installs dependencies via rye.
+Open this repository in VS Code with the Dev Containers extension or in Gitpod. The dev container includes Python 3.12 and Node.js 20, and automatically installs dependencies via uv.
 
 ### Manual Setup
 
-1. **Install rye:**
+1. **Install uv:**
    ```shell
-   curl -sSf https://rye.astral.sh/get | bash
-   source "$HOME/.rye/env"
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 2. **Install Python dependencies:**
    ```shell
-   rye sync
+   uv sync
    ```
 
 3. **Install frontend dependencies:**
@@ -85,42 +84,43 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
 
 5. **Run database migrations:**
    ```shell
-   rye run migrate
+   uv run python src/manage.py makemigrations
+   uv run python src/manage.py migrate
    ```
 
 6. **Start development servers:**
    ```shell
    # Backend (port 8000)
-   rye run dev
+   uv run python src/manage.py runserver
 
    # Frontend (port 3000)
-   rye run frontend
+   npm start --prefix=frontend
 
    # Task queue
-   rye run huey
+   uv run python src/manage.py run_huey
    ```
 
-## Available Scripts
+## Common Commands
 
 | Command | Description |
 |---------|-------------|
-| `rye run dev` | Start Django development server |
-| `rye run frontend` | Start React development server |
-| `rye run huey` | Start Huey task queue worker |
-| `rye run migrate` | Create and apply database migrations |
-| `rye run shell` | Open Django shell_plus |
+| `uv sync` | Install/update dependencies |
+| `uv run python src/manage.py runserver` | Start Django development server |
+| `uv run python src/manage.py run_huey` | Start Huey task queue worker |
+| `uv run python src/manage.py shell_plus` | Open Django shell_plus |
+| `npm start --prefix=frontend` | Start React development server |
 
 ## Testing
 
 ```shell
 # Run all tests
-ENV=test pytest tests
+uv run pytest tests
 
 # Run with coverage
-ENV=test pytest tests --cov=.
+uv run pytest tests --cov=.
 
 # Run specific test file
-ENV=test pytest tests/api/test_views.py
+uv run pytest tests/api/test_views.py
 ```
 
 ## Code Quality
@@ -132,12 +132,12 @@ Pre-commit hooks are configured for:
 
 Install hooks:
 ```shell
-pre-commit install
+uv run pre-commit install
 ```
 
 Run manually:
 ```shell
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ## Database Operations
