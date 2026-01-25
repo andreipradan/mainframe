@@ -84,37 +84,39 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
 
 5. **Run database migrations:**
    ```shell
-   uv run python src/manage.py makemigrations
-   uv run python src/manage.py migrate
+   uv run poe migrate
    ```
 
 6. **Start development servers:**
    ```shell
    # Backend (port 8000)
-   uv run python src/manage.py runserver
+   uv run poe dev
 
    # Frontend (port 3000)
-   npm start --prefix=frontend
+   uv run poe frontend
 
    # Task queue
-   uv run python src/manage.py run_huey
+   uv run poe huey
    ```
 
-## Common Commands
+## Available Tasks
+
+Tasks are defined using [poethepoet](https://github.com/nat-n/poethepoet) and run via `uv run poe <task>`:
 
 | Command | Description |
 |---------|-------------|
-| `uv sync` | Install/update dependencies |
-| `uv run python src/manage.py runserver` | Start Django development server |
-| `uv run python src/manage.py run_huey` | Start Huey task queue worker |
-| `uv run python src/manage.py shell_plus` | Open Django shell_plus |
-| `npm start --prefix=frontend` | Start React development server |
+| `uv run poe dev` | Start Django development server |
+| `uv run poe frontend` | Start React development server |
+| `uv run poe huey` | Start Huey task queue worker |
+| `uv run poe migrate` | Create and apply database migrations |
+| `uv run poe shell` | Open Django shell_plus |
+| `uv run poe test` | Run pytest |
 
 ## Testing
 
 ```shell
 # Run all tests
-uv run pytest tests
+uv run poe test
 
 # Run with coverage
 uv run pytest tests --cov=.

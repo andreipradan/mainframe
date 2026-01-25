@@ -93,6 +93,7 @@ dev = [
     "django-debug-toolbar>=4.3.0",
     "factory-boy>=3.3.0",
     "ipython>=8.24.0",
+    "poethepoet>=0.32.0",
     "pytest>=8.2.0",
     "pytest-django>=4.8.0",
     "pytest-env>=1.1.3",
@@ -100,6 +101,19 @@ dev = [
     "pytest-cov>=5.0.0",
     "pre-commit>=3.7.1",
     "pytest-asyncio>=0.24.0",
+]
+
+[tool.poe.tasks]
+dev = "python src/manage.py runserver"
+frontend = "npm start --prefix=frontend"
+huey = "python src/manage.py run_huey"
+shell = "python src/manage.py shell_plus"
+test = "pytest tests"
+
+[tool.poe.tasks.migrate]
+sequence = [
+    "python src/manage.py makemigrations",
+    "python src/manage.py migrate",
 ]
 
 [tool.ruff]
