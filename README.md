@@ -119,10 +119,10 @@ Tasks are defined using [poethepoet](https://github.com/nat-n/poethepoet) and ru
 uv run poe test
 
 # Run with coverage
-uv run pytest tests --cov=.
+uv run poe test --cov=.
 
 # Run specific test file
-uv run pytest tests/api/test_views.py
+uv run poe test tests/api/test_views.py
 ```
 
 ## Code Quality

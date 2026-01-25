@@ -108,7 +108,7 @@ dev = "python src/manage.py runserver"
 frontend = "npm start --prefix=frontend"
 huey = "python src/manage.py run_huey"
 shell = "python src/manage.py shell_plus"
-test = "pytest tests"
+test = "pytest"
 
 [tool.poe.tasks.migrate]
 sequence = [
