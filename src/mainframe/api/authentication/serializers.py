@@ -14,7 +14,8 @@ from mainframe.api.user.serializers import UserSerializer
 
 def _generate_jwt_token(user):
     payload = {"id": user.pk, "exp": datetime.now(timezone.utc) + timedelta(days=7)}
-    return jwt.encode(payload, settings.SECRET_KEY)
+    token = jwt.encode(payload, settings.SECRET_KEY)
+    return token
 
 
 class LoginSerializer(serializers.Serializer):
