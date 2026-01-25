@@ -77,6 +77,8 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           uv sync
       - uses: pre-commit/action@v3.0.1
+        env:
+          ENV: ci
 
   tests:
     runs-on: ubuntu-latest
@@ -94,8 +96,7 @@ jobs:
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           export PATH="$HOME/.local/bin:$PATH"
-          uv sync
-          PYTHONPATH=src ENV=ci pytest tests --cov=. --ds mainframe.core.settings --nomigrations
+          uv run poe ci
 
   backend-deploy:
     name: BE - Deploy
