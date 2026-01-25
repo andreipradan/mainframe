@@ -25,8 +25,6 @@ env.sample
 frontend
 calendar-key.json
 src/manage.py
-pyproject.toml
-requirements-dev.lock
 src/mainframe/.env
 tests
 venv

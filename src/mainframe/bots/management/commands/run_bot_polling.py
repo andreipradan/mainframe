@@ -45,7 +45,7 @@ def is_whitelisted(func):
             )
         except Bot.DoesNotExist:
             logger.warning("Not whitelisted: %s", update.effective_user)
-            return
+            return None
         return await func(update, context, bot=bot, *args, **kwargs)  # noqa: B026
 
     return wrapper
@@ -184,7 +184,7 @@ async def handle_process_message(
 
     if not redis_client.ping():
         logger.error("Can't connect to redis")
-        return
+        return None
 
     context_key = f"context:{update.effective_chat.id}"
     if not (history := redis_client.get(context_key)):
