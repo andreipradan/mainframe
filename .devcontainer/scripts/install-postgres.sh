@@ -2,6 +2,7 @@
 set -e
 
 # Install PostgreSQL server and client tools
+sudo apt-get update
 sudo apt-get install -y postgresql postgresql-contrib postgresql-client
 
 # Start PostgreSQL (may fail in container but that's okay)
