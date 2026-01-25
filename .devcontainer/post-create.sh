@@ -7,5 +7,5 @@ set -e
 ./.devcontainer/scripts/install-postgres.sh
 ./.devcontainer/scripts/install-redis.sh
 
-npm install --prefix /workspaces/mainframe/src/mainframe/frontend
-
+npm install --prefix /workspaces/mainframe/frontend
+uv run pre-commit install
