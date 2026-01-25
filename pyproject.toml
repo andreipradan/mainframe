@@ -123,6 +123,10 @@ sequence = [
 ]
 default_item_type = "cmd"
 
+[tool.poe.tasks.ci]
+cmd = "pytest tests --cov=. --ds mainframe.core.settings --nomigrations"
+env = { ENV = "ci", PYTHON_PATH = "src" }
+
 [tool.ruff]
 extend-exclude = [
     "**/migrations/**"
