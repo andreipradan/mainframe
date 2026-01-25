@@ -3,7 +3,7 @@ from pathlib import Path
 
 import environ
 import google.api_core.exceptions
-import google.generativeai as genai
+from google import genai
 
 logger = logging.getLogger(__name__)
 

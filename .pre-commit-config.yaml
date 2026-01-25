@@ -1,21 +1,27 @@
-exclude: '.github|.venv|deploy|frontend|docs|migrations|.git|.tox'
+exclude: ".github|.venv|deploy|frontend|docs|migrations|.git|.tox"
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
     hooks:
-    -   id: check-json
-    -   id: check-yaml
-    -   id: check-toml
-    -   id: detect-private-key
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
--   repo: https://github.com/astral-sh/ruff-pre-commit
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: check-xml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: name-tests-test
+      - id: pretty-format-json
+        args: [--autofix]
+      - id: trailing-whitespace
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.3
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
--   repo: local
+  - repo: local
     hooks:
       - id: migrations-check
         language: system

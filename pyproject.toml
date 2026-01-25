@@ -15,13 +15,13 @@ dependencies = [
     "django>=5.1.7",
     "django-activity-stream>=2.0.0",
     "django-cors-headers==3.13.0",
-    "django-environ==0.9.0",
+    "django-environ==0.12.0",
     "django-extensions==3.2.1",
     "djangorestframework>=3.15.2",
     "dnspython>=2.6.0rc1",
     "geopy>=2.4.1",
     "google-cloud-storage==2.9.0",
-    "google-generativeai>=0.7.2",
+    "google-genai>=1.60.0",
     "gunicorn>=23.0.0",
     "huey==2.5.0",
     "logfire[django,psycopg2]>=3.4.0",
@@ -104,11 +104,17 @@ dev = [
 ]
 
 [tool.poe.tasks]
+createsuperuser = "python src/manage.py createsuperuser"
+dbshell = "python src/manage.py dbshell"
 dev = "python src/manage.py runserver"
-frontend = "npm start --prefix=frontend"
 huey = "python src/manage.py run_huey"
 shell = "python src/manage.py shell_plus"
+startapp = "python src/manage.py startapp"
 test = "pytest"
+
+[tool.poe.tasks.frontend]
+cmd = "npm start --prefix=frontend"
+env = { REACT_APP_API_URL = "https://${CODESPACE_NAME}-8000.app.github.dev" }
 
 [tool.poe.tasks.migrate]
 sequence = [
