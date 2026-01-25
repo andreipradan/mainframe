@@ -1,10 +1,14 @@
 {
-	"name": "Mainframe",
+    "name": "Mainframe",
 	"image": "mcr.microsoft.com/devcontainers/python:3.12",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"version": "20"
 		}
 	},
-	"postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\" && uv sync"
+    "postCreateCommand": "./.devcontainer/post-create.sh",
+	"containerEnv": {
+		"LANG": "en_GB.UTF-8",
+		"LC_TIME": "en_GB.UTF-8"
+	}
 }

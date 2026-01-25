@@ -158,7 +158,7 @@ psql -U $DB_USER -p $DB_PORT -h $DB_HOST -d $DB_DATABASE < <dump_name>.sql
 
 ## Project Structure
 
-```
+```text
 mainframe/
 ├── src/
 │   ├── mainframe/

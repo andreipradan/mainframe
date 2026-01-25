@@ -115,10 +115,11 @@ sequence = [
     "python src/manage.py makemigrations",
     "python src/manage.py migrate",
 ]
+default_item_type = "cmd"
 
 [tool.ruff]
-exclude = [
-    "migrations"
+extend-exclude = [
+    "**/migrations/**"
 ]
 target-version = "py310"
 # https://docs.astral.sh/ruff/rules/
