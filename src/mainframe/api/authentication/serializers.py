@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import jwt
 from django.conf import settings
@@ -13,7 +13,7 @@ from mainframe.api.user.serializers import UserSerializer
 
 
 def _generate_jwt_token(user):
-    payload = {"id": user.pk, "exp": datetime.utcnow() + timedelta(days=7)}
+    payload = {"id": user.pk, "exp": datetime.now(timezone.utc) + timedelta(days=7)}
     token = jwt.encode(payload, settings.SECRET_KEY)
     return token
 

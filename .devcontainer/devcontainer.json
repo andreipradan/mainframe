@@ -1,0 +1,14 @@
+{
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LC_TIME": "en_US.UTF-8"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "name": "Mainframe",
+  "postCreateCommand": "./.devcontainer/post-create.sh"
+}
