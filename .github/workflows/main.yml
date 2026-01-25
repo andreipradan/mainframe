@@ -37,10 +37,11 @@ jobs:
 
       - name: UV already installed
         if: steps.cache.outputs.cache-hit == 'true'
-        run: echo "UV already cached"
-        # still need to pass the path to downstream jobs
         id: cached
-        run: echo "uv-path=$HOME/.local/bin" >> $GITHUB_OUTPUT
+        run: |
+          echo "UV already cached"
+          echo "uv-path=$HOME/.local/bin" >> $GITHUB_OUTPUT
+
   notify-telegram:
     name: Notify telegram
     runs-on: ubuntu-latest
