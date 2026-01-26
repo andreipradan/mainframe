@@ -60,7 +60,7 @@ def parse_meal(row) -> Meal:
 
     ingredients = [i.text.strip() for i in parse("recipe-lists").find_all("li")]
     quantities = parse_quantities(parse("quantity-bar"))
-    nutritional_values = parse_nutritional_values(parse("menu-pic").table)
+    nutritional_values = parse_nutritional_values(parse("wrapper-ingredients").table)
     return Meal(
         name=row.h4.text,
         type=TYPE_MAPPING[row.h2.text.lower()],
