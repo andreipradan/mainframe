@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "args": [
+        "run_bot_polling"
+      ],
+      "django": true,
+      "name": "Python Debugger: Django",
+      "program": "${workspaceFolder}/src/manage.py",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "request": "launch",
+      "type": "debugpy"
+    }
+  ],
+  "version": "0.2.0"
+}

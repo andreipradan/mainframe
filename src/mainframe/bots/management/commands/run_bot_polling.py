@@ -215,7 +215,7 @@ async def handle_process_message(
 
         await reply(
             update,
-            response.replace("**", "").replace("*", "\*"),
+            response,
             parse_mode=ParseMode.HTML,
         )
 
@@ -341,11 +341,9 @@ class Command(BaseCommand):
         app = Application.builder().token(token).build()
 
         # Warning! make sure all handlers are wrapped in is_whitelisted!
-        app.add_handler(CommandHandler("bus", is_whitelisted(BusInline.start)))
         app.add_handler(CommandHandler("chat_id", is_whitelisted(handle_chat_id)))
         app.add_handler(CommandHandler("dex", is_whitelisted(handle_dex)))
         app.add_handler(CommandHandler("earthquake", is_whitelisted(handle_earthquake)))
-        app.add_handler(CommandHandler("meals", is_whitelisted(MealsInline.start)))
         app.add_handler(CommandHandler("next", is_whitelisted(handle_next)))
         app.add_handler(CommandHandler("randomize", is_whitelisted(handle_randomize)))
         app.add_handler(CommandHandler("reset", is_whitelisted(handle_reset)))

@@ -104,6 +104,7 @@ dev = [
 ]
 
 [tool.poe.tasks]
+bot = "python src/manage.py run_bot_polling"
 createsuperuser = "python src/manage.py createsuperuser"
 dbshell = "python src/manage.py dbshell"
 dev = "python src/manage.py runserver"
