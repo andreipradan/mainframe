@@ -71,11 +71,9 @@ jobs:
     if: ${{ (needs.changes.outputs.backend == 'true') || (needs.changes.outputs.deploy == 'true') || (needs.changes.outputs.dockerfile == 'true') || (needs.changes.outputs.tests == 'true') }}
     steps:
       - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
       - name: Installing dev dependencies for migration check
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="$HOME/.local/bin:$PATH"
-          uv sync
+        run: uv sync
       - uses: pre-commit/action@v3.0.1
         env:
           ENV: ci
@@ -93,11 +91,9 @@ jobs:
           postgresql db: test_db
           postgresql user: test_user
           postgresql password: test_pass
-      - name: Run a multi-line script
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          export PATH="$HOME/.local/bin:$PATH"
-          uv run poe ci
+      - uses: astral-sh/setup-uv@v7
+      - name: Run 
+        run: uv run poe ci
 
   backend-deploy:
     name: BE - Deploy
