@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from django.http import FileResponse, JsonResponse
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAdminUser
 
 from mainframe.clients.system import get_folder_contents
@@ -21,7 +21,8 @@ class LogsViewSet(viewsets.ViewSet):
                     return FileResponse(file.read())
             except (PermissionError, UnicodeDecodeError, FileNotFoundError) as e:
                 return JsonResponse(
-                    status=400, data={"error": f"{e.reason}: {filename}"}
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"error": f"{e.reason}: {filename}"},
                 )
 
         path = request.GET.get("path", "")
@@ -31,7 +32,10 @@ class LogsViewSet(viewsets.ViewSet):
         try:
             results = get_folder_contents(self.base_path / path)
         except FileNotFoundError:
-            return JsonResponse(status=400, data={"error": f"Folder not found: {path}"})
+            return JsonResponse(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"error": f"Folder not found: {path}"},
+            )
         return JsonResponse(
             {
                 "path": path,

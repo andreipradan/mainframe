@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.http import JsonResponse
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
@@ -26,15 +26,15 @@ class LightsViewSet(viewsets.ViewSet):
         logger.info("Lights: %s, args: %s", what, kwargs)
         try:
             data = {"data": getattr(LightsClient, what)(**kwargs)}
-            status = 200
+            status_code = status.HTTP_200_OK
         except LightsException as e:
             data = {"error": str(e)}
-            status = 400
+            status_code = status.HTTP_400_BAD_REQUEST
         if "error" in data:
             logger.error(data["error"])
         else:
             logger.info(data["data"])
-        return JsonResponse(data=data, status=status)
+        return JsonResponse(data=data, status=status_code)
 
     @staticmethod
     def list(request):

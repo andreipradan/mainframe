@@ -1,4 +1,12 @@
 {
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "tamasfe.even-better-toml",
+        "syntaf.vscode-pytest-runner"
+      ]
+    }
+  },
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
@@ -6,5 +14,6 @@
   },
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "name": "Mainframe",
-  "postCreateCommand": "./.devcontainer/post-create.sh"
+  "postCreateCommand": "./.devcontainer/post-create.sh",
+  "postStartCommand": "./.devcontainer/post-start.sh"
 }
