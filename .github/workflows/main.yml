@@ -92,7 +92,7 @@ jobs:
           postgresql user: test_user
           postgresql password: test_pass
       - uses: astral-sh/setup-uv@v7
-      - name: Run 
+      - name: Run CI
         run: uv run poe ci
 
   backend-deploy:

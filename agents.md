@@ -23,7 +23,7 @@ Mainframe is a personal automation and monitoring platform built with Django RES
 
 ## Project Structure
 
-```
+```text
 src/mainframe/           # Django backend
 ├── api/               # REST API endpoints
 │   ├── user/         # User management & authentication
@@ -164,17 +164,150 @@ class MyModelViewSet(viewsets.ModelViewSet):
 ```
 
 ### Adding Tests
-1. Place test files in `tests/[feature]/test_*.py`
-2. Use pytest with fixtures from `tests/conftest.py`
-3. Use Factory Boy factories from `tests/factories/` to create test data
-4. Mock external API calls (see `conftest.py` Gemini example)
 
-**Example Test:**
+#### Test Organization
+- Place test files in `tests/[feature]/test_*.py` mirroring `src/mainframe/[feature]/` structure
+- Use pytest with fixtures from `tests/conftest.py`
+- Use Factory Boy factories from `tests/factories/` to create test data
+- Mock external API calls (see `conftest.py` Gemini example)
+
+#### Test Structure
+Tests should follow this pattern for consistency:
+
 ```python
-def test_user_creation(db):
-    user = User.objects.create(email="test@example.com")
-    assert user.is_active == True
+import pytest
+from rest_framework import status
+
+@pytest.mark.django_db
+class TestMyFeature:
+    """Descriptive class docstring"""
+
+    def test_success_case(self, client, staff_session):
+        """Clear test description"""
+        response = client.get("/endpoint/", HTTP_AUTHORIZATION=staff_session.token)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_error_case(self, client):
+        """Test error handling"""
+        response = client.get("/endpoint/")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 ```
+
+#### Test Requirements Checklist
+For **every new feature** or **API endpoint**, create tests covering:
+
+1. **Success Cases**
+   - Happy path with valid data
+   - Expected HTTP status code (200, 201, etc.)
+   - Response structure and data validation
+
+2. **Permission/Authorization Tests**
+   - Authenticated user access (use `session` fixture)
+   - Admin-only endpoints (use `staff_session` fixture)
+   - Unauthenticated requests return 403
+   - Non-admin users get 403 on admin endpoints
+
+3. **Input Validation Tests**
+   - Missing required fields return 400
+   - Invalid data types return 400
+   - Duplicate unique values return 400
+
+4. **Error Handling Tests**
+   - Not found errors return 404
+   - Conflict errors return 409 or 400
+   - Server errors are properly logged
+
+5. **External API Mocking**
+   - All external API calls must be mocked using `@mock.patch()`
+   - Use `mock.MagicMock()` for return values
+   - Mock side effects for error testing with `.side_effect`
+
+#### Example: Complete Test Coverage
+```python
+import pytest
+from unittest import mock
+from rest_framework import status
+
+@pytest.mark.django_db
+class TestGroupViewSet:
+    """Test Group management endpoints"""
+
+    def test_list_groups_success(self, client, staff_session):
+        """Test successful group listing"""
+        Group.objects.create(name="test-group")
+        response = client.get("/groups/", HTTP_AUTHORIZATION=staff_session.token)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_list_groups_unauthorized(self, client, session):
+        """Test non-admin cannot list groups"""
+        response = client.get("/groups/", HTTP_AUTHORIZATION=session.token)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_list_groups_unauthenticated(self, client):
+        """Test unauthenticated request denied"""
+        response = client.get("/groups/")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_create_group_validation(self, client, staff_session):
+        """Test missing required fields"""
+        response = client.post("/groups/", data={}, HTTP_AUTHORIZATION=staff_session.token)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @mock.patch("mainframe.api.lights.views.LightsClient.turn_on")
+    def test_external_api_mocking(self, mock_turn_on, client, staff_session):
+        """Test external API calls are mocked"""
+        mock_turn_on.return_value = {"status": "ok"}
+        response = client.put("/lights/192.168.1.100/turn-on/", HTTP_AUTHORIZATION=staff_session.token)
+        mock_turn_on.assert_called_once_with(ip="192.168.1.100")
+```
+
+#### Fixtures Available
+- `client` - Django test client
+- `db` - Database access marker (add `@pytest.mark.django_db` to use)
+- `session` - Regular authenticated user with JWT token
+- `staff_session` - Admin user with JWT token for staff endpoints
+- `django_assert_num_queries` - Assert database query count (performance testing)
+
+#### Factories Available
+Located in `tests/factories/`:
+- `UserFactory` - Create test users
+- `ActiveSessionFactory` - Create authenticated sessions
+- `AccountFactory` - Finance accounts
+- `TransactionFactory` - Finance transactions
+- `CronFactory` - Scheduled tasks
+- And more feature-specific factories
+
+#### Test Execution
+```bash
+# Run all tests
+uv run poe test
+
+# Run specific test file
+uv run poe test tests/api/user/test_views.py
+
+# Run specific test class
+uv run poe test tests/api/user/test_views.py::TestLogin
+
+# Run specific test method
+uv run poe test tests/api/user/test_views.py::TestLogin::test_success
+
+# Run with coverage report
+uv run poe test --cov=src/mainframe
+
+# Run with verbose output
+uv run poe test -vv
+
+# Run only failing tests
+uv run poe test --lf
+
+# Run tests matching pattern
+uv run poe test -k "permission"
+```
+
+#### Coverage Goals
+- **Minimum**: 60% overall
+- **Target**: 80%+ overall
+- **Critical paths**: 100% (authentication, financial operations, data modifications)
 
 ## Database & Migrations
 
@@ -186,9 +319,53 @@ def test_user_creation(db):
 
 - **Fixtures**: Defined in `tests/conftest.py` - reusable across tests
 - **Factories**: Use Factory Boy in `tests/factories/` for creating test objects
+  - Mirror the structure: `tests/factories/[feature].py` for `src/mainframe/[feature]/`
+  - Factories handle model relationships and post-generation hooks
 - **Mocking**: Mock external APIs and Google Gemini calls
+  - Use `@mock.patch()` decorator from `unittest.mock`
+  - Always mock third-party API calls (Telegram, Gemini, Yeelight, etc.)
+  - Use `mock.MagicMock()` for creating response objects
 - **Socket Blocking**: Tests run with socket disabled - only local connections allowed
+  - Sockets to external hosts will fail - this is intentional
+  - All HTTP calls to external services must be mocked
 - **DB**: Test database is reused across test runs for speed
+  - Use `@pytest.mark.django_db` decorator on test classes
+  - Changes are rolled back between test runs
+  - Use `--nomigrations` flag for faster execution
+
+### Test File Organization
+```text
+tests/
+├── conftest.py                    # Global fixtures
+├── factories/
+│   ├── __init__.py
+│   ├── authentication.py          # ActiveSession factory
+│   ├── user.py                    # User factory
+│   ├── [feature].py               # Feature-specific factories
+│   └── ...
+├── api/
+│   ├── authentication/
+│   │   └── test_serializers.py   # Auth serializer tests
+│   ├── user/
+│   │   └── test_views.py         # User endpoint tests
+│   ├── groups/
+│   │   └── test_viewsets.py      # Group CRUD tests
+│   ├── lights/
+│   │   └── test_views.py         # Light control tests
+│   ├── logs/
+│   │   └── test_views.py         # Log viewing tests
+│   ├── rpi/
+│   │   └── test_views.py         # RPi control tests
+│   ├── commands/
+│   │   └── test_views.py         # Command execution tests
+│   └── huey_tasks/
+│       └── test_views.py         # Task queue tests
+├── bots/                          # Bot-related tests
+├── crons/                         # Cron-related tests
+├── finance/                       # Finance-related tests
+├── watchers/                      # Watcher-related tests
+└── ...
+```
 
 Key fixtures:
 - `db` - Django database access
@@ -217,10 +394,32 @@ send_notification.delay(chat_id=123, text="Hello!")
 ## Code Conventions & Best Practices
 
 - **Naming**: Use snake_case for functions/variables, PascalCase for classes
+  - Make names intuitive and self-documenting
+  - Prefer `validate_email()` over `check()`, `fetch_user_transactions()` over `get_data()`
+  - Classes should describe what they represent: `UserSerializer`, `PaymentProcessor`, `EmailValidator`
 - **Imports**: Organize as: stdlib → third-party → local imports
 - **Type Hints**: Add where practical (not required but encouraged)
 - **Tests**: Aim for >80% coverage, test API endpoints and business logic
-- **Docstrings**: Use for complex functions and classes
+- **Docstrings & Comments**:
+  - **Prefer self-documenting code**: Intuitive method/function/class names reduce the need for docstrings
+  - **Only document when non-obvious**: Skip docstrings for simple getters/setters, basic CRUD operations, or methods where the name clearly describes the behavior
+  - **Use docstrings for complex logic**: Document *why* not what - explain non-obvious algorithms, business rules, or design decisions
+  - **Example**: `def calculate_compound_interest(principal, rate, periods)` needs no docstring; `def parse_custom_date_format(date_str)` likely does (explain the format)
+  - **Comments for the why**: Use inline comments to explain reasoning, not to restate the code
+    ```python
+    # Good - explains why
+    # Retry logic needed because API is eventually consistent (typical 100ms delay)
+    for attempt in range(3):
+        result = fetch_status()
+        if result.ready:
+            break
+        time.sleep(0.1)
+
+    # Bad - just restates the code
+    # Loop 3 times
+    for attempt in range(3):
+        ...
+    ```
 - **Logging**: Use `logging.getLogger(__name__)` per module
 - **No Hardcoded Values**: Use environment variables and settings
 - **DRY Principle**: Extract common logic into utilities and base classes
@@ -291,6 +490,6 @@ uv run poe shell            # Django shell
 
 ---
 
-**Last Updated**: January 2026
+**Last Updated**: February 2026
 
 This document is maintained for AI agents. Suggest improvements by opening a PR.

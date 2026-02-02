@@ -1,4 +1,12 @@
 {
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "tamasfe.even-better-toml",
+        "syntaf.vscode-pytest-runner"
+      ]
+    }
+  },
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
