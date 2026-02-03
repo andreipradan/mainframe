@@ -16,6 +16,7 @@ class TestAuthenticationSerializers:
     def test_generate_jwt_token(self):
         user = UserFactory(email="test@example.com")
         token = _generate_jwt_token(user)
+
         assert token is not None
         assert isinstance(token, str)
         assert len(token) > 0
