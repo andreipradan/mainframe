@@ -90,8 +90,7 @@ def mainframe(request):  # noqa: C901, PLR0911
         pusher = payload.get("pusher", {}).get("name", "")
         asyncio.run(
             send_telegram_message(
-                text=f"<b>{pusher}</b> {event}ed {new_changes_link} "
-                f"{branch_message}",
+                text=f"<b>{pusher}</b> {event}ed {new_changes_link} {branch_message}",
                 parse_mode=ParseMode.HTML,
             )
         )
