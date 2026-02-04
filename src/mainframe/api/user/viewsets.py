@@ -21,6 +21,9 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
 
     def get_permissions(self):
+        # Allow OPTIONS requests to all endpoints (for CORS preflight)
+        if self.request.method == "OPTIONS":
+            return [AllowAny()]
         if self.action in ["login", "register"]:
             return [AllowAny()]
         if self.action == "logout":
