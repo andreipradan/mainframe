@@ -66,6 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if not count:
             ActiveSession.objects.filter(user=request.user).delete()
         return Response(data={"msg": "Token revoked"}, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=["post"])
     def register(self, request, *_, **__):
         serializer = RegisterSerializer(data=request.data)
