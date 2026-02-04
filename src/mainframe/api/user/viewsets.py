@@ -60,11 +60,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["put"])
     def logout(self, request, *_, **__):
-        count, _ = ActiveSession.objects.filter(token=request.META.get("HTTP_AUTHORIZATION")).delete()
+        count, _ = ActiveSession.objects.filter(
+            token=request.META.get("HTTP_AUTHORIZATION")
+        ).delete()
         if not count:
-            ActiveSession.objects.filter(token=request.META.get("HTTP_AUTHORIZATION")).delete()
+            ActiveSession.objects.filter(user=request.user).delete()
         return Response(data={"msg": "Token revoked"}, status=status.HTTP_200_OK)
-
     @action(detail=False, methods=["post"])
     def register(self, request, *_, **__):
         serializer = RegisterSerializer(data=request.data)
