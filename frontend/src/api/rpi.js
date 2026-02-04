@@ -1,9 +1,31 @@
 import { ngrokAxios } from './index';
-import { completed, setErrors, setLoading } from '../redux/rpiSlice';
+import { completed, login, logout, setErrors, setLoading } from '../redux/rpiSlice';
 import { handleErrors } from './errors';
-import { logout } from '../redux/authSlice';
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
 
 class RpiApi {
+  static login = (data) => (dispatch) => {
+    dispatch(setLoading(true));
+    ngrokAxios
+      .post("users/login", data)
+      .then((response) => {
+        dispatch(login(response.data));
+        toast.info(`Connected to RPi!`, toastParams);
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
+  };
+
+  static logout = (token) => (dispatch) => {
+    ngrokAxios
+      .put('users/logout', {}, { headers: { Authorization: token } })
+      .then(() => {
+        dispatch(logout());
+        toast.info('Logged out RPi!', toastParams);
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors));
+  };
+
   static reboot = (token) => (dispatch) => {
     dispatch(setLoading(true));
     ngrokAxios

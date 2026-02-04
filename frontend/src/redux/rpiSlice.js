@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import Cookie from "js-cookie";
 
 export const rpiSlice = createSlice({
   name: "rpi",
@@ -6,8 +7,26 @@ export const rpiSlice = createSlice({
     errors: null,
     loading: false,
     message: null,
+    token: Cookie.get('ngrok_token') || null,
+    user: Cookie.get("ngrok_user") ? JSON.parse(Cookie.get('ngrok_user')) : null,
   },
   reducers: {
+    login: (state, action) => {
+      Cookie.set('ngrok_token', action.payload.token);
+      Cookie.set('ngrok_user', JSON.stringify(action.payload.user));
+      state.errors = null;
+      state.loading = false;
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+    },
+    logout: (state, action) => {
+      state.errors = null;
+      state.token = null;
+      state.user = null;
+      state.message = null;
+      Cookie.remove('ngrok_token');
+      Cookie.remove('ngrok_user');
+    },
     completed: (state, action) => {
       state.errors = null
       state.loading = false
@@ -20,5 +39,5 @@ export const rpiSlice = createSlice({
     setLoading: (state, action) => {state.loading = action.payload},
   },
 });
-export const { completed, setErrors, setLoading } = rpiSlice.actions;
+export const { login, logout, completed, setErrors, setLoading } = rpiSlice.actions;
 export default rpiSlice.reducer;

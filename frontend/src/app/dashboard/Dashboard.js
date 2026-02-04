@@ -13,6 +13,7 @@ import "nouislider/dist/nouislider.css";
 
 import BotsApi from "../../api/bots";
 import LightsApi from "../../api/lights";
+import RpiApi from "../../api/rpi";
 import Errors from "../shared/Errors";
 import ActivityApi from '../../api/activity';
 import DevicesApi from '../../api/devices';
@@ -24,7 +25,10 @@ Chart.register(ArcElement, CategoryScale)
 const Dashboard = () => {
   const dispatch = useDispatch();
 
+  const email = useSelector((state) => state.auth.user?.email)
   const token = useSelector((state) => state.auth.token)
+  const rpi = useSelector((state) => state.rpi)
+  const ngrokToken = rpi.token
 
   const activity = useSelector(state => state.activity)
   const bots = useSelector(state => state.bots)
@@ -35,7 +39,7 @@ const Dashboard = () => {
   const activityApi = new ActivityApi(token)
   const botsApi = new BotsApi(token)
   const devicesApi = new DevicesApi(token)
-  const lightsApi = new LightsApi(token)
+  const lightsApi = new LightsApi(ngrokToken || token)
 
   const [lightName, setLightName] = useState("")
   const [lightNameOpened, setLightNameOpened] = useState(false)
@@ -44,6 +48,10 @@ const Dashboard = () => {
 
   const [isPolling, setIsPolling] = useState(false)
   const [lastPollTime, setLastPollTime] = useState(null)
+
+  const [showNgrokLoginModal, setShowNgrokLoginModal] = useState(false)
+  const [ngrokEmail, setNgrokEmail] = useState(email || "")
+  const [ngrokPassword, setNgrokPassword] = useState("")
 
   const lightsOnCount = lights.results?.filter(b => b.capabilities.power === "on").length
   const lightsOffCount = lights.results?.filter(b => b.capabilities.power === "off").length
@@ -64,7 +72,7 @@ const Dashboard = () => {
     !bots.results && dispatch(botsApi.getList());
     !crons.results && dispatch(new CronsApi(token).getList())
     !devices.results && dispatch(devicesApi.getList())
-    !lights.results && dispatch(lightsApi.getList());
+    ngrokToken && !lights.results && dispatch(lightsApi.getList());
     !activity.results && dispatch(activityApi.getList())
   }, []);
 
@@ -75,6 +83,13 @@ const Dashboard = () => {
       setLightColors(lights.results?.map(l => ({ ip: l.ip, color: "#0059ff" })))
     }
   }, [lights.results])
+
+  useEffect(() => {
+    if (ngrokToken && showNgrokLoginModal) {
+      setShowNgrokLoginModal(false);
+      dispatch(lightsApi.getList());
+    }
+  }, [ngrokToken]);
 
   useEffect(() => {
     let intervalId;
@@ -148,7 +163,7 @@ const Dashboard = () => {
           />
           <DashboardCard
             activeCount={lightsOnCount}
-            count={lights.count}
+            count={ngrokToken ? lights.count : ''}
             icon="lightbulb"
             iconVariant="warning"
             inactiveCount={lightsOffCount}
@@ -156,19 +171,35 @@ const Dashboard = () => {
             name="ligths"
             refresh={lightsApi.getList}
           />
-          <div className="col-md-9 grid-margin stretch-card">
+          <div className={`col-md-${ngrokToken ? 9 : 12} grid-margin stretch-card`}>
             <div className="card">
               <div className="card-body">
                 <h4 className="card-title mb-1">
                   Lights
-                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                          onClick={() => dispatch(lightsApi.getList())}>
+                  <button
+                   type="button"
+                   className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                   onClick={() => dispatch(lightsApi.getList())}
+                    disabled={!ngrokToken}
+                   >
                     <i className="mdi mdi-refresh" />
                   </button>
-                  <div className="mr-auto text-sm-right pt-2 pt-sm-0">
+                  {
+                    ngrokToken ? (
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger btn-sm border-0 bg-transparent"
+                        onClick={() => dispatch(RpiApi.logout(ngrokToken))}
+                      >
+                        Log out RPi
+                      </button>
+                    ) : null
+                  }
+                  {
+                    ngrokToken ? <div className="mr-auto text-sm-right pt-2 pt-sm-0">
                     <Form.Check
                       checked={Boolean(lights?.results?.some(l => l.capabilities.power === 'on'))}
-                      disabled={lights.loading}
+                      disabled={lights.loading || !ngrokToken}
                       type="switch"
                       id="checkbox-toggle"
                       label=""
@@ -177,15 +208,30 @@ const Dashboard = () => {
                           lights?.results?.some(l => l.capabilities.power === 'on')
                             ? 'off'
                             : 'on';
-                        dispatch(LightsApi.turn_all(token, state));
+                        dispatch(LightsApi.turn_all(ngrokToken, state));
                       }}
                     />
                     <p className="text-muted mb-0">All lights</p>
-                  </div>
+                  </div> : null
+                  }
+                
                 </h4>
                 <div className="row">
                   <div className="col-12">
                     <Errors errors={lights.errors} />
+                    {!ngrokToken ? (
+                      <div className="alert alert-warning" role="alert">
+                        <h6>Lights are on Raspberry Pi</h6>
+                        <p className="mb-3">Connect to the RPi via ngrok to view and control lights.</p>
+                        <Button 
+                          variant="primary" 
+                          onClick={() => setShowNgrokLoginModal(true)}
+                          disabled={rpi.loading}
+                        >
+                          {rpi.loading ? 'Connecting...' : 'Connect to RPi'}
+                        </Button>
+                      </div>
+                    ) : (
                     <div className="preview-list">
                       {
                         lights.loading
@@ -224,7 +270,7 @@ const Dashboard = () => {
                                         label=""
                                         onChange={() => {
                                           const action = light.capabilities.power === 'on' ? LightsApi.turn_off : LightsApi.turn_on;
-                                          dispatch(action(token, light.ip));
+                                          dispatch(action(ngrokToken, light.ip));
                                         }}
                                       />
                                       <p className="text-muted mb-0">Brightness: {light.capabilities.bright}%</p>
@@ -259,7 +305,7 @@ const Dashboard = () => {
                                           range={{ min: 0, max: 100 }}
                                           onSet={onSlide(i)}
                                           onChange={(render, handle, value, un, percent) => {
-                                            dispatch(LightsApi.setBrightness(token, light.ip, percent[0]));
+                                            dispatch(LightsApi.setBrightness(ngrokToken, light.ip, percent[0]));
                                           }}
                                           onSlide={onSlide(i, true)}
                                           tooltips
@@ -274,7 +320,7 @@ const Dashboard = () => {
                                             }))
                                           }
                                           onChangeComplete={color => {
-                                            dispatch(LightsApi.setRgb(token, light.ip, [color.rgb.r || 1, color.rgb.g || 1, color.rgb.b || 1]));
+                                            dispatch(LightsApi.setRgb(ngrokToken, light.ip, [color.rgb.r || 1, color.rgb.g || 1, color.rgb.b || 1]));
                                           }}
                                         />
                                         <Nouislider
@@ -285,7 +331,7 @@ const Dashboard = () => {
                                           start={light.capabilities.ct}
                                           range={{ min: 1700, max: 6500 }}
                                           onChange={(render, handle, value) => {
-                                            dispatch(LightsApi.setColorTemp(token, light.ip, value[0]));
+                                            dispatch(LightsApi.setColorTemp(ngrokToken, light.ip, value[0]));
                                           }}
                                           tooltips
                                         />
@@ -304,41 +350,46 @@ const Dashboard = () => {
                             </div>
                       }
                     </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="col-md-3 col-xl-3 grid-margin stretch-card">
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title">
-                  Lights
-                  <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                          onClick={() => dispatch(lightsApi.getList())}>
-                    <i className="mdi mdi-refresh" />
-                  </button>
-                </h5>
-                {
-                  lights.loading
-                    ? <InfinitySpin
-                      visible
-                      width="100%"
-                      ariaLabel="infinity-spin-loading"
-                      wrapperStyle={{}}
-                      wrapperClass={{}}
-                      glassColor="#c0efff"
-                      color="#e15b64"
-                    />
-                    : <>
-                      <div className="aligner-wrapper">
-                        <Doughnut data={lightsChartData} options={doughnutPieOptions} />
-                      </div>
-                    </>
-                }
-              </div>
-            </div>
-          </div>
+          {
+            ngrokToken ? (
+              <div className="col-md-3 col-xl-3 grid-margin stretch-card">
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title">
+                      Lights
+                      <button type="button" className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                              onClick={() => dispatch(lightsApi.getList())}
+                              disabled={!ngrokToken}>
+                        <i className="mdi mdi-refresh" />
+                      </button>
+                    </h5>
+                        {
+                          lights.loading
+                            ? <InfinitySpin
+                              visible
+                              width="100%"
+                              ariaLabel="infinity-spin-loading"
+                              wrapperStyle={{}}
+                              wrapperClass={{}}
+                              glassColor="#c0efff"
+                              color="#e15b64"
+                            />
+                            : <>
+                              <div className="aligner-wrapper">
+                                <Doughnut data={lightsChartData} options={doughnutPieOptions} />
+                              </div>
+                            </>
+                        }
+                  </div>
+                </div>
+              </div>) : null
+          }
         </div>
       </div>
       <div className="col-sm-12 col-xl-3">
@@ -683,7 +734,7 @@ const Dashboard = () => {
               height="50"
               wrapperStyle={{ width: "100%" }}
             />
-            : <Form onSubmit={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))}>
+            : <Form onSubmit={() => dispatch(LightsApi.setName(ngrokToken, lightNameOpened.ip, lightName))}>
               <Form.Group className="mb-3">
                 <Form.Label>Name</Form.Label>
                 <Form.Control
@@ -701,8 +752,61 @@ const Dashboard = () => {
           setLightName("");
           setLightNameOpened(false)
         }}>Close</Button>
-        <Button variant="primary" onClick={() => dispatch(LightsApi.setName(token, lightNameOpened.ip, lightName))}>
+        <Button variant="primary" onClick={() => dispatch(LightsApi.setName(ngrokToken, lightNameOpened.ip, lightName))}>
           Update name
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    <Modal centered show={showNgrokLoginModal} onHide={() => {
+      setShowNgrokLoginModal(false);
+      setNgrokPassword("");
+    }}>
+      <Modal.Header closeButton>
+        <Modal.Title>Connect to Raspberry Pi</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Errors errors={rpi.errors} />
+        <Form.Group className="mb-3">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            placeholder="RPi email"
+            value={ngrokEmail}
+            onChange={e => setNgrokEmail(e.target.value)}
+            disabled={rpi.loading}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            placeholder="RPi password"
+            value={ngrokPassword}
+            onChange={e => setNgrokPassword(e.target.value)}
+            disabled={rpi.loading}
+          />
+        </Form.Group>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button 
+          variant="secondary" 
+          onClick={() => {
+            setShowNgrokLoginModal(false);
+            setNgrokPassword("");
+          }}
+          disabled={rpi.loading}
+        >
+          Close
+        </Button>
+        <Button 
+          variant="primary" 
+          onClick={() => {
+            dispatch(RpiApi.login({ email: ngrokEmail, password: ngrokPassword }));
+            setNgrokPassword("");
+          }}
+          disabled={rpi.loading || !ngrokPassword}
+        >
+          {rpi.loading ? 'Connecting...' : 'Connect'}
         </Button>
       </Modal.Footer>
     </Modal>

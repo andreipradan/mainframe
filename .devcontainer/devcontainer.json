@@ -3,7 +3,8 @@
     "vscode": {
       "extensions": [
         "tamasfe.even-better-toml",
-        "syntaf.vscode-pytest-runner"
+        "syntaf.vscode-pytest-runner",
+        "ms-ossdata.vscode-pgsql"
       ]
     }
   },
@@ -12,6 +13,10 @@
       "version": "20"
     }
   },
+  "forwardPorts": [
+    8000,
+    3000
+  ],
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "name": "Mainframe",
   "postCreateCommand": "./.devcontainer/post-create.sh",

@@ -20,6 +20,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env(
     ALLOWED_HOSTS=(list, []),
+    CORS_ALLOW_ALL_ORIGINS=(bool, False),
     CORS_ALLOW_HEADERS=(list, []),
     CORS_ALLOWED_ORIGINS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
@@ -173,6 +174,7 @@ REST_FRAMEWORK = {
 #  CORS
 # ##################################################################### #
 
+CORS_ALLOW_ALL_ORIGINS = env("CORS_ALLOW_ALL_ORIGINS")
 CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",

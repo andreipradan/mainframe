@@ -116,7 +116,7 @@ test = "pytest"
 
 [tool.poe.tasks.frontend]
 cmd = "npm start --prefix=frontend"
-env = { REACT_APP_API_URL = "https://${CODESPACE_NAME}-8000.app.github.dev" }
+env = { REACT_APP_API_URL = "https://${CODESPACE_NAME}-8000.app.github.dev", REACT_APP_NGROK_URL = "https://replace-me-in-pyproject-toml-tool-poe-tasks-frontend.com" }
 
 [tool.poe.tasks.migrate]
 sequence = [
