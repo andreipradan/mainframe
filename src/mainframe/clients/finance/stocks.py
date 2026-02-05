@@ -82,7 +82,8 @@ class StockTransactionsImporter:
         row["Type"] = self.normalize_type(row["Type"])
         return {normalize_key(k): normalize_value(v) for (k, v) in row.items() if v}
 
-    def normalize_type(self, stock_type):
+    @staticmethod
+    def normalize_type(stock_type):
         types = dict(StockTransaction.TYPE_CHOICES).values()
         if stock_type not in types:
             return StockTransaction.TYPE_OTHER
