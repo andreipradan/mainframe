@@ -39,7 +39,7 @@ def _extract_text_from_history_item(item) -> str:
             parts = item["parts"]
             if isinstance(parts, str):
                 return parts
-            elif parts and isinstance(parts, list):
+            if parts and isinstance(parts, list):
                 return parts[0]
         elif "text" in item:
             return item["text"]

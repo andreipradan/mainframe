@@ -62,9 +62,8 @@ class StockPnLImporter:
         except (IntegrityError, ValidationError) as e:
             self.logger.error(str(e))
             raise StockImportError(e) from e
-        else:
-            self.logger.info("Imported '%d' pnl records", len(results))
 
+        self.logger.info("Imported '%d' pnl records", len(results))
         backup_finance_model(model="PnL")
 
 

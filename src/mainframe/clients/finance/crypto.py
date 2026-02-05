@@ -92,9 +92,8 @@ class CryptoPnLImporter:
         except (IntegrityError, ValidationError) as e:
             self.logger.error(str(e))
             raise CryptoImportError(e) from e
-        else:
-            self.logger.info("Imported '%d' stock pnl records", len(results))
 
+        self.logger.info("Imported '%d' stock pnl records", len(results))
         backup_finance_model(model="CryptoPnL")
 
 

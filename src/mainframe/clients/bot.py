@@ -81,8 +81,7 @@ class BaseBotClient(metaclass=BaseBotMeta):
                 )
                 await asyncio.sleep(seconds)
                 return await send_message(send_message, **kwargs)
-            elif isinstance(err, telegram.error.TimedOut):
+            if isinstance(err, telegram.error.TimedOut):
                 self.logger.warning("Timed out - retrying", extra=kwargs)
                 return await send_message(send_message, **kwargs)
-            else:
-                raise
+            raise
