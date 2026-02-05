@@ -171,7 +171,7 @@ const Commands = () =>  {
                     Params:
                     <ul>
                       {selectedCommand.args.map(arg =>
-                        <li>
+                        <li key={arg.dest}>
                           {arg.dest}
                           <ul>
                             <li>required: {arg.required.toString()}</li>

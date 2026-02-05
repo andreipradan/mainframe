@@ -70,7 +70,7 @@ class WatchersApi extends mix(
             <br />
             <ul>
               {response.data.results.map((result) => (
-                <li>
+                <li key={result.title}>
                   <a href={result.url} target='_blank' rel='noreferrer'>
                     {result.title}
                   </a>

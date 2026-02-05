@@ -432,7 +432,7 @@ const Bonds = () => {
                             {bond.pnl ? parseFloat(bond.pnl): '-'}
                           </td>
                           <td>
-                            {bond.interest_dates.map(r => <div>{formatDate(r)}</div>)}
+                            {bond.interest_dates.map(r => <div key={r}>{formatDate(r)}</div>)}
                           </td>
                           <td> {bond.notes ? bond.notes: '-'} </td>
                         </tr>)
@@ -628,7 +628,7 @@ const Bonds = () => {
       }
       <Modal.Footer>
         {
-          Boolean(state.selectedItem)
+          state.selectedItem
             ? <Button
                 variant="danger"
                 className="float-left"

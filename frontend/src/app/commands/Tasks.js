@@ -93,7 +93,7 @@ const Tasks = () =>  {
                                   <td>{task.history.length}</td>
                                   <td>{task.errors?.length}</td>
                                 </>
-                                : <td colSpan={4} className="text-center">Didn't run</td>
+                                : <td colSpan={4} className="text-center">Didn&apos;t run</td>
                             }
                           </tr>
                         )
@@ -183,7 +183,7 @@ const Tasks = () =>  {
                                                 {new Date(h.timestamp).toLocaleString()}
                                                 <ul className="list-unstyled">
                                                   {Object.keys(h).filter(k => k !== "timestamp").map(hkey =>
-                                                    <li className="pl-3 mt-1">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
+                                                    <li key={hkey} className="pl-3 mt-1">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
                                                 </ul>
                                               </li>
                                             )

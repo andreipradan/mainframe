@@ -158,8 +158,9 @@ const Deposits = () => {
             Active:
             <ul className={"list-arrow"}>
               {
-                state.currencies?.map(currency => <li
-                  className={"pt-0"}>{state.aggregations[currency]} {currency}</li>)
+                state.currencies?.map(currency => <li className={"pt-0"} key={currency}>
+                    {state.aggregations[currency]} {currency}
+                  </li>)
               }
             </ul>
           </b>
@@ -462,7 +463,7 @@ const Deposits = () => {
       }
       <Modal.Footer>
         {
-          Boolean(state.selectedItem)
+          state.selectedItem
             ? <Button
                 variant="danger"
                 className="float-left"
