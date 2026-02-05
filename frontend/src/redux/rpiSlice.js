@@ -19,7 +19,7 @@ export const rpiSlice = createSlice({
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
-    logout: (state, action) => {
+    logout: (state) => {
       state.errors = null;
       state.token = null;
       state.user = null;

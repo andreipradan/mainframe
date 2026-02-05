@@ -62,8 +62,8 @@ def send_telegram_message(text, retries_on_network_error=3, **kwargs):
         logger.warning("Error sending message. Trying unformatted. (%s)", e)
         try:
             return bot.send_message(text=text, **{**bot_kwargs, "parse_mode": None})
-        except telegram.error.BadRequest as e:
-            logger.exception("Error sending unformatted message. (%s)", e)
+        except telegram.error.BadRequest as err:
+            logger.exception("Error sending unformatted message. (%s)", err)
 
 
 if __name__ == "__main__":

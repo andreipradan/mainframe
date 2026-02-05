@@ -128,12 +128,12 @@ class CalendarClient:
                     self.service.events().insert(
                         calendarId=self.calendar_id, body=event, sendUpdates="none"
                     ).execute()
-                except HttpError as e:
+                except HttpError as err:
                     self.logger.error(
                         "%s[update] Failed to create event '%s': %s",
                         self.prefix,
                         event,
-                        e,
+                        err,
                     )
                 else:
                     self.logger.info("%s Created.", prefix)

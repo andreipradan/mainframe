@@ -286,8 +286,8 @@ async def reply(update: Update, text: str, **kwargs):
         logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
         try:
             await update.message.reply_text(text)
-        except telegram.error.TelegramError as e:
-            logger.exception("Error sending unformatted message. (%s)", e)
+        except telegram.error.TelegramError as err:
+            logger.exception("Error sending unformatted message. (%s)", err)
             await update.message.reply_text("Got an error trying to send response")
 
 

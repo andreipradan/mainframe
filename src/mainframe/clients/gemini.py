@@ -105,5 +105,5 @@ def generate_content(
             },
         )
         return format_for_telegram(response.text)
-    except (ValueError, Exception) as e:
+    except Exception as e:
         raise GeminiError(e) from e

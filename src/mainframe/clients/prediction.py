@@ -16,10 +16,10 @@ def load(file_name):
         file = client.download_blob_into_memory(
             file_name, "GOOGLE_STORAGE_MODEL_BUCKET"
         )
-        return pickle.loads(file)  # noqa: S301
+        return pickle.loads(file)  # noqa: S301, BAN-B301
     model_path = f"{settings.BASE_DIR}/finance/data/model"
     with open(f"{model_path}/{file_name}", "rb") as file:
-        return pickle.load(file)  # noqa: S301
+        return pickle.load(file)  # noqa: S301, BAN-B301
 
 
 def save(item, item_type, prefix, logger):

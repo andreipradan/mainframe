@@ -110,7 +110,7 @@ def mainframe(request):  # noqa: C901, PLR0911
         f"<a href='{wf_data['html_url']}'><b>{name}</b></a> {action}"
         f" {f'({conclusion.title()})' if conclusion else ''} "
     )
-    message += f"🎉\n🍓 Deployment scheduled 🚀"
+    message += "🎉\n🍓 Deployment scheduled 🚀"
     task = schedule_deploy()
     if result := task.get():
         message += f"\n{result}"

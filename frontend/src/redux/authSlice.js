@@ -19,7 +19,7 @@ export const authSlice = createSlice({
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
-    logout: (state, action) => {
+    logout: (state) => {
       state.errors = null;
       if (window.location.pathname !== '/login')
         state.redirectUrl = window.location.pathname
