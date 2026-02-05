@@ -102,7 +102,8 @@ class CryptoTransactionsImporter:
         self.file = io.TextIOWrapper(file)
         self.logger = logger
 
-    def normalize_row(self, row: dict):
+    @staticmethod
+    def normalize_row(row: dict):
         def normalize_key(key):
             return key.lower().replace(" ", "_")
 

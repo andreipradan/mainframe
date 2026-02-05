@@ -17,7 +17,8 @@ class Command(BaseEarthquakeCommand):
     source = Earthquake.SOURCE_INFP
     url = "https://dataportal.infp.ro/"
 
-    def get_kwargs(self):
+    @staticmethod
+    def get_kwargs():
         return {"timeout": 10, "verify": False}
 
     @staticmethod
