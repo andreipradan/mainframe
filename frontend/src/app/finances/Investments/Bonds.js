@@ -432,7 +432,7 @@ const Bonds = () => {
                             {bond.pnl ? parseFloat(bond.pnl): '-'}
                           </td>
                           <td>
-                            {bond.interest_dates.map(r => <div key={r}>{formatDate(r)}</div>)}
+                            {bond.interest_dates?.map(r => <div key={r}>{formatDate(r)}</div>)}
                           </td>
                           <td> {bond.notes ? bond.notes: '-'} </td>
                         </tr>)
