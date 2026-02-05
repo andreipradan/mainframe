@@ -22,18 +22,7 @@ name = "javascript"
   environment = [
     "nodejs",
     "browser",
-    "mongo",
     "jquery"
-  ]
-  skip_doc_coverage = [
-    "class-expression",
-    "method-definition",
-    "function-declaration",
-    "function-expression",
-    "arrow-function-expression",
-    "class-declaration",
-    "class-expression",
-    "method-definition"
   ]
 
 [[analyzers]]
@@ -41,7 +30,3 @@ name = "python"
 
   [analyzers.meta]
   runtime_version = "3.x.x"
-  skip_doc_coverage = ["module", "magic", "init", "class", "nonpublic"]
-
-[[transformers]]
-name = "ruff"
