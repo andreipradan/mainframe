@@ -324,7 +324,7 @@ const Pension = () => {
 
       {/* Contributions table */}
       <div className='row'>
-        <div className={`col-12 grid-margin`}>
+        <div className={"col-12 grid-margin"}>
           <div className='card'>
             <div className='card-body'>
               <div className='table-responsive'>
