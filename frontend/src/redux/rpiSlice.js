@@ -12,18 +12,19 @@ export const rpiSlice = createSlice({
   },
   reducers: {
     login: (state, action) => {
-      Cookie.set('ngrok_token', action.payload.token);
-      Cookie.set('ngrok_user', JSON.stringify(action.payload.user));
+      const cookieOptions = { sameSite: 'Strict', secure: window.location.protocol === 'https:' };
+      Cookie.set('ngrok_token', action.payload.token, cookieOptions);
+      Cookie.set('ngrok_user', JSON.stringify(action.payload.user), cookieOptions);
       state.errors = null;
       state.loading = false;
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
-    logout: (state) => {
+    logout: (state, action) => {
       state.errors = null;
       state.token = null;
       state.user = null;
-      state.message = null;
+      state.message = action.payload || null;
       Cookie.remove('ngrok_token');
       Cookie.remove('ngrok_user');
     },
