@@ -11,7 +11,7 @@ class RpiApi {
       .post("users/login", data)
       .then((response) => {
         dispatch(login(response.data));
-        toast.info(`Connected to RPi!`, toastParams);
+        toast.info("Connected to RPi!", toastParams);
       })
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };

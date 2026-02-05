@@ -470,7 +470,7 @@ const Transport = () => {
                     {/* Search */}
                     <input
                       type='text'
-                      placeholder={`Search...`}
+                      placeholder={"Search..."}
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       onKeyDown={(e) => {
@@ -587,7 +587,7 @@ const Transport = () => {
                   >
                     <button
                       type='button'
-                      className={`btn btn-sm border-0 bg-transparent mb-3`}
+                      className={"btn btn-sm border-0 bg-transparent mb-3"}
                       onClick={() => setToggleBikes(!toggleBikes)}
                     >
                       <i
@@ -597,7 +597,7 @@ const Transport = () => {
                     <br />
                     <button
                       type='button'
-                      className={`btn btn-sm border-0 bg-transparent mb-3`}
+                      className={"btn btn-sm border-0 bg-transparent mb-3"}
                       onClick={() => setToggleWheelchair(!toggleWheelchair)}
                     >
                       <i
@@ -636,7 +636,7 @@ const Transport = () => {
                     <h4 className='card-title'>Actions</h4>
                     <button
                       type='button'
-                      className={`mr-1 btn btn-outline-warning btn-sm bg-transparent`}
+                      className={"mr-1 btn btn-outline-warning btn-sm bg-transparent"}
                       onClick={() =>
                         dispatch(
                           api.getList(fetchEntity, state[`${fetchEntity}_etag`])

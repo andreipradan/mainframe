@@ -29,7 +29,7 @@ class DevicesApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, UpdateAp
   static sync = token => dispatch => {
     dispatch(setLoading(true));
     ngrokAxios
-      .put(`devices/sync/`, {}, { headers: { Authorization: token } })
+      .put("devices/sync/", {}, { headers: { Authorization: token } })
       .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };

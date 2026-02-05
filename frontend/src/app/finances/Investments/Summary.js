@@ -50,7 +50,7 @@ const Summary = () => {
                       {
                         state.totals[currency]?.active
                           ? <ListItem
-                              label={`Active`}
+                              label={"Active"}
                               value={parseFloat(state.totals[currency].active).toFixed(2) + ` ${currency}`}
                               textType={"primary"}
                           />
@@ -108,7 +108,7 @@ const Summary = () => {
                         {
                           state[entry]?.[`active_${currency}`]
                             ? <ListItem
-                                label={`Active`}
+                                label={"Active"}
                                 value={parseFloat(state[entry][`active_${currency}`]).toFixed(2) + ` ${currency}`}
                                 textType={"info"}
                               />
@@ -144,7 +144,7 @@ const Summary = () => {
                         {
                           state[entry]?.[`pnl_${currency}`]
                             ? <ListItem
-                                label={`Profit / Loss`}
+                                label={"Profit / Loss"}
                                 value={`${state[entry][`pnl_${currency}`]} ${currency}`}
                                 textType={'warning'}
                               />
@@ -162,7 +162,7 @@ const Summary = () => {
                         {
                           state[entry]?.[`pnl_${currency}`] && state[entry]?.[`dividend_${currency}`]
                             ? <ListItem
-                                label={`Profit`}
+                                label={"Profit"}
                                 value={
                                   state[entry][`pnl_${currency}`]
                                     ? state[entry]?.[`dividend_${currency}`]
@@ -204,7 +204,7 @@ const Summary = () => {
                   ? <Circles />
                   : <>
                       <ListItem
-                        label={`Active (RON)`}
+                        label={"Active (RON)"}
                         value={
                           pension.results?.map(p => getEvaluation(p, true)).reduce((accumulator, currentValue) =>
                             accumulator + parseFloat(currentValue), 0
