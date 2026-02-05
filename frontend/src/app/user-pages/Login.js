@@ -27,7 +27,7 @@ const Login = () => {
         <div className="col-lg-6 mx-auto">
           <div className="card text-left py-5 px-4 px-sm-5">
             <h2 className="brand-logo">Sign in</h2>
-            <h4>Hello! let's get started</h4>
+            <h4>Hello! let&apos;s get started</h4>
             <h6 className="font-weight-light">
               {messageOpen && <Alert variant="success" dismissible onClose={() => setMessageOpen(false)}>{auth.message}</Alert>}
 
@@ -96,7 +96,7 @@ const Login = () => {
               </div>
 
               <div className="text-center mt-4 font-weight-light">
-                Don't have an account? <Link to="/register" className="text-primary">Create</Link>
+                Don&apos;t have an account? <Link to="/register" className="text-primary">Create</Link>
               </div>
             </Form>
           </div>

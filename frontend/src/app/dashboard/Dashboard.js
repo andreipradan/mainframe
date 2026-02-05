@@ -168,7 +168,7 @@ const Dashboard = () => {
             iconVariant="warning"
             inactiveCount={lightsOffCount}
             loading={lights.loading}
-            name="ligths"
+            name="lights"
             refresh={lightsApi.getList}
           />
           <div className={`col-md-${ngrokToken ? 9 : 12} grid-margin stretch-card`}>
@@ -376,7 +376,7 @@ const Dashboard = () => {
                               width="100%"
                               ariaLabel="infinity-spin-loading"
                               wrapperStyle={{}}
-                              wrapperClass={{}}
+                              wrapperClass=""
                               glassColor="#c0efff"
                               color="#e15b64"
                             />
@@ -804,7 +804,7 @@ const Dashboard = () => {
             dispatch(RpiApi.login({ email: ngrokEmail, password: ngrokPassword }));
             setNgrokPassword("");
           }}
-          disabled={rpi.loading || !ngrokPassword}
+          disabled={rpi.loading || !ngrokEmail || !ngrokPassword}
         >
           {rpi.loading ? 'Connecting...' : 'Connect'}
         </Button>

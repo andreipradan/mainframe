@@ -132,7 +132,7 @@ class Watcher(TimeStampedModel):
         if not (self.latest and self.latest.get("timestamp")):
             return results[:5]
 
-        if not ((latest := next(iter(self.latest.get("data") or []), {})).get("url")):
+        if not (latest := next(iter(self.latest.get("data") or []), {})).get("url"):
             return results[:5]
 
         for i, result in enumerate(results):

@@ -337,7 +337,7 @@ const Crons = () =>  {
           <Modal.Title>
             <div className="row">
               <div className="col-lg-12 grid-margin stretch-card">
-                Are you sure you want to {selectedAction} "{selectedActionCron?.command}"?
+                Are you sure you want to {selectedAction} &quot;{selectedActionCron?.command}&quot;?
               </div>
             </div>
             <p className="text-muted mb-0">This may take a few moments, please be patient</p>
@@ -384,7 +384,7 @@ const Crons = () =>  {
                       Params:
                       <ul>
                         {allCommands.find(c => c.value === command.value)?.args.map(arg =>
-                          <li>
+                          <li key={arg.dest}>
                             {arg.dest}
                             <ul>
                               <li>required: {arg.required.toString()}</li>
