@@ -188,9 +188,12 @@ class Watcher(TimeStampedModel):
         )
 
     def should_notify(self, results=None) -> bool:
-        if not results:
-            return self.has_new_data
-
+        if results is None:
+            if not self.has_new_data:
+                return False
+            if not self.cron_notification:
+                return True
+            return croniter.match(self.cron_notification, timezone.now())
         if not self.cron_notification:
             return True
 

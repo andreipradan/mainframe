@@ -93,6 +93,7 @@ dev = [
     "black>=24.4.2",
     "django-debug-toolbar>=4.3.0",
     "factory-boy>=3.3.0",
+    "freezegun>=1.5.0",
     "ipython>=8.24.0",
     "poethepoet>=0.32.0",
     "pytest>=8.2.0",

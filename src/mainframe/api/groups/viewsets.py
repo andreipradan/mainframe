@@ -9,7 +9,7 @@ from mainframe.api.user.models import User
 
 
 class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all()
+    queryset = Group.objects.all().order_by("name")
     permission_classes = (IsAdminUser,)
     serializer_class = GroupSerializer
 

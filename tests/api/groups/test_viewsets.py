@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from rest_framework import status
 
 from mainframe.api.user.models import User
+from tests.factories.groups import GroupFactory
 from tests.factories.user import UserFactory
 
 
@@ -10,8 +11,8 @@ from tests.factories.user import UserFactory
 class TestGroupViewSet:
     def test_list_groups(self, client, staff_session):
         """Test listing all groups - admin only"""
-        Group.objects.create(name="test-group-1")
-        Group.objects.create(name="test-group-2")
+        GroupFactory(name="test-group-1")
+        GroupFactory(name="test-group-2")
 
         response = client.get("/groups/", HTTP_AUTHORIZATION=staff_session.token)
 
@@ -43,7 +44,7 @@ class TestGroupViewSet:
         assert Group.objects.filter(name="new-group").exists()
 
     def test_retrieve_group(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
 
         response = client.get(
             f"/groups/{group.id}/", HTTP_AUTHORIZATION=staff_session.token
@@ -53,7 +54,7 @@ class TestGroupViewSet:
         assert response.data["name"] == "test-group"
 
     def test_update_group(self, client, staff_session):
-        group = Group.objects.create(name="old-name")
+        group = GroupFactory(name="old-name")
 
         data = {"name": "new-name"}
         response = client.patch(
@@ -68,7 +69,7 @@ class TestGroupViewSet:
         assert group.name == "new-name"
 
     def test_delete_group(self, client, staff_session):
-        group = Group.objects.create(name="to-delete")
+        group = GroupFactory(name="to-delete")
         group_id = group.id
 
         response = client.delete(
@@ -79,7 +80,7 @@ class TestGroupViewSet:
         assert not Group.objects.filter(id=group_id).exists()
 
     def test_invite_user_new(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
 
         data = {"email": "newuser@example.com"}
         response = client.put(
@@ -95,7 +96,7 @@ class TestGroupViewSet:
         assert group.user_set.filter(id=user.id).exists()
 
     def test_invite_user_existing(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
         user = UserFactory(email="existing@example.com")
 
         data = {"email": "existing@example.com"}
@@ -110,7 +111,7 @@ class TestGroupViewSet:
         assert group.user_set.filter(id=user.id).exists()
 
     def test_invite_user_already_in_group(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
         user = UserFactory(email="user@example.com")
         group.user_set.add(user)
 
@@ -126,7 +127,7 @@ class TestGroupViewSet:
         assert "already in this group" in str(response.data)
 
     def test_invite_user_missing_email(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
 
         data = {}
         response = client.put(
@@ -140,7 +141,7 @@ class TestGroupViewSet:
         assert "Email is required" in str(response.data)
 
     def test_remove_user_from_group(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
         user = UserFactory(email="user@example.com")
         group.user_set.add(user)
 
@@ -156,7 +157,7 @@ class TestGroupViewSet:
         assert not group.user_set.filter(id=user.id).exists()
 
     def test_remove_user_not_in_group(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
         user = UserFactory(email="user@example.com")
 
         data = {"id": user.id}
@@ -171,7 +172,7 @@ class TestGroupViewSet:
         assert "not in this group" in str(response.data)
 
     def test_remove_user_missing_id(self, client, staff_session):
-        group = Group.objects.create(name="test-group")
+        group = GroupFactory(name="test-group")
 
         data = {}
         response = client.put(

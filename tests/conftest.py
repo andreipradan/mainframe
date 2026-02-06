@@ -3,9 +3,8 @@ from unittest.mock import patch
 import dotenv
 import pytest
 
-from mainframe.api.authentication.models import ActiveSession
-from mainframe.api.authentication.serializers import _generate_jwt_token
-from mainframe.api.user.models import User
+from tests.factories.authentication import ActiveSessionFactory
+from tests.factories.user import UserFactory
 
 dotenv.load_dotenv()
 
@@ -27,13 +26,13 @@ def disable_google_generativeai_api_calls():
 
 @pytest.fixture
 def staff_session():
-    user_data = {"email": "foo@bar.com", "password": "password", "is_active": True}
-    user = User.objects.create(**user_data, username="foo@bar.com", is_staff=True)
-    return ActiveSession.objects.create(user=user, token=_generate_jwt_token(user))
+    user = UserFactory(
+        email="foo@bar.com", username="foo@bar.com", is_staff=True, is_active=True
+    )
+    return ActiveSessionFactory(user=user)
 
 
 @pytest.fixture
 def session(db):
-    user_data = {"email": "foo@bar.com", "password": "password", "is_active": True}
-    user = User.objects.create(**user_data, username="foo@bar.com")
-    return ActiveSession.objects.create(user=user, token=_generate_jwt_token(user))
+    user = UserFactory(email="foo@bar.com", username="foo@bar.com", is_active=True)
+    return ActiveSessionFactory(user=user)
