@@ -94,48 +94,13 @@ tests/                # Pytest test suite
 - Triggers actions when conditions are met
 - Integrates with task queue for notifications
 
-## Development Workflow
+## Development & Testing
 
-### Setup
-```bash
-# Install dependencies (uses uv - ultra-fast Python package manager)
-uv sync
+Developer-facing instructions (setup, running services, and test guidance) have been moved to [CONTRIBUTING.md](CONTRIBUTING.md). Agents should still follow the agent-specific sections in this file (tool preambles, todo usage, and behavior guidance).
 
-# Configure environment (see README.md for .env template)
-# Edit src/mainframe/.env with required variables
+**Pre-commit Hooks (Required):**
 
-# Run migrations
-uv run poe migrate
-
-# Create admin user
-uv run poe createsuperuser
-```
-
-### Running Services
-```bash
-# Backend API (port 8000)
-uv run poe dev
-
-# Frontend React (port 3000)
-uv run poe frontend
-
-# Task queue worker
-uv run poe huey
-```
-
-### Running Tests
-```bash
-# All tests with pytest
-uv run poe test
-
-# Specific test file
-uv run poe test tests/api/user/test_views.py
-
-# With coverage
-uv run poe test --cov=src/mainframe
-
-# Tests use --nomigrations (faster), --reuse-db (persistent), --disable-socket (no external calls)
-```
+Never bypass pre-commit hooks. Agents and contributors must not use `--no-verify` or other bypasses to skip hooks. Always run `pre-commit run --all-files` locally and fix the issues reported by hooks before committing. Automated agents should surface any hook failures and remediate them rather than bypassing checks.
 
 ## Adding New Features
 
@@ -170,6 +135,8 @@ class MyModelViewSet(viewsets.ModelViewSet):
 - Use pytest with fixtures from `tests/conftest.py`
 - Use Factory Boy factories from `tests/factories/` to create test data
 - Mock external API calls (see `conftest.py` Gemini example)
+- Prefer `unittest.mock` (`mock.patch`, `mock.MagicMock`) for mocking external services rather than `pytest`'s `monkeypatch` to keep mocks explicit and consistent.
+- Group related tests for the same class or behavior into `pytest` classes (e.g., `class TestMyFeature:`) to match project style.
 
 #### Test Structure
 Tests should follow this pattern for consistency:
@@ -234,7 +201,9 @@ class TestGroupViewSet:
 
     def test_list_groups_success(self, client, staff_session):
         """Test successful group listing"""
-        Group.objects.create(name="test-group")
+      from tests.factories.groups import GroupFactory
+
+      GroupFactory.create(name="test-group")
         response = client.get("/groups/", HTTP_AUTHORIZATION=staff_session.token)
         assert response.status_code == status.HTTP_200_OK
 
@@ -321,6 +290,11 @@ uv run poe test -k "permission"
 - **Factories**: Use Factory Boy in `tests/factories/` for creating test objects
   - Mirror the structure: `tests/factories/[feature].py` for `src/mainframe/[feature]/`
   - Factories handle model relationships and post-generation hooks
+  - Do not create model instances directly in tests (for example, avoid `MyModel.objects.create(...)`).
+    Use the factories in `tests/factories/` to construct test data instead. If a factory does not
+    yet exist for a model you need, add one under `tests/factories/` following the style of the
+    existing factories (use post-generation hooks, related factories, and keep naming consistent).
+    This helps keep tests consistent and avoids import-time side effects when collecting tests.
 - **Mocking**: Mock external APIs and Google Gemini calls
   - Use `@mock.patch()` decorator from `unittest.mock`
   - Always mock third-party API calls (Telegram, Gemini, Yeelight, etc.)

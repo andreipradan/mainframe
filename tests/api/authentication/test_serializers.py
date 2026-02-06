@@ -1,4 +1,6 @@
+import jwt
 import pytest
+from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 
 from mainframe.api.authentication.models import ActiveSession
@@ -176,9 +178,6 @@ class TestAuthenticationSerializers:
         assert user.check_password(plain_password)
 
     def test_login_serializer_token_validity(self):
-        import jwt
-        from django.conf import settings
-
         credentials = {"email": "test@example.com", "password": "password"}
         user = UserFactory(**credentials, is_active=True)
 

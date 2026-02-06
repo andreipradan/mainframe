@@ -6,6 +6,7 @@ from mainframe.api.user.models import User
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
+        skip_postgeneration_save = True
 
     email = factory.Sequence(lambda i: f"email{i}@foo.bar")
     username = factory.Sequence(lambda i: f"username-{i}")
