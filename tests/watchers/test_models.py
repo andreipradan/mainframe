@@ -76,9 +76,11 @@ class TestWatcherRun:
             def fake_send(*_, **__):
                 sent["called"] = True
 
-            with mock.patch.object(Watcher, "send_notification", fake_send):
-                with mute_signals(post_save):
-                    w.run()
+            with (
+                mock.patch.object(Watcher, "send_notification", fake_send),
+                mute_signals(post_save),
+            ):
+                w.run()
 
         assert sent["called"] is True
         w.refresh_from_db()
@@ -102,9 +104,11 @@ class TestWatcherRun:
             def fake_send(self, results):
                 called["sent"] = True
 
-            with mock.patch.object(Watcher, "send_notification", fake_send):
-                with mute_signals(post_save):
-                    w.run()
+            with (
+                mock.patch.object(Watcher, "send_notification", fake_send),
+                mute_signals(post_save),
+            ):
+                w.run()
 
         w.refresh_from_db()
         # notification should be deferred
