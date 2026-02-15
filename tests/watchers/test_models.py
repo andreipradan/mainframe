@@ -86,7 +86,7 @@ class TestWatcherRun:
         w.refresh_from_db()
         assert w.has_new_data is False
 
-    @freeze_time("2026-02-06 00:15:01")
+    @freeze_time("2026-02-06 00:15:00")
     def test_run_with_results_sets_latest_and_defers_notification(self):
         w = WatcherFactory(
             url="http://example.com",
