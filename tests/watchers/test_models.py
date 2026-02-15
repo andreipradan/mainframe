@@ -3,6 +3,8 @@ from types import SimpleNamespace
 from unittest import mock
 
 import pytest
+from django.db.models.signals import post_save
+from factory.django import mute_signals
 from freezegun import freeze_time
 
 from mainframe.watchers.models import (
@@ -75,7 +77,8 @@ class TestWatcherRun:
                 sent["called"] = True
 
             with mock.patch.object(Watcher, "send_notification", fake_send):
-                w.run()
+                with mute_signals(post_save):
+                    w.run()
 
         assert sent["called"] is True
         w.refresh_from_db()
@@ -100,7 +103,8 @@ class TestWatcherRun:
                 called["sent"] = True
 
             with mock.patch.object(Watcher, "send_notification", fake_send):
-                w.run()
+                with mute_signals(post_save):
+                    w.run()
 
         w.refresh_from_db()
         # notification should be deferred
