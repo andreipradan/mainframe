@@ -147,7 +147,7 @@ class Watcher(TimeStampedModel):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
             if not (results := self.fetch(logger)):
-                logger.info("No new items")
+                logger.info("[%s] No new items", self.name)
                 if self.should_notify():
                     self.send_notification(self.latest["data"])
                     self.has_new_data = False
@@ -155,7 +155,7 @@ class Watcher(TimeStampedModel):
                     return None
                 return None
 
-            logger.info("Found new items!")
+            logger.info("[%s] Found new items!", self.name)
             if self.should_notify(results):
                 self.send_notification(results)
                 self.has_new_data = False
@@ -165,7 +165,7 @@ class Watcher(TimeStampedModel):
             self.latest = {"data": results, "timestamp": timezone.now().isoformat()}
             self.save()
 
-            logger.info("Done")
+            logger.info("[%s] Done", self.name)
             return self
 
     def send_notification(self, results):
