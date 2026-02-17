@@ -33,7 +33,7 @@ def extract_first_page(first_page, logger):
     fields, _, *rows, footer, __ = [x for x in contents.split("\n") if x]
     if fields != (
         "Data următoarei plăţi"
-        "Suma de plată"
+        "Suma de plată "
         "Dobânda Rata capital Capital datorat la sfârşitul perioadei"
         "Primă asigurare"
     ):

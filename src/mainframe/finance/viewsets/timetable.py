@@ -20,12 +20,8 @@ class TimetableViewSet(viewsets.ModelViewSet):
         file = request.FILES["file"]
         logger = logging.getLogger(__name__)
         try:
-            timetable = import_timetable(file, logger)
+            import_timetable(file, logger)
         except TimetableImportError as e:
             logger.error("Could not process file: %s - error: %s", file, e)
             return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(instance=timetable)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        return self.list(request, *args, **kwargs)
