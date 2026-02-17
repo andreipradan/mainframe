@@ -1,4 +1,3 @@
-from datetime import datetime
 from types import SimpleNamespace
 from unittest import mock
 
@@ -19,62 +18,23 @@ from tests.factories.watchers import WatcherFactory
 
 
 @pytest.mark.django_db
-class TestWatcherNotification:
-    @freeze_time("2026-02-06 00:14:00")
-    def test_should_notify_stored_respects_cron(self):
-        w = WatcherFactory(
-            url="http://example.com",
-            selector="a",
-            has_new_data=True,
-            cron_notification="14 * * * *",
-        )
-
-        # respects cron_notification
-        assert Watcher.should_notify(w, None) is True
-
-    @freeze_time("2026-02-06 00:15:00")
-    def test_should_notify_stored_respects_cron_outside_time(self):
-        w = WatcherFactory(
-            url="http://example.com",
-            selector="a",
-            has_new_data=True,
-            cron_notification="14 * * * *",
-        )
-
-        # does not notify outside of cron time
-        assert Watcher.should_notify(w, None) is False
-
-    def test_should_notify_new_results_breaking_and_no_cron(self):
-        w = WatcherFactory(url="http://example.com", selector="a")
-        results = [{"title": "Normal item"}]
-        assert w.should_notify(results) is True
-
-        w.cron_notification = "14 * * * *"
-        results = [{"title": "Breaking: big"}]
-        assert w.should_notify(results) is True
-
-
-@pytest.mark.django_db
 class TestWatcherRun:
     @freeze_time("2026-02-06 00:14:00")
-    def test_run_no_results_sends_stored_at_cron(self):
+    def test_run_no_results_sends_pending_at_cron(self):
         w = WatcherFactory(
             url="http://example.com",
             selector="a",
             cron_notification="14 * * * *",
-            has_new_data=True,
-            latest={
-                "data": [{"title": "old", "url": "u"}],
-                "timestamp": datetime.now().isoformat(),
-            },
+            cron="14 * * * *",
+            pending_data=[{"title": "old", "url": "u"}],
         )
 
-        # ensure fetch returns no new items
         with mock.patch.object(Watcher, "fetch", return_value=[]):
-            sent = {"called": False}
+            sent = {"called": False, "data": None}
 
-            def fake_send(*_, **__):
+            def fake_send(self, results):
                 sent["called"] = True
+                sent["data"] = results
 
             with (
                 mock.patch.object(Watcher, "send_notification", fake_send),
@@ -83,26 +43,49 @@ class TestWatcherRun:
                 w.run()
 
         assert sent["called"] is True
+        assert sent["data"] == [{"title": "old", "url": "u"}]
         w.refresh_from_db()
-        assert w.has_new_data is False
+        assert w.pending_data == []
 
     @freeze_time("2026-02-06 00:15:00")
-    def test_run_with_results_sets_latest_and_defers_notification(self):
+    def test_run_accumulates_pending_data_outside_notification_window(self):
+        w = WatcherFactory(
+            url="http://example.com",
+            selector="a",
+            cron_notification="14 * * * *",  # Only notify at minute 14
+            pending_data=[],
+        )
+
+        with (
+            mock.patch.object(
+                Watcher, "fetch", return_value=[{"title": "new1", "url": "u1"}]
+            ),
+            mock.patch.object(Watcher, "send_notification"),
+            mute_signals(post_save),
+        ):
+            w.run()
+
+        w.refresh_from_db()
+        assert w.pending_data == [{"title": "new1", "url": "u1"}]
+
+    @freeze_time("2026-02-06 00:25:00")
+    def test_run_accumulates_multiple_results_before_notification(self):
         w = WatcherFactory(
             url="http://example.com",
             selector="a",
             cron_notification="14 * * * *",
-            has_new_data=False,
+            pending_data=[{"title": "result1", "url": "u1"}],
         )
 
-        # simulate new results found
+        # Second run at minute 25 finds more items
         with mock.patch.object(
-            Watcher, "fetch", return_value=[{"title": "new", "url": "u2"}]
+            Watcher, "fetch", return_value=[{"title": "result2", "url": "u2"}]
         ):
-            called = {"sent": False}
+            sent = {"called": False, "data": None}
 
-            def fake_send(self, results):
-                called["sent"] = True
+            def fake_send(self, results, muted=False):
+                sent["called"] = True
+                sent["data"] = results
 
             with (
                 mock.patch.object(Watcher, "send_notification", fake_send),
@@ -110,10 +93,104 @@ class TestWatcherRun:
             ):
                 w.run()
 
+        # Should NOT send yet (minute 25, notification at minute 14)
+        assert sent["called"] is False
         w.refresh_from_db()
-        # notification should be deferred
-        assert called["sent"] is False
-        assert w.has_new_data is True
+        # Should accumulate both results
+        assert w.pending_data == [
+            {"title": "result2", "url": "u2"},
+            {"title": "result1", "url": "u1"},
+        ]
+
+    @freeze_time("2026-02-06 01:14:00")
+    def test_run_sends_accumulated_data_at_notification_time(self):
+        """Accumulated data should be sent when notification cron matches."""
+        w = WatcherFactory(
+            url="http://example.com",
+            selector="a",
+            cron_notification="14 * * * *",
+            cron="14 * * * *",
+            pending_data=[
+                {"title": "result2", "url": "u2"},
+                {"title": "result1", "url": "u1"},
+            ],
+        )
+
+        with mock.patch.object(Watcher, "fetch", return_value=[]):
+            sent = {"called": False, "data": None}
+
+            def fake_send(self, results):
+                sent["called"] = True
+                sent["data"] = results
+
+            with (
+                mock.patch.object(Watcher, "send_notification", fake_send),
+                mute_signals(post_save),
+            ):
+                w.run()
+
+        assert sent["called"] is True
+        # Should send all accumulated data
+        assert sent["data"] == [
+            {"title": "result2", "url": "u2"},
+            {"title": "result1", "url": "u1"},
+        ]
+        w.refresh_from_db()
+        assert w.pending_data == []
+
+    def test_pending_data_respects_telegram_size_limit(self):
+        existing_pending = [
+            {"title": "existing item", "url": "http://example.com/existing"}
+        ]
+        w = WatcherFactory(
+            url="http://example.com",
+            name="Test Watcher",
+            selector="a",
+            cron_notification="14 * * * *",
+            pending_data=existing_pending,
+        )
+
+        # Create many items to exceed the 4096 char limit
+        # Each item will be: "{N}. <a href='URL'>TITLE</a>" plus newline
+        # With large titles to exceed the limit quickly
+        long_title = "x" * 3000  # 3000 chars per title
+        new_results = [
+            {
+                "title": f"{long_title} item{i}",
+                "url": f"http://example.com/item{i}",
+            }
+            for i in range(5)  # 5 items of 3000 chars each would be 15KB
+        ]
+
+        with (
+            mock.patch.object(Watcher, "fetch", return_value=new_results),
+            mock.patch.object(Watcher, "send_notification"),
+            mute_signals(post_save),
+        ):
+            w.run()
+
+        w.refresh_from_db()
+        # Should trim to fit in 4096 char limit (including header and footer)
+        # Not all 5 new items should fit
+        assert len(w.pending_data) < 5, (
+            "Should drop items that exceed message size limit"
+        )
+        assert len(w.pending_data) > 0, "Should keep at least some items"
+
+        # Verify message would fit in Telegram limit
+        header = "📣 <b>Test Watcher</b> 📣\n"
+        footer = "\nMore articles: <a href='http://example.com'>here</a>"
+        items_text = "\n".join(
+            [
+                f"{f'{i + 1}. ' if len(w.pending_data) > 1 else ''}"
+                f"<a href='{item['url']}' target='_blank'>{item['title']}</a>"
+                for i, item in enumerate(w.pending_data)
+            ]
+        )
+        total_message = f"{header}{items_text}{footer}"
+        assert len(total_message) <= 4096, (
+            "Accumulated message should fit in Telegram limit"
+        )
 
 
 class DummyResponse:
