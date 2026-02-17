@@ -147,13 +147,13 @@ class Watcher(TimeStampedModel):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
             matching_cron = (
-                croniter.match(self.cron, timezone.now())
+                croniter.match(self.cron_notification, timezone.now())
                 if self.cron_notification
                 else True
             )
             if self.pending_data and matching_cron:
                 logger.info("[%s] Sending pending data", self.name)
-                self.send_notification(self.pending_data, muted=True)
+                self.send_notification(self.pending_data)
                 self.pending_data = []
                 self.save()
 
@@ -164,17 +164,18 @@ class Watcher(TimeStampedModel):
             logger.info("[%s] Found new items!", self.name)
 
             urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")
-            if any(
+            is_urgent = any(
                 result["title"].lower().startswith(urgent_keywords)
                 for result in results
-            ):
+            )
+            if is_urgent or matching_cron:
                 logger.info(
-                    "[%s] Urgent items detected, sending immediately", self.name
+                    "[%s] Sending notification (is_urgent=%s, matching_cron=%s)",
+                    self.name,
+                    is_urgent,
+                    matching_cron,
                 )
-                self.send_notification(results, muted=False)
-            elif matching_cron:
-                logger.info("[%s] Cron matched, sending notification", self.name)
-                self.send_notification(results, muted=False)
+                self.send_notification(results)
             else:
                 logger.info(
                     "[%s] Deferring notification to next cron window", self.name
@@ -214,16 +215,19 @@ class Watcher(TimeStampedModel):
 
         for item in combined:
             # Format item as it appears in message
-            is_first = len(kept_items) == 0
-            prefix = "" if is_first else f"{len(kept_items) + 1}. "
+            # (account for prefixes when multiple items)
+            # Assume we'll have multiple items, so include prefix "N. " for each
+            item_index = len(kept_items)
+            prefix = f"{item_index + 1}. "
             item_html = (
                 f"{prefix}<a href='{item['url']}' target='_blank'>{item['title']}</a>"
             )
 
-            item_with_separator = item_html if is_first else f"\n{item_html}"
+            # Add newline separator if not first item
+            item_with_separator = item_html if item_index == 0 else f"\n{item_html}"
             item_length = len(item_with_separator)
-            if current_text_length + item_length <= TELEGRAM_LIMIT - len(header) + len(
-                footer
+            if current_text_length + item_length <= TELEGRAM_LIMIT - (
+                len(header) + len(footer)
             ):
                 kept_items.append(item)
                 current_text_length += item_length
@@ -241,7 +245,7 @@ class Watcher(TimeStampedModel):
 
         self.pending_data = kept_items
 
-    def send_notification(self, results, muted=False):
+    def send_notification(self, results):
         text = "\n".join(
             [
                 f"{f'{i + 1}. ' if len(results) > 1 else ''}"
@@ -255,8 +259,6 @@ class Watcher(TimeStampedModel):
         kwargs = {"parse_mode": ParseMode.HTML}
         if self.chat_id:
             kwargs["chat_id"] = self.chat_id
-        if muted:
-            kwargs["disable_notification"] = True
 
         header = f"📣 <b>{self.name}</b> 📣\n"
         footer = f"\nMore articles: <a href='{url}'>here</a>"

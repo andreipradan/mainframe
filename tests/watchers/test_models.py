@@ -30,12 +30,11 @@ class TestWatcherRun:
         )
 
         with mock.patch.object(Watcher, "fetch", return_value=[]):
-            sent = {"called": False, "data": None, "muted": None}
+            sent = {"called": False, "data": None}
 
-            def fake_send(self, results, muted=False):
+            def fake_send(self, results):
                 sent["called"] = True
                 sent["data"] = results
-                sent["muted"] = muted
 
             with (
                 mock.patch.object(Watcher, "send_notification", fake_send),
@@ -45,7 +44,6 @@ class TestWatcherRun:
 
         assert sent["called"] is True
         assert sent["data"] == [{"title": "old", "url": "u"}]
-        assert sent["muted"] is True  # Pending data is sent muted
         w.refresh_from_db()
         assert w.pending_data == []
 
@@ -119,12 +117,11 @@ class TestWatcherRun:
         )
 
         with mock.patch.object(Watcher, "fetch", return_value=[]):
-            sent = {"called": False, "data": None, "muted": None}
+            sent = {"called": False, "data": None}
 
-            def fake_send(self, results, muted=False):
+            def fake_send(self, results):
                 sent["called"] = True
                 sent["data"] = results
-                sent["muted"] = muted
 
             with (
                 mock.patch.object(Watcher, "send_notification", fake_send),
@@ -133,12 +130,11 @@ class TestWatcherRun:
                 w.run()
 
         assert sent["called"] is True
-        # Should send all accumulated data as muted
+        # Should send all accumulated data
         assert sent["data"] == [
             {"title": "result2", "url": "u2"},
             {"title": "result1", "url": "u1"},
         ]
-        assert sent["muted"] is True
         w.refresh_from_db()
         assert w.pending_data == []
 

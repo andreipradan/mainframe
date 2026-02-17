@@ -25,6 +25,8 @@ repos:
       - id: migrations-check
         language: system
         name: check for uncreated migrations
-        entry: sh -c "python src/manage.py makemigrations --check --dry-run"
-        files: "models\\.py$"
-        stages: [commit]
+        entry: uv run python src/manage.py makemigrations --check --dry-run --skip-checks
+        files: "src/mainframe/.*models\\.py$"
+        exclude: "(migrations|tests)"
+        pass_filenames: false
+        stages: [pre-commit]
