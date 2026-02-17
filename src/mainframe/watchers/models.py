@@ -100,9 +100,9 @@ class Watcher(TimeStampedModel):
     chat_id = models.BigIntegerField(blank=True, null=True)
     cron = models.CharField(blank=True, max_length=32)
     cron_notification = models.CharField(blank=True, max_length=32)
-    has_new_data = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
+    pending_data = models.JSONField(default=list)
     log_level = models.IntegerField(default=logging.WARNING)
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
@@ -132,12 +132,12 @@ class Watcher(TimeStampedModel):
         if not (self.latest and self.latest.get("timestamp")):
             return results[:5]
 
-        if not (latest := next(iter(self.latest.get("data") or []), {})).get("url"):
+        if not (latest_url := self.latest.get("url")):
             return results[:5]
 
         for i, result in enumerate(results):
-            if result["url"] == latest["url"]:
-                if result["title"] != latest["title"]:
+            if result["url"] == latest_url:
+                if result["title"] != self.latest.get("title"):
                     return results[: i + 1][:5]
                 return results[:i][:5]
 
@@ -146,29 +146,102 @@ class Watcher(TimeStampedModel):
     def run(self):
         logger = logging.getLogger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
+            matching_cron = (
+                croniter.match(self.cron, timezone.now())
+                if self.cron_notification
+                else True
+            )
+            if self.pending_data and matching_cron:
+                logger.info("[%s] Sending pending data", self.name)
+                self.send_notification(self.pending_data, muted=True)
+                self.pending_data = []
+                self.save()
+
             if not (results := self.fetch(logger)):
                 logger.info("[%s] No new items", self.name)
-                if self.should_notify():
-                    self.send_notification(self.latest["data"])
-                    self.has_new_data = False
-                    self.save()
-                    return None
                 return None
 
             logger.info("[%s] Found new items!", self.name)
-            if self.should_notify(results):
-                self.send_notification(results)
-                self.has_new_data = False
-            else:
-                self.has_new_data = True
 
-            self.latest = {"data": results, "timestamp": timezone.now().isoformat()}
+            urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")
+            if any(
+                result["title"].lower().startswith(urgent_keywords)
+                for result in results
+            ):
+                logger.info(
+                    "[%s] Urgent items detected, sending immediately", self.name
+                )
+                self.send_notification(results, muted=False)
+            elif matching_cron:
+                logger.info("[%s] Cron matched, sending notification", self.name)
+                self.send_notification(results, muted=False)
+            else:
+                logger.info(
+                    "[%s] Deferring notification to next cron window", self.name
+                )
+                self._accumulate_pending_data(results, logger)
+
+            result = results[0]
+            self.latest = {
+                "title": result["title"],
+                "url": result["url"],
+                "timestamp": timezone.now().isoformat(),
+            }
             self.save()
 
             logger.info("[%s] Done", self.name)
             return self
 
-    def send_notification(self, results):
+    def _accumulate_pending_data(self, new_results: list[Link], logger) -> None:
+        """Accumulate new results into pending_data
+        but only keep what fits in a Telegram message.
+
+        Respects Telegram's 4096 character limit, accounting for header and footer.
+        Keeps newest items first (in order), dropping oldest items that don't fit.
+        """
+        TELEGRAM_LIMIT = 4096
+        combined = new_results + self.pending_data
+
+        # Build header and footer (same format as send_notification)
+        header = f"📣 <b>{self.name}</b> 📣\n"
+        url = self.url
+        if ".json" in url:
+            url = url[: url.index(".json")]
+        footer = f"\nMore articles: <a href='{url}'>here</a>"
+
+        kept_items = []
+        current_text_length = 0
+
+        for item in combined:
+            # Format item as it appears in message
+            is_first = len(kept_items) == 0
+            prefix = "" if is_first else f"{len(kept_items) + 1}. "
+            item_html = (
+                f"{prefix}<a href='{item['url']}' target='_blank'>{item['title']}</a>"
+            )
+
+            item_with_separator = item_html if is_first else f"\n{item_html}"
+            item_length = len(item_with_separator)
+            if current_text_length + item_length <= TELEGRAM_LIMIT - len(header) + len(
+                footer
+            ):
+                kept_items.append(item)
+                current_text_length += item_length
+            else:
+                # Doesn't fit, we're done accumulating
+                if len(combined) > len(kept_items):
+                    dropped_count = len(combined) - len(kept_items)
+                    logger.warning(
+                        "[%s] Dropped %d items. Telegram message size limit: %d chars",
+                        self.name,
+                        dropped_count,
+                        TELEGRAM_LIMIT,
+                    )
+                break
+
+        self.pending_data = kept_items
+
+    def send_notification(self, results, muted=False):
         text = "\n".join(
             [
                 f"{f'{i + 1}. ' if len(results) > 1 else ''}"
@@ -179,32 +252,16 @@ class Watcher(TimeStampedModel):
         url = self.url
         if ".json" in url:
             url = url[: url.index(".json")]
-        text = text + f"\nMore articles: <a href='{url}'>here</a>"
         kwargs = {"parse_mode": ParseMode.HTML}
         if self.chat_id:
             kwargs["chat_id"] = self.chat_id
-        asyncio.run(
-            send_telegram_message(f"📣 <b>{self.name}</b> 📣\n{text}", **kwargs)
-        )
+        if muted:
+            kwargs["disable_notification"] = True
 
-    def should_notify(self, results=None) -> bool:
-        if results is None:
-            if not self.has_new_data:
-                return False
-            if not self.cron_notification:
-                return True
-            return croniter.match(self.cron_notification, timezone.now())
-        if not self.cron_notification:
-            return True
+        header = f"📣 <b>{self.name}</b> 📣\n"
+        footer = f"\nMore articles: <a href='{url}'>here</a>"
 
-        if any(
-            result["title"].lower().startswith("breaking")
-            or result["title"].lower().startswith("ultima or")
-            for result in results
-        ):
-            return True
-
-        return croniter.match(self.cron_notification, timezone.now())
+        asyncio.run(send_telegram_message(f"{header}{text}{footer}", **kwargs))
 
 
 @receiver(signals.post_delete, sender=Watcher)

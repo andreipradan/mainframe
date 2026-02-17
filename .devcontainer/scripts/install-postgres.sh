@@ -25,5 +25,3 @@ CREATE DATABASE test_db WITH OWNER test_user;
 CREATE DATABASE local_db WITH OWNER local_user;
 EOSQL
 fi
-
-uv run poe migrate
