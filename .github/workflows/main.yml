@@ -127,7 +127,7 @@ jobs:
       id-token: 'write'
     needs:
       - pre-commit
-      - security
+      - safety-cli
       - sonarqube
     steps:
       - name: Notify BE start deployment
@@ -184,7 +184,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - changes
-      - security
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     steps:
       - name: Notify FE start deployment
