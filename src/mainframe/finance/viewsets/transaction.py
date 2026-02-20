@@ -67,8 +67,10 @@ class TransactionViewSet(viewsets.ModelViewSet):
         try:
             import_statement(file, logger)
         except StatementImportError as e:
-            logger.error("Could not process file: %s - error: %s", file, e)
-            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+            logger.error("Could not process file: %s - error: %s", file.name, e)
+            return Response(
+                f"Invalid file: {file.name}", status=status.HTTP_400_BAD_REQUEST
+            )
         response = self.list(request, *args, **kwargs)
         response.data["msg"] = {"message": "Payments uploaded successfully!"}
         return response

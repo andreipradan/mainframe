@@ -4,7 +4,8 @@
       "extensions": [
         "tamasfe.even-better-toml",
         "syntaf.vscode-pytest-runner",
-        "ms-ossdata.vscode-pgsql"
+        "ms-ossdata.vscode-pgsql",
+        "SonarSource.sonarlint-vscode"
       ]
     }
   },
