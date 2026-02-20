@@ -83,7 +83,14 @@ python_files = ["test_*.py"]
 pythonpath = "src"
 
 [tool.pytest_env]
+DB_DATABASE = "test_db"
+DB_USER = "test_user"
+DB_PASSWORD = "test_pass"
+DB_HOST = "localhost"
+DB_PORT = 5432
+DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
 ENV = { value = "test", skip_if_set = true }
+SECRET_KEY = "dummy-tests-key"
 
 [tool.uv]
 package = false
@@ -127,7 +134,7 @@ sequence = [
 default_item_type = "cmd"
 
 [tool.poe.tasks.ci]
-cmd = "pytest tests --cov=. --ds mainframe.core.settings --nomigrations"
+cmd = "pytest tests --cov=src/mainframe --cov-report=xml --ds mainframe.core.settings --nomigrations"
 env = { ENV = "ci", PYTHON_PATH = "src" }
 
 [tool.ruff]
