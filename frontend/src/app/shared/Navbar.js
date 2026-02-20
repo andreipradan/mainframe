@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { Form } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
+import { Tooltip } from 'react-tooltip';
 import { Trans } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import logoMini from '../../assets/images/logo-mini.svg';
@@ -11,7 +12,6 @@ import Modal from 'react-bootstrap/Modal';
 import AuthApi from '../../api/auth';
 import Errors from './Errors';
 import RpiApi from '../../api/rpi';
-import { logout } from '../../redux/rpiSlice';
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -52,6 +52,8 @@ const Navbar = () => {
         >
           <span className='mdi mdi-menu' />
         </button>
+
+        {/* Search */}
         <ul className='navbar-nav w-100'>
           <li className='nav-item w-100'>
             <form className='nav-link mt-2 mt-md-0 d-none d-lg-flex search'>
@@ -63,7 +65,9 @@ const Navbar = () => {
             </form>
           </li>
         </ul>
+
         <ul className='navbar-nav navbar-nav-right'>
+          {/* +Create New Project */}
           <Dropdown alignRight as='li' className='nav-item d-none d-lg-block'>
             <Dropdown.Toggle className='nav-link btn btn-success create-new-button no-caret'>
               + <Trans>Create New Project</Trans>
@@ -130,6 +134,8 @@ const Navbar = () => {
               </p>
             </Dropdown.Menu>
           </Dropdown>
+
+          {/* Grid Icon */}
           <li className='nav-item d-none d-lg-block'>
             <a
               className='nav-link'
@@ -139,6 +145,8 @@ const Navbar = () => {
               <i className='mdi mdi-view-grid' />
             </a>
           </li>
+
+          {/* Mail Icon */}
           <Dropdown alignRight as='li' className='nav-item border-left'>
             <Dropdown.Toggle
               as='a'
@@ -232,6 +240,8 @@ const Navbar = () => {
               </p>
             </Dropdown.Menu>
           </Dropdown>
+
+          {/* Notifications */}
           <Dropdown alignRight as='li' className='nav-item border-left'>
             <Dropdown.Toggle
               as='a'
@@ -307,21 +317,33 @@ const Navbar = () => {
               </p>
             </Dropdown.Menu>
           </Dropdown>
+
+          {/* RPi Status */}
           <li
             className='nav-item border-left border-right d-none d-lg-block'
             type='button'
             onClick={() =>
               ngrokToken
-                ? dispatch(logout())
+                ? dispatch(RpiApi.logout(ngrokToken))
                 : setShowNgrokLoginModal(!showNgrokLoginModal)
             }
           >
-            <div className='nav-link'>
+            <div className='nav-link' id='rpi-connection-button'>
               <i
-                className={`mdi mdi-link-variant${ngrokToken ? '' : '-off'} text-${ngrokToken ? 'success' : 'danger'}`}
+                className={`mdi mdi-access-point-network text-${ngrokToken ? 'success' : 'danger'}`}
               />
             </div>
           </li>
+          <Tooltip anchorSelect='#rpi-connection-button' place='bottom-start'>
+            RPi connection:{' '}
+            {ngrokToken ? (
+              <span className={'text-success'}>online</span>
+            ) : (
+              <span className={'text-warning'}>offline</span>
+            )}
+          </Tooltip>
+
+          {/* User Profile */}
           <Dropdown alignRight as='li' className='nav-item'>
             <Dropdown.Toggle
               as='a'
@@ -355,7 +377,7 @@ const Navbar = () => {
               >
                 <div className='preview-thumbnail'>
                   <div className='preview-icon bg-dark rounded-circle'>
-                    <i className='mdi mdi-settings text-success' />
+                    <i className='mdi mdi-wrench text-success' />
                   </div>
                 </div>
                 <div className='preview-item-content'>
@@ -393,6 +415,8 @@ const Navbar = () => {
           <span className='mdi mdi-format-line-spacing' />
         </button>
       </div>
+
+      {/* RPi login modal */}
       <Modal
         centered
         show={showNgrokLoginModal}
