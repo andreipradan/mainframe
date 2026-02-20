@@ -37,7 +37,7 @@ DEBUG = int(env("DEBUG", default=0))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-SECRET_KEY = env("SECRET_KEY", default="test-secret")
+SECRET_KEY = env("SECRET_KEY")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
 INSTALLED_APPS = [
@@ -235,18 +235,17 @@ LOGGING = {
 DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = env(
     "DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE", default=None
 )
-
-if ENV in ["local", "prod", "rpi"]:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("DB_DATABASE"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("DB_DATABASE"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": env("DB_HOST"),
+        "PORT": env("DB_PORT"),
     }
+}
+if ENV in ["local", "prod", "rpi"]:
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
     logfire.configure(
@@ -274,20 +273,7 @@ if ENV in ["local", "prod", "rpi"]:
             send_default_pii=False,
             profiles_sample_rate=1.0,
         )
-
-elif ENV in ["ci", "test"]:
-    DEFAULT_CREDIT_ACCOUNT_CLIENT_CODE = 1234567890
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "test_db",
-            "USER": "test_user",
-            "PASSWORD": "test_pass",
-            "HOST": "localhost",
-            "PORT": 5432,
-        }
-    }
-else:
+elif ENV not in ["ci", "test"]:
     raise ValueError(f"Invalid ENV variable set: {ENV}")
 
 
