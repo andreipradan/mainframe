@@ -2,8 +2,8 @@ import hashlib
 import logging
 from datetime import datetime
 from typing import Dict, List
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from pydantic import BaseModel
@@ -32,10 +32,10 @@ class Outage(BaseModel):
     @classmethod
     def from_event(cls, event: dict, outage_type: str) -> "Outage":
         def clean_date(date_str: str) -> datetime:
-            local_tz = pytz.timezone(settings.TIME_ZONE)
+            local_tz = ZoneInfo(settings.TIME_ZONE)
             naive_dt = datetime.strptime(date_str, "%d/%m/%Y %H:%M")
-            local_dt = local_tz.localize(naive_dt)
-            return local_dt.astimezone(pytz.utc)
+            local_dt = naive_dt.replace(tzinfo=local_tz)
+            return local_dt.astimezone(ZoneInfo("UTC"))
 
         event = {k: v for k, v in event.items() if v}
 

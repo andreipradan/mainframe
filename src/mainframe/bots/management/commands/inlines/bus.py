@@ -2,8 +2,8 @@ import logging
 import math
 from datetime import datetime
 from typing import List
+from zoneinfo import ZoneInfo
 
-import pytz
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from telegram import InlineKeyboardButton as Button
@@ -183,7 +183,7 @@ class BusInline(BaseInlines):
     async def fetch(  # noqa: PLR0913
         cls, update, line_name, line_type, page, full_details=False
     ):
-        now = datetime.now(pytz.timezone(settings.TIME_ZONE))
+        now = datetime.now(ZoneInfo(settings.TIME_ZONE))
         weekday = now.weekday()
         if weekday in range(5):
             day = "lv"

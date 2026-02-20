@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.conf import settings
 
 from mainframe.earthquakes.management.base_check import BaseEarthquakeCommand
@@ -22,9 +22,9 @@ class Command(BaseEarthquakeCommand):
         ):
             since = latest.timestamp
         else:
-            since = datetime.now().astimezone(
-                pytz.timezone(settings.TIME_ZONE)
-            ) - timedelta(minutes=5)
+            since = datetime.now().astimezone(ZoneInfo(settings.TIME_ZONE)) - timedelta(
+                minutes=5
+            )
 
         lat, long = settings.EARTHQUAKE_DEFAULT_COORDINATES
         return {
@@ -48,7 +48,9 @@ class Command(BaseEarthquakeCommand):
         props = event["properties"]
         long, lat, depth = event["geometry"]["coordinates"]
         return Earthquake(
-            timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(pytz.utc),
+            timestamp=datetime.fromtimestamp(props["time"] / 1000).astimezone(
+                ZoneInfo("UTC")
+            ),
             depth=depth,
             intensity="",
             is_local=True,  # see get_kwargs -> filtering only for local events

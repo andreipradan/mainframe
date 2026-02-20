@@ -24,6 +24,18 @@ This file contains developer-facing contribution and testing guidelines for the 
 ## Tests
 
 - Place tests in `tests/<feature>/test_*.py` mirroring `src/mainframe/<feature>/`.
+
+Notes on Test Placement and Naming
+---------------------------------
+- Tests should mirror the `src/mainframe/` layout where practical. For example,
+	- code in `src/mainframe/earthquakes/...` -> tests in `tests/earthquakes/...`
+	- code in `src/mainframe/clients/finance/...` -> tests in `tests/clients/finance/...`
+- Test filenames should follow the `test_*.py` pattern and be grouped by feature
+	(e.g. `tests/earthquakes/test_check_infp.py`). When adding small, focused
+	tests covering cross-cutting concerns (like timezone handling) it's acceptable
+	to add `test_*_timezones.py` under the corresponding feature folder, but
+	prefer placing tests close to the module they exercise for discoverability.
+
 - Use fixtures from `tests/conftest.py` and Factory Boy factories from `tests/factories/`.
 - Mock all external API calls (HTTP, Telegram, Gemini, Yeelight).
 - Use `@pytest.mark.django_db` for DB tests.

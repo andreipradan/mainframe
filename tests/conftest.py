@@ -9,6 +9,15 @@ from tests.factories.user import UserFactory
 dotenv.load_dotenv()
 
 
+@pytest.fixture(autouse=True)
+def fast_password_hasher(settings):
+    """Use a fast password hasher in tests to avoid expensive PBKDF2 hashing."""
+    settings.PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+    ]
+    yield
+
+
 # in order for pytest-asyncio (uses sockets) to work with
 # pytest-socket (which disables all sockets)
 def pytest_collection_modifyitems(config, items):

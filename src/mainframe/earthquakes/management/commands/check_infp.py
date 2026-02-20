@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import pytz
 from bs4 import BeautifulSoup
 from django.conf import settings
 from geopy.distance import geodesic
@@ -29,7 +29,7 @@ class Command(BaseEarthquakeCommand):
     @staticmethod
     def get_datetime(string):
         dt = datetime.strptime(f"{string}", "%Y-%m-%d %H:%M:%S")
-        return pytz.timezone(settings.TIME_ZONE).localize(dt)
+        return dt.replace(tzinfo=ZoneInfo(settings.TIME_ZONE))
 
     @staticmethod
     def is_within_radius(point1, point2, radius_km):

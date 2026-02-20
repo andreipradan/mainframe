@@ -1,8 +1,8 @@
 import csv
 import io
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -222,7 +222,9 @@ class RevolutParser(StatementParser):
         if not date_time:
             return None
         dt = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S")
-        return pytz.timezone(settings.TIME_ZONE).localize(dt).astimezone(pytz.utc)
+        return dt.replace(tzinfo=ZoneInfo(settings.TIME_ZONE)).astimezone(
+            ZoneInfo("UTC")
+        )
 
     @staticmethod
     def get_field(header):
