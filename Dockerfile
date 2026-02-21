@@ -6,9 +6,11 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
         linux-headers \
     && mkdir -p /temp_requirements
 
-# README.md is needed since it's mentioned in the pyproject.toml
-COPY pyproject.toml README.md /temp_requirements/
-RUN PYTHONDONTWRITEBYTECODE=1 \
+COPY pyproject.toml /temp_requirements/
+
+# README.md is required by the pyproject.toml
+RUN echo "foo" > /temp_requirements/README.md && \
+    PYTHONDONTWRITEBYTECODE=1 \
     pip install --no-cache-dir /temp_requirements \
     && rm -rf /temp_requirements \
     && apk del .tmp-build-deps \
