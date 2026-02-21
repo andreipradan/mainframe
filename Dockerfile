@@ -6,8 +6,8 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
         linux-headers \
     && mkdir -p /temp_requirements
 
-COPY pyproject.toml /temp_requirements/
-RUN echo "foo" > /temp_requirements/README.md
+# README.md is needed since it's mentioned in the pyproject.toml
+COPY pyproject.toml README.md /temp_requirements/
 RUN PYTHONDONTWRITEBYTECODE=1 \
     pip install --no-cache-dir /temp_requirements \
     && rm -rf /temp_requirements \
@@ -19,7 +19,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 
 WORKDIR /app
 COPY src gunicorn.config.py ./
