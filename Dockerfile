@@ -19,6 +19,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 WORKDIR /app
 COPY src gunicorn.config.py ./
