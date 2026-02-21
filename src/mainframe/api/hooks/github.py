@@ -22,7 +22,7 @@ PREFIX = "[[GitHub]]"
 
 @csrf_exempt
 def mainframe(request):  # noqa: C901, PLR0911
-    if not request.method == "POST":
+    if request.method != "POST":
         raise MethodNotAllowed(request.method)
 
     # Verify if request came from GitHub
