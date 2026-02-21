@@ -25,4 +25,4 @@ COPY src gunicorn.config.py ./
 
 USER appuser
 
-CMD ["gunicorn", "-c", "gunicorn.config.py", "--bind", "0.0.0.0:$PORT"]
+CMD ["/bin/sh", "-c", "gunicorn -c gunicorn.config.py --bind 0.0.0.0:$PORT"]
