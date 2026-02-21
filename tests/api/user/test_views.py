@@ -137,12 +137,12 @@ class TestLogin:
         assert response.status_code == status.HTTP_200_OK, response.data
         assert response.json() == {
             "date": mock.ANY,
-            "email": "foo@bar.com",
+            "email": "staff@bar.com",
             "id": staff_session.user_id,
             "is_active": True,
             "is_staff": True,
             "last_login": None,
-            "username": "foo@bar.com",
+            "username": "staff",
         }
 
     def test_detail_forbidden(self, client, session):
@@ -191,12 +191,12 @@ class TestLogin:
             "results": [
                 {
                     "date": mock.ANY,
-                    "email": "foo@bar.com",
+                    "email": "staff@bar.com",
                     "id": staff_session.user_id,
                     "is_active": True,
                     "is_staff": True,
                     "last_login": None,
-                    "username": "foo@bar.com",
+                    "username": "staff",
                 },
                 {
                     "date": mock.ANY,

@@ -35,11 +35,13 @@ def disable_google_generativeai_api_calls():
 
 @pytest.fixture
 def staff_session():
-    user = UserFactory(is_staff=True, is_active=True)
+    user = UserFactory(
+        email="staff@bar.com", username="staff", is_staff=True, is_active=True
+    )
     return ActiveSessionFactory(user=user)
 
 
 @pytest.fixture
 def session(db):
-    user = UserFactory(is_active=True)
+    user = UserFactory(email="active@bar.com", username="active", is_active=True)
     return ActiveSessionFactory(user=user)
