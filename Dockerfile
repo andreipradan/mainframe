@@ -1,12 +1,28 @@
-FROM python:3.10.11-alpine
+FROM python:3.10.11-alpine AS builder
 
-ENV PYTHONUNBUFFERED 1
-RUN apk add --update --no-cache --virtual .tmp-build-deps build-base linux-headers  # for psutil
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache --virtual .tmp-build-deps \
+        build-base \
+        linux-headers \
+    && mkdir -p /temp_requirements
 
 COPY pyproject.toml /temp_requirements/
-RUN echo "foo" > /temp_requirements/README.md  # some build systems require a README
-RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir /temp_requirements && rm -rf /temp_requirements/
+RUN echo "foo" > /temp_requirements/README.md
+RUN PYTHONDONTWRITEBYTECODE=1 \
+    pip install --no-cache-dir /temp_requirements \
+    && rm -rf /temp_requirements \
+    && apk del .tmp-build-deps \
+    && rm -rf /var/cache/apk/*
+
+FROM python:3.10.11-alpine
+ENV PYTHONUNBUFFERED=1
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+
 WORKDIR /app
 COPY src gunicorn.config.py ./
 
-CMD exec gunicorn -c gunicorn.config.py --bind 0.0.0.0:$PORT
+USER appuser
+
+CMD ["gunicorn", "-c", "gunicorn.config.py", "--bind", "0.0.0.0:$PORT"]
