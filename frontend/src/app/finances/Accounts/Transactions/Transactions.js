@@ -212,7 +212,7 @@ const Transactions = () => {
     )
   }
   const onConfirmedByChange = newValue => {
-    const newConfirmedBy = !newValue ? "" : newValue.value
+    const newConfirmedBy = newValue ? newValue.value : ""
     dispatch(setKwargs({confirmed_by: newConfirmedBy, page: 1}))
   }
   const onTypeChange = newValue => {

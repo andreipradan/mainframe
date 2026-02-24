@@ -240,7 +240,7 @@ export class PredictionApi {
   };
   static getTasks = token => dispatch => {
     dispatch(setPredictionLoading(true))
-    axios
+    return axios
       .get(`${base}/prediction/`, { headers: { Authorization: token } })
       .then((response) => dispatch(setPredictionResults(response.data)))
       .catch((err) => handleErrors(err, dispatch, setPredictionErrors, setPredictionLoading));
