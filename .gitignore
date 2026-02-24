@@ -143,3 +143,4 @@ dmypy.json
 /src/mainframe/.env
 /src/mainframe/finance/data/model/latest_model.pkl
 /src/mainframe/finance/data/model/latest_vectorizer.pkl
+/node_modules
