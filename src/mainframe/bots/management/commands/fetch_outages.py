@@ -1,6 +1,7 @@
 import hashlib
 import logging
 from datetime import datetime
+from functools import cached_property
 from typing import Dict, List
 from zoneinfo import ZoneInfo
 
@@ -29,6 +30,15 @@ class Outage(BaseModel):
     start: datetime
     type: str
 
+    @property
+    def id(self):
+        hash_input = f"{self.county}-{self.start.isoformat()}-{self.external_id}"
+        return hashlib.sha256(hash_input.encode()).hexdigest()
+
+    @cached_property
+    def location(self):
+        return self.addresses[0]
+
     @classmethod
     def from_event(cls, event: dict, outage_type: str) -> "Outage":
         def clean_date(date_str: str) -> datetime:
@@ -48,7 +58,7 @@ class Outage(BaseModel):
 
         return cls(
             additional_data=event,
-            addresses=list(set(addresses.split("<br />"))),
+            addresses=sorted(set(addresses.split("<br />"))),
             county=county.title(),
             duration=duration,
             end=clean_date(end),
@@ -57,19 +67,16 @@ class Outage(BaseModel):
             type=outage_type,
         )
 
-    def to_calendar_event(self, addresses_query) -> dict:
-        def generate_id() -> str:
-            hash_input = f"{self.county}-{self.start.isoformat()}-{self.external_id}"
-            return hashlib.sha256(hash_input.encode()).hexdigest()
-
+    def to_calendar_event(self) -> dict:
         def parse_description() -> str:
+            locations = "\n".join(self.addresses)
             return (
-                f"<b>Affected locations<b/>"
-                f"<ul>{''.join(f'<li>{add}</li>' for add in self.addresses)}</ul>"
-                f"<i>Headquarters: {self.county}<br />"
-                f"Type: {self.type}<br />"
-                f"Duration: {self.duration}<br />"
-                f"External ID: {self.external_id}<br />"
+                f"Affected locations:\n"
+                f"{locations}\n"
+                f"Headquarters: {self.county}\n"
+                f"Type: {self.type}\n"
+                f"Duration: {self.duration}\n"
+                f"External ID: {self.external_id}\n"
             )
 
         def parse_summary() -> str:
@@ -78,18 +85,14 @@ class Outage(BaseModel):
             return f"{pre} affecting {len(self.addresses)} {loc} in {self.county}"
 
         return {
-            "id": generate_id(),
+            "id": self.id,
             "summary": parse_summary(),
             "location": self.addresses[0],
             "description": parse_description(),
             "start": {"dateTime": self.start.isoformat()},
             "end": {"dateTime": self.end.isoformat()},
             "extendedProperties": {
-                "private": {
-                    "type": self.type,
-                    "branch": self.county,
-                    "addresses": addresses_query,
-                }
+                "private": {"type": self.type, "branch": self.county}
             },
         }
 
@@ -150,15 +153,13 @@ class Command(BaseCommand):
         )
 
         client = CalendarClient(logger=logger, prefix=prefix)
-        client.clear_events(
-            event_type=outage_type, branch=branch.title(), addresses=addresses
-        )
 
         if not outages:
+            client.clear_events(event_type=outage_type, branch=branch.title())
             logger.info("%s No events to process", prefix)
             healthchecks.ping(logger, "outages")
             return
 
-        client.create_events([event.to_calendar_event(addresses) for event in outages])
+        client.create_events(outages)
         logger.info("%s Done", prefix)
         healthchecks.ping(logger, "outages")
