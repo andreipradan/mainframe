@@ -126,8 +126,7 @@ describe('PensionApi instance methods', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(dispatch).toHaveBeenCalledWith({ type: 'pension_set_loading_items', payload: 5 });
-    // after success, deleteContribution triggers deleteContribution action from slice (mock returns object)
-    expect(dispatch).toHaveBeenCalled();
+    expect(dispatch).toHaveBeenCalledWith({ type: 'pension_delete_contribution', payload: { pensionId: 5, contributionId: 7 } });  
   });
 
   test('updateContribution dispatches update and shows toast', async () => {

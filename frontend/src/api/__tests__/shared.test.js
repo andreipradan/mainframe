@@ -17,6 +17,10 @@ jest.mock('../errors', () => ({ handleErrors: jest.fn() }));
 jest.mock('react-toastify', () => ({ toast: { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() } }));
 jest.mock('../auth', () => ({ toastParams: {} }));
 
+beforeEach(() => {  
+  jest.clearAllMocks();  
+});  
+
 describe('shared utils', () => {
   test('createSearchParams handles null, arrays and values', () => {
     expect(createSearchParams(null)).toBe('');

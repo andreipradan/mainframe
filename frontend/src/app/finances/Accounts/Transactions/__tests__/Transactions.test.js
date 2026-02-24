@@ -119,7 +119,14 @@ function renderWithState(initialState) {
     rootInstance.render(React.createElement(Provider, { store }, React.createElement(Transactions, { initialState })));
   });
   const root = { unmount: () => act(() => rootInstance.unmount()) };
-  return { root, container: div };
+  return {
+    root,
+    container: div,
+    cleanup: () => {
+      act(() => rootInstance.unmount());
+      div.remove();
+    },
+  };
 }
 
 describe('Transactions component (basic)', () => {
@@ -130,7 +137,7 @@ describe('Transactions component (basic)', () => {
       transactions: { loading: false, results: [], kwargs: {}, errors: null, count: 0 },
     };
     const { root, container } = renderWithState(initialState);
-      expect(container.textContent).toContain('TestBank (Checking)');
+    expect(container.textContent).toContain('TestBank (Checking)');
     root.unmount();
   });
 

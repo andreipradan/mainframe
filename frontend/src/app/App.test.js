@@ -38,4 +38,6 @@ it('renders without crashing', async () => {
     root.unmount();
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
+  sidebarDiv.remove();  
+  pageBody.remove();  
 });
