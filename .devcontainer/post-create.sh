@@ -9,4 +9,5 @@ set -e
 uv run poe migrate
 uv run pre-commit install
 
-npm install --prefix /workspaces/mainframe/frontend
+git config --unset-all core.hooksPath
+npm run install:all

@@ -49,10 +49,21 @@
     "slick-carousel": "^1.8.1"
   },
   "scripts": {
-    "start": "react-scripts start",
     "build": "react-scripts build",
+    "start": "react-scripts start",
     "test": "react-scripts test",
+    "test:ci": "CI=true react-scripts test --watchAll=false --runInBand",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(axios)/)"
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|scss)$": "identity-obj-proxy",
+      "^ace-builds/.*$": "<rootDir>/src/__mocks__/ace.js",
+      "^src/(.*)$": "<rootDir>/src/$1"
+    }
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -70,10 +81,13 @@
     ]
   },
   "devDependencies": {
+    "husky": "^8.0.3",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "identity-obj-proxy": "^3.0.0"
   }
 }
