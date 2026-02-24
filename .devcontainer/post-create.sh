@@ -6,8 +6,8 @@ set -e
 ./.devcontainer/scripts/install-redis.sh
 ./.devcontainer/scripts/set-local-env-vars.sh
 
+git config --unset-all core.hooksPath || true
+
 uv run poe migrate
 uv run pre-commit install
-
-git config --unset-all core.hooksPath
 npm run install:all

@@ -49,9 +49,9 @@ describe('public utils', () => {
     expect(L.divIcon).toHaveBeenCalled();
     expect(iconM.opts.html).toContain('🚴');
 
-      const numIcon = getNumberIcon(4);
-      expect(L.divIcon).toHaveBeenCalled();
-      expect(numIcon.opts.html).toContain('5');
+    const numIcon = getNumberIcon(4);
+    expect(L.divIcon).toHaveBeenCalled();
+    expect(numIcon.opts.html).toContain('5');
     });
   });
 });
