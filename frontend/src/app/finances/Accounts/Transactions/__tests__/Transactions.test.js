@@ -3,31 +3,68 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 
 // Ensure modules the component uses don't perform network calls
-jest.mock('../../../../../api/finance/accounts', () => ({ AccountsApi: { getList: jest.fn() } }));
-jest.mock('../../../../../api/finance', () => ({ FinanceApi: { getExpenses: jest.fn() } }));
-jest.mock('../../../../../api/finance/transactions', () => ({ TransactionsApi: jest.fn().mockImplementation(() => ({ getList: jest.fn(), delete: jest.fn(), uploadTransactions: jest.fn() })) }));
-jest.mock('react-toastify', () => ({ toast: { success: jest.fn(), warning: jest.fn(), error: jest.fn() } }));
+jest.mock('../../../../../api/finance/accounts', () => ({
+  AccountsApi: { getList: jest.fn() },
+}));
+jest.mock('../../../../../api/finance', () => ({
+  FinanceApi: { getExpenses: jest.fn() },
+}));
+jest.mock('../../../../../api/finance/transactions', () => ({
+  TransactionsApi: jest.fn().mockImplementation(() => ({
+    getList: jest.fn(),
+    delete: jest.fn(),
+    uploadTransactions: jest.fn(),
+  })),
+}));
+jest.mock('react-toastify', () => ({
+  toast: { success: jest.fn(), warning: jest.fn(), error: jest.fn() },
+}));
 
 // Mock heavy UI and third-party components to keep render deterministic
 jest.mock('src/app/shared/ListItem', () => {
   const React = require('react');
-  return { __esModule: true, default: ({ label, value, children }) => React.createElement('div', null, `${label}: ${value}`, children) };
+  return {
+    __esModule: true,
+    default: ({ label, value, children }) =>
+      React.createElement('div', null, `${label}: ${value}`, children),
+  };
 });
 jest.mock('src/app/shared/BottomPagination', () => {
   const React = require('react');
-  return { __esModule: true, default: () => React.createElement('div', null, 'pagination') };
+  return {
+    __esModule: true,
+    default: () => React.createElement('div', null, 'pagination'),
+  };
 });
 jest.mock('react-fast-marquee', () => {
   const React = require('react');
-  return { __esModule: true, default: ({ children }) => React.createElement('div', null, children) };
+  return {
+    __esModule: true,
+    default: ({ children }) => React.createElement('div', null, children),
+  };
 });
 jest.mock('react-select', () => {
   const React = require('react');
-  return { __esModule: true, default: (props) => React.createElement('select', null, props.value ? String(props.value.label || props.value) : null) };
+  return {
+    __esModule: true,
+    default: (props) =>
+      React.createElement(
+        'select',
+        null,
+        props.value ? String(props.value.label || props.value) : null
+      ),
+  };
 });
 jest.mock('react-datepicker', () => {
   const React = require('react');
-  return { __esModule: true, default: (props) => React.createElement('input', { type: 'text', value: props.selected ? props.selected.toString() : '' }) };
+  return {
+    __esModule: true,
+    default: (props) =>
+      React.createElement('input', {
+        type: 'text',
+        value: props.selected ? props.selected.toString() : '',
+      }),
+  };
 });
 jest.mock('react-chartjs-2', () => {
   const React = require('react');
@@ -39,54 +76,92 @@ jest.mock('react-loader-spinner', () => {
 });
 jest.mock('src/app/shared/Errors', () => {
   const React = require('react');
-  return { __esModule: true, default: ({ errors }) => React.createElement('div', null, errors ? String(errors) : null) };
+  return {
+    __esModule: true,
+    default: ({ errors }) =>
+      React.createElement('div', null, errors ? String(errors) : null),
+  };
 });
-jest.mock('src/app/finances/Accounts/Transactions/components/AccountEditModal', () => {
-  const React = require('react');
-  return { __esModule: true, default: () => React.createElement('div', null) };
-});
-jest.mock('src/app/finances/Accounts/Transactions/components/TransactionEditModal', () => {
-  const React = require('react');
-  return { __esModule: true, default: () => React.createElement('div', null) };
-});
-jest.mock('src/app/finances/Accounts/Transactions/components/TransactionsBulkUpdateModal', () => {
-  const React = require('react');
-  return { __esModule: true, default: () => React.createElement('div', null) };
-});
+jest.mock(
+  'src/app/finances/Accounts/Transactions/components/AccountEditModal',
+  () => {
+    const React = require('react');
+    return {
+      __esModule: true,
+      default: () => React.createElement('div', null),
+    };
+  }
+);
+jest.mock(
+  'src/app/finances/Accounts/Transactions/components/TransactionEditModal',
+  () => {
+    const React = require('react');
+    return {
+      __esModule: true,
+      default: () => React.createElement('div', null),
+    };
+  }
+);
+jest.mock(
+  'src/app/finances/Accounts/Transactions/components/TransactionsBulkUpdateModal',
+  () => {
+    const React = require('react');
+    return {
+      __esModule: true,
+      default: () => React.createElement('div', null),
+    };
+  }
+);
 jest.mock('react-bootstrap', () => {
   const React = require('react');
   return {
     Collapse: ({ children }) => React.createElement('div', null, children),
     Dropdown: (() => {
-      const Dropdown = (props) => React.createElement('div', props, props.children);
-      Dropdown.Toggle = ({ children, ...props }) => React.createElement('a', props, children);
-      Dropdown.Menu = ({ children }) => React.createElement('div', null, children);
-      Dropdown.Item = ({ children, ...props }) => React.createElement('div', props, children);
+      const Dropdown = (props) =>
+        React.createElement('div', props, props.children);
+      Dropdown.Toggle = ({ children, ...props }) =>
+        React.createElement('a', props, children);
+      Dropdown.Menu = ({ children }) =>
+        React.createElement('div', null, children);
+      Dropdown.Item = ({ children, ...props }) =>
+        React.createElement('div', props, children);
       return Dropdown;
     })(),
-    Button: ({ children, ...props }) => React.createElement('button', props, children),
+    Button: ({ children, ...props }) =>
+      React.createElement('button', props, children),
     // Provide Form component with expected subcomponents used in Transactions
     Form: (() => {
-      const Form = ({ children }) => React.createElement('form', null, children);
-      Form.Group = ({ children, ...props }) => React.createElement('div', props, children);
-      Form.Label = ({ children, ...props }) => React.createElement('label', props, children);
-      Form.Control = ({ children, ...props }) => React.createElement('input', props, null);
-      Form.Check = ({ children, ...props }) => React.createElement('input', { type: 'checkbox', ...props }, null);
+      const Form = ({ children }) =>
+        React.createElement('form', null, children);
+      Form.Group = ({ children, ...props }) =>
+        React.createElement('div', props, children);
+      Form.Label = ({ children, ...props }) =>
+        React.createElement('label', props, children);
+      Form.Control = (props) => React.createElement('input', props, null);
+      Form.Check = (props) =>
+        React.createElement('input', { type: 'checkbox', ...props }, null);
       return Form;
     })(),
   };
 });
 jest.mock('react-bootstrap/Button', () => {
   const React = require('react');
-  return { __esModule: true, default: ({ children, ...props }) => React.createElement('button', props, children) };
+  return {
+    __esModule: true,
+    default: ({ children, ...props }) =>
+      React.createElement('button', props, children),
+  };
 });
 jest.mock('react-bootstrap/Form', () => {
   const React = require('react');
   const Form = ({ children }) => React.createElement('form', null, children);
-  Form.Group = ({ children, ...props }) => React.createElement('div', props, children);
-  Form.Label = ({ children, ...props }) => React.createElement('label', props, children);
-  Form.Control = ({ children, ...props }) => React.createElement('input', props, null);
-  Form.Check = ({ children, ...props }) => React.createElement('input', { type: 'checkbox', ...props }, null);
+  Form.Group = ({ children, ...props }) =>
+    React.createElement('div', props, children);
+  Form.Label = ({ children, ...props }) =>
+    React.createElement('label', props, children);
+  Form.Control = (props) => React.createElement('input', props, null);
+  Form.Check = (props) =>
+    React.createElement('input', { type: 'checkbox', ...props }, null);
   return { __esModule: true, default: Form };
 });
 jest.mock('react-bootstrap/Modal', () => {
@@ -96,7 +171,14 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   Modal.Header = ({ children }) => React.createElement('div', null, children);
   Modal.Title = ({ children }) => React.createElement('div', null, children);
-  return { __esModule: true, default: Modal, Body: Modal.Body, Footer: Modal.Footer, Header: Modal.Header, Title: Modal.Title };
+  return {
+    __esModule: true,
+    default: Modal,
+    Body: Modal.Body,
+    Footer: Modal.Footer,
+    Header: Modal.Header,
+    Title: Modal.Title,
+  };
 });
 
 // Note: we intentionally use the local Transactions above for deterministic testing
@@ -111,21 +193,28 @@ function renderWithState(initialState) {
     subscribe: () => () => {},
     dispatch: () => {},
   };
-
   // Use React 18 createRoot to avoid ReactDOM.render deprecation warnings
   const rootInstance = createRoot(div);
   // Ensure render completes before returning (wrap in act for sync flush)
   act(() => {
-    rootInstance.render(React.createElement(Provider, { store }, React.createElement(Transactions, { initialState })));
+    rootInstance.render(
+      React.createElement(
+        Provider,
+        { store },
+        React.createElement(Transactions, { initialState })
+      )
+    );
   });
-  const root = { unmount: () => act(() => rootInstance.unmount()) };
-  return {
-    root,
-    container: div,
-    cleanup: () => {
+  const root = {
+    unmount: () => {
       act(() => rootInstance.unmount());
       div.remove();
     },
+  };
+  return {
+    root,
+    container: div,
+    cleanup: () => root.unmount(),
   };
 }
 
@@ -133,8 +222,20 @@ describe('Transactions component (basic)', () => {
   test('shows account bank and type when selectedItem exists', () => {
     const initialState = {
       auth: { token: 'tok' },
-      accounts: { selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 }, results: [], analytics: null, loading: false, modalOpen: false },
-      transactions: { loading: false, results: [], kwargs: {}, errors: null, count: 0 },
+      accounts: {
+        selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 },
+        results: [],
+        analytics: null,
+        loading: false,
+        modalOpen: false,
+      },
+      transactions: {
+        loading: false,
+        results: [],
+        kwargs: {},
+        errors: null,
+        count: 0,
+      },
     };
     const { root, container } = renderWithState(initialState);
     expect(container.textContent).toContain('TestBank (Checking)');
@@ -144,8 +245,20 @@ describe('Transactions component (basic)', () => {
   test('shows "No transactions found" when there are no results', () => {
     const initialState = {
       auth: { token: 'tok' },
-      accounts: { selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 }, results: [], analytics: null, loading: false, modalOpen: false },
-      transactions: { loading: false, results: [], kwargs: {}, errors: null, count: 0 },
+      accounts: {
+        selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 },
+        results: [],
+        analytics: null,
+        loading: false,
+        modalOpen: false,
+      },
+      transactions: {
+        loading: false,
+        results: [],
+        kwargs: {},
+        errors: null,
+        count: 0,
+      },
     };
     const { root, container } = renderWithState(initialState);
     expect(container.textContent).toContain('No transactions found');
@@ -163,12 +276,24 @@ describe('Transactions component (basic)', () => {
       description: 'Lunch at cafe',
       type: 'card',
       category: 'Unidentified',
-      product: 'Food'
+      product: 'Food',
     };
     const initialState = {
       auth: { token: 'tok' },
-      accounts: { selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 }, results: [], analytics: null, loading: false, modalOpen: false },
-      transactions: { loading: false, results: [tx], kwargs: {}, errors: null, count: 1 },
+      accounts: {
+        selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 },
+        results: [],
+        analytics: null,
+        loading: false,
+        modalOpen: false,
+      },
+      transactions: {
+        loading: false,
+        results: [tx],
+        kwargs: {},
+        errors: null,
+        count: 1,
+      },
     };
     const { root, container } = renderWithState(initialState);
     expect(container.textContent).toContain('Lunch at cafe');
