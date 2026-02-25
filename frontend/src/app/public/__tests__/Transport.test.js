@@ -1,4 +1,3 @@
-import React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -11,8 +10,8 @@ jest.mock('leaflet.fullscreen', () => ({}));
 jest.mock('react-leaflet', () => ({
   MapContainer: (props) => <div data-testid="map">{props.children}</div>,
   Marker: (props) => <div data-testid="marker">{props.children}</div>,
-  TileLayer: (props) => <div data-testid="tilelayer" />, 
-  useMap: () => ({ addControl: () => {}, removeControl: () => {} }),
+  TileLayer: () => <div data-testid="tilelayer" />, 
+  useMap: () => ({ addControl: jest.fn(), removeControl: jest.fn() }),
   Popup: (props) => <div>{props.children}</div>,
   Polyline: () => <div />,
   Tooltip: (props) => <div>{props.children}</div>,
@@ -20,14 +19,12 @@ jest.mock('react-leaflet', () => ({
 jest.mock('react-leaflet-cluster', () => ({ __esModule: true, default: (p) => <div>{p.children}</div> }));
 jest.mock('leaflet', () => ({
   divIcon: () => ({}),
-  control: { fullscreen: () => ({ addTo: () => {}, remove: () => {} }) },
+  control: { fullscreen: () => ({ addTo: jest.fn(), remove: jest.fn() }) },
 }));
 jest.mock('src/api/transport', () => ({
-  TransitApi: function() {
-    return {
-      getList: (kwargs) => (dispatch) => {},
-      getVehicles: (kwargs) => (dispatch) => {},
-    };
+  TransitApi: class {
+    getList = () => jest.fn()
+    getVehicles = () => jest.fn();
   },
 }));
 

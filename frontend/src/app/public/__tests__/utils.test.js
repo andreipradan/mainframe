@@ -28,30 +28,30 @@ describe('public utils', () => {
       // mock leaflet and react-leaflet before importing utils
       jest.doMock('leaflet', () => ({
         divIcon: jest.fn((opts) => ({ __icon: true, opts })),
-        control: { fullscreen: () => ({ addTo: () => {}, remove: () => {} }) },
+        control: { fullscreen: () => ({ addTo: jest.fn(), remove: jest.fn() }) },
       }));
       jest.doMock('react-leaflet', () => ({ TileLayer: () => null, useMap: () => null }));
 
       const { getIconByType, getNumberIcon } = require('../utils');
-      const L = require('leaflet');
+      const Leaflet = require('leaflet');
 
-    const bus = {
-      vehicle_type: 3,
-      route_id: 'r1',
-      label: 'LabelX',
-      bike_accessible: 'BIKE_ACCESSIBLE',
-      wheelchair_accessible: 'WHEELCHAIR_ACCESSIBLE',
-    };
+      const bus = {
+        vehicle_type: 3,
+        route_id: 'r1',
+        label: 'LabelX',
+        bike_accessible: 'BIKE_ACCESSIBLE',
+        wheelchair_accessible: 'WHEELCHAIR_ACCESSIBLE',
+      };
 
-    // route short name starting with M changes color
-    const routeM = { route_short_name: 'M1' };
-    const iconM = getIconByType(bus, routeM);
-    expect(L.divIcon).toHaveBeenCalled();
-    expect(iconM.opts.html).toContain('🚴');
+      // route short name starting with M changes color
+      const routeM = { route_short_name: 'M1' };
+      const iconM = getIconByType(bus, routeM);
+      expect(Leaflet.divIcon).toHaveBeenCalled();
+      expect(iconM.opts.html).toContain('🚴');
 
-    const numIcon = getNumberIcon(4);
-    expect(L.divIcon).toHaveBeenCalled();
-    expect(numIcon.opts.html).toContain('5');
+      const numIcon = getNumberIcon(4);
+      expect(Leaflet.divIcon).toHaveBeenCalled();
+      expect(numIcon.opts.html).toContain('5');
     });
   });
 });

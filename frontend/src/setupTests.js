@@ -24,7 +24,7 @@ if (typeof jest !== 'undefined' && typeof jest.mock === 'function') {
 
 // jsdom doesn't implement window.scrollTo; provide a noop to avoid warnings/errors
 if (typeof window !== 'undefined' && typeof window.scrollTo !== 'function') {
-  window.scrollTo = () => {};
+  window.scrollTo = jest.fn();
 }
 
 // Provide a minimal Leaflet global used by some side-effecting modules (e.g.
@@ -37,8 +37,8 @@ if (typeof window !== 'undefined' && typeof window.L === 'undefined') {
     icon: () => ({}),
     control: {
       fullscreen: () => ({
-        addTo: () => {},
-        remove: () => {},
+        addTo: jest.fn(),
+        remove: jest.fn(),
       }),
     },
   };

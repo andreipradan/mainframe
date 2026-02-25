@@ -1,5 +1,13 @@
 // Combined, more comprehensive tests follow below.
-import { createSearchParams, mix, TokenMixin, CreateApi, DeleteApi, ListApi, UpdateApi } from '../shared';
+import {
+  createSearchParams,
+  mix,
+  TokenMixin,
+  CreateApi,
+  DeleteApi,
+  ListApi,
+  UpdateApi,
+} from '../shared';
 
 jest.mock('../index', () => ({
   __esModule: true,
@@ -14,12 +22,19 @@ jest.mock('../index', () => ({
 }));
 
 jest.mock('../errors', () => ({ handleErrors: jest.fn() }));
-jest.mock('react-toastify', () => ({ toast: { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() } }));
+jest.mock('react-toastify', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warning: jest.fn(),
+  },
+}));
 jest.mock('../auth', () => ({ toastParams: {} }));
 
-beforeEach(() => {  
-  jest.clearAllMocks();  
-});  
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
 describe('shared utils', () => {
   test('createSearchParams handles null, arrays and values', () => {
@@ -35,17 +50,20 @@ describe('shared utils', () => {
   });
 
   test('mix throws when TokenMixin missing', () => {
-    const Dummy = () => {};
-    expect(() => mix(Dummy)).toThrow(/All Api classes must inherit from TokenMixin/);
+    expect(() => mix()).toThrow(/All Api classes must inherit from TokenMixin/);
   });
 
   test('TokenMixin enforces static attributes', () => {
     class Bad extends TokenMixin(Object) {}
-    expect(() => new Bad('token')).toThrow(/class must implement the static 'baseUrl'/i);
+    expect(() => new Bad('token')).toThrow(
+      /class must implement the static 'baseUrl'/i
+    );
     class AlsoBad extends TokenMixin(Object) {
       static baseUrl = 'foo';
     }
-    expect(() => new AlsoBad('t')).toThrow(/class must implement the static 'methods' object/i);
+    expect(() => new AlsoBad('t')).toThrow(
+      /class must implement the static 'methods' object/i
+    );
   });
 });
 
@@ -143,14 +161,20 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     await Promise.resolve();
 
     // on error it should call setCompletedLoadingItem via dispatch
-    expect(dispatch).toHaveBeenCalledWith(methods.setCompletedLoadingItem('bad'));
+    expect(dispatch).toHaveBeenCalledWith(
+      methods.setCompletedLoadingItem('bad')
+    );
   });
 
   test('ListApi.getList dispatches set with response', async () => {
     const data = { results: [1, 2] };
     axios.get.mockResolvedValueOnce({ data });
 
-    const methods = { set: (p) => ({ type: 'set', payload: p }), setLoading: () => ({ type: 'ld' }), setErrors: () => ({ type: 'err' }) };
+    const methods = {
+      set: (p) => ({ type: 'set', payload: p }),
+      setLoading: () => ({ type: 'ld' }),
+      setErrors: () => ({ type: 'err' }),
+    };
     class Api extends mix(ListApi, TokenMixin) {}
     Api.baseUrl = 'things/list';
     Api.methods = methods;
@@ -170,7 +194,13 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     const responseData = { id: 5, name: 'Updated' };
     axios.patch.mockResolvedValueOnce({ data: responseData });
 
-    const methods = { set: (p) => ({ type: 'set', payload: p }), setLoadingItems: (id) => ({ type: 'li', payload: id }), update: (p) => ({ type: 'update', payload: p }), setErrors: () => ({ type: 'err' }), setLoading: () => ({ type: 'sl' }) };
+    const methods = {
+      set: (p) => ({ type: 'set', payload: p }),
+      setLoadingItems: (id) => ({ type: 'li', payload: id }),
+      update: (p) => ({ type: 'update', payload: p }),
+      setErrors: () => ({ type: 'err' }),
+      setLoading: () => ({ type: 'sl' }),
+    };
     class Api extends mix(UpdateApi, TokenMixin) {}
     Api.baseUrl = 'things/update';
     Api.methods = methods;
@@ -183,7 +213,9 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     await Promise.resolve();
 
     expect(dispatch).toHaveBeenCalledWith(methods.setLoadingItems(5));
-    expect(dispatch).toHaveBeenCalledWith(methods.update({ ...responseData, dontClearSelectedItem: true }));
+    expect(dispatch).toHaveBeenCalledWith(
+      methods.update({ ...responseData, dontClearSelectedItem: true })
+    );
     expect(toast.info).toHaveBeenCalled();
   });
 
@@ -220,7 +252,12 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     // displayField case
     const dataA = { id: 7, label: 'LabelA' };
     axios.post.mockResolvedValueOnce({ data: dataA });
-    const methodsA = { set: () => ({}), setLoading: () => ({}), setErrors: () => ({}), create: () => ({}) };
+    const methodsA = {
+      set: () => ({}),
+      setLoading: () => ({}),
+      setErrors: () => ({}),
+      create: () => ({}),
+    };
     class ApiA extends mix(CreateApi, TokenMixin) {}
     ApiA.baseUrl = 'items/list';
     ApiA.methods = methodsA;
@@ -229,12 +266,20 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     instanceA.create({})(jest.fn());
     await Promise.resolve();
     await Promise.resolve();
-    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('LabelA'), expect.any(Object));
+    expect(toast.success).toHaveBeenCalledWith(
+      expect.stringContaining('LabelA'),
+      expect.any(Object)
+    );
 
     // displayFields case
     const dataB = { id: 8, second: 'SecondVal' };
     axios.post.mockResolvedValueOnce({ data: dataB });
-    const methodsB = { set: () => ({}), setLoading: () => ({}), setErrors: () => ({}), create: () => ({}) };
+    const methodsB = {
+      set: () => ({}),
+      setLoading: () => ({}),
+      setErrors: () => ({}),
+      create: () => ({}),
+    };
     class ApiB extends mix(CreateApi, TokenMixin) {}
     ApiB.baseUrl = 'items/list';
     ApiB.methods = methodsB;
@@ -243,14 +288,23 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     instanceB.create({})(jest.fn());
     await Promise.resolve();
     await Promise.resolve();
-    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('SecondVal'), expect.any(Object));
+    expect(toast.success).toHaveBeenCalledWith(
+      expect.stringContaining('SecondVal'),
+      expect.any(Object)
+    );
   });
 
   test('ListApi uses ngrokAxios when configured', async () => {
     const pkg = require('../index');
     // ensure ngrokAxios has a get mock
-    pkg.ngrokAxios.get = jest.fn().mockResolvedValueOnce({ data: { results: [9] } });
-    const methods = { set: (p) => ({ type: 'set', payload: p }), setLoading: () => ({ type: 'ld' }), setErrors: () => ({ type: 'err' }) };
+    pkg.ngrokAxios.get = jest
+      .fn()
+      .mockResolvedValueOnce({ data: { results: [9] } });
+    const methods = {
+      set: (p) => ({ type: 'set', payload: p }),
+      setLoading: () => ({ type: 'ld' }),
+      setErrors: () => ({ type: 'err' }),
+    };
     const { ListApi } = require('../shared');
     class Api extends mix(ListApi, TokenMixin) {}
     Api.baseUrl = 'things/list';
@@ -271,7 +325,13 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     const axios = require('../index').default;
     axios.patch.mockRejectedValueOnce(new Error('update-fail'));
 
-    const methods = { set: (p) => ({ type: 'set', payload: p }), setLoadingItems: (id) => ({ type: 'li', payload: id }), update: (p) => ({ type: 'update', payload: p }), setErrors: () => ({ type: 'err' }), setLoading: () => ({ type: 'sl' }) };
+    const methods = {
+      set: (p) => ({ type: 'set', payload: p }),
+      setLoadingItems: (id) => ({ type: 'li', payload: id }),
+      update: (p) => ({ type: 'update', payload: p }),
+      setErrors: () => ({ type: 'err' }),
+      setLoading: () => ({ type: 'sl' }),
+    };
     class Api extends mix(UpdateApi, TokenMixin) {}
     Api.baseUrl = 'things/update';
     Api.methods = methods;
@@ -290,7 +350,11 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     const axios = require('../index').default;
     axios.post.mockResolvedValueOnce({ data: { id: 11 } });
     const { UploadApi } = require('../shared');
-    const methods = { set: (p) => ({ type: 'set', payload: p }), setLoading: () => ({ type: 'ld' }), setErrors: () => ({ type: 'err' }) };
+    const methods = {
+      set: (p) => ({ type: 'set', payload: p }),
+      setLoading: () => ({ type: 'ld' }),
+      setErrors: () => ({ type: 'err' }),
+    };
     class Api extends mix(UploadApi, TokenMixin) {}
     Api.baseUrl = 'files/uploads';
     Api.methods = methods;
@@ -311,7 +375,11 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     const pkg = require('../index');
     pkg.ngrokAxios.put = jest.fn().mockResolvedValueOnce({});
     const { RunApi } = require('../shared');
-    const methods = { set: () => ({}), setLoading: () => ({}), setErrors: () => ({}) };
+    const methods = {
+      set: () => ({}),
+      setLoading: () => ({}),
+      setErrors: () => ({}),
+    };
     class Api extends mix(RunApi, TokenMixin) {}
     Api.baseUrl = 'jobs/run';
     Api.methods = methods;

@@ -15,10 +15,17 @@ it('renders without crashing', async () => {
   document.body.appendChild(pageBody);
   // jsdom's default `window.scrollTo` throws 'Not implemented' — override it
   if (typeof window !== 'undefined') {
-    window.scrollTo = () => {};
+    window.scrollTo = jest.fn();
   }
   const initialState = {
-    auth: { token: null, user: { is_staff: false, username: 'test', last_login: new Date().toISOString() } },
+    auth: {
+      token: null,
+      user: {
+        is_staff: false,
+        username: 'test',
+        last_login: new Date().toISOString(),
+      },
+    },
     rpi: { errors: null, loading: false, message: null },
   };
   const store = configureStore({ reducer: (state = initialState) => state });
@@ -29,7 +36,7 @@ it('renders without crashing', async () => {
         <MemoryRouter>
           <App />
         </MemoryRouter>
-      </Provider>,
+      </Provider>
     );
     // allow any suspended resources or microtasks to resolve
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -38,6 +45,6 @@ it('renders without crashing', async () => {
     root.unmount();
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
-  sidebarDiv.remove();  
-  pageBody.remove();  
+  sidebarDiv.remove();
+  pageBody.remove();
 });
