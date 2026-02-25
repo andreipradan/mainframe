@@ -2,10 +2,12 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "tamasfe.even-better-toml",
-        "syntaf.vscode-pytest-runner",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode", 
         "ms-ossdata.vscode-pgsql",
-        "SonarSource.sonarlint-vscode"
+        "tamasfe.even-better-toml",
+        "SonarSource.sonarlint-vscode",
+        "syntaf.vscode-pytest-runner"
       ]
     }
   },

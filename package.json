@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "husky": "^9.0.0"
+  },
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install",
+    "prepare": "husky"
+  }
+}

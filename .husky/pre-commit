@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+# Run lint-staged from the frontend folder (so ESLint uses frontend/.eslintrc.cjs),
+# then run frontend tests in CI mode
+cd frontend || exit 1
+npx --no-install lint-staged --verbose
+CI=true npm test
