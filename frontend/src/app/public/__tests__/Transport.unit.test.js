@@ -123,8 +123,11 @@ describe('Transport unit behaviors', () => {
     });
 
     const after = div.querySelectorAll('[data-testid="marker"]').length;
-    // After toggling bike filter, number of markers should be <= before
-    expect(after).toBeLessThanOrEqual(before);
+    const expectedBikeMarkers = vehicles.filter(
+      (v) => v.bike_accessible === 'BIKE_ACCESSIBLE'
+    ).length;
+    expect(after).toBe(expectedBikeMarkers);
+    expect(after).toBeLessThan(before);
 
     await act(async () => {
       root.unmount();
