@@ -299,4 +299,47 @@ describe('Transactions component (basic)', () => {
     expect(container.textContent).toContain('Lunch at cafe');
     root.unmount();
   });
+  
+  test('shows modal errors when deleting a transaction and errors exist', () => {
+    const tx = {
+      id: 22,
+      created_at: '2025-01-01T00:00:00Z',
+      started_at: '2025-01-01T09:00:00Z',
+      completed_at: null,
+      amount: '5.00',
+      fee: '0.00',
+      state: 'pending',
+      description: 'Test delete',
+      type: 'card',
+      category: 'Unidentified',
+      product: 'Misc',
+    };
+    const initialState = {
+      auth: { token: 'tok' },
+      accounts: {
+        selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 },
+        results: [],
+        analytics: null,
+        loading: false,
+        modalOpen: false,
+      },
+      transactions: {
+        loading: false,
+        results: [tx],
+        kwargs: {},
+        errors: ['Delete blocked'],
+        count: 1,
+      },
+    };
+    const { root, container } = renderWithState(initialState);
+    // click the trash icon to open the delete modal
+    const trash = container.querySelector('.mdi-trash-can-outline');
+    expect(trash).toBeTruthy();
+    act(() => {
+      trash.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    // Errors mock renders errors as text when provided
+    expect(container.textContent).toContain('Delete blocked');
+    root.unmount();
+  });
 });

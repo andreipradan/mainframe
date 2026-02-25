@@ -771,7 +771,7 @@ const Transactions = () => {
       </Modal.Header>
       {
         (transactions.errors?.detail || transactions.errors?.length) && transactionToRemove
-          ? <Errors errors={transactions().errors} />
+          ? <Errors errors={transactions.errors} />
           : null
       }
       <Modal.Body>Delete transaction?</Modal.Body>
