@@ -184,7 +184,7 @@ jobs:
 
   backend-deploy:
     name: BE - Deploy
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.sonarqube.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -243,7 +243,7 @@ jobs:
 
   frontend-deploy:
     name: FE - Build & Deploy
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.sonarqube.result == 'success' }}
     runs-on: ubuntu-latest
     needs:
       - sonarqube
