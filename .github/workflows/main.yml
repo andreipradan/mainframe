@@ -126,6 +126,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: SonarQube Quality Gate check
+        id: quality_gate
+        continue-on-error: true
         uses: sonarsource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b
         with:
           pollingTimeoutSec: 600

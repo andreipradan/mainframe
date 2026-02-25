@@ -55,9 +55,13 @@ requires-python = ">= 3.10"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.coverage.paths]
+source = ["src/mainframe"]
+
 [tool.coverage.run]
 omit = [
-    "*/migrations/*"
+    "*/migrations/*",
+    "*/tests/*",
 ]
 
 [tool.hatch.build.targets.wheel]
