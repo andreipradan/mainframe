@@ -145,8 +145,13 @@ jobs:
 
   sonarqube:
     name: SonarQube
+    if: ${{ always()  
+      && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true')  
+      && (needs.changes.outputs.backend != 'true' || needs.tests.result == 'success')  
+      && (needs.changes.outputs.frontend != 'true' || needs.frontend-tests.result == 'success') }}
     runs-on: ubuntu-latest
     needs:
+      - changes
       - tests
       - frontend-tests
     steps:
@@ -154,11 +159,13 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Download backend coverage
+        if: ${{ needs.changes.outputs.backend == 'true' }}  
         uses: actions/download-artifact@v4
         with:
           name: backend-coverage
           path: .
       - name: Download frontend coverage
+        if: ${{ needs.changes.outputs.frontend == 'true' }}  
         uses: actions/download-artifact@v4
         with:
           name: frontend-coverage
