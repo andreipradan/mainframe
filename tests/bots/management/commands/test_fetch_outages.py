@@ -1,9 +1,13 @@
+from datetime import datetime
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import override_settings
+
+from mainframe.bots.management.commands.fetch_outages import Outage
 
 
 @pytest.mark.django_db
@@ -59,7 +63,7 @@ class TestFetchOutagesCommand:
         )
 
         client_instance.clear_events.assert_called_once_with(
-            event_type=mock.ANY, branch="Bucharest", addresses=[]
+            event_type=mock.ANY, branch="Bucharest"
         )
         client_instance.create_events.assert_not_called()
         ping_mock.assert_called_once()
@@ -92,17 +96,20 @@ class TestFetchOutagesCommand:
             "fetch_outages", "--branch", "Bucharest", "--url", "https://example.com/0"
         )
 
-        client_instance.clear_events.assert_called_once()
         # create_events should be called with a list containing at least one event dict
         assert client_instance.create_events.call_count == 1
         args, _ = client_instance.create_events.call_args
-        assert isinstance(args[0], list)
-        assert len(args[0]) == 1
-        event = args[0][0]
-        # basic shape assertions for calendar event
-        assert "id" in event
-        assert "summary" in event
-        assert "start" in event and "dateTime" in event["start"]
-        assert "end" in event and "dateTime" in event["end"]
-        assert "extendedProperties" in event
+        assert args == (
+            [
+                Outage(
+                    addresses=["Main St", "Second St"],
+                    county="Bucharest",
+                    duration="4h",
+                    end=datetime(2026, 2, 21, 16, 0, tzinfo=ZoneInfo("UTC")),
+                    external_id=555,
+                    start=datetime(2026, 2, 21, 12, 0, tzinfo=ZoneInfo("UTC")),
+                    type="Accidental",
+                )
+            ],
+        )
         ping_mock.assert_called_once()
