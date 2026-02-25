@@ -246,7 +246,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.sonarqube.result == 'success' }}
     runs-on: ubuntu-latest
     needs:
-      - fontend-tests
+      - frontend-tests
     permissions:
       contents: 'read'
       id-token: 'write'

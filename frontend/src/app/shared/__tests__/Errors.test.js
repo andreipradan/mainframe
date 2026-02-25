@@ -10,6 +10,7 @@ jest.mock('react-bootstrap/Alert', () => {
   }
 })
 
+
 const Errors = require('../Errors').default
 
 function render(component) {
