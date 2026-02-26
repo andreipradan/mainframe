@@ -277,13 +277,13 @@ jobs:
 
       - name: Build & Push
         run: |-
-          cp -r .docker .
+          cp .docker/Dockerfile .docker/nginx.conf .
           gcloud builds submit \
             --quiet \
-            --ignore-file=.dockerignore \
+            --ignore-file=.docker/.dockerignore \
             --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --gcs-log-dir="gs://build-frontend-logs"
-          rm Dockerfile .dockerignore nginx.conf
+          rm Dockerfile nginx.conf
         working-directory: frontend
 
       - name: Deploy GCR
