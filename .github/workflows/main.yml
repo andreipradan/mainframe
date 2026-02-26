@@ -184,7 +184,7 @@ jobs:
 
   backend-deploy:
     name: BE - Deploy
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.sonarqube.result == 'success' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.tests.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -277,11 +277,13 @@ jobs:
 
       - name: Build & Push
         run: |-
+          cp .docker/Dockerfile .
           gcloud builds submit \
             --quiet \
-            --dockerfile .docker/Dockerfile \
+            --ignore-file=.docker/dockerignore \
             --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --gcs-log-dir="gs://build-frontend-logs"
+          rm Dockerfile
         working-directory: frontend
 
       - name: Deploy GCR
