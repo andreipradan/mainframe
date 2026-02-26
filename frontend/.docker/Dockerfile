@@ -1,8 +1,14 @@
-FROM node:14.21.0-slim as build
+FROM node:20-alpine as build
 WORKDIR /app
+# Copy package files only first for better layer caching
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+# Copy source and build
 COPY . ./
+RUN npm run build
 
-FROM macbre/nginx-brotli:1.19.6-http3
+# Use lightweight nginx-alpine base
+FROM nginx:1.25-alpine
 WORKDIR /etc/nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 

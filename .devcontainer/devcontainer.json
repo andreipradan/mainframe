@@ -3,7 +3,7 @@
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode", 
+        "esbenp.prettier-vscode",
         "ms-ossdata.vscode-pgsql",
         "tamasfe.even-better-toml",
         "SonarSource.sonarlint-vscode",
