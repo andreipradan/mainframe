@@ -282,7 +282,9 @@ jobs:
             --quiet \
             --ignore-file=.docker/.dockerignore \
             --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
-            --gcs-log-dir="gs://build-frontend-logs"
+            --gcs-log-dir="gs://build-frontend-logs" \
+            --build-arg=REACT_APP_API_URL=$REACT_APP_API_URL \
+            --build-arg=REACT_APP_NGROK_URL=$REACT_APP_NGROK_URL
           rm Dockerfile nginx.conf
         working-directory: frontend
 

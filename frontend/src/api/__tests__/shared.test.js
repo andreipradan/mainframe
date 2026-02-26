@@ -42,7 +42,6 @@ describe('shared utils', () => {
     const params = { a: 1, b: [2, 3], c: 'x' };
     const sp = createSearchParams(params);
     const str = sp.toString();
-    // random order
     expect(str).toContain('a=1');
     expect(str).toContain('b=2');
     expect(str).toContain('b=3');

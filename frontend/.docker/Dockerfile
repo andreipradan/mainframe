@@ -1,4 +1,12 @@
 FROM node:20-alpine as build
+
+# accept API URL (and any other REACT_APP_* values) via build-args
+ARG REACT_APP_API_URL
+ARG REACT_APP_NGROK_URL
+# export them so `npm run build` can see them
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_NGROK_URL=$REACT_APP_NGROK_URL
+
 WORKDIR /app
 # Copy package files only first for better layer caching
 COPY package*.json ./
