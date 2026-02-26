@@ -2,7 +2,7 @@ FROM node:20-alpine as build
 WORKDIR /app
 # Copy package files only first for better layer caching
 COPY package*.json ./
-RUN npm ci --frozen-lockfile --ignore-scripts
+RUN npm ci --ignore-scripts
 # Copy source and build
 COPY . ./
 RUN npm run build

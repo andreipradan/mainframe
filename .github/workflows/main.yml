@@ -220,8 +220,7 @@ jobs:
           gcloud builds submit \
             --quiet \
             --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-backend/$BACKEND_SERVICE:$GITHUB_SHA" \
-            --gcs-log-dir="gs://build-backend-logs" \
-            --cache-ttl=24h
+            --gcs-log-dir="gs://build-backend-logs"
 
       # Deploy image to Cloud Run
       - name: Deploy GCR
@@ -282,8 +281,7 @@ jobs:
             --quiet \
             --dockerfile .docker/Dockerfile \
             --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
-            --gcs-log-dir="gs://build-frontend-logs" \
-            --cache-ttl=24h
+            --gcs-log-dir="gs://build-frontend-logs"
         working-directory: frontend
 
       - name: Deploy GCR
