@@ -264,6 +264,29 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+      # Build the image
+      - name: Setup Node.js (NPM)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Use cached node_modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: nodeModules-${{ hashFiles('frontend/**/package-lock.json') }}
+          restore-keys: |
+            nodeModules-
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund --ignore-scripts
+      - name: Build Production
+        working-directory: frontend
+        run: npm run build
+        env:
+          CI: false
+          BUILD_PATH: .docker/build
+
+      # Push the image
       - name: Setup GCloud Auth
         id: auth
         uses: google-github-actions/auth@a61909d048e0be579b6c15b27088d19668493851
@@ -271,10 +294,8 @@ jobs:
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
           token_format: 'access_token'
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@daadedc81d5f9d3c06d2c92f49202a3cc2b919ba
-
       - name: Build & Push
         run: |-
           cp .docker/Dockerfile .docker/nginx.conf .
@@ -288,6 +309,7 @@ jobs:
           rm Dockerfile nginx.conf
         working-directory: frontend
 
+      # Deploy frontend service
       - name: Deploy GCR
         run: |-
           gcloud run deploy "$FRONTEND_SERVICE" \
