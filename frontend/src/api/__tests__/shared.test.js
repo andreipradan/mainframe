@@ -42,7 +42,7 @@ describe('shared utils', () => {
     const params = { a: 1, b: [2, 3], c: 'x' };
     const sp = createSearchParams(params);
     const str = sp.toString();
-    // random
+    // random order of params, so just check for presence
     expect(str).toContain('a=1');
     expect(str).toContain('b=2');
     expect(str).toContain('b=3');

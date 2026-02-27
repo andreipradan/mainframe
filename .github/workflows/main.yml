@@ -301,7 +301,8 @@ jobs:
           gcloud builds submit \
             --quiet \
             --ignore-file=.docker/.dockerignore \
-            --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA"
+            --tag="$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
+            --gcs-log-dir="gs://build-frontend-logs"
         working-directory: frontend/.docker
 
       # Deploy frontend service
