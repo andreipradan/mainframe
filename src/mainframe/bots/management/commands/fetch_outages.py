@@ -154,12 +154,9 @@ class Command(BaseCommand):
 
         client = CalendarClient(logger=logger, prefix=prefix)
 
-        if not outages:
+        if outages:
+            client.create_events(outages)
+        else:
             client.clear_events(event_type=outage_type, branch=branch.title())
-            logger.info("%s No events to process", prefix)
-            healthchecks.ping(logger, "outages")
-            return
 
-        client.create_events(outages)
-        logger.info("%s Done", prefix)
         healthchecks.ping(logger, "outages")

@@ -151,7 +151,7 @@ class CalendarClient:
         except HttpError as e:
             if e.resp.status == status.HTTP_404_NOT_FOUND:
                 self.logger.error(
-                    "%s[update][%s] Event not found, creating...",
+                    "%s[update][%s] Couldn't update - not found, recreating...",
                     self.prefix,
                     event_id,
                 )
@@ -161,13 +161,13 @@ class CalendarClient:
                     ).execute()
                 except HttpError as err:
                     self.logger.error(
-                        "%s[update] Failed to create event '%s': %s",
+                        "%s[update] Failed to recreate '%s': %s",
                         self.prefix,
                         event,
                         err,
                     )
                 else:
-                    self.logger.info("%s Created.", prefix)
+                    self.logger.info("%s Recreated", prefix)
             else:
                 self.logger.error(
                     "%s[update][%s] Failed to update: %s",
@@ -176,4 +176,4 @@ class CalendarClient:
                     e,
                 )
         else:
-            self.logger.info("%s Done.", prefix)
+            self.logger.info("%s Updated", prefix)
