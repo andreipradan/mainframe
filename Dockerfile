@@ -1,4 +1,4 @@
-FROM python:3.10.11-alpine AS builder
+FROM python:3.14.3-alpine AS builder
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
 
@@ -15,7 +15,7 @@ RUN if [ ! -f /tmp/README.md ]; then printf "# dummy\n" > /tmp/README.md; fi \
     && apk del .tmp-build-deps \
     && rm -rf /var/cache/apk/*
 
-FROM python:3.10.11-alpine
+FROM python:3.14.3-alpine
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 
