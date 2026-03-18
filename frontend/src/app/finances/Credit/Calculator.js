@@ -69,9 +69,10 @@ const Calculator = () => {
 
   const setDurationSuggestions = index => {
     const suggestedAmounts = {}
-    Array.from(new Array(5), (x, i) => i + index - 2).filter(i => i > 0).map(i => {
-      suggestedAmounts[i] = calculateSum(latestTimetable.slice(0, i), "principal")
-    })
+    Array.from(new Array(5), (x, i) => i + index - 2)
+      .filter(i => i > 0)
+      .forEach(i => {suggestedAmounts[i] = calculateSum(latestTimetable.slice(0, i), "principal")}
+    )
     setDurationOtherAmounts(suggestedAmounts)
     const saved = (
       calculateSum(latestTimetable.slice(0, index), "interest")
@@ -108,20 +109,25 @@ const Calculator = () => {
     const suggestedAmounts = {}
     const remaining = calculateSum(latestTimetable, "principal")
     const interest = timetable.selectedItem.interest / 100
-    Array.from(new Array(latestTimetable.length), (x, i) => i).filter(i => i > 0).map(i => {
-      const rem = remaining - (monthlyAmount * i)
-      const inter = interest * rem / 12
-      const remainingMonths = latestTimetable.length - i;
-      const newRate = -PMT(interest / 12, remainingMonths + 1, rem)
-      if (rem > 0)
-        suggestedAmounts[i] = {
-          rate: newRate.toFixed(2),
-          interest: inter.toFixed(2),
-          principal: (newRate - inter).toFixed(2),
-          remaining: rem.toFixed(2),
-          months: remainingMonths
+    Array.from(new Array(latestTimetable.length), (x, i) => i)
+      .filter(i => i > 0)
+      .forEach(i => {
+        const rem = remaining - (monthlyAmount * i)
+        const inter = interest * rem / 12
+        const remainingMonths = latestTimetable.length - i
+        const newRate = -PMT(interest / 12, remainingMonths + 1, rem)
+
+        if (rem > 0) {
+          suggestedAmounts[i] = {
+            rate: newRate.toFixed(2),
+            interest: inter.toFixed(2),
+            principal: (newRate - inter).toFixed(2),
+            remaining: rem.toFixed(2),
+            months: remainingMonths
+          }
         }
-    })
+      }
+    )
     setMonthlyOtherAmounts(suggestedAmounts)
     setTotalRate(calculateSum(Object.values(suggestedAmounts), "rate"))
     setTotalInterest(calculateSum(Object.values(suggestedAmounts), "interest"))

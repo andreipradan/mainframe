@@ -5,7 +5,10 @@ import { toastParams } from './auth';
 
 
 export const createSearchParams = params => {
-  if (params === null) return ""
+  if (params === null) {
+    return new URLSearchParams()
+  }
+
   return new URLSearchParams(
     Object.entries(params).flatMap(([key, values]) =>
       Array.isArray(values)
@@ -32,7 +35,7 @@ const getDisplayName = (constructor, data) => {
 const getResource = baseUrl => {
   const components = baseUrl.split('/')
   const resource = components[components.length - 1]
-  return `${resource[0].toUpperCase()}${resource.slice(1, resource.length - 1)}`
+  return `${resource[0].toUpperCase()}${resource.slice(1, -1)}`
 }
 
 export const mix = (...mixins) => {
@@ -53,7 +56,7 @@ export const TokenMixin = Base => class extends Base {
     }
     ["set", "setErrors", "setLoading"].forEach(method => {
       if (typeof this.constructor.methods[method] !== "function") {
-        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+        throw new TypeError(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
       }
     })
   }
@@ -64,7 +67,7 @@ export const CreateApi = Base => class extends Base {
     super(token);
     ["create"].forEach(method => {
       if (typeof this.constructor?.methods?.[method] !== "function") {
-        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+        throw new TypeError(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
       }
     })
   }
@@ -87,11 +90,11 @@ export const DeleteApi = Base => class extends Base {
   constructor(token) {
     super(token);
     if (typeof this.constructor.methods.delete !== "function") {
-      throw new Error(`'delete' is missing from the ${this.constructor.name}.methods object`);
+      throw new TypeError(`'delete' is missing from the ${this.constructor.name}.methods object`);
     }
     ["setCompletedLoadingItem", "setLoadingItems"].forEach(method => {
       if (typeof this.constructor?.methods?.[method] !== "function") {
-        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+        throw new TypeError(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
       }
     })
   }
@@ -122,7 +125,7 @@ export const DetailApi = Base => class extends Base {
     super(token);
     ["setCompletedLoadingItem", "setLoadingItems"].forEach(method => {
       if (typeof this.constructor?.methods?.[method] !== "function") {
-        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+        throw new TypeError(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
       }
     })
   }
@@ -172,7 +175,7 @@ export const UpdateApi = Base => class extends Base {
     super(token);
     ["setLoadingItems", "update"].forEach(method => {
       if (typeof this.constructor.methods[method] !== "function") {
-        throw new Error(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
+        throw new TypeError(`'${method}' is missing from the ${this.constructor.name}.methods object.`);
       }
     })
   }

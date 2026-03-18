@@ -750,7 +750,7 @@ const Details = () => {
                   <ListItem
                     label={'Saved'}
                     value={getAmountInCurrency(payment.results[0].saved)}
-                    textType={parseFloat(payment.results[0].saved) && 'success'}
+                    textType={Boolean(payment.results[0].saved) && 'success'}
                     className='mr-3'
                   />
                 </Marquee>
