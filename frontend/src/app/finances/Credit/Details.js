@@ -66,48 +66,6 @@ const Details = () => {
   const getInterest = (payments) =>
     payments ? payments.map((p) => p.interest).reverse() : [];
 
-  useEffect(() => {
-    {
-      !payment.results && dispatch(paymentsApi.getList());
-      !timetable.results && dispatch(timetableApi.getList());
-    }
-  }, []);
-  useEffect(() => {
-    if (!overview.credit) dispatch(FinanceApi.getCredit(token));
-    else onChangeCurrency();
-  }, [overview.credit]);
-
-  useEffect(
-    () => setBarChartPrincipal(getPrincipal(payment.results)),
-    [payment.results]
-  );
-  useEffect(
-    () => setBarChartInterest(getInterest(payment.results)),
-    [payment.results]
-  );
-  useEffect(
-    () => setBarChartLabels(payment.results?.map((p) => p.date).reverse()),
-    [payment.results]
-  );
-
-  useEffect(
-    () => setLineChartIRCC(timetable.results?.map((p) => p.ircc).reverse()),
-    [timetable.results]
-  );
-  useEffect(
-    () => setLineChartMargin(timetable.results?.map((p) => p.margin).reverse()),
-    [timetable.results]
-  );
-  useEffect(
-    () =>
-      setLineChartInterest(timetable.results?.map((p) => p.interest).reverse()),
-    [timetable.results]
-  );
-  useEffect(
-    () => setLineChartLabels(timetable.results?.map((p) => p.date).reverse()),
-    [timetable.results]
-  );
-
   const doughnutPieOptions = {
     responsive: true,
     animation: { animateScale: true, animateRotate: true },
@@ -121,7 +79,7 @@ const Details = () => {
           const percentage = parseFloat(
             ((currentValue / total) * 100).toFixed(1)
           );
-          return currentValue + ' (' + percentage + '%)';
+          return `${currentValue} (${percentage}%)`;
         },
         title: (tooltipItem, data) => data.labels[tooltipItem[0].index],
       },
@@ -153,6 +111,7 @@ const Details = () => {
       : 1;
     return parseFloat(amount / rate).toFixed(2);
   };
+
   const onChangeCurrency = (newValue) => {
     const currency = !newValue
       ? {
@@ -325,14 +284,7 @@ const Details = () => {
               100
             ).toFixed(1)
           );
-          return (
-            data.datasets[tooltipItem.datasetIndex].label +
-            ': ' +
-            currentValue +
-            ' (' +
-            percentage +
-            '%)'
-          );
+          return `${data.datasets[tooltipItem.datasetIndex].label}: ${currentValue} (${percentage}%)`
         },
         title: (tooltipItem, data) => {
           const item = tooltipItem[0];
@@ -375,6 +327,46 @@ const Details = () => {
     ],
     labels: ['Interest', 'Principal'],
   };
+
+  useEffect(() => {
+    !payment.results && dispatch(paymentsApi.getList());
+    !timetable.results && dispatch(timetableApi.getList());
+  }, []);
+  useEffect(() => {
+    if (!overview.credit) dispatch(FinanceApi.getCredit(token));
+    else onChangeCurrency();
+  }, [overview.credit]);
+
+  useEffect(
+    () => setBarChartPrincipal(getPrincipal(payment.results)),
+    [payment.results]
+  );
+  useEffect(
+    () => setBarChartInterest(getInterest(payment.results)),
+    [payment.results]
+  );
+  useEffect(
+    () => setBarChartLabels(payment.results?.map((p) => p.date).reverse()),
+    [payment.results]
+  );
+
+  useEffect(
+    () => setLineChartIRCC(timetable.results?.map((p) => p.ircc).reverse()),
+    [timetable.results]
+  );
+  useEffect(
+    () => setLineChartMargin(timetable.results?.map((p) => p.margin).reverse()),
+    [timetable.results]
+  );
+  useEffect(
+    () =>
+      setLineChartInterest(timetable.results?.map((p) => p.interest).reverse()),
+    [timetable.results]
+  );
+  useEffect(
+    () => setLineChartLabels(timetable.results?.map((p) => p.date).reverse()),
+    [timetable.results]
+  );
 
   return (
     <div>
