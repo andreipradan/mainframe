@@ -38,7 +38,7 @@ beforeEach(() => {
 
 describe('shared utils', () => {
   test('createSearchParams handles null, arrays and values', () => {
-    expect(createSearchParams(null)).toBe({});
+    expect(createSearchParams(null)).toEqual(new URLSearchParams());
     const params = { a: 1, b: [2, 3], c: 'x' };
     const sp = createSearchParams(params);
     const str = sp.toString();
