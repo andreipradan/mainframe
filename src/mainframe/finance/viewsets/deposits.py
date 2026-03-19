@@ -24,7 +24,11 @@ class DepositsViewSet(viewsets.ModelViewSet):
             .get_queryset()
             .annotate(
                 has_matured=Case(
-                    When(maturity__lt=datetime.today(), then=True),
+from datetime import datetime
+
+from django.utils import timezone
+
+                    When(maturity__lt=timezone.localdate(), then=True),
                     default=False,
                     output_field=BooleanField(),
                 )
