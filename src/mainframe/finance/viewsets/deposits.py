@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.db.models import (
     BooleanField,
     Case,
@@ -7,6 +5,7 @@ from django.db.models import (
     Sum,
     When,
 )
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
@@ -19,22 +18,13 @@ class DepositsViewSet(viewsets.ModelViewSet):
     serializer_class = DepositSerializer
 
     def get_queryset(self):
-        queryset = (
-            super()
-            .get_queryset()
-            .annotate(
-                has_matured=Case(
-from datetime import datetime
-
-from django.utils import timezone
-
-                    When(maturity__lt=timezone.localdate(), then=True),
-                    default=False,
-                    output_field=BooleanField(),
-                )
+        queryset = Deposit.objects.annotate(
+            has_matured=Case(
+                When(maturity__lt=timezone.localdate(), then=True),
+                default=False,
+                output_field=BooleanField(),
             )
-            .order_by("has_matured", "maturity", "-date")
-        )
+        ).order_by("has_matured", "maturity", "-date")
 
         if currencies := self.request.query_params.getlist("currency"):
             queryset = queryset.filter(currency__in=currencies)
@@ -51,7 +41,7 @@ from django.utils import timezone
             **{
                 currency: Sum(
                     "amount",
-                    filter=Q(currency=currency, maturity__gt=datetime.now().date()),
+                    filter=Q(currency=currency, maturity__gt=timezone.localdate()),
                 )
                 for currency in currencies
             },
