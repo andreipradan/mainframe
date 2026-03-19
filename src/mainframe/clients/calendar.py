@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import environ
 from google.oauth2.service_account import Credentials
@@ -45,15 +45,17 @@ class CalendarClient:
         self.service.acl().insert(calendarId=response["id"], body=acl_payload).execute()
 
     def clear_events(self, event_type, **filters):
-        interval = {"timeMin": datetime.utcnow().isoformat() + "Z"}
+        date_time_format = "%Y-%m-%dT%H:%M:%S%z"
+        now_utc = datetime.now(timezone.utc)
+        interval = {"timeMin": now_utc.strftime(date_time_format)}
         if event_type == TYPE_PLANNED_15_DAYS:
-            interval["timeMax"] = (
-                datetime.utcnow() + timedelta(days=15)
-            ).isoformat() + "Z"
+            interval["timeMax"] = (now_utc + timedelta(days=15)).strftime(
+                date_time_format
+            )
         elif event_type == TYPE_PLANNED_TODAY:
-            interval["timeMax"] = (
-                datetime.utcnow() + timedelta(days=1)
-            ).isoformat() + "Z"
+            interval["timeMax"] = (now_utc + timedelta(days=1)).strftime(
+                date_time_format
+            )
 
         events = (
             self.service.events()
@@ -122,7 +124,7 @@ class CalendarClient:
         locations = "\n".join(event.addresses)
         asyncio.run(
             send_telegram_message(
-                f"*{'Updated' if is_update else ''}{event.type} outage*\n"
+                f"*{'Updated ' if is_update else ''}{event.type} outage*\n"
                 f"Start: {response['start']['dateTime']}\n"
                 f"End: {response['end']['dateTime']}\n"
                 f"Duration: {event.duration}\n\n"

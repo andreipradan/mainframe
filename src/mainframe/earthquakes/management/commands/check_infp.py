@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.core.management import BaseCommand
 from geopy.distance import geodesic
 from geopy.point import Point
 
@@ -11,7 +12,7 @@ from mainframe.earthquakes.management.base_check import BaseEarthquakeCommand
 from mainframe.earthquakes.models import Earthquake
 
 
-class Command(BaseEarthquakeCommand):
+class Command(BaseEarthquakeCommand, BaseCommand):
     logger = logging.getLogger(__name__)
 
     source = Earthquake.SOURCE_INFP
