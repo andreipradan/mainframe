@@ -44,6 +44,7 @@ Notes on Test Placement and Naming
 	 does not exist for a model you need in tests, add one under `tests/factories/` following the
 	 style of the existing factories (use post-generation hooks, related factories, and keep naming
 	 consistent). This keeps tests consistent and reduces import-time side effects.
+- When testing mocked interactions, do not just verify that a certain mock was called (e.g., `mock.assert_called_once()`). Instead, validate the entire `call_args_list` in its entirety to ensure the correct arguments, keyword arguments, and call sequence are used. This provides stronger guarantees about the behavior being tested.
 
 ## Code Conventions
 

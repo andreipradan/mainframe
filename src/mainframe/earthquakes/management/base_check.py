@@ -3,7 +3,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.core.management import BaseCommand
 from django.db import OperationalError
 from telegram.constants import ParseMode
 
@@ -40,7 +39,7 @@ def parse_event(event: Earthquake):
     )
 
 
-class BaseEarthquakeCommand(BaseCommand):
+class BaseEarthquakeCommand:
     default_max_radius = 386.02
     logger = NotImplemented
     source = NotImplemented
