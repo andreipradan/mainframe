@@ -15,7 +15,11 @@ class EBClient:
 
     def fetch_events(self, **kwargs):
         try:
-            response = self.session.get(f"{self.api_url}/events", params=kwargs)
+            response = self.session.get(
+                f"{self.api_url}/events",
+                params=kwargs,
+                timeout=30,
+            )
             response.raise_for_status()
             data = response.json()
             events_data = data.get("events", {})

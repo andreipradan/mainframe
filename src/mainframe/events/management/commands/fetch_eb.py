@@ -24,7 +24,7 @@ class Command(BaseCommand):
             choices=CATEGORIES.keys(),
             help="Category of events to fetch",
         )
-        parser.add_argument("--api-url", type=str)
+        parser.add_argument("--api-url", type=str, required=True)
 
     def handle(self, *args, **options):
         category = options["category"]
