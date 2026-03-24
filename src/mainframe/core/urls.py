@@ -28,6 +28,7 @@ urlpatterns = [
         "expenses/",
         include(("mainframe.expenses.routers", "api"), namespace="expenses"),
     ),
+    path("events/", include(("mainframe.events.routers", "api"), namespace="events")),
     path(
         "finance/", include(("mainframe.finance.routers", "api"), namespace="finance")
     ),
