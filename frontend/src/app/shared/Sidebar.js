@@ -582,6 +582,20 @@ const Sidebar = () => {
             </li>
             <li
               className={
+                isPathActive('/events')
+                  ? 'nav-item menu-items active'
+                  : 'nav-item menu-items'
+              }
+            >
+              <Link className='nav-link' to='/events'>
+                <span className='menu-icon'>
+                  <i className='mdi mdi-calendar-multiselect' />
+                </span>
+                <span className='menu-title'>Events</span>
+              </Link>
+            </li>
+            <li
+              className={
                 isPathActive('/sources')
                   ? 'nav-item menu-items active'
                   : 'nav-item menu-items'
