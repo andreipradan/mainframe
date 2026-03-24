@@ -1,40 +1,41 @@
-import { configureStore } from "@reduxjs/toolkit";
-import activityReducer from "../redux/activitySlice";
-import accountsReducer from "../redux/accountsSlice";
-import authReducer from "../redux/authSlice";
-import botReducer from "../redux/botsSlice";
-import carReducer from "./carSlice";
-import categoriesReducer from "./categoriesSlice";
-import creditReducer from "../redux/creditSlice"
-import commandsReducer from "../redux/commandsSlice"
-import cronsReducer from "../redux/cronsSlice"
-import bondsReducer from "../redux/bondsSlice"
-import cryptoReducer from "../redux/cryptoSlice"
-import cryptoPnlReducer from "../redux/cryptoPnlSlice";
-import depositsReducer from "../redux/depositsSlice"
-import devicesReducer from "../redux/devicesSlice"
-import expensesReducer from "../redux/expensesSlice"
-import exchangeReducer from "../redux/exchangeSlice"
-import earthquakesReducer from "../redux/earthquakesSlice"
-import groupsReducer from "../redux/groupsSlice"
-import investmentsReducer from "../redux/investmentsSlice"
-import lightsReducer from "../redux/lightsSlice";
-import logsReducer from "../redux/logsSlice";
-import mealsReducer from "../redux/mealsSlice";
-import messagesReducer from "../redux/messagesSlice";
-import paymentReducer from "../redux/paymentSlice";
-import pensionReducer from "../redux/pensionSlice";
-import pnlReducer from "../redux/pnlSlice";
-import predictionReducer from "./predictionSlice";
-import rpiReducer from "../redux/rpiSlice";
-import stocksReducer from "./stocksSlice";
-import sourcesReducer from "./sourcesSlice";
-import tasksReducer from "./tasksSlice";
-import timetableReducer from "./timetableSlice";
-import transactionsReducer from "../redux/transactionsSlice";
-import transitSlice from "./transitSlice";
-import usersSlice from "../redux/usersSlice";
-import watchersSlice from "../redux/watchersSlice";
+import { configureStore } from '@reduxjs/toolkit';
+import activityReducer from '../redux/activitySlice';
+import accountsReducer from '../redux/accountsSlice';
+import authReducer from '../redux/authSlice';
+import botReducer from '../redux/botsSlice';
+import carReducer from './carSlice';
+import categoriesReducer from './categoriesSlice';
+import creditReducer from '../redux/creditSlice';
+import commandsReducer from '../redux/commandsSlice';
+import cronsReducer from '../redux/cronsSlice';
+import bondsReducer from '../redux/bondsSlice';
+import cryptoReducer from '../redux/cryptoSlice';
+import cryptoPnlReducer from '../redux/cryptoPnlSlice';
+import depositsReducer from '../redux/depositsSlice';
+import devicesReducer from '../redux/devicesSlice';
+import expensesReducer from '../redux/expensesSlice';
+import exchangeReducer from '../redux/exchangeSlice';
+import earthquakesReducer from '../redux/earthquakesSlice';
+import groupsReducer from '../redux/groupsSlice';
+import investmentsReducer from '../redux/investmentsSlice';
+import lightsReducer from '../redux/lightsSlice';
+import logsReducer from '../redux/logsSlice';
+import mealsReducer from '../redux/mealsSlice';
+import messagesReducer from '../redux/messagesSlice';
+import paymentReducer from '../redux/paymentSlice';
+import pensionReducer from '../redux/pensionSlice';
+import pnlReducer from '../redux/pnlSlice';
+import predictionReducer from './predictionSlice';
+import rpiReducer from '../redux/rpiSlice';
+import stocksReducer from './stocksSlice';
+import sourcesReducer from './sourcesSlice';
+import tasksReducer from './tasksSlice';
+import timetableReducer from './timetableSlice';
+import transactionsReducer from '../redux/transactionsSlice';
+import transitSlice from './transitSlice';
+import usersSlice from '../redux/usersSlice';
+import watchersSlice from '../redux/watchersSlice';
+import eventsReducer from '../redux/eventsSlice';
 
 export default configureStore({
   reducer: {
@@ -72,6 +73,7 @@ export default configureStore({
     timetable: timetableReducer,
     transactions: transactionsReducer,
     transit: transitSlice,
+    events: eventsReducer,
     users: usersSlice,
     watchers: watchersSlice,
   },
