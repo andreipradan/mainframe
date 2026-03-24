@@ -1,6 +1,7 @@
 import logging
 
 from django.core.management import BaseCommand, CommandError
+
 from mainframe.clients.events.eb import EBClient
 
 logger = logging.getLogger(__name__)
