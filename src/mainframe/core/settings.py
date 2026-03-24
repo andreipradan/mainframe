@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "mainframe.earthquakes",
     "mainframe.exchange",
     "mainframe.expenses",
+    "mainframe.events",
     "mainframe.finance",
     "mainframe.meals",
     "mainframe.sources",
