@@ -71,6 +71,7 @@ class TestEBClient:
             mock_get.assert_called_once_with(
                 "https://api.eb.example.com/events",
                 params={"category_id": 1, "per_page": 50, "filters": "upcoming"},
+                timeout=30,
             )
 
             # Check that event was created
