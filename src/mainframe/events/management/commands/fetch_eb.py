@@ -1,7 +1,6 @@
 import logging
 
 from django.core.management import BaseCommand, CommandError
-
 from mainframe.clients.events.eb import EBClient
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "category",
             type=str,
-            choices=CATEGORIES.keys(),
+            choices=list(CATEGORIES),
             help="Category of events to fetch",
         )
         parser.add_argument("--api-url", type=str, required=True)
