@@ -14,6 +14,11 @@ class EBClient:
         self.session = requests.Session()
 
     def fetch_events(self, **kwargs):
+        if "filters" not in kwargs:
+            kwargs["filters"] = "upcoming"
+        if "per_page" not in kwargs:
+            kwargs["per_page"] = 100
+
         try:
             response = self.session.get(
                 f"{self.api_url}/events",
