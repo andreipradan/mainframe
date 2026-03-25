@@ -3,6 +3,7 @@ import logging
 from django.core.management import BaseCommand, CommandError
 
 from mainframe.clients.events.eb import EBClient
+from mainframe.sources.models import Source
 
 logger = logging.getLogger(__name__)
 
@@ -14,31 +15,41 @@ CATEGORIES = {
     "theater": 5,
     "online": 6,
 }
+CLIENT_MAPPING = {
+    "eb": EBClient,
+}
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
-            "category",
-            type=str,
+            "--category",
             choices=list(CATEGORIES),
-            help="Category of events to fetch",
+            default="other",
+            type=str,
         )
-        parser.add_argument("--api-url", type=str, required=True)
+        parser.add_argument("--source", type=str, required=True)
 
     def handle(self, *args, **options):
         category = options["category"]
-        api_url = options["api_url"]
+        source = options["source"].lower().strip()
 
         category_id = CATEGORIES.get(category)
         if not category_id:
             raise CommandError(f"Invalid category: {category}")
 
-        self.stdout.write(
-            f"Fetching {category} events from {api_url} (category_id: {category_id})..."
-        )
+        try:
+            source = Source.objects.get(name__iexact=source)
+        except Source.DoesNotExist as e:
+            raise CommandError(f"Source '{source}' not found") from e
 
-        client = EBClient(api_url)
+        self.stdout.write(f"[{source}] Fetching {category} events...")
+
+        client_class = CLIENT_MAPPING.get(source.name)
+        if not client_class:
+            raise CommandError(f"No client found for source '{source.name}'") from None
+
+        client = client_class(source)
         try:
             client.fetch_events(category_id=category_id)
             self.stdout.write(

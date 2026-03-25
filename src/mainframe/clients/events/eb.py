@@ -2,13 +2,14 @@ import logging
 import re
 import unicodedata
 from datetime import datetime
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urljoin, urlparse, urlunparse
 from zoneinfo import ZoneInfo
 
 import requests
 from django.conf import settings
 
 from mainframe.events.models import Event
+from mainframe.sources.models import Source
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ def parse_datetime(date_str):
 
 
 class EBClient:
-    def __init__(self, api_url, api_key=None):
-        self.api_url = api_url
+    def __init__(self, source: Source):
+        self.source = source
         self.session = requests.Session()
 
     def fetch_events(self, **kwargs):
@@ -64,7 +65,7 @@ class EBClient:
 
         try:
             response = self.session.get(
-                f"{self.api_url}/events",
+                f"{self.source.url}/events",
                 params=kwargs,
                 timeout=30,
             )
@@ -72,13 +73,11 @@ class EBClient:
             data = response.json()
             events_data = data.get("events", {})
 
-            # Handle both dict format {"id": {...}} and list format [...]
             if isinstance(events_data, dict):
                 events_list = events_data.values()
             else:
                 events_list = events_data
 
-            # Collect all valid events for bulk operation
             events_to_create = []
             for event_data in events_list:
                 event = self._create_event_instance(event_data)
@@ -86,7 +85,6 @@ class EBClient:
                     events_to_create.append(event)
 
             if events_to_create:
-                # Bulk create/update events
                 Event.objects.bulk_create(
                     events_to_create,
                     update_conflicts=True,
@@ -133,8 +131,8 @@ class EBClient:
 
         event_slug = event_data.pop("event_slug", "")
         if event_slug:
-            parsed = urlparse(self.api_url)
-            path = parsed.path.rstrip("/") + "/" + event_slug
+            parsed = urlparse(self.source.url)
+            path = urljoin(parsed.path, event_slug) if parsed.path else event_slug
             url = urlunparse(
                 (
                     parsed.scheme,
@@ -154,16 +152,16 @@ class EBClient:
         end_date = parse_datetime(event_data.pop("ending_date", None))
 
         return Event(
-            source=Event.SourceChoices.EB,
+            source=self.source,
             external_id=external_id,
             title=title,
-            description=description,
+            description=description or "",
             start_date=start_date,
             end_date=end_date,
             location=location,
             location_slug=location_slug,
-            city_name=city_name,
-            city_slug=city_slug,
+            city_name=city_name or "",
+            city_slug=city_slug or "",
             url=url,
             additional_data=event_data,
         )
