@@ -17,7 +17,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
         if city_slug:
             queryset = queryset.filter(city_slug=city_slug)
-        
+
         if categories:
             queryset = queryset.filter(category_id__in=categories)
 

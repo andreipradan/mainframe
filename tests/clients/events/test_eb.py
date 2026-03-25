@@ -103,7 +103,7 @@ class TestEBClient:
                     "subtitle": "Description 1",
                     "starting_date": "2023-01-01T10:00:00Z",
                     "hall_name": "Location 1",
-                    "category_id": 1
+                    "category_id": 1,
                 }
             }
         }

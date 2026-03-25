@@ -3,6 +3,7 @@ from django.db import models
 from mainframe.core.models import TimeStampedModel
 from mainframe.events.constants import CATEGORY_CHOICES
 
+
 class Event(TimeStampedModel):
     source = models.ForeignKey("sources.Source", on_delete=models.CASCADE)
 
