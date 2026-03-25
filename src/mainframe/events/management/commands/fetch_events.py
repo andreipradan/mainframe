@@ -46,7 +46,9 @@ class Command(BaseCommand):
         try:
             client.fetch_events(category_id=category_id)
             self.stdout.write(
-                self.style.SUCCESS(f"Successfully fetched {category} events from {source.name}")
+                self.style.SUCCESS(
+                    f"Successfully fetched {category} events from {source.name}"
+                )
             )
         except Exception as e:
             logger.error("Failed to fetch events: %s", e)
