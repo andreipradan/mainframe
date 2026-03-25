@@ -25,9 +25,18 @@ const Events = () => {
   const token = useSelector((state) => state.auth.token);
   const events = useSelector((state) => state.events);
   const { results, errors, loading, count, selectedItem, modalOpen } = events;
+  const cities = events.cities || [];
+  const categories = events.categories || [];
+
+  const getCategoryName = (id) => {
+    const cat = categories.find((c) => c.id === Number.parseInt(id));
+    return cat ? cat.name : 'Unknown';
+  };
 
   const [filtered, setFiltered] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -54,8 +63,27 @@ const Events = () => {
     clearModalForm();
   };
 
+  const applyEventFilters = (city, category) => {
+    const kwargs = { page: 1 };
+    kwargs.city = city;
+    kwargs.category = category;
+    dispatch(setKwargs(kwargs));
+  };
+
+  const onCityChange = (e) => {
+    const nextCity = e.target.value;
+    setSelectedCity(nextCity);
+    applyEventFilters(nextCity, selectedCategory);
+  };
+
+  const onCategoryChange = (e) => {
+    const nextCategory = e.target.value;
+    setSelectedCategory(nextCategory);
+    applyEventFilters(selectedCity, nextCategory);
+  };
+
   useEffect(() => {
-    if (!results) dispatch(api.getList());
+    if (!results) dispatch(api.getList(events.kwargs));
   }, []);
 
   useEffect(() => {
@@ -159,6 +187,43 @@ const Events = () => {
 
               <Errors errors={errors} />
 
+              <div className='row mb-3'>
+                <div className='col-md-6'>
+                  <Form.Group>
+                    <Form.Label>City</Form.Label>
+                    <Form.Control
+                      as='select'
+                      value={selectedCity}
+                      onChange={onCityChange}
+                    >
+                      <option value=''>All Cities</option>
+                      {cities.map((city) => (
+                        <option key={city.slug} value={city.slug}>
+                          {city.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </div>
+                <div className='col-md-6'>
+                  <Form.Group>
+                    <Form.Label>Category</Form.Label>
+                    <Form.Control
+                      as='select'
+                      value={selectedCategory}
+                      onChange={onCategoryChange}
+                    >
+                      <option value=''>All Categories</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </div>
+              </div>
+
               <div className='form-group mb-3'>
                 <input
                   className='form-control'
@@ -175,6 +240,7 @@ const Events = () => {
                       <th>#</th>
                       <th>Title</th>
                       <th>Source</th>
+                      <th>Category</th>
                       <th>Location</th>
                       <th>Start</th>
                       <th>End</th>
@@ -187,9 +253,30 @@ const Events = () => {
                         (filtered || []).map((event, index) => (
                           <tr key={event.id || index}>
                             <td>{index + 1}</td>
-                            <td>{event.title}</td>
-                            <td>{event.source}</td>
-                            <td>{event.location || '-'}</td>
+                            <td>
+                              {event.url ? (
+                                <a
+                                  href={event.url}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                >
+                                  {event.title}
+                                </a>
+                              ) : (
+                                event.title
+                              )}
+                            </td>
+                            <td>{event.source_name}</td>
+                            <td>{getCategoryName(event.category_id)}</td>
+                            <td>
+                              <a
+                                href={event.location_url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                              >
+                                {event.location}
+                              </a>
+                            </td>
                             <td>
                               {event.start_date
                                 ? new Date(event.start_date).toLocaleString()
@@ -221,14 +308,14 @@ const Events = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={7} className='text-center'>
+                          <td colSpan={8} className='text-center'>
                             No events available
                           </td>
                         </tr>
                       )
                     ) : (
                       <tr>
-                        <td colSpan={7}>
+                        <td colSpan={8}>
                           <Audio
                             width='100%'
                             radius='9'
