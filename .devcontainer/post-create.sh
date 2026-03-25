@@ -14,8 +14,5 @@ npm run install:all
 
 uv run poe manage shell -c \
     "from mainframe.api.user.models import User; \
-    User.objects.create_superuser(\
-        'user@test.com', \
-        'user@test.com', \
-        'pass', \
-    )"
+    User.objects.filter(email='user@test.com').exists() or \
+    User.objects.create_superuser('user@test.com', 'user@test.com', 'pass')"
