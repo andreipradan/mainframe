@@ -53,6 +53,7 @@ Notes on Test Placement and Naming
 - **Do not import inside functions or methods**; imports must be top-level. This keeps import side-effects consistent and avoids Django app-loading issues during test collection.
 - Prefer type hints where practical.
 - Keep code self-documenting; add docstrings only for non-obvious logic.
+- **Methods that don't use `self` should be static methods (`@staticmethod`) or moved outside the class**. Avoid instance methods that don't access instance state.
 
 ## Style
 

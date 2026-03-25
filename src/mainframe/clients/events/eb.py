@@ -1,11 +1,54 @@
 import logging
+import re
+import unicodedata
 from datetime import datetime
+from urllib.parse import urlparse, urlunparse
+from zoneinfo import ZoneInfo
 
 import requests
+from django.conf import settings
 
 from mainframe.events.models import Event
 
 logger = logging.getLogger(__name__)
+
+
+def slugify(name):
+    """Create a slug from name, handling diacritics and special characters."""
+    if not name:
+        return ""
+
+    normalized = unicodedata.normalize("NFD", name)
+    # Remove diacritical marks
+    without_diacritics = "".join(
+        char for char in normalized if unicodedata.category(char) != "Mn"
+    )
+
+    slug = without_diacritics.lower()
+
+    # Replace spaces and special characters with dashes
+    slug = re.sub(
+        r"[^\w\s-]", "", slug
+    )  # Remove non-word chars except spaces and dashes
+    slug = re.sub(r"[\s_]+", "-", slug)  # Replace spaces/underscores with single dash
+    slug = re.sub(r"-+", "-", slug)  # Replace multiple dashes with single dash
+    slug = slug.strip("-")  # Remove leading/trailing dashes
+
+    return slug
+
+
+def parse_datetime(date_str):
+    if not date_str:
+        return None
+
+    try:
+        dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=ZoneInfo(settings.TIME_ZONE))
+        return dt
+    except ValueError:
+        logger.warning("Could not parse datetime: %s", date_str)
+        return None
 
 
 class EBClient:
@@ -53,6 +96,10 @@ class EBClient:
                         "start_date",
                         "end_date",
                         "location",
+                        "location_slug",
+                        "city_name",
+                        "city_slug",
+                        "url",
                         "additional_data",
                         "updated_at",
                     ],
@@ -69,28 +116,54 @@ class EBClient:
             raise
 
     def _create_event_instance(self, event_data):
-        external_id = event_data.get("id")
+        external_id = event_data.pop("id")
         if not external_id:
             logger.warning("Event data missing ID, skipping")
             return None
 
+        city_name = event_data.pop("city_name", "")
+        city_slug = event_data.pop("city_slug", "")
+        if not city_slug and city_name:
+            city_slug = slugify(city_name)
+
+        location = event_data.pop("hall_name", "")
+        location_slug = event_data.pop("hall_slug", "")
+        if not location_slug and location:
+            location_slug = slugify(location)
+
+        event_slug = event_data.pop("event_slug", "")
+        if event_slug:
+            parsed = urlparse(self.api_url)
+            path = parsed.path.rstrip("/") + "/" + event_slug
+            url = urlunparse(
+                (
+                    parsed.scheme,
+                    parsed.netloc,
+                    path,
+                    parsed.params,
+                    parsed.query,
+                    parsed.fragment,
+                )
+            )
+        else:
+            url = ""
+
+        title = event_data.pop("title", "")
+        description = event_data.pop("subtitle", "")
+        start_date = parse_datetime(event_data.pop("starting_date", None))
+        end_date = parse_datetime(event_data.pop("ending_date", None))
+
         return Event(
             source=Event.SourceChoices.EB,
             external_id=external_id,
-            title=event_data.get("title", ""),
-            description=event_data.get("subtitle") or "",
-            start_date=self._parse_datetime(event_data.get("starting_date")),
-            end_date=self._parse_datetime(event_data.get("ending_date")),
-            location=event_data.get("hall_name", ""),
+            title=title,
+            description=description,
+            start_date=start_date,
+            end_date=end_date,
+            location=location,
+            location_slug=location_slug,
+            city_name=city_name,
+            city_slug=city_slug,
+            url=url,
             additional_data=event_data,
         )
-
-    def _parse_datetime(self, date_str):
-        if not date_str:
-            return None
-        # Assuming ISO format, adjust as needed
-        try:
-            return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-        except ValueError:
-            logger.warning("Could not parse datetime: %s", date_str)
-            return None
