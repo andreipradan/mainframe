@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from mainframe.events.constants import CATEGORY_CHOICES
 from mainframe.events.models import Event
 from mainframe.events.serializers import EventSerializer
 
@@ -18,7 +19,7 @@ class EventViewSet(viewsets.ModelViewSet):
         if city_slug:
             queryset = queryset.filter(city_slug=city_slug)
 
-        if categories:
+        if any(categories):
             queryset = queryset.filter(category_id__in=categories)
 
         return queryset
@@ -29,10 +30,23 @@ class EventViewSet(viewsets.ModelViewSet):
         cities = (
             Event.objects.filter(city_slug__isnull=False)
             .exclude(city_slug="")
-            .values_list("city_slug", flat=True)
+            .values_list("city_slug", "city_name")
             .distinct()
             .order_by("city_slug")
         )
-        response.data["cities"] = list(cities)
+        response.data["cities"] = [
+            {"slug": slug, "name": name} for slug, name in cities
+        ]
 
+        category_ids = (
+            Event.objects.values_list("category_id", flat=True)
+            .distinct("category_id")
+            .order_by("category_id")
+        )
+        category_dict = dict(CATEGORY_CHOICES)
+        response.data["categories"] = [
+            {"id": cat_id, "name": category_dict[cat_id]}
+            for cat_id in category_ids
+            if cat_id in category_dict
+        ]
         return response
