@@ -12,7 +12,7 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related("source")
         city_slug = self.request.query_params.get("city")
         categories = self.request.query_params.getlist("category")
 
