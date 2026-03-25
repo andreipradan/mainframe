@@ -3,18 +3,11 @@ import logging
 from django.core.management import BaseCommand, CommandError
 
 from mainframe.clients.events.eb import EBClient
+from mainframe.events.constants import CATEGORY_BY_NAME
 from mainframe.sources.models import Source
 
 logger = logging.getLogger(__name__)
 
-CATEGORIES = {
-    "music": 1,
-    "sport": 2,
-    "film": 3,
-    "other": 4,
-    "theater": 5,
-    "online": 6,
-}
 CLIENT_MAPPING = {
     "eb": EBClient,
 }
@@ -24,7 +17,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--category",
-            choices=list(CATEGORIES),
+            choices=list(CATEGORY_BY_NAME.keys()),
             default="other",
             type=str,
         )
@@ -34,7 +27,7 @@ class Command(BaseCommand):
         category = options["category"]
         source = options["source"].lower().strip()
 
-        category_id = CATEGORIES.get(category)
+        category_id = CATEGORY_BY_NAME.get(category)
         if not category_id:
             raise CommandError(f"Invalid category: {category}")
 
@@ -45,7 +38,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"[{source}] Fetching {category} events...")
 
-        client_class = CLIENT_MAPPING.get(source.name)
+        client_class = CLIENT_MAPPING.get(source.name.lower())
         if not client_class:
             raise CommandError(f"No client found for source '{source.name}'") from None
 

@@ -13,9 +13,13 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         city_slug = self.request.query_params.get("city")
+        categories = self.request.query_params.getlist("category")
 
         if city_slug:
             queryset = queryset.filter(city_slug=city_slug)
+        
+        if categories:
+            queryset = queryset.filter(category_id__in=categories)
 
         return queryset
 

@@ -432,7 +432,7 @@ uv run poe frontend         # Start frontend
 uv run poe huey             # Start task queue worker
 
 # Database
-uv run poe migrate          # Create and Apply migrations
+uv run poe migrate          # Create and apply migrations (both makemigrations and migrate)
 uv run poe shell            # Launches a django shell_plus
 
 # Testing

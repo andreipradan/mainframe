@@ -14,3 +14,4 @@ class EventFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(timezone.now)
     source = factory.SubFactory(SourceFactory)
     external_id = factory.Sequence(lambda i: f"event-{i}")
+    category_id = 4  # "Other"

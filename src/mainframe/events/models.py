@@ -1,7 +1,7 @@
 from django.db import models
 
 from mainframe.core.models import TimeStampedModel
-
+from mainframe.events.constants import CATEGORY_CHOICES
 
 class Event(TimeStampedModel):
     source = models.ForeignKey("sources.Source", on_delete=models.CASCADE)
@@ -14,6 +14,11 @@ class Event(TimeStampedModel):
     location_slug = models.CharField(max_length=255, blank=True)
     city_name = models.CharField(max_length=255, blank=True)
     city_slug = models.CharField(max_length=255, blank=True)
+    category_id = models.IntegerField(
+        choices=CATEGORY_CHOICES,
+        default=4,  # "Other"
+        db_index=True,
+    )
     url = models.URLField(blank=True)
     external_id = models.CharField(max_length=100)
     additional_data = models.JSONField(blank=True, default=dict)

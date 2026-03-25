@@ -57,7 +57,8 @@ class EBClient:
         self.source = source
         self.session = requests.Session()
 
-    def fetch_events(self, **kwargs):
+    def fetch_events(self, category_id: int, **kwargs):
+        kwargs["category_id"] = category_id
         if "filters" not in kwargs:
             kwargs["filters"] = "upcoming"
         if "per_page" not in kwargs:
@@ -65,7 +66,7 @@ class EBClient:
 
         try:
             response = self.session.get(
-                f"{self.source.url}/events",
+                f"{self.source.url.rstrip('/')}/events",
                 params=kwargs,
                 timeout=30,
             )
@@ -150,6 +151,7 @@ class EBClient:
         description = event_data.pop("subtitle", "")
         start_date = parse_datetime(event_data.pop("starting_date", None))
         end_date = parse_datetime(event_data.pop("ending_date", None))
+        category_id = event_data.pop("category_id")
 
         return Event(
             source=self.source,
@@ -162,6 +164,7 @@ class EBClient:
             location_slug=location_slug,
             city_name=city_name or "",
             city_slug=city_slug or "",
+            category_id=category_id,
             url=url,
             additional_data=event_data,
         )

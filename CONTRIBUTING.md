@@ -6,7 +6,7 @@ This file contains developer-facing contribution and testing guidelines for the 
 
 - Install dependencies: `uv sync`
 - Configure environment: edit `src/mainframe/.env` (see README.md template)
-- Run migrations: `uv run poe migrate`
+- Run migrations: `uv run poe migrate` (this command runs both `makemigrations` and `migrate`)
 
 ## Running Tests
 

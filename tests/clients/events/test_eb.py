@@ -26,6 +26,7 @@ class TestEBClient:
                     "city_slug": "san-francisco",
                     "event_slug": "event-1",
                     "extra_field": "should_be_in_additional_data",
+                    "category_id": 1,
                 },
                 "2": {
                     "id": "2",
@@ -35,6 +36,7 @@ class TestEBClient:
                     "hall_name": "Location 2",
                     "city_name": "New York",
                     "event_slug": "event-2",
+                    "category_id": 1,
                 },
                 "3": {
                     "id": "3",
@@ -44,6 +46,7 @@ class TestEBClient:
                     "hall_name": "Grand Hall București",
                     "city_name": "Transylvania",
                     "event_slug": "event-3",
+                    "category_id": 1,
                 },
             }
         }
@@ -54,7 +57,7 @@ class TestEBClient:
             mock_get.return_value = mock_response
 
             client = EBClient(self.source)
-            client.fetch_events()
+            client.fetch_events(1)
 
             # Check that events were created
             assert Event.objects.count() == 3
@@ -100,6 +103,7 @@ class TestEBClient:
                     "subtitle": "Description 1",
                     "starting_date": "2023-01-01T10:00:00Z",
                     "hall_name": "Location 1",
+                    "category_id": 1
                 }
             }
         }
@@ -128,4 +132,4 @@ class TestEBClient:
 
             client = EBClient(self.source)
             with pytest.raises(requests.RequestException):
-                client.fetch_events()
+                client.fetch_events(1)
