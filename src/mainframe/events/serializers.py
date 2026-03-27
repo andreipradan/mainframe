@@ -14,6 +14,9 @@ class EventSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_location_url(self, obj):
+        if obj.location_url:
+            return obj.location_url
+
         if obj.url and obj.location_slug:
             parsed = urlparse(obj.url)
             base = f"{parsed.scheme}://{parsed.netloc}"

@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 import requests
 
-from mainframe.clients.events.eb import EBClient, slugify
+from mainframe.clients.events import EBClient, slugify
 from mainframe.events.models import Event
 from tests.factories.source import SourceFactory
 
@@ -11,7 +11,11 @@ from tests.factories.source import SourceFactory
 @pytest.mark.django_db
 class TestEBClient:
     def setup_method(self):
-        self.source = SourceFactory.create(name="EB", url="https://api.eb.example.com")
+        self.source = SourceFactory.create(
+            name="EB", 
+            url="https://api.eb.example.com",
+            config={"url": {"path": "events"}}
+        )
 
     def test_fetch_events_success(self):
         mock_response_data = {
@@ -51,19 +55,17 @@ class TestEBClient:
             }
         }
 
-        with mock.patch("requests.Session.get") as mock_get:
+        with mock.patch("mainframe.clients.events.fetch") as mock_fetch:
             mock_response = mock.Mock()
             mock_response.json.return_value = mock_response_data
-            mock_get.return_value = mock_response
+            mock_fetch.return_value = (mock_response, None)
 
             client = EBClient(self.source)
-            client.fetch_events(1)
+            events = client.fetch_events(category_id=1)
 
-            # Check that events were created
-            assert Event.objects.count() == 3
-            event1, event2, event3 = Event.objects.filter(source=self.source).order_by(
-                "external_id"
-            )
+            # Check that events were returned
+            assert len(events) == 3
+            event1, event2, event3 = sorted(events, key=lambda e: e.external_id)
 
             assert event1.title == "Event 1"
             assert event1.location == "Location 1"
@@ -108,28 +110,23 @@ class TestEBClient:
             }
         }
 
-        with mock.patch("requests.Session.get") as mock_get:
+        with mock.patch("mainframe.clients.events.fetch") as mock_fetch:
             mock_response = mock.Mock()
             mock_response.json.return_value = mock_response_data
-            mock_get.return_value = mock_response
+            mock_fetch.return_value = (mock_response, None)
 
             client = EBClient(self.source)
-            client.fetch_events(category_id=1, per_page=50, filters="upcoming")
+            events = client.fetch_events(category_id=1, per_page=50, filters="upcoming")
 
-            mock_get.assert_called_once_with(
-                "https://api.eb.example.com/events",
-                params={"category_id": 1, "per_page": 50, "filters": "upcoming"},
-                timeout=30,
-            )
-
-            assert list(Event.objects.values_list("external_id", "title")) == [
+            assert [(e.external_id, e.title) for e in events] == [
                 ("1", "Music Event 1")
             ]
 
     def test_fetch_events_api_error(self):
-        with mock.patch("requests.Session.get") as mock_get:
-            mock_get.side_effect = requests.RequestException("API Error")
+        with mock.patch("mainframe.clients.events.fetch") as mock_fetch:
+            mock_fetch.return_value = (None, requests.RequestException("API Error"))
 
             client = EBClient(self.source)
-            with pytest.raises(requests.RequestException):
-                client.fetch_events(1)
+            events = client.fetch_events(category_id=1)
+            
+            assert events == []

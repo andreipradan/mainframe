@@ -372,6 +372,7 @@ send_notification.delay(chat_id=123, text="Hello!")
   - Prefer `validate_email()` over `check()`, `fetch_user_transactions()` over `get_data()`
   - Classes should describe what they represent: `UserSerializer`, `PaymentProcessor`, `EmailValidator`
 - **Imports**: Organize as: stdlib → third-party → local imports
+- **No Code in __init__.py**: Keep `__init__.py` files empty; import directly from modules (e.g., `from package.module import Class`)
 - **Type Hints**: Add where practical (not required but encouraged)
 - **Tests**: Aim for >80% coverage, test API endpoints and business logic
 - **Docstrings & Comments**:
