@@ -66,6 +66,7 @@ class Command(BaseCommand):
                     "location_slug",
                     "city_name",
                     "city_slug",
+                    "category_id",
                     "url",
                     "additional_data",
                     "updated_at",

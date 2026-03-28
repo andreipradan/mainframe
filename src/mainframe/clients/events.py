@@ -105,12 +105,8 @@ class EBClient(EventsClient):
             if not location_slug and location:
                 location_slug = slugify(location)
 
-            event_slug = event_data.pop("event_slug", "")
-            url = (
-                f"{self.source.url.rstrip('/')}/{event_slug.lstrip('/')}"
-                if event_slug
-                else ""
-            )
+            event_slug = event_data["event_slug"]
+            url = f"{self.source.url.rstrip('/')}/{event_slug.lstrip('/')}"
 
             title = event_data.pop("title", "")
             description = event_data.pop("subtitle", "")
@@ -198,6 +194,7 @@ class ZnClient(EventsClient):
                 f"{date.text.strip().split()[1]} {time.text.strip()}",
                 "%d/%m %H:%M",
             )
+            start_date.replace(year=datetime.now().year)
             location = tag.find("div", {"class": "kzn-sw-item-adresa"}).text.strip()
             city_name = self.source.config["city_name"]
             city_slug = self.source.config["city_slug"]
