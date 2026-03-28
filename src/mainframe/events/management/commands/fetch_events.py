@@ -63,7 +63,6 @@ class Command(BaseCommand):
                     "category",
                     "location",
                     "start_date",
-                    "url",
                     "additional_data",
                     "city",
                     "description",

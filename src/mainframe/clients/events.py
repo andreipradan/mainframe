@@ -77,8 +77,8 @@ class EBClient(EventsClient):
                 f"{self.source.url.rstrip('/')}/hall/{event_data.pop('hall_slug')}"
             )
 
-            start_date = parse_datetime(event_data.pop("starting_date", None))
-            end_date = parse_datetime(event_data.pop("ending_date", None))
+            start_date = parse_datetime(event_data.pop("starting_date"))
+            end_date = parse_datetime(event_data.pop("ending_date"))
 
             events.append(
                 Event(
