@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 import requests
 
-from mainframe.clients.events import EBClient, slugify
+from mainframe.clients.events import EBClient
 from tests.factories.source import SourceFactory
 
 
@@ -27,6 +27,7 @@ class TestEBClient:
                     "hall_name": "Location 1",
                     "hall_slug": "location-1",
                     "city_slug": "san-francisco",
+                    "city_name": "San Francisco",
                     "event_slug": "event-1",
                     "extra_field": "should_be_in_additional_data",
                     "category_id": 1,
@@ -37,6 +38,7 @@ class TestEBClient:
                     "subtitle": "Description 2",
                     "starting_date": "2023-01-02T11:00:00Z",
                     "hall_name": "Location 2",
+                    "hall_slug": "location-2",
                     "city_name": "City Beta",
                     "event_slug": "event-2",
                     "category_id": 1,
@@ -47,6 +49,7 @@ class TestEBClient:
                     "subtitle": "Description 3",
                     "starting_date": "2023-01-03T12:00:00Z",
                     "hall_name": "Grand Hall Omega",
+                    "hall_slug": "grand-hall-omega",
                     "city_name": "Region X",
                     "event_slug": "event-3",
                     "category_id": 1,
@@ -68,32 +71,21 @@ class TestEBClient:
 
             assert event1.title == "Event 1"
             assert event1.location == "Location 1"
-            assert event1.location_slug == "location-1"
-            assert event1.city_slug == "san-francisco"
+            assert event1.location_url == "https://api.eb.example.com/hall/location-1"
+            assert event1.city == "San Francisco"
             assert event1.url == "https://api.eb.example.com/event-1"
             assert "extra_field" in event1.additional_data
             assert "id" not in event1.additional_data
 
-            assert event2.city_name == "City Beta"
-            assert event2.city_slug == "city-beta"  # city_name converted to slug
+            assert event2.city == "City Beta"
             assert event2.url == "https://api.eb.example.com/event-2"
 
-            assert event3.location_slug == "grand-hall-omega"  # location slugified
-            assert event3.city_name == "Region X"
-            assert event3.city_slug == "region-x"  # city_name converted to slug
+            assert (
+                event3.location_url
+                == "https://api.eb.example.com/hall/grand-hall-omega"
+            )
+            assert event3.city == "Region X"
             assert event3.url == "https://api.eb.example.com/event-3"
-
-    def test_slugify(self):
-        assert slugify("City Beta") == "city-beta"
-        assert slugify("Metropolis") == "metropolis"
-        assert slugify("Master Plaza") == "master-plaza"
-        assert slugify("Alpha-1 Station") == "alpha-1-station"
-        assert slugify("St. Event") == "st-event"
-        assert slugify("East  Gate") == "east-gate"
-        assert slugify("") == ""
-        assert slugify(None) == ""
-        assert slugify("city-alpha") == "city-alpha"
-        assert slugify("Grand Hall Omega") == "grand-hall-omega"
 
     def test_fetch_events_with_category(self):
         mock_response_data = {
@@ -104,6 +96,8 @@ class TestEBClient:
                     "subtitle": "Description 1",
                     "starting_date": "2023-01-01T10:00:00Z",
                     "hall_name": "Location 1",
+                    "hall_slug": "location-1",
+                    "city_name": "San Francisco",
                     "category_id": 1,
                     "event_slug": "event-1",
                 }

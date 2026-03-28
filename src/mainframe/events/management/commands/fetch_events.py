@@ -3,7 +3,7 @@ import logging
 from django.core.management import BaseCommand, CommandError
 
 from mainframe.clients.events import EBClient, IBClient, ZnClient
-from mainframe.events.constants import CATEGORY_BY_NAME
+from mainframe.events.constants import CATEGORY_ID_BY_NAME
 from mainframe.events.models import Event
 from mainframe.sources.models import Source
 
@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--category",
-            choices=list(CATEGORY_BY_NAME.keys()),
+            choices=list(CATEGORY_ID_BY_NAME.keys()),
             type=str,
         )
         parser.add_argument("--source", type=str, required=True)
@@ -40,12 +40,13 @@ class Command(BaseCommand):
             raise CommandError("Category is required for source 'eb'")
 
         if category:
-            category_id = CATEGORY_BY_NAME.get(category)
-            if not category_id:
+            if not (category_id := CATEGORY_ID_BY_NAME.get(category)):
                 raise CommandError(f"Invalid category: {category}")
             kwargs["category_id"] = category_id
 
-        self.stdout.write(f"[{source}] Fetching {category} events...")
+        self.stdout.write(
+            f"[events][{source}] Fetching {f'{category} ' if category else ''}events..."
+        )
 
         client_class = CLIENT_MAPPING.get(source.name.lower())
         if not client_class:
@@ -59,16 +60,16 @@ class Command(BaseCommand):
                 update_conflicts=True,
                 update_fields=[
                     "title",
-                    "description",
-                    "start_date",
-                    "end_date",
+                    "category",
                     "location",
-                    "location_slug",
-                    "city_name",
-                    "city_slug",
-                    "category_id",
+                    "start_date",
                     "url",
                     "additional_data",
+                    "city",
+                    "description",
+                    "end_date",
+                    "external_id",
+                    "location_url",
                     "updated_at",
                 ],
                 unique_fields=["url"],
@@ -76,12 +77,14 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(
                     f"[events][{source.name}] Successfully fetched and saved "
-                    f"{len(events_to_create)} '{category}' events"
+                    f"{len(events_to_create)} {f'{category} ' if category else ''}"
+                    f"events"
                 )
             )
         else:
             self.stdout.write(
                 self.style.WARNING(
-                    f"[events][{source.name}] No valid '{category}' events found"
+                    f"[events][{source.name}] "
+                    f"No {f'{category} ' if category else ''}events found"
                 )
             )

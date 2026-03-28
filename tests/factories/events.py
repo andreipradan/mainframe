@@ -14,7 +14,7 @@ class EventFactory(factory.django.DjangoModelFactory):
     start_date = factory.LazyFunction(timezone.now)
     source = factory.SubFactory(SourceFactory)
     external_id = factory.Sequence(lambda i: f"event-{i}")
-    category_id = 4  # "Other"
+    category = "other"
     location = factory.Sequence(lambda i: f"Venue {i}")
-    city_name = factory.Sequence(lambda i: f"City {i}")
+    city = factory.Sequence(lambda i: f"City {i}")
     url = factory.Sequence(lambda i: f"https://example.com/event-{i}")

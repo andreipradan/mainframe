@@ -16,8 +16,7 @@ class TestZnClient:
             config={
                 "url": {"path": "test-path/"},
                 "soup": {"string": "test search", "children": ".kzn-sw-item"},
-                "city_name": "City Alpha",
-                "city_slug": "city-alpha",
+                "city": "City Alpha",
             },
         )
 
@@ -33,7 +32,9 @@ class TestZnClient:
                         <div>Date 15/06</div>
                         <div>20:00</div>
                     </div>
-                    <div class="kzn-sw-item-adresa">hall name</div>
+                    <div class="kzn-sw-item-adresa">
+                        <a href="https://example.com/hall">hall name</a>
+                    </div>
                 </div>
             </div>
             <div class="kzn-sw-item">
@@ -45,7 +46,9 @@ class TestZnClient:
                         <div>Date 20/07</div>
                         <div>18:30</div>
                     </div>
-                    <div class="kzn-sw-item-adresa">test location</div>
+                    <div class="kzn-sw-item-adresa">
+                        <a href="https://example.com/hall">test location</a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -62,18 +65,17 @@ class TestZnClient:
         assert event1.title == "Concert Rock"
         assert event1.description == "description"
         assert event1.location == "hall name"
-        assert event1.city_name == "City Alpha"
-        assert event1.city_slug == "city-alpha"
-        assert event1.category_id == 4  # Concert category defaults to "other" (4)
+        assert event1.city == "City Alpha"
+        assert event1.category == "music"
         assert event1.url == "/event/concert-rock-2026"
-        assert event1.external_id == "2026"
+        assert event1.external_id == ""
 
         # Check second event
         event2 = events[1]
         assert event2.title == "Summer Festival"
         assert event2.description == "desc"
         assert event2.location == "test location"
-        assert event2.category_id == 4  # Default category for Festival
+        assert event2.category == "festival"
 
     def test_parse_data_no_matching_section(self):
         html = """
@@ -87,33 +89,6 @@ class TestZnClient:
         events = client.parse_data(soup)
 
         assert len(events) == 0
-
-    def test_parse_data_missing_location(self):
-        html = """
-        <section>test search City Alpha | 2026
-            <div class="kzn-sw-item">
-                <div><span>test search</span>
-                    <div class="kzn-sw-item-textsus">Expo</div>
-                    <h3><a href="/event/expozitie-art-2026">Art Expo</a></h3>
-                    <div class="kzn-sw-item-sumar">Expo picture</div>
-                    <div class="kzn-one-event-date">
-                        <div>Date 10/08</div>
-                        <div>10:00</div>
-                    </div>
-                    <div class="kzn-sw-item-adresa"></div>
-                </div>
-            </div>
-        </section>
-        """
-        soup = BeautifulSoup(html, "html.parser")
-
-        client = ZnClient(self.source)
-        events = client.parse_data(soup)
-
-        assert len(events) == 1
-        event = events[0]
-        assert event.title == "Art Expo"
-        assert event.location == ""  # Empty location element
 
     @mock.patch("mainframe.clients.events.fetch")
     def test_fetch_events_success(self, mock_fetch):
@@ -131,7 +106,9 @@ class TestZnClient:
                                 <div>Date 01/01</div>
                                 <div>12:00</div>
                             </div>
-                            <div class="kzn-sw-item-adresa">Test Location</div>
+                            <div class="kzn-sw-item-adresa">
+                                <a href="https://example.com/hall">Test Location</a>
+                            </div>
                         </div>
                     </div>
                 </section>

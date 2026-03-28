@@ -1,7 +1,5 @@
 import json
 import logging
-import re
-import unicodedata
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -10,34 +8,14 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 
 from mainframe.clients.scraper import fetch
-from mainframe.events.constants import CATEGORY_BY_NAME
+from mainframe.events.constants import (
+    CATEGORY_NAME_BY_ID,
+    get_category,
+)
 from mainframe.events.models import Event
 from mainframe.sources.models import Source
 
 logger = logging.getLogger(__name__)
-
-
-def slugify(name):
-    """Create a slug from name, handling diacritics and special characters."""
-    if not name:
-        return ""
-
-    normalized = unicodedata.normalize("NFD", name)
-    without_diacritics = "".join(
-        char for char in normalized if unicodedata.category(char) != "Mn"
-    )
-
-    slug = without_diacritics.lower()
-
-    # Replace spaces and special characters with dashes
-    slug = re.sub(
-        r"[^\w\s-]", "", slug
-    )  # Remove non-word chars except spaces and dashes
-    slug = re.sub(r"[\s_]+", "-", slug)  # Replace spaces/underscores with single dash
-    slug = re.sub(r"-+", "-", slug)  # Replace multiple dashes with single dash
-    slug = slug.strip("-")  # Remove leading/trailing dashes
-
-    return slug
 
 
 def parse_datetime(date_str):
@@ -93,42 +71,29 @@ class EBClient(EventsClient):
     def parse_data(self, data: dict) -> list[Event]:
         events = []
         for event_data in data.get("events", {}).values():
-            external_id = event_data.pop("id")
-
-            city_name = event_data.pop("city_name", "")
-            city_slug = event_data.pop("city_slug", "")
-            if not city_slug and city_name:
-                city_slug = slugify(city_name)
-
-            location = event_data.pop("hall_name", "")
-            location_slug = event_data.pop("hall_slug", "")
-            if not location_slug and location:
-                location_slug = slugify(location)
-
             event_slug = event_data["event_slug"]
             url = f"{self.source.url.rstrip('/')}/{event_slug.lstrip('/')}"
+            location_url = (
+                f"{self.source.url.rstrip('/')}/hall/{event_data.pop('hall_slug')}"
+            )
 
-            title = event_data.pop("title", "")
-            description = event_data.pop("subtitle", "")
             start_date = parse_datetime(event_data.pop("starting_date", None))
             end_date = parse_datetime(event_data.pop("ending_date", None))
-            category_id = event_data.pop("category_id")
 
             events.append(
                 Event(
                     source=self.source,
-                    external_id=external_id,
-                    title=title,
-                    description=description or "",
+                    title=event_data.pop("title"),
+                    category=CATEGORY_NAME_BY_ID[event_data.pop("category_id")],
+                    location=event_data.pop("hall_name", ""),
                     start_date=start_date,
-                    end_date=end_date,
-                    location=location,
-                    location_slug=location_slug,
-                    city_name=city_name or "",
-                    city_slug=city_slug or "",
-                    category_id=category_id,
                     url=url,
-                    additional_data=event_data,
+                    city=event_data.pop("city_name") or "",
+                    description=event_data.pop("subtitle") or "",
+                    end_date=end_date,
+                    external_id=event_data.pop("id"),
+                    location_url=location_url,
+                    additional_data={k: v for k, v in event_data.items() if v},
                 )
             )
         return events
@@ -153,20 +118,20 @@ class IBClient(EventsClient):
             tag.text.strip().replace("/*<![CDATA[*/", "").replace("/*]]>*/", "").strip()
         )
         title = raw.pop("name")
-        url = raw.pop("url")
         return Event(
             source=self.source,
             title=title,
-            description=raw.pop("description"),
-            start_date=raw.pop("startDate"),
-            end_date=raw.pop("endDate"),
+            category="music" if "concert" in title.lower() else "other",
             location=raw["location"].pop("name"),
-            city_name=raw["location"]["address"].pop("addressLocality"),
-            category_id=CATEGORY_BY_NAME["music"]
-            if "concert" in title
-            else CATEGORY_BY_NAME["other"],
-            url=url,
-            external_id=url.rstrip("/").split("-")[-1],
+            start_date=datetime.strptime(raw.pop("startDate"), "%Y-%m-%d").replace(
+                tzinfo=ZoneInfo(settings.TIME_ZONE)
+            ),
+            url=raw.pop("url"),
+            city=raw["location"]["address"].pop("addressLocality"),
+            description=raw.pop("description"),
+            end_date=datetime.strptime(raw.pop("endDate"), "%Y-%m-%d").replace(
+                tzinfo=ZoneInfo(settings.TIME_ZONE)
+            ),
             additional_data=raw,
         )
 
@@ -186,30 +151,31 @@ class ZnClient(EventsClient):
         for t in tags:
             tag = t.div
             category = tag.find("div", {"class": "kzn-sw-item-textsus"}).text.strip()
-            title = tag.h3.a.text
+            title = tag.h3.a.text.strip()
             url = tag.h3.a["href"]
             description = tag.find("div", {"class": "kzn-sw-item-sumar"}).text.strip()
             date, time = tag.find("div", {"class": "kzn-one-event-date"}).select("div")
             start_date = datetime.strptime(
                 f"{date.text.strip().split()[1]} {time.text.strip()}",
                 "%d/%m %H:%M",
-            )
-            start_date.replace(year=datetime.now().year)
-            location = tag.find("div", {"class": "kzn-sw-item-adresa"}).text.strip()
-            city_name = self.source.config["city_name"]
-            city_slug = self.source.config["city_slug"]
+            ).replace(year=datetime.now().year, tzinfo=ZoneInfo(settings.TIME_ZONE))
+            location_tag = tag.find("div", {"class": "kzn-sw-item-adresa"})
+            city = self.source.config["city"].lower()
+            if location_tag.text.strip().lower() == city and " @ " in title:
+                location = title.split("@")[-1].strip()
+            else:
+                location = location_tag.text.strip()
             events.append(
                 Event(
                     source=self.source,
                     title=title,
-                    description=description,
-                    start_date=start_date,
+                    category=get_category(category),
                     location=location,
-                    city_name=city_name,
-                    city_slug=city_slug,
-                    category_id=CATEGORY_BY_NAME.get(category.lower(), 4),
+                    start_date=start_date,
                     url=url,
-                    external_id=url.rstrip("/").split("-")[-1],
+                    city=self.source.config["city"],
+                    description=description if description != title else "",
+                    location_url=location_tag.a["href"],
                 )
             )
         return events
