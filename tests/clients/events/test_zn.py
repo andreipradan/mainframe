@@ -15,13 +15,10 @@ class TestZnClient:
             url="https://www.example.com",
             config={
                 "url": {"path": "test-path/"},
-                "soup": {
-                    "string": "test search",
-                    "children": ".kzn-sw-item"
-                },
+                "soup": {"string": "test search", "children": ".kzn-sw-item"},
                 "city_name": "City Alpha",
-                "city_slug": "city-alpha"
-            }
+                "city_slug": "city-alpha",
+            },
         )
 
     def test_parse_data_with_real_html_structure(self):
