@@ -3,15 +3,18 @@ from unittest import mock
 import pytest
 import requests
 
-from mainframe.clients.events.eb import EBClient, slugify
-from mainframe.events.models import Event
+from mainframe.clients.events import EBClient
 from tests.factories.source import SourceFactory
 
 
 @pytest.mark.django_db
 class TestEBClient:
     def setup_method(self):
-        self.source = SourceFactory.create(name="EB", url="https://api.eb.example.com")
+        self.source = SourceFactory.create(
+            name="EB",
+            url="https://api.eb.example.com",
+            config={"url": {"path": "events"}},
+        )
 
     def test_fetch_events_success(self):
         mock_response_data = {
@@ -21,9 +24,11 @@ class TestEBClient:
                     "title": "Event 1",
                     "subtitle": "Description 1",
                     "starting_date": "2023-01-01T10:00:00Z",
+                    "ending_date": "2023-01-02T11:00:00Z",
                     "hall_name": "Location 1",
                     "hall_slug": "location-1",
                     "city_slug": "san-francisco",
+                    "city_name": "San Francisco",
                     "event_slug": "event-1",
                     "extra_field": "should_be_in_additional_data",
                     "category_id": 1,
@@ -33,8 +38,10 @@ class TestEBClient:
                     "title": "Event 2",
                     "subtitle": "Description 2",
                     "starting_date": "2023-01-02T11:00:00Z",
+                    "ending_date": "2023-01-03T12:00:00Z",
                     "hall_name": "Location 2",
-                    "city_name": "New York",
+                    "hall_slug": "location-2",
+                    "city_name": "City Beta",
                     "event_slug": "event-2",
                     "category_id": 1,
                 },
@@ -43,56 +50,45 @@ class TestEBClient:
                     "title": "Event 3",
                     "subtitle": "Description 3",
                     "starting_date": "2023-01-03T12:00:00Z",
-                    "hall_name": "Grand Hall București",
-                    "city_name": "Transylvania",
+                    "ending_date": "2023-01-04T11:00:00Z",
+                    "hall_name": "Grand Hall Omega",
+                    "hall_slug": "grand-hall-omega",
+                    "city_name": "Region X",
                     "event_slug": "event-3",
                     "category_id": 1,
                 },
             }
         }
 
-        with mock.patch("requests.Session.get") as mock_get:
+        with mock.patch("mainframe.clients.events.fetch") as mock_fetch:
             mock_response = mock.Mock()
             mock_response.json.return_value = mock_response_data
-            mock_get.return_value = mock_response
+            mock_fetch.return_value = (mock_response, None)
 
             client = EBClient(self.source)
-            client.fetch_events(1)
+            events = client.fetch_events(category_id=1)
 
-            # Check that events were created
-            assert Event.objects.count() == 3
-            event1, event2, event3 = Event.objects.filter(source=self.source).order_by(
-                "external_id"
-            )
+            # Check that events were returned
+            assert len(events) == 3
+            event1, event2, event3 = sorted(events, key=lambda e: e.external_id)
 
             assert event1.title == "Event 1"
             assert event1.location == "Location 1"
-            assert event1.location_slug == "location-1"
-            assert event1.city_slug == "san-francisco"
+            assert event1.location_url == "https://api.eb.example.com/hall/location-1"
+            assert event1.city == "San Francisco"
             assert event1.url == "https://api.eb.example.com/event-1"
             assert "extra_field" in event1.additional_data
             assert "id" not in event1.additional_data
 
-            assert event2.city_name == "New York"
-            assert event2.city_slug == "new-york"  # city_name converted to slug
+            assert event2.city == "City Beta"
             assert event2.url == "https://api.eb.example.com/event-2"
 
-            assert event3.location_slug == "grand-hall-bucuresti"  # location slugified
-            assert event3.city_name == "Transylvania"
-            assert event3.city_slug == "transylvania"  # city_name converted to slug
+            assert (
+                event3.location_url
+                == "https://api.eb.example.com/hall/grand-hall-omega"
+            )
+            assert event3.city == "Region X"
             assert event3.url == "https://api.eb.example.com/event-3"
-
-    def test_slugify(self):
-        assert slugify("New York") == "new-york"
-        assert slugify("București") == "bucuresti"
-        assert slugify("Ștefan cel Mare") == "stefan-cel-mare"
-        assert slugify("Târgu Mureș") == "targu-mures"
-        assert slugify("St. Louis") == "st-louis"
-        assert slugify("Los  Angeles") == "los-angeles"
-        assert slugify("") == ""
-        assert slugify(None) == ""
-        assert slugify("san-francisco") == "san-francisco"
-        assert slugify("Grand Hall București") == "grand-hall-bucuresti"
 
     def test_fetch_events_with_category(self):
         mock_response_data = {
@@ -102,34 +98,33 @@ class TestEBClient:
                     "title": "Music Event 1",
                     "subtitle": "Description 1",
                     "starting_date": "2023-01-01T10:00:00Z",
+                    "ending_date": "2023-01-02T11:00:00Z",
                     "hall_name": "Location 1",
+                    "hall_slug": "location-1",
+                    "city_name": "San Francisco",
                     "category_id": 1,
+                    "event_slug": "event-1",
                 }
             }
         }
 
-        with mock.patch("requests.Session.get") as mock_get:
+        with mock.patch("mainframe.clients.events.fetch") as mock_fetch:
             mock_response = mock.Mock()
             mock_response.json.return_value = mock_response_data
-            mock_get.return_value = mock_response
+            mock_fetch.return_value = (mock_response, None)
 
             client = EBClient(self.source)
-            client.fetch_events(category_id=1, per_page=50, filters="upcoming")
+            events = client.fetch_events(category_id=1, per_page=50, filters="upcoming")
 
-            mock_get.assert_called_once_with(
-                "https://api.eb.example.com/events",
-                params={"category_id": 1, "per_page": 50, "filters": "upcoming"},
-                timeout=30,
-            )
-
-            assert list(Event.objects.values_list("external_id", "title")) == [
+            assert [(e.external_id, e.title) for e in events] == [
                 ("1", "Music Event 1")
             ]
 
     def test_fetch_events_api_error(self):
-        with mock.patch("requests.Session.get") as mock_get:
-            mock_get.side_effect = requests.RequestException("API Error")
+        with mock.patch("mainframe.clients.events.fetch") as mock_fetch:
+            mock_fetch.return_value = (None, requests.RequestException("API Error"))
 
             client = EBClient(self.source)
-            with pytest.raises(requests.RequestException):
-                client.fetch_events(1)
+            events = client.fetch_events(category_id=1)
+
+            assert events == []

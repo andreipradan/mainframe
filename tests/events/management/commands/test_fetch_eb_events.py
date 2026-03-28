@@ -48,6 +48,19 @@ class TestFetchEBEventsCommand:
         mock_client_class.assert_called_once_with(self.source)
         mock_client.fetch_events.assert_called_once_with(category_id=3)
 
+    @mock.patch("mainframe.events.management.commands.fetch_events.CLIENT_MAPPING")
+    def test_non_eb_allows_no_category(self, mock_mapping):
+        zn_source = SourceFactory.create(name="zn", url="https://api.example.com")
+        mock_client_class = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_mapping.get.return_value = mock_client_class
+
+        call_command("fetch_events", source="zn")
+
+        mock_client_class.assert_called_once_with(zn_source)
+        mock_client.fetch_events.assert_called_once_with()
+
     def test_invalid_category(self):
         with pytest.raises(CommandError, match="Invalid category: invalid"):
-            call_command("fetch_events", source="", category="invalid")
+            call_command("fetch_events", source="eb", category="invalid")
