@@ -10,8 +10,11 @@ class EventFactory(factory.django.DjangoModelFactory):
         model = Event
 
     title = factory.Sequence(lambda i: f"Event {i}")
-    description = factory.Faker("sentence")
+    description = factory.Sequence(lambda i: f"Description {i}")
     start_date = factory.LazyFunction(timezone.now)
     source = factory.SubFactory(SourceFactory)
     external_id = factory.Sequence(lambda i: f"event-{i}")
     category_id = 4  # "Other"
+    location = factory.Sequence(lambda i: f"Venue {i}")
+    city_name = factory.Sequence(lambda i: f"City {i}")
+    url = factory.Sequence(lambda i: f"https://example.com/event-{i}")

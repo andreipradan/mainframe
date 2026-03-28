@@ -82,9 +82,9 @@ class EventsClient:
                 error,
             )
             return []
-        
+
         return self.parse_data(response.json() if not soup else response)
-    
+
     def parse_data(self, data: dict) -> list[Event]:
         raise NotImplementedError
 
@@ -106,7 +106,11 @@ class EBClient(EventsClient):
                 location_slug = slugify(location)
 
             event_slug = event_data.pop("event_slug", "")
-            url = f"{self.source.url.rstrip('/')}/{event_slug.lstrip('/')}" if event_slug else ""
+            url = (
+                f"{self.source.url.rstrip('/')}/{event_slug.lstrip('/')}"
+                if event_slug
+                else ""
+            )
 
             title = event_data.pop("title", "")
             description = event_data.pop("subtitle", "")
@@ -139,15 +143,19 @@ class IBClient(EventsClient):
         if data.get("error"):
             logger.error("Error in IB response: %s", data["error"])
             return []
-        
+
         soup = BeautifulSoup(data["html"], features="html.parser")
         event_tags = [
-            t for t in soup.select("script") if t.attrs.get("type") == "application/ld+json"
+            t
+            for t in soup.select("script")
+            if t.attrs.get("type") == "application/ld+json"
         ]
         return [self.parse_event(tag) for tag in event_tags if tag.text.strip()]
 
     def parse_event(self, tag):
-        raw = json.loads(tag.text.strip().lstrip("/*<![CDATA[*/").rstrip("/*]]>*/").strip())
+        raw = json.loads(
+            tag.text.strip().replace("/*<![CDATA[*/", "").replace("/*]]>*/", "").strip()
+        )
         title = raw.pop("name")
         url = raw.pop("url")
         return Event(
@@ -158,7 +166,9 @@ class IBClient(EventsClient):
             end_date=raw.pop("endDate"),
             location=raw["location"].pop("name"),
             city_name=raw["location"]["address"].pop("addressLocality"),
-            category_id=CATEGORY_BY_NAME["music"] if "concert" in title else CATEGORY_BY_NAME["other"],
+            category_id=CATEGORY_BY_NAME["music"]
+            if "concert" in title
+            else CATEGORY_BY_NAME["other"],
             url=url,
             external_id=url.rstrip("/").split("-")[-1],
             additional_data=raw,
@@ -168,12 +178,17 @@ class IBClient(EventsClient):
 class ZnClient(EventsClient):
     def parse_data(self, soup) -> list[Event]:
         events = []
-        section = soup.find(string=self.source.config["soup"]["string"]).find_parent(
-            "section"
-        )
+        marker = soup.find(string=self.source.config["soup"]["string"])
+        if not marker:
+            return events
+
+        section = marker.find_parent("section")
+        if not section:
+            return events
+
         tags = section.select(self.source.config["soup"]["children"])
-        for tag in tags:
-            tag = tag.div
+        for t in tags:
+            tag = t.div
             category = tag.find("div", {"class": "kzn-sw-item-textsus"}).text.strip()
             title = tag.h3.a.text
             url = tag.h3.a["href"]
@@ -183,10 +198,7 @@ class ZnClient(EventsClient):
                 f"{date.text.strip().split()[1]} {time.text.strip()}",
                 "%d/%m %H:%M",
             )
-            try:
-                location = tag.find("div", {"class": "kzn-sw-item-adresa"}).text.strip()
-            except AttributeError:
-                raise ValueError(tag)
+            location = tag.find("div", {"class": "kzn-sw-item-adresa"}).text.strip()
             city_name = self.source.config["city_name"]
             city_slug = self.source.config["city_slug"]
             events.append(

@@ -30,14 +30,20 @@ class Command(BaseCommand):
         source = options["source"].lower().strip()
 
         kwargs = {}
-        category_id = CATEGORY_BY_NAME.get(category)
-        if category_id:
-            kwargs["category_id"] = category_id
 
         try:
             source = Source.objects.get(name__iexact=source)
         except Source.DoesNotExist as e:
             raise CommandError(f"Source '{source}' not found") from e
+
+        if source.name.lower() == "eb" and not category:
+            raise CommandError("Category is required for source 'eb'")
+
+        if category:
+            category_id = CATEGORY_BY_NAME.get(category)
+            if not category_id:
+                raise CommandError(f"Invalid category: {category}")
+            kwargs["category_id"] = category_id
 
         self.stdout.write(f"[{source}] Fetching {category} events...")
 
@@ -64,7 +70,7 @@ class Command(BaseCommand):
                     "additional_data",
                     "updated_at",
                 ],
-                unique_fields=["source", "external_id"],
+                unique_fields=["url"],
             )
             self.stdout.write(
                 self.style.SUCCESS(
