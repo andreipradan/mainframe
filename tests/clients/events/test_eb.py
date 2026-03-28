@@ -105,6 +105,7 @@ class TestEBClient:
                     "starting_date": "2023-01-01T10:00:00Z",
                     "hall_name": "Location 1",
                     "category_id": 1,
+                    "event_slug": "event-1",
                 }
             }
         }
