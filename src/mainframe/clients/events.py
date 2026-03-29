@@ -175,7 +175,7 @@ class ZnClient(EventsClient):
                     url=url,
                     city=self.source.config["city"],
                     description=description if description != title else "",
-                    location_url=location_tag.a["href"],
+                    location_url=location_tag.a["href"] if location_tag.a else "",
                 )
             )
         return events
