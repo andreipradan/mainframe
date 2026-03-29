@@ -1,36 +1,27 @@
 from django.db import models
 
 from mainframe.core.models import TimeStampedModel
-from mainframe.events.constants import CATEGORY_CHOICES
 
 
 class Event(TimeStampedModel):
     source = models.ForeignKey("sources.Source", on_delete=models.CASCADE)
 
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    title = models.CharField(max_length=256)
+
+    category = models.CharField(max_length=64)
+    location = models.CharField(max_length=100)
     start_date = models.DateTimeField()
-    end_date = models.DateTimeField(null=True, blank=True)
-    location = models.CharField(max_length=255, blank=True)
-    location_slug = models.CharField(max_length=255, blank=True)
-    city_name = models.CharField(max_length=255, blank=True)
-    city_slug = models.CharField(max_length=255, blank=True)
-    category_id = models.IntegerField(
-        choices=CATEGORY_CHOICES,
-        default=4,  # "Other"
-        db_index=True,
-    )
-    url = models.URLField(blank=True)
-    external_id = models.CharField(max_length=100)
+    url = models.URLField(unique=True)
+
     additional_data = models.JSONField(blank=True, default=dict)
+    city = models.CharField(blank=True, max_length=64)
+    description = models.TextField(blank=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    external_id = models.CharField(blank=True, max_length=100)
+    location_url = models.URLField(blank=True)
 
     class Meta:
         ordering = ["start_date"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["source", "external_id"], name="unique_source_external_id"
-            ),
-        ]
 
     def __str__(self):
         return self.title
