@@ -72,6 +72,10 @@ def schedule_deploy():
     else:
         cmd_params.append("no-requirements")
 
+    if "migrations/" in output:
+        cmd_params.append("migrate")
+        msg_extra.append("run migrations")
+
     if (
         "deploy/" in output
         or "bots/management/commands/run_bot_polling.py" in output
