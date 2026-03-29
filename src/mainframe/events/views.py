@@ -27,7 +27,8 @@ class EventViewSet(viewsets.ModelViewSet):
         response = super().list(request, *args, **kwargs)
 
         response.data["cities"] = (
-            Event.objects.values_list("city", flat=True)
+            Event.objects.exclude(city="")
+            .values_list("city", flat=True)
             .distinct("city")
             .order_by("city")
         )

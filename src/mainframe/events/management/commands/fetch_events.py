@@ -36,10 +36,10 @@ class Command(BaseCommand):
         except Source.DoesNotExist as e:
             raise CommandError(f"Source '{source}' not found") from e
 
-        if source.name.lower() == "eb" and not category:
-            raise CommandError("Category is required for source 'eb'")
+        if source.name.lower() == "eb":
+            if not category:
+                raise CommandError("Category is required for source 'eb'")
 
-        if category:
             if not (category_id := CATEGORY_ID_BY_NAME.get(category)):
                 raise CommandError(f"Invalid category: {category}")
             kwargs["category_id"] = category_id

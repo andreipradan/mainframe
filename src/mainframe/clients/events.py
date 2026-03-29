@@ -155,10 +155,13 @@ class ZnClient(EventsClient):
             url = tag.h3.a["href"]
             description = tag.find("div", {"class": "kzn-sw-item-sumar"}).text.strip()
             date, time = tag.find("div", {"class": "kzn-one-event-date"}).select("div")
+            now = datetime.now()
             start_date = datetime.strptime(
                 f"{date.text.strip().split()[1]} {time.text.strip()}",
                 "%d/%m %H:%M",
-            ).replace(year=datetime.now().year, tzinfo=ZoneInfo(settings.TIME_ZONE))
+            ).replace(year=now.year, tzinfo=ZoneInfo(settings.TIME_ZONE))
+            if start_date.month < now.month:
+                start_date = start_date.replace(year=now.year + 1)
             location_tag = tag.find("div", {"class": "kzn-sw-item-adresa"})
             city = self.source.config["city"].lower()
             if location_tag.text.strip().lower() == city and " @ " in title:
