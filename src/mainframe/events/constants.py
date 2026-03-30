@@ -15,5 +15,6 @@ def get_category(category):
         "concerte": "music",
         "musical": "music",
         "proiectii de film": "film",
+        "sports": "sport",
         "teatru": "theater",
     }.get(category.lower(), category.lower())

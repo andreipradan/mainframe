@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from mainframe.core.models import TimeStampedModel
@@ -8,7 +9,7 @@ class Event(TimeStampedModel):
 
     title = models.CharField(max_length=256)
 
-    category = models.CharField(max_length=64)
+    categories = ArrayField(models.CharField(max_length=64), default=list)
     location = models.CharField(max_length=100)
     start_date = models.DateTimeField()
     url = models.URLField(unique=True)

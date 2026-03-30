@@ -66,7 +66,7 @@ class TestZnClient:
         assert event1.description == "description"
         assert event1.location == "hall name"
         assert event1.city == "City Alpha"
-        assert event1.category == "music"
+        assert event1.categories == ["music"]
         assert event1.url == "/event/concert-rock-2026"
         assert event1.external_id == ""
 
@@ -75,7 +75,7 @@ class TestZnClient:
         assert event2.title == "Summer Festival"
         assert event2.description == "desc"
         assert event2.location == "test location"
-        assert event2.category == "festival"
+        assert event2.categories == ["festival"]
 
     def test_parse_data_no_matching_section(self):
         html = """

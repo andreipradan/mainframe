@@ -1,3 +1,4 @@
+from django.db.models import Func
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -34,8 +35,9 @@ class EventViewSet(viewsets.ModelViewSet):
         )
 
         response.data["categories"] = list(
-            Event.objects.values_list("category", flat=True)
-            .distinct("category")
-            .order_by("category")
+            Event.objects.annotate(cat=Func("categories", function="unnest"))
+            .values_list("cat", flat=True)
+            .distinct("cat")
+            .order_by("cat")
         )
         return response

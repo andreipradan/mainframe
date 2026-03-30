@@ -39,18 +39,29 @@ class EventsClient:
 
     def fetch_events(self, **kwargs):
         headers = self.source.headers
-        path = self.source.config["url"]["path"]
-        params = self.source.config["url"].get("params", {})
-        params.update(kwargs)
-        soup = self.source.config.get("soup", False)
 
-        url = f"{self.source.url.rstrip('/')}/{path}"
+        request_kwargs = {}
+        config = self.source.config
+        params = config.get("url", {}).get("params", {})
+        method = (config.get("method") or "").lower()
+        if method:
+            request_kwargs["method"] = method
+            if method == "post":
+                request_kwargs["json"] = config.get("payload", {})
+        params.update(kwargs)
+        soup = config.get("soup", False)
+
+        url = self.source.url
+        if config.get("url", {}).get("path"):
+            url = f"{self.source.url.rstrip('/')}/{config['url']['path']}"
+
         response, error = fetch(
             url,
             logger,
             headers=headers,
             params=params,
             soup=soup,
+            **request_kwargs,
         )
         if error:
             logger.error(
@@ -65,6 +76,37 @@ class EventsClient:
 
     def parse_data(self, data: dict) -> list[Event]:
         raise NotImplementedError
+
+
+class AEClient(EventsClient):
+    def parse_data(self, data: dict) -> list[Event]:
+        if data.get("error"):
+            logger.error("Error in AE response: %s", data.get("message", data["error"]))
+            return []
+        return [
+            Event(
+                source=self.source,
+                title=e.pop("eventname"),
+                categories=[get_category(cat) for cat in e.pop("categories", [])],
+                location=e.pop("location"),
+                start_date=self.parse_date(e.pop("start_time")),
+                url=e.pop("event_url"),
+                city=e.get("venue", {}).pop("city", "").title(),
+                end_date=self.parse_date(e["end_time"]),
+                external_id=e.pop("event_id", ""),
+                additional_data=e,
+            )
+            for e in data["data"]
+        ]
+
+    @staticmethod
+    def parse_date(date: str) -> datetime | None:
+        if not date:
+            return None
+        tz = ZoneInfo(settings.TIME_ZONE)
+        time = datetime.fromtimestamp(int(date), tz=tz)
+        offset = tz.utcoffset(time)
+        return time - offset
 
 
 class EBClient(EventsClient):
@@ -84,7 +126,7 @@ class EBClient(EventsClient):
                 Event(
                     source=self.source,
                     title=event_data.pop("title"),
-                    category=CATEGORY_NAME_BY_ID[event_data.pop("category_id")],
+                    categories=[CATEGORY_NAME_BY_ID[event_data.pop("category_id")]],
                     location=event_data.pop("hall_name", ""),
                     start_date=start_date,
                     url=url,
@@ -121,7 +163,7 @@ class IBClient(EventsClient):
         return Event(
             source=self.source,
             title=title,
-            category="music" if "concert" in title.lower() else "other",
+            categories=["music" if "concert" in title.lower() else "other"],
             location=raw["location"].pop("name"),
             start_date=datetime.strptime(raw.pop("startDate"), "%Y-%m-%d").replace(
                 tzinfo=ZoneInfo(settings.TIME_ZONE)
@@ -172,7 +214,7 @@ class ZnClient(EventsClient):
                 Event(
                     source=self.source,
                     title=title,
-                    category=get_category(category),
+                    categories=[get_category(category)],
                     location=location,
                     start_date=start_date,
                     url=url,

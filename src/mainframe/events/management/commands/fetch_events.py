@@ -2,7 +2,7 @@ import logging
 
 from django.core.management import BaseCommand, CommandError
 
-from mainframe.clients.events import EBClient, IBClient, ZnClient
+from mainframe.clients.events import AEClient, EBClient, IBClient, ZnClient
 from mainframe.events.constants import CATEGORY_ID_BY_NAME
 from mainframe.events.models import Event
 from mainframe.sources.models import Source
@@ -10,6 +10,7 @@ from mainframe.sources.models import Source
 logger = logging.getLogger(__name__)
 
 CLIENT_MAPPING = {
+    "ae": AEClient,
     "eb": EBClient,
     "ib": IBClient,
     "zn": ZnClient,
@@ -60,7 +61,7 @@ class Command(BaseCommand):
                 update_conflicts=True,
                 update_fields=[
                     "title",
-                    "category",
+                    "categories",
                     "location",
                     "start_date",
                     "additional_data",
