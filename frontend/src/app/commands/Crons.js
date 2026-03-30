@@ -252,6 +252,12 @@ const Crons = () => {
               </h4>
 
               {!selectedItem && !modalOpen && <Errors errors={errors} />}
+              {!selectedItem && !modalOpen && commands.errors && (
+                <small className={'text-danger'}>
+                  Commands
+                  <Errors errors={commands.errors} />
+                </small>
+              )}
 
               <div className='table-responsive'>
                 <table className='table table-hover'>
