@@ -20,7 +20,7 @@ class EventViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(city=city)
 
         if any(categories):
-            queryset = queryset.filter(category__in=categories)
+            queryset = queryset.filter(categories__overlap=categories)
 
         return queryset
 
