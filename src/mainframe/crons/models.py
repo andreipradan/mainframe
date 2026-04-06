@@ -37,13 +37,13 @@ class Cron(TimeStampedModel):
 
 
 @receiver(signals.post_delete, sender=Cron)
-def post_delete(sender, instance: Cron, **kwargs):  # noqa: PYL-W0613
+def post_delete(sender, instance: Cron, **kwargs):  # noqa: F841
     instance.expression = ""
     schedule_task(instance)
 
 
 @receiver(signals.post_save, sender=Cron)
-def post_save(sender, instance, **kwargs):  # noqa: PYL-W0613
+def post_save(sender, instance, **kwargs):  # noqa: F841
     if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
         instance.expression = ""
     schedule_task(instance)
