@@ -106,7 +106,7 @@ class SavedMessagesInlines(BaseInlines):
 
         if not update.callback_query:
             user = update.message.from_user
-            logger.info("User started conversation", user=user.full_name)
+            logger.info("User started conversation", user=user.username)
             try:
                 return await update.message.reply_text(
                     welcome_message.format(name=user.full_name),

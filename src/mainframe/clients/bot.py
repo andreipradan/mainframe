@@ -22,9 +22,6 @@ def is_whitelisted(func):
         except Bot.DoesNotExist:
             self.logger.warning(
                 "User not whitelisted",
-                user_id=str(
-                    update.effective_user.id if update.effective_user else None
-                ),
                 username=update.effective_user.username or update.effective_user.id,
             )
             return
