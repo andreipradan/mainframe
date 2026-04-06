@@ -453,6 +453,7 @@ const Crons = () => {
           <Button
             variant={selectedAction === 'run' ? 'primary' : 'danger'}
             className='float-left'
+            disabled={!ngrokToken}
             onClick={(evt) => {
               evt.preventDefault();
               if (['kill', 'run'].includes(selectedAction))
