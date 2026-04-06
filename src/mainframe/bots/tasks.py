@@ -1,4 +1,3 @@
-import structlog
 from django.conf import settings
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task
@@ -11,5 +10,4 @@ from mainframe.clients import healthchecks
 def healthcheck():
     if settings.ENV != "rpi":
         return
-    logger = structlog.get_logger(__name__)
-    healthchecks.ping(logger)
+    healthchecks.ping()

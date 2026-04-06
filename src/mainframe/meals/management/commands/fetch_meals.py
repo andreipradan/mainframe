@@ -15,6 +15,6 @@ class Command(BaseCommand):
         except FetchMealsException as e:
             raise CommandError(e) from e
 
-        healthchecks.ping(logger, "meals")
+        healthchecks.ping("meals")
         logger.info("Fetched meals", count=len(meals))
         self.stdout.write(self.style.SUCCESS("Done."))

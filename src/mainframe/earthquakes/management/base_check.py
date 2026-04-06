@@ -47,7 +47,7 @@ class BaseEarthquakeCommand:
 
     def handle(self, *_, **__):
         logger = structlog.get_logger(self.source)
-        healthchecks.ping(logger, self.source)
+        healthchecks.ping(self.source)
         response, error = fetch(
             self.url,
             logger,
@@ -98,7 +98,7 @@ class BaseEarthquakeCommand:
             if float(event.magnitude) >= float(min_magnitude) and event.is_local
         ]
 
-        if len(events):
+        if events:
             logger.warning(
                 "Got new events!",
                 count=len(events),

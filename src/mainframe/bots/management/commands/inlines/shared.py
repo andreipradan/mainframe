@@ -57,9 +57,7 @@ def reply(update, text, **kwargs):
             **kwargs,
         )
     except telegram.error.BadRequest as e:
-        logger.exception(
-            "Error replying to message", error=str(e), update=update.to_dict()
-        )
+        logger.exception("Error replying to message", error=str(e))
     return ""
 
 

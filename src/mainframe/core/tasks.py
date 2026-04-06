@@ -111,14 +111,6 @@ def schedule_task(instance, **kwargs):
         logger.error("Unknown task class", class_name=class_name)
         return
 
-    if kwargs:
-        logger.info(
-            "[%s][%s] schedule_task got kwargs: %s",
-            instance.__class__.__qualname__,
-            instance.name,
-            kwargs,
-        )
-
     task_name = f"{instance.__module__}.{instance.name}"
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)

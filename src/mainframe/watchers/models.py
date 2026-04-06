@@ -177,7 +177,7 @@ class Watcher(TimeStampedModel):
                 self.send_notification(results)
             else:
                 logger.info(
-                    "[%s] Deferring notification to next cron window", self.name
+                    "Deferring notification to next cron window", watcher=self.name
                 )
                 self._accumulate_pending_data(results, logger)
 
@@ -231,14 +231,13 @@ class Watcher(TimeStampedModel):
                 kept_items.append(item)
                 current_text_length += item_length
             else:
-                # Doesn't fit, we're done accumulating
                 if len(combined) > len(kept_items):
                     dropped_count = len(combined) - len(kept_items)
                     logger.warning(
-                        "[%s] Dropped %d items. Telegram message size limit: %d chars",
-                        self.name,
-                        dropped_count,
-                        TELEGRAM_LIMIT,
+                        "Dropped items because of telegram's message size limit",
+                        watcher=self.name,
+                        dropped_count=dropped_count,
+                        telegram_limit=TELEGRAM_LIMIT,
                     )
                 break
 

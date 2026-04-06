@@ -93,7 +93,7 @@ class CryptoPnLImporter:
             self.logger.error(str(e))
             raise CryptoImportError(e) from e
 
-        self.logger.info("Imported stock pnl records", count=len(results))
+        self.logger.info("Imported crypto pnl records", count=len(results))
         backup_finance_model(model="CryptoPnL")
 
 

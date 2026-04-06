@@ -29,7 +29,7 @@ class CalendarClient:
         self.calendar_id = config("GOOGLE_CALENDAR_ID")
         self.events = {}
         self.logger = logger or structlog.get_logger(__name__)
-        self.logger.bind(calendar_id=self.calendar_id, source=source)
+        self.logger = self.logger.bind(calendar_id=self.calendar_id, source=source)
         self.redis = RedisClient(self.logger)
         self.service = build("calendar", "v3", credentials=creds)
 
@@ -149,7 +149,10 @@ class CalendarClient:
             if response["etag"] != etag:
                 self.handle_notification(response, event, is_update=True)
                 self.logger.info(
-                    "Event updated", event_id=event_id, location=event.location
+                    "Event updated",
+                    event_id=event_id,
+                    location=event.location,
+                    start=event.start,
                 )
         except HttpError as e:
             if e.resp.status == status.HTTP_404_NOT_FOUND:

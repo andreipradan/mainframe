@@ -19,7 +19,7 @@ class Command(BaseCommand):
         logger = structlog.get_logger(__name__)
 
         logger.info("Importing transit lines")
-        healthchecks.ping(logger, "transit")
+        healthchecks.ping("transit")
 
         lines = []
         client = CTPClient(logger=logger)

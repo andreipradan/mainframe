@@ -136,7 +136,7 @@ class Handler:
         try:
             bot_data = context.bot_data[answer.poll_id]
         except KeyError:
-            logger.info("Old poll, aborting...", update=update.to_dict())
+            logger.info("Old poll, aborting...")
             return
 
         chat_id = bot_data["chat_id"]

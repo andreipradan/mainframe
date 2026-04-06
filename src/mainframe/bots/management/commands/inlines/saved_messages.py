@@ -115,9 +115,7 @@ class SavedMessagesInlines(BaseInlines):
                     ),
                 )
             except telegram.error.BadRequest as e:
-                logger.error(
-                    "Error replying to message", error=str(e), update=update.to_dict()
-                )
+                logger.error("Error replying to message", error=str(e))
                 return ""
 
         message = update.callback_query.message

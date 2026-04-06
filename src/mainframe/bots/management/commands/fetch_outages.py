@@ -162,4 +162,4 @@ class Command(BaseCommand):
         else:
             client.clear_events(event_type=outage_type, branch=branch.title())
 
-        healthchecks.ping(logger, "outages")
+        healthchecks.ping("outages")

@@ -83,4 +83,4 @@ class Command(BaseCommand):
         UnitValue.objects.bulk_create(unit_values, ignore_conflicts=True)
 
         logger.info("Unit values fetched!", record_count=len(unit_values))
-        healthchecks.ping(logger, "pension")
+        healthchecks.ping("pension")

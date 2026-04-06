@@ -71,7 +71,7 @@ def send_telegram_message(text, retries_on_network_error=3, **kwargs):
                 location=location,
                 text=text,
             )
-            text = f"{text[location:]}{text[location + 1 :]}"
+            text = f"{text[:location]}{text[location + 1 :]}"
             return send_telegram_message(text, chat_id=chat_id, logger=msg_logger)
         msg_logger.warning(
             "Error sending message. Trying unformatted",

@@ -22,8 +22,10 @@ def is_whitelisted(func):
         except Bot.DoesNotExist:
             self.logger.warning(
                 "User not whitelisted",
-                user=str(update.effective_user),
-                update=update.to_dict(),
+                user_id=str(
+                    update.effective_user.id if update.effective_user else None
+                ),
+                username=update.effective_user.username or update.effective_user.id,
             )
             return
         return await func(self, update, context)
@@ -85,10 +87,10 @@ class BaseBotClient(metaclass=BaseBotMeta):
             if isinstance(err, telegram.error.RetryAfter):
                 seconds = err.retry_after + 1
                 self.logger.warning(
-                    "Error sending message - rate limited, retrying after %d seconds",
-                    seconds,
+                    "Error sending message - rate limited, retrying in a few seconds",
                     error=str(err),
                     extra=kwargs,
+                    seconds=seconds,
                 )
                 await asyncio.sleep(seconds)
                 return await send_message(send_message, **kwargs)

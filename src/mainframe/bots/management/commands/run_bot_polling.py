@@ -106,7 +106,6 @@ async def handle_dex(update, context: CallbackContext, **__):
         logger.error(
             "DexOnlineError fetching definition",
             error=str(e),
-            update=update.to_dict(),
         )
         return await reply(update, f"Couldn't find definition for '{word}'")
     return await reply(update, text=f"{word}: {definition}")
@@ -176,13 +175,11 @@ async def handle_process_message(
     update: Update, context: CallbackContext, *_, **__
 ) -> None:
     if not (message := update.message):
-        return logger.error("No message provided", update_data=update.to_dict())
+        return logger.error("No message provided")
 
     text = getattr(message, "text", "") or message.caption or ""
     if not (context.bot.username in text or update.effective_chat.type == "private"):
-        return logger.info(
-            "Bot was not tagged and no caption provided", update_data=update.to_dict()
-        )
+        return logger.info("Bot was not tagged and no caption provided")
 
     if not redis_client.ping():
         logger.error("Can't connect to redis")
@@ -209,9 +206,7 @@ async def handle_process_message(
     try:
         response = generate_content(prompt=text, history=history, file_path=file_path)
     except GeminiError as e:
-        logger.exception(
-            "Error generating content", error=str(e), update=update.to_dict()
-        )
+        logger.exception("Error generating content", error=str(e), text=text)
         await reply(update, "Got an error trying to generate a response")
     else:
         history.append({"role": "model", "parts": response})
@@ -269,9 +264,7 @@ async def handle_saved(update: Update, context: CallbackContext, **__):
 
 async def reply(update: Update, text: str, **kwargs):
     if not update.message:
-        logger.error(
-            "Can't reply - no message to reply to", update_data=update.to_dict()
-        )
+        logger.error("Can't reply - no message to reply to")
         return
 
     default_kwargs = {
@@ -290,7 +283,7 @@ async def reply(update: Update, text: str, **kwargs):
                 location=location,
                 char=text[location],
             )
-            return reply(
+            return await reply(
                 update, f"{text[:location]}\\{text[location]}{text[location + 1 :]}"
             )
         logger.warning("Couldn't send markdown", text=text, error=str(e))

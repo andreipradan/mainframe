@@ -3,7 +3,8 @@ import requests
 import structlog
 
 
-def ping(logger, service_name="URL"):
+def ping(service_name="URL"):
+    logger = structlog.get_logger(service_name)
     config = environ.Env()
     var_name = f"HEALTHCHECKS_{service_name.replace('-', '_').upper()}"
     url = config(var_name, default=None)
@@ -15,5 +16,4 @@ def ping(logger, service_name="URL"):
     try:
         requests.post(url=url, timeout=20)
     except requests.exceptions.HTTPError as e:
-        logger = logger or structlog.get_logger(__name__)
         logger.warning(str(e))

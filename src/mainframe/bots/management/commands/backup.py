@@ -17,7 +17,7 @@ class Command(BaseCommand):
         logger = structlog.get_logger(__name__)
 
         app = options["app"]
-        healthchecks.ping(logger, f"{app.upper()}_BACKUP")
+        healthchecks.ping(f"{app.upper()}_BACKUP")
 
         file_name = f"{timezone.now():%Y_%m_%d_%H_%M_%S}.json.gz"
 

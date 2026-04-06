@@ -57,7 +57,5 @@ class LightsInline(BaseInlines):
             logger.error(str(e))
             return ""
 
-        logger.info(
-            "Light toggled", ip=ip, response=str(response), update=update.to_dict()
-        )
+        logger.info("Light toggled", ip=ip, response=str(response))
         return cls.refresh(update)
