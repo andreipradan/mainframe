@@ -93,7 +93,7 @@ class CryptoPnLImporter:
             self.logger.error(str(e))
             raise CryptoImportError(e) from e
 
-        self.logger.info("Imported '%d' stock pnl records", len(results))
+        self.logger.info("Imported stock pnl records", count=len(results))
         backup_finance_model(model="CryptoPnL")
 
 
@@ -144,6 +144,6 @@ class CryptoTransactionsImporter:
         except (IntegrityError, ValidationError) as e:
             self.logger.error(str(e))
         else:
-            self.logger.info("Imported '%d' crypto transactions", len(results))
+            self.logger.info("Imported crypto transactions", count=len(results))
 
         backup_finance_model(model="CryptoTransaction")

@@ -1,4 +1,3 @@
-import logging
 import re
 import unicodedata
 from datetime import datetime
@@ -6,12 +5,14 @@ from urllib.parse import urljoin, urlparse, urlunparse
 from zoneinfo import ZoneInfo
 
 import requests
+import structlog
 from django.conf import settings
 
 from mainframe.events.models import Event
 from mainframe.sources.models import Source
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
+logger.bind(source="EBClient")
 
 
 def slugify(name):
@@ -48,7 +49,7 @@ def parse_datetime(date_str):
             dt = dt.replace(tzinfo=ZoneInfo(settings.TIME_ZONE))
         return dt
     except ValueError:
-        logger.warning("Could not parse datetime: %s", date_str)
+        logger.warning("Could not parse datetime", date_str=date_str)
         return None
 
 
@@ -104,19 +105,20 @@ class EBClient:
                     unique_fields=["source", "external_id"],
                 )
                 logger.info(
-                    "Successfully bulk created/updated %d events", len(events_to_create)
+                    "Successfully bulk created/updated events",
+                    count=len(events_to_create),
                 )
             else:
                 logger.info("No valid events to save")
 
         except requests.RequestException as e:
-            logger.error("Failed to fetch events from EB: %s", e)
+            logger.error("Failed to fetch events", error=str(e), params=kwargs)
             raise
 
     def _create_event_instance(self, event_data):
         external_id = event_data.pop("id")
         if not external_id:
-            logger.warning("Event data missing ID, skipping")
+            logger.warning("Event data missing ID, skipping", event_data=event_data)
             return None
 
         city_name = event_data.pop("city_name", "")

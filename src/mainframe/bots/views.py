@@ -1,12 +1,8 @@
-import logging
-
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny, IsAdminUser
 
 from mainframe.bots.models import Bot, Message
 from mainframe.bots.serializers import BotSerializer, MessageSerializer
-
-logger = logging.getLogger(__name__)
 
 
 class BotViewSet(viewsets.ModelViewSet):

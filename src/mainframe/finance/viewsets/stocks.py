@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.db.models import Count, Q, Sum
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
@@ -14,7 +13,7 @@ from mainframe.finance.models import PnL, StockTransaction
 from mainframe.finance.serializers import PnLSerializer, StockTransactionSerializer
 from mainframe.finance.viewsets.mixins import PnlActionModelViewSet
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class StocksViewSet(PnlActionModelViewSet):
@@ -31,7 +30,7 @@ class StocksViewSet(PnlActionModelViewSet):
         try:
             StockTransactionsImporter(file, logger).run()
         except StockImportError as e:
-            logger.error("Could not process file. (%s)", e)
+            logger.error("Could not process file", error=str(e))
             return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
         return self.list(request, *args, **kwargs)
 

@@ -1,9 +1,10 @@
-import logging
 import subprocess
 from operator import itemgetter
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 def get_folder_contents(folder):
@@ -21,7 +22,7 @@ def get_folder_contents(folder):
 
 def run_cmd(cmd, prefix=None, **kwargs) -> str:
     prefix = prefix.upper() if prefix else cmd
-    logger.info("[%s] Starting", prefix)
+    logger.info("Command starting", command=cmd, prefix=prefix)
     p = subprocess.Popen(  # noqa: S603
         cmd.split(),  # noqa: S603
         stdout=subprocess.PIPE,
@@ -37,7 +38,11 @@ def run_cmd(cmd, prefix=None, **kwargs) -> str:
             f"output: '{output}'"
         )
     if output:
-        logger.info("[%s] Output: %s", prefix, output)
+        logger.info(
+            "Command output",
+            prefix=prefix,
+            output=output.decode() if isinstance(output, bytes) else output,
+        )
 
-    logger.info("[%s] Done.", prefix)
+    logger.info("Command completed", prefix=prefix)
     return output.decode() if isinstance(output, bytes) else output

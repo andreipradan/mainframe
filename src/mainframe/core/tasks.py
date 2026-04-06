@@ -1,7 +1,7 @@
 import asyncio
 import json
-import logging
 
+import structlog
 from django.conf import settings
 from django.db import close_old_connections
 from django.utils import timezone
@@ -11,7 +11,7 @@ from huey.contrib.djhuey import HUEY, periodic_task, task
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.system import run_cmd
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_redis_client():
@@ -104,7 +104,7 @@ def schedule_task(instance, **kwargs):
     elif class_name == "Watcher":
         expression = instance.cron
     else:
-        logger.error("Unknown task class: %s", class_name)
+        logger.error("Unknown task class", class_name=class_name)
         return
 
     if kwargs:
@@ -119,9 +119,16 @@ def schedule_task(instance, **kwargs):
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
-        logger.info("Unregistered task: %s", instance)
+        logger.info(
+            "Unregistered task", task_name=task_name, instance_name=str(instance)
+        )
     if expression and instance.is_active:
         schedule = crontab(*expression.split())
         lock_task = HUEY.lock_task(f"{task_name}-lock")
         lock_task(periodic_task(schedule, name=instance.name)(instance.run))
-        logger.info("[%s] Scheduled: %s (%s)", class_name, instance.name, expression)
+        logger.info(
+            "Task scheduled",
+            class_name=class_name,
+            task_name=instance.name,
+            expression=expression,
+        )

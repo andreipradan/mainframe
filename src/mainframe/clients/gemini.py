@@ -1,12 +1,12 @@
-import logging
 import re
 from pathlib import Path
 
 import environ
 import google.api_core.exceptions
+import structlog
 from google import genai
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Constants
 GEMINI_MODEL = "gemini-2.5-flash-lite"
@@ -33,7 +33,6 @@ def format_for_telegram(text: str) -> str:
 
 
 def _extract_text_from_history_item(item) -> str:
-    """Extract text content from a history item (dict or string)."""
     if isinstance(item, dict):
         if "parts" in item:
             parts = item["parts"]
@@ -47,11 +46,12 @@ def _extract_text_from_history_item(item) -> str:
 
 
 def _upload_file(client, file_path: str) -> str:
-    """Upload file to Gemini and return file reference. Cleans up on error."""
     try:
         with open(file_path, "rb") as f:
             upload_results = client.files.upload(file=f)
-        logger.info("Uploaded file: '%s' -> '%s'", file_path, upload_results.name)
+        logger.info(
+            "Uploaded file", file_path=file_path, destination=upload_results.name
+        )
         return upload_results
     except google.api_core.exceptions.GoogleAPIError as e:
         Path(file_path).unlink()
@@ -61,7 +61,6 @@ def _upload_file(client, file_path: str) -> str:
 
 
 def _build_contents_list(prompt, history=None) -> str:
-    """Build content string from history and current prompt."""
     contents = []
 
     if history:

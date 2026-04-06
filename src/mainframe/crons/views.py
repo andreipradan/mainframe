@@ -1,5 +1,3 @@
-import logging
-
 import psutil
 from django.core.exceptions import ValidationError
 from django.core.management import CommandError
@@ -10,8 +8,6 @@ from rest_framework.permissions import IsAdminUser
 
 from mainframe.crons.models import Cron
 from mainframe.crons.serializers import CronSerializer
-
-logger = logging.getLogger(__name__)
 
 
 class CronViewSet(viewsets.ModelViewSet):

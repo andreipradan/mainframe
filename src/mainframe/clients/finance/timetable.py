@@ -51,7 +51,7 @@ def extract_first_page(first_page, logger):
         number=summary["account__number"],
     )
     if created:
-        logger.warning("New account: %s", account)
+        logger.warning("New account", account=str(account))
         backup_finance_model(model="Account")
 
     credit, created = Credit.objects.get_or_create(
@@ -64,7 +64,7 @@ def extract_first_page(first_page, logger):
     )
 
     if created:
-        logger.warning("New credit: %s", account)
+        logger.warning("New credit", credit=str(account))
         backup_finance_model(model="Credit")
 
     return Timetable(

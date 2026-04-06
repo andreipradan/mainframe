@@ -1,7 +1,7 @@
 import json
-import logging
 
 import redis
+import structlog
 from cron_descriptor import get_description
 from crontab import CronTab
 from rest_framework import serializers
@@ -10,7 +10,7 @@ from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.crons.models import Cron
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class CronSerializer(ScheduleTaskIsRenamedSerializer):
@@ -40,6 +40,6 @@ class CronSerializer(ScheduleTaskIsRenamedSerializer):
         try:
             result = json.loads(get_redis_client().get(f"tasks.{obj.name}") or "{}")
         except redis.exceptions.ConnectionError as e:
-            logger.error("Error in CronSerializer.get_redis: %s", e)
+            logger.error("Error in CronSerializer.get_redis", error=str(e))
             return {}
         return result

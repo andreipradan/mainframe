@@ -1,6 +1,6 @@
-import logging
 import math
 
+import structlog
 from asgiref.sync import sync_to_async
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -9,7 +9,7 @@ from mainframe.clients.chat import edit_message
 from mainframe.clients.meals import MealsClient
 from mainframe.meals.models import Meal
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def parse_meal(item: Meal):
@@ -55,7 +55,7 @@ class MealsInline(BaseInlines):
             return list(Meal.objects.filter(date=day).order_by("type"))
 
         items = await fetch_meals()
-        logger.info("Got %d meals", len(items))
+        logger.info("Fetched meals", count=len(items))
 
         return InlineKeyboardMarkup(
             [
@@ -170,13 +170,13 @@ class MealsInline(BaseInlines):
             return Meal.objects.distinct("date").count()
 
         count = await fetch_count()
-        logger.info("Counted %s dates", count)
+        logger.info("Counted dates", count=count)
         last_page = math.ceil(count / cls.PER_PAGE)
         welcome_message = "Welcome {name}\nChoose a date [{page} / {total}]"
 
         if not update.callback_query:
             user = update.message.from_user
-            logger.info("User %s started the conversation.", user.full_name)
+            logger.info("User started conversation", user=user.full_name)
 
             return update.message.reply_text(
                 (

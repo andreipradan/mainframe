@@ -1,10 +1,10 @@
 import hashlib
-import logging
 from datetime import datetime
 from functools import cached_property
 from typing import Dict, List
 from zoneinfo import ZoneInfo
 
+import structlog
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from pydantic import BaseModel
@@ -13,7 +13,7 @@ from mainframe.clients import healthchecks
 from mainframe.clients.calendar import CalendarClient
 from mainframe.clients.scraper import fetch
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 TYPE_ACCIDENTAL = "Accidental"
 TYPE_PLANNED_15_DAYS = "Planned (15 days)"
@@ -143,16 +143,19 @@ class Command(BaseCommand):
         )
 
         logger.info(
-            "%s %s event(s)%s (Total: %s, %s: %s)",
-            prefix,
-            len(outages) or "No",
-            f" on '{', '.join(addresses)}'" if addresses else "",
-            len(data),
-            branch.title(),
-            len(county_outages),
+            "Outages fetched",
+            addresses=addresses,
+            branch=branch.title(),
+            count=len(outages),
+            totals={
+                "county": len(county_outages),
+                "filtered": len(outages),
+                "all": len(all_outages),
+            },
+            type=outage_type,
         )
 
-        client = CalendarClient(logger=logger, prefix=prefix)
+        client = CalendarClient(logger=logger, source=prefix)
 
         if outages:
             client.create_events(outages)

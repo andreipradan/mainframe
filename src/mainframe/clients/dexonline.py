@@ -1,12 +1,12 @@
-import logging
 import random
 
+import structlog
 from bs4 import BeautifulSoup
 from django.conf import settings
 
 from mainframe.clients.scraper import fetch
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class DexOnlineError(Exception): ...
@@ -27,7 +27,7 @@ def fetch_definition(word=None):
 
     response, error = fetch(dex_url.format(word.strip()), logger, 1, False)
     if error:
-        logger.error(str(error))
+        logger.error("Failed to fetch definition", word=word, error=str(error))
         raise DexOnlineError(error)
 
     response = response.json()

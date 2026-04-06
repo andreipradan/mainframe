@@ -1,8 +1,8 @@
 import asyncio
-import logging
 from datetime import datetime, timedelta, timezone
 
 import environ
+import structlog
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -20,7 +20,7 @@ TYPE_PLANNED_TODAY = "Planned (today)"
 class CalendarClient:
     url = "https://www.googleapis.com/batch/calendar/v3"
 
-    def __init__(self, logger=None, prefix=None):
+    def __init__(self, logger=None, source=None):
         config = environ.Env()
         creds = Credentials.from_service_account_file(
             config("GOOGLE_CALENDAR_SERVICE_ACCOUNT_FILE"),
@@ -28,8 +28,8 @@ class CalendarClient:
         )
         self.calendar_id = config("GOOGLE_CALENDAR_ID")
         self.events = {}
-        self.logger = logger or logging.getLogger(__name__)
-        self.prefix = f"{prefix or ''}[Calendar]"
+        self.logger = logger or structlog.get_logger(__name__)
+        self.logger.bind(calendar_id=self.calendar_id, source=source)
         self.redis = RedisClient(self.logger)
         self.service = build("calendar", "v3", credentials=creds)
 
@@ -84,7 +84,7 @@ class CalendarClient:
             )
 
         batch.execute()
-        self.logger.info("%s[delete] %d existing event(s)", self.prefix, len(events))
+        self.logger.info("Deleted existing events", count=len(events))
 
     def create_events(self, events):
         self.events = {event.id: event for event in events}
@@ -108,16 +108,16 @@ class CalendarClient:
                 self.update(request_id)
             else:
                 self.logger.error(
-                    "%s[create][%s] Request failed: %s",
-                    self.prefix,
-                    request_id,
-                    exception,
+                    "Calendar event creation failed",
+                    request_id=request_id,
+                    exception=str(exception),
                 )
         else:
             event = self.events[request_id]
             self.handle_notification(response, event)
-            prefix = f"[{event.location}][{event.start}]"
-            self.logger.info("%s[create]%s Created", self.prefix, prefix)
+            self.logger.info(
+                "Event created", location=event.location, start=event.start
+            )
 
     def handle_notification(self, response, event, is_update=False):
         self.redis.set(f"calendar:{event.id}", response["etag"])
@@ -135,7 +135,6 @@ class CalendarClient:
 
     def update(self, event_id):
         event = self.events[event_id]
-        prefix = f"{self.prefix}[update][{event.location}][{event.start}]"
         try:
             response = (
                 self.service.events()
@@ -149,13 +148,14 @@ class CalendarClient:
             etag = self.redis.get(f"calendar:{event_id}")
             if response["etag"] != etag:
                 self.handle_notification(response, event, is_update=True)
-                self.logger.info("event '%s' updated.", event.location)
+                self.logger.info(
+                    "Event updated", event_id=event_id, location=event.location
+                )
         except HttpError as e:
             if e.resp.status == status.HTTP_404_NOT_FOUND:
                 self.logger.error(
-                    "%s[update][%s] Couldn't update - not found, recreating...",
-                    self.prefix,
-                    event_id,
+                    "Couldn't update - not found, recreating...",
+                    event_id=event_id,
                 )
                 try:
                     self.service.events().insert(
@@ -163,19 +163,21 @@ class CalendarClient:
                     ).execute()
                 except HttpError as err:
                     self.logger.error(
-                        "%s[update] Failed to recreate '%s': %s",
-                        self.prefix,
-                        event,
-                        err,
+                        "Failed to recreate event after not found error",
+                        event=event,
+                        err=str(err),
                     )
                 else:
-                    self.logger.info("%s Recreated", prefix)
+                    self.logger.info(
+                        "Event recreated", location=event.location, start=event.start
+                    )
             else:
                 self.logger.error(
-                    "%s[update][%s] Failed to update: %s",
-                    self.prefix,
-                    self.events[event_id],
-                    e,
+                    "Failed to update event",
+                    event=self.events[event_id],
+                    error=str(e),
                 )
         else:
-            self.logger.info("%s Updated", prefix)
+            self.logger.info(
+                "Event updated", location=event.location, start=event.start
+            )

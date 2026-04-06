@@ -1,13 +1,13 @@
-import logging
 from collections import deque
 
+import structlog
 from django.core.management.base import BaseCommand, CommandError
 
 from mainframe.bots.models import Bot
 from mainframe.clients import dexonline
 from mainframe.clients.scraper import fetch
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Sources:

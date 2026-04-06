@@ -1,10 +1,10 @@
 import json
-import logging
 import random
 from datetime import datetime, timedelta
 from random import randrange
 
 import environ
+import structlog
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -21,7 +21,7 @@ def get_tomorrow_run() -> datetime:
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
 
         config = environ.Env()
         logger.info("It's time to take a picture...")
@@ -49,7 +49,9 @@ class Command(BaseCommand):
         )
 
         logger.info(
-            "Set next run and cron to %s", tomorrow_run.strftime("%H:%M %d.%m.%Y")
+            "Set next run and cron",
+            date=tomorrow_run.isoformat(),
+            expression=expression,
         )
 
         return self.stdout.write(self.style.SUCCESS("Done."))

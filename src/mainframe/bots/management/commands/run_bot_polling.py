@@ -1,7 +1,7 @@
-import logging
 import random
 
 import environ
+import structlog
 import telegram
 from asgiref.sync import sync_to_async
 from django.core.management import BaseCommand, CommandError
@@ -30,8 +30,7 @@ from mainframe.clients.storage import RedisClient
 from mainframe.earthquakes.management.base_check import parse_event
 from mainframe.earthquakes.models import Earthquake
 
-logger = logging.getLogger(__name__)
-logging.getLogger("httpx").setLevel(logging.WARNING)
+logger = structlog.get_logger(__name__)
 
 
 def is_whitelisted(func):
@@ -44,7 +43,7 @@ def is_whitelisted(func):
                 ],
             )
         except Bot.DoesNotExist:
-            logger.warning("Not whitelisted: %s", update.effective_user)
+            logger.warning("User not whitelisted", user=str(update.effective_user))
             return None
         return await func(update, context, bot=bot, *args, **kwargs)  # noqa: B026
 
@@ -63,12 +62,12 @@ async def handle_callback_query(update: Update, *_, **__):
         return await query.edit_message_text("See you next time!")
 
     if not args:
-        return logger.error("No args for callback query data: %s", query.data)
+        return logger.error("No args for callback query data", query_data=query.data)
 
     if cmd not in ["bus", "lights", "meals"]:
         saved_inline = SavedMessagesInlines(args.pop(0))
         if not (method := getattr(saved_inline, cmd, None)):
-            return logger.error("Unhandled callback: %s", query.data)
+            return logger.error("Unhandled callback", query_data=query.data)
         return await method(update, *args)
 
     if cmd == "meals":
@@ -78,7 +77,7 @@ async def handle_callback_query(update: Update, *_, **__):
     elif cmd == "lights":
         inline = LightsInline
     else:
-        logger.error("Unhandled inline: %s", query.data)
+        logger.error("Unhandled inline", query_data=query.data)
         return
     method = args.pop(0)
     kwargs = {}
@@ -101,14 +100,13 @@ async def handle_dex(update, context: CallbackContext, **__):
     try:
         word, definition = dexonline.fetch_definition(word=word)
     except dexonline.DexOnlineNotFoundError:
-        logger.warning("DexOnline - word not found: '%s'", word)
+        logger.warning("DexOnline - word not found", word=word)
         return await reply(update, f"Couldn't find definition for '{word}'")
     except dexonline.DexOnlineError as e:
         logger.error(
-            "DexOnlineError: '%s'. Update: '%s'. Context: '%s'",
-            e,
-            update.to_dict(),
-            context,
+            "DexOnlineError fetching definition",
+            error=str(e),
+            update=update.to_dict(),
         )
         return await reply(update, f"Couldn't find definition for '{word}'")
     return await reply(update, text=f"{word}: {definition}")
@@ -156,7 +154,9 @@ async def handle_new_chat_title(
 ) -> None:
     chat_id = update.effective_chat.id
     if bot.additional_data.get("whos_next", {}).get("chat_id") != chat_id:
-        logger.info("[%s] New chat title: %s", chat_id, update.effective_chat.title)
+        logger.info(
+            "New chat title", chat_id=chat_id, title=update.effective_chat.title
+        )
         return
 
     config = bot.additional_data["whos_next"]
@@ -176,11 +176,13 @@ async def handle_process_message(
     update: Update, context: CallbackContext, *_, **__
 ) -> None:
     if not (message := update.message):
-        return logger.error("No message in '%s'", update.to_dict())
+        return logger.error("No message provided", update_data=update.to_dict())
 
     text = getattr(message, "text", "") or message.caption or ""
     if not (context.bot.username in text or update.effective_chat.type == "private"):
-        return logger.info("No tag or caption")
+        return logger.info(
+            "Bot was not tagged and no caption provided", update_data=update.to_dict()
+        )
 
     if not redis_client.ping():
         logger.error("Can't connect to redis")
@@ -207,8 +209,10 @@ async def handle_process_message(
     try:
         response = generate_content(prompt=text, history=history, file_path=file_path)
     except GeminiError as e:
-        logger.exception(e)
-        await reply(update, "Got an error trying to process your message")
+        logger.exception(
+            "Error generating content", error=str(e), update=update.to_dict()
+        )
+        await reply(update, "Got an error trying to generate a response")
     else:
         history.append({"role": "model", "parts": response})
         redis_client.set(context_key, history)
@@ -265,7 +269,9 @@ async def handle_saved(update: Update, context: CallbackContext, **__):
 
 async def reply(update: Update, text: str, **kwargs):
     if not update.message:
-        logger.error("Can't reply - no message to reply to: '%s'", update.to_dict())
+        logger.error(
+            "Can't reply - no message to reply to", update_data=update.to_dict()
+        )
         return
 
     default_kwargs = {
@@ -279,15 +285,19 @@ async def reply(update: Update, text: str, **kwargs):
     except telegram.error.TelegramError as e:
         if "can't find end of the entity" in str(e):
             location = int(e.message.split()[-1])
-            logger.warning("Error parsing markdown - skipping '%s'", text[location])
+            logger.warning(
+                "Error parsing markdown - skipping character",
+                location=location,
+                char=text[location],
+            )
             return reply(
                 update, f"{text[:location]}\\{text[location]}{text[location + 1 :]}"
             )
-        logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
+        logger.warning("Couldn't send markdown", text=text, error=str(e))
         try:
             await update.message.reply_text(text)
         except telegram.error.TelegramError as err:
-            logger.exception("Error sending unformatted message. (%s)", err)
+            logger.exception("Error sending unformatted message", error=str(err))
             await update.message.reply_text("Got an error trying to send response")
 
 
@@ -335,7 +345,7 @@ class Command(BaseCommand):
         logger.info("Starting bot polling")
         config = environ.Env()
         if not (token := config("TELEGRAM_TOKEN")):
-            logger.error("Telegram token not found")
+            logger.error("Telegram token env variable not found")
             return
 
         app = Application.builder().token(token).build()

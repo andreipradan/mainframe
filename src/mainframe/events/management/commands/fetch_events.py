@@ -1,11 +1,10 @@
-import logging
-
+import structlog
 from django.core.management import BaseCommand, CommandError
 
 from mainframe.clients.events.eb import EBClient
 from mainframe.sources.models import Source
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 CATEGORIES = {
     "music": 1,
@@ -56,5 +55,5 @@ class Command(BaseCommand):
                 self.style.SUCCESS(f"Successfully fetched {category} events from EB")
             )
         except Exception as e:
-            logger.error("Failed to fetch events: %s", e)
+            logger.error("Failed to fetch events", error=str(e))
             raise CommandError(f"Failed to fetch events: {e}") from e

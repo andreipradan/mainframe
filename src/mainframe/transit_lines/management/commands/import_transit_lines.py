@@ -1,6 +1,6 @@
 import asyncio
-import logging
 
+import structlog
 from asgiref.sync import sync_to_async
 from django.core.management.base import BaseCommand, CommandError
 
@@ -16,7 +16,7 @@ class Command(BaseCommand):
         asyncio.run(self.handle_async())
 
     async def handle_async(self):
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
 
         logger.info("Importing transit lines")
         healthchecks.ping(logger, "transit")
@@ -39,5 +39,11 @@ class Command(BaseCommand):
         schedules = list(await client.fetch_schedules(commit=True))
 
         msg = f"Synced {len(lines)} transit lines and {len(schedules)} schedules"
-        logger.info(msg)
+        logger.info(
+            "Transit lines import complete",
+            counts={
+                "lines": len(lines),
+                "schedules": len(schedules),
+            },
+        )
         self.stdout.write(self.style.SUCCESS(msg))

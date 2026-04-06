@@ -1,7 +1,7 @@
-import logging
 from datetime import timedelta
 
 import environ
+import structlog
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from mainframe.clients.scraper import fetch
 from mainframe.transit_lines.models import TranzyResponse
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class TransitViewSet(viewsets.GenericViewSet):
@@ -32,7 +32,7 @@ class TransitViewSet(viewsets.GenericViewSet):
             if cache:
                 cache.last_checked = timezone.now()
                 cache.save(update_fields=["last_checked"])
-            logger.info("[%s] No changes in external api", entity)
+            logger.info("No changes in external api", entity=entity)
             return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
         if resp.status_code == status.HTTP_200_OK:
             headers = {"ETag": resp.headers.get("ETag")}
@@ -46,10 +46,10 @@ class TransitViewSet(viewsets.GenericViewSet):
             return JsonResponse(data={entity: cache.data or {}}, headers=headers)
         if cache:
             logger.error(
-                "[%s] Unexpected status code: %s. Serving cached version from %s",
-                entity,
-                resp.status_code,
-                cache.updated_at,
+                "Tranzy API returned an unexpected status code. Serving cached version",
+                entity=entity,
+                status_code=resp.status_code,
+                cache_updated_at=cache.updated_at,
             )
             headers = {}
             if cache.etag:
@@ -99,9 +99,9 @@ class TransitViewSet(viewsets.GenericViewSet):
             and cache.last_checked + timedelta(days=1) > timezone.now()
         ):
             logger.info(
-                "[%s] Matching ETag and recently checked (%s)",
-                entity,
-                cache.last_checked,
+                "Matching ETag and recently checked. Serving cached version",
+                entity=entity,
+                last_checked=cache.last_checked,
             )
             return HttpResponse(status=304)
 

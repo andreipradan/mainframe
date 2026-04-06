@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.core.management.base import BaseCommand, CommandError
 
 from mainframe.clients import healthchecks
@@ -7,7 +6,7 @@ from mainframe.exchange.management.clients import BNR, ECB, FetchExchangeRatesEx
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(BaseCommand):
@@ -26,7 +25,7 @@ class Command(BaseCommand):
 
     def handle(self, *_, **options):
         source = options["source"]
-        logger.info("Fetching %s exchange rates", source.upper())
+        logger.info("Fetching exchange rates", source=source.upper())
         healthchecks.ping(logger, f"{source}-fx")
 
         try:
@@ -34,5 +33,5 @@ class Command(BaseCommand):
         except FetchExchangeRatesException as e:
             raise CommandError(e) from e
 
-        logger.info("Fetched %s %s exchange rates", source.upper(), count)
+        logger.info("Fetched exchange rates", source=source.upper(), count=count)
         self.stdout.write(self.style.SUCCESS("Done."))

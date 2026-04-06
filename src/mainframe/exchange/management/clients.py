@@ -31,13 +31,13 @@ class BaseExchange:
 
         rates = []
         for url in urls[:2]:
-            self.logger.info("Fetching %s", url)
+            self.logger.info("Fetching URL", url=url)
             rates += self.parse(self.do_request(url))
 
         self.logger.info(
-            "Saving %d%s",
-            len(rates),
-            " in batches of 5000" if len(rates) > self.batch_size else "",
+            "Saving events in batches",
+            count=len(rates),
+            batch_size=self.batch_size,
         )
         rates = ExchangeRate.objects.bulk_create(
             rates,
@@ -87,12 +87,12 @@ class BNR(BaseExchange):
                     value = Decimal(tag.text)
                 except decimal.InvalidOperation:
                     self.logger.error(
-                        "Invalid rate found for %s-%s on %s from %s: %s",
-                        currency,
-                        orig_currency,
-                        date,
-                        source,
-                        tag.text,
+                        "Invalid rate found",
+                        currency=currency,
+                        origin_currency=orig_currency,
+                        date=date,
+                        source=source,
+                        text=tag.text,
                     )
                     continue
                 if multiplier := tag.attrib.get("multiplier"):
@@ -133,11 +133,11 @@ class ECB(BaseExchange):
                     value = Decimal(tag.attrib["rate"])
                 except decimal.InvalidOperation:
                     self.logger.error(
-                        "Invalid rate found for %s-EUR on %s from %s: %s",
-                        currency,
-                        date,
-                        source,
-                        tag.text,
+                        "Invalid EUR rate found",
+                        currency=currency,
+                        date=date,
+                        source=source,
+                        text=tag.text,
                     )
                     continue
                 if multiplier := tag.attrib.get("multiplier"):

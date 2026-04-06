@@ -143,7 +143,7 @@ class RaiffeisenParser(StatementParser):
             type=account_type,
         )
         if created:
-            self.logger.warning("New account: %s", account)
+            self.logger.warning("New account", account=str(account))
             backup_finance_model(model="Account")
 
         header_index = starting_index + 11

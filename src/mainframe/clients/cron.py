@@ -1,11 +1,11 @@
-import logging
 from datetime import datetime, timedelta
 
 import environ
+import structlog
 from crontab import CronTab
 
 config = environ.Env()
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def delay(command):
@@ -15,4 +15,4 @@ def delay(command):
         cmd = crontab.new(command=command)
         cmd.setall(f"{n.minute} {n.hour} {n.day} {n.month} {n.weekday()}")
         cmd.enable()
-    logger.info("Set cron for command %s ✅", command)
+    logger.info("Set cron for command", command=command)

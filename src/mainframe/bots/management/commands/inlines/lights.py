@@ -1,13 +1,13 @@
-import logging
 from datetime import datetime
 
+import structlog
 import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.clients.lights import LightsClient, LightsException
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class LightsInline(BaseInlines):
@@ -57,5 +57,7 @@ class LightsInline(BaseInlines):
             logger.error(str(e))
             return ""
 
-        logger.info("Bulb %s was toggled. Response: %s", ip, response)
+        logger.info(
+            "Light toggled", ip=ip, response=str(response), update=update.to_dict()
+        )
         return cls.refresh(update)

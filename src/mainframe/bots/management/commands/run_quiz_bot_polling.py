@@ -2,9 +2,9 @@ import asyncio
 import datetime
 import itertools
 import json
-import logging
 
 import environ
+import structlog
 import telegram
 from django.core.management import BaseCommand
 from telegram import (
@@ -28,8 +28,7 @@ from mainframe.clients.gemini import GeminiError, generate_content
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
-logger = logging.getLogger(__name__)
-logging.getLogger("httpx").setLevel(logging.WARNING)
+logger = structlog.get_logger(__name__)
 
 DEFAULT_CATEGORIES = [
     "Cultură generală",
@@ -140,7 +139,7 @@ class Handler:
         try:
             bot_data = context.bot_data[answer.poll_id]
         except KeyError:
-            logger.info("Old poll")
+            logger.info("Old poll, aborting...", update=update.to_dict())
             return
 
         chat_id = bot_data["chat_id"]
@@ -252,7 +251,7 @@ class Handler:
                 temperature=0.5,
             )
         except GeminiError as e:
-            logger.exception(e)
+            logger.exception("Error generating questions", error=str(e))
             return query.edit_message_text(
                 "Eroare la generarea intrebarilor",
                 parse_mode=ParseMode.HTML,
@@ -262,7 +261,7 @@ class Handler:
         try:
             quiz["questions"] = json.loads(response)["data"]
         except (json.JSONDecodeError, IndexError) as e:
-            logger.exception(e)
+            logger.exception("Error processing questions", error=str(e))
             return await query.edit_message_text(
                 "Eroare la procesarea intrebarilor",
                 parse_mode=ParseMode.HTML,

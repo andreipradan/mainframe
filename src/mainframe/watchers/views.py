@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -9,7 +8,7 @@ from rest_framework.permissions import IsAdminUser
 from mainframe.watchers.models import Watcher, WatcherError
 from mainframe.watchers.serializers import WatcherSerializer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class WatcherViewSet(viewsets.ModelViewSet):
@@ -39,5 +38,5 @@ class WatcherViewSet(viewsets.ModelViewSet):
         try:
             return JsonResponse({"results": watcher.fetch(logger)})
         except WatcherError as e:
-            logger.error(e)
+            logger.error("Error testing watcher", error=str(e))
             raise ValidationError(e) from e

@@ -1,6 +1,6 @@
-import logging
 import math
 
+import structlog
 import telegram.error
 from asgiref.sync import sync_to_async
 from telegram import InlineKeyboardButton as Button
@@ -10,7 +10,7 @@ from mainframe.bots.management.commands.inlines.shared import BaseInlines
 from mainframe.bots.models import Message
 from mainframe.clients.chat import edit_message
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class SavedMessagesInlines(BaseInlines):
@@ -106,7 +106,7 @@ class SavedMessagesInlines(BaseInlines):
 
         if not update.callback_query:
             user = update.message.from_user
-            logger.info("User %s started the conversation.", user.full_name)
+            logger.info("User started conversation", user=user.full_name)
             try:
                 return await update.message.reply_text(
                     welcome_message.format(name=user.full_name),
@@ -115,7 +115,9 @@ class SavedMessagesInlines(BaseInlines):
                     ),
                 )
             except telegram.error.BadRequest as e:
-                logger.error(str(e))
+                logger.error(
+                    "Error replying to message", error=str(e), update=update.to_dict()
+                )
                 return ""
 
         message = update.callback_query.message

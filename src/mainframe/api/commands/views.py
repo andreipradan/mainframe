@@ -1,7 +1,7 @@
 import itertools
-import logging
 import operator
 
+import structlog
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management import (
     BaseCommand,
@@ -19,7 +19,7 @@ from mainframe.core.exceptions import MainframeError
 from mainframe.crons.models import Cron
 from mainframe.crons.serializers import CronSerializer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_custom_arguments(app_name, command_name):

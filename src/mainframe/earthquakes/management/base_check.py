@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import structlog
 from django.conf import settings
 from django.db import OperationalError
 from telegram.constants import ParseMode
@@ -41,38 +42,38 @@ def parse_event(event: Earthquake):
 
 class BaseEarthquakeCommand:
     default_max_radius = 386.02
-    logger = NotImplemented
     source = NotImplemented
     url = NotImplemented
 
     def handle(self, *_, **__):
-        healthchecks.ping(self.logger, self.source)
+        logger = structlog.get_logger(self.source)
+        healthchecks.ping(logger, self.source)
         response, error = fetch(
             self.url,
-            self.logger,
+            logger,
             soup=False,
             **self.get_kwargs(),
         )
         if error:
             if self.source == Earthquake.SOURCE_INFP:
-                self.logger.warning(str(error))
+                logger.warning(str(error))
             else:
-                self.logger.error(str(error))
+                logger.error(str(error))
             return
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
         except OperationalError as e:
-            self.logger.error(str(e))
+            logger.error(str(e))
             return
         except Bot.DoesNotExist:
-            self.logger.error(self.style.ERROR("No bots with earthquake config"))
+            logger.error("No bots with earthquake config")
             return
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
             self.set_last_check(instance)
-            self.logger.info("Done")
+            logger.info("Done")
             return
 
         Earthquake.objects.bulk_create(
@@ -98,8 +99,10 @@ class BaseEarthquakeCommand:
         ]
 
         if len(events):
-            self.logger.warning(
-                "Got %s events (with mag >= %s)", len(events), min_magnitude
+            logger.warning(
+                "Got new events!",
+                count=len(events),
+                min_magnitude=min_magnitude,
             )
             asyncio.run(
                 send_telegram_message(
@@ -109,7 +112,12 @@ class BaseEarthquakeCommand:
             )
 
         self.set_last_check(instance)
-        self.logger.info("Done")
+        logger.info(
+            "Fetching earthquake data complete!",
+            count=len(events),
+            min_magnitude=min_magnitude,
+            source=self.source,
+        )
 
     def get_kwargs(self) -> dict:
         raise NotImplementedError

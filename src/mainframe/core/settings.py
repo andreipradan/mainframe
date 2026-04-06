@@ -16,6 +16,7 @@ from pathlib import Path
 import environ
 import logfire
 import sentry_sdk
+import structlog
 from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env(
@@ -207,6 +208,25 @@ CSRF_TRUSTED_ORIGINS = [
 TESTING = False
 
 # ##################################################################### #
+#  STRUCTLOG CONFIGURATION
+# ##################################################################### #
+
+# Configure structlog for structured logging
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
+# ##################################################################### #
 #  LOGGING
 # ##################################################################### #
 
@@ -215,8 +235,8 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "{asctime} - {levelname} - {name} - {message}",
-            "style": "{",
+            "()": structlog.stdlib.ProcessorFormatter,
+            "processor": structlog.processors.JSONRenderer(),
         },
     },
     "handlers": {

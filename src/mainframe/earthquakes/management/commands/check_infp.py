@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -13,8 +12,6 @@ from mainframe.earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand, BaseCommand):
-    logger = logging.getLogger(__name__)
-
     source = Earthquake.SOURCE_INFP
     url = "https://dataportal.infp.ro/"
 

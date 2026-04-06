@@ -1,11 +1,10 @@
-import logging
-
+import structlog
 import telegram
 from rest_framework import serializers
 
 from mainframe.bots.models import Bot, Message
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class BotSerializer(serializers.ModelSerializer):
@@ -25,14 +24,14 @@ class BotSerializer(serializers.ModelSerializer):
             result = bot.set_webhook(webhook)
         except telegram.error.TelegramError as e:
             raise serializers.ValidationError({"Telegram Error": e.message}) from e
-        logger.info("Set new webhook '%s': %s", webhook, result)
+        logger.info("Set new webhook", webhook=webhook, result=str(result))
 
     def _delete_webhook(self, bot):
         try:
             result = bot.delete_webhook()
         except telegram.error.TelegramError as e:
             raise serializers.ValidationError({"Telegram Error": e.message}) from e
-        logger.info("Deleted webhook: %s", result)
+        logger.info("Deleted webhook", result=str(result))
 
     def validate(self, attrs):  # noqa: C901, PLR0912
         if self.instance:

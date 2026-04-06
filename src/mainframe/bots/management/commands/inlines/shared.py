@@ -1,12 +1,11 @@
-import logging
-
 import six
+import structlog
 import telegram
 from telegram.constants import ParseMode
 
 from mainframe.clients.chat import edit_message
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class BaseInlines:
@@ -58,7 +57,9 @@ def reply(update, text, **kwargs):
             **kwargs,
         )
     except telegram.error.BadRequest as e:
-        logger.exception(e)
+        logger.exception(
+            "Error replying to message", error=str(e), update=update.to_dict()
+        )
     return ""
 
 
@@ -77,11 +78,11 @@ def validate_message(message, bot, custom_logger):
         return ""
 
     if not message.chat_id:
-        custom_logger.warning("No chat_id in message keys: %s", list(message))
+        custom_logger.warning("No chat_id in message keys", keys=list(message))
         return ""
 
     if str(message.chat_id) not in bot.whitelist:
-        custom_logger.warning("Chat '%s' not in whitelist", message.chat_id)
+        custom_logger.warning("Chat not in whitelist", chat_id=message.chat_id)
         return ""
 
     text = text.strip()

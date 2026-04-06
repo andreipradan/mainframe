@@ -1,7 +1,7 @@
 import asyncio
-import logging
 from operator import attrgetter
 
+import structlog
 from django.core.management import BaseCommand
 from telegram.constants import ParseMode
 
@@ -10,7 +10,7 @@ from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.devices import DevicesClient
 from mainframe.sources.models import Source
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def should_notify(devices):
@@ -47,4 +47,9 @@ class Command(BaseCommand):
                 send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
             )
 
-        logger.info("Done")
+        logger.info(
+            "Check devices complete!",
+            new_devices=len(new_devices),
+            went_online=len(went_online),
+            went_offline=len(went_offline),
+        )

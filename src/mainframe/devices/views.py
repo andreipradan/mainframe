@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from actstream.registry import registry
 from django.contrib.postgres.search import SearchVector
 from django.http import JsonResponse
@@ -13,7 +12,7 @@ from mainframe.devices.models import Device
 from mainframe.devices.serializers import DeviceSerializer
 from mainframe.sources.models import Source
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class DevicePagination(PageNumberPagination):
@@ -41,7 +40,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
         try:
             client.run()
         except DevicesException as ex:
-            logger.exception(ex)
+            logger.exception("Error syncing devices", error=str(ex))
             return JsonResponse({"error": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
         return super().list(request, **kwargs)
 

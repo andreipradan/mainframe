@@ -96,7 +96,7 @@ class CTPClient:
                 update_fields=["type", "terminal1", "terminal2"],
                 unique_fields=["name"],
             )
-            self.logger.info("Stored %d transit lines in db", len(lines))
+            self.logger.info("Transit lines created!", count=len(lines))
         return lines
 
     async def fetch_schedules(
@@ -137,7 +137,7 @@ class CTPClient:
                 ],
                 unique_fields=list(*Schedule._meta.unique_together),
             )
-            self.logger.info("Stored %d schedules in db", len(schedules))
+            self.logger.info("Schedules created!", count=len(schedules))
         return schedules
 
     async def request(self, session, sem, schedule):
@@ -170,7 +170,7 @@ class CTPClient:
     def parse_schedule(self, args) -> Optional[Schedule]:  # noqa: C901
         response, line, occ, url = args
         if not response or "<title> 404 Not Found" in response:
-            self.logger.warning("No or 404 in response for %s", url)
+            self.logger.warning("Schedule not found", line=line, occ=occ, url=url)
             return None
 
         rows = [row.strip() for row in response.split("\n") if row.strip()]
@@ -209,5 +209,5 @@ def handle_wrong_date_row(row, logger):
     if row == "24.02.2024v":
         return datetime.strptime(row, "%d.%m.%Yv")
 
-    logger.exception("Unexpected date format %s", row)
+    logger.exception("Unexpected date format", row=row)
     return None

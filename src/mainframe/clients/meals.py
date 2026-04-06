@@ -1,17 +1,17 @@
 import asyncio
 import itertools
-import logging
 from datetime import datetime, timedelta
 from typing import List
 
 import aiohttp
+import structlog
 from bs4 import BeautifulSoup
 from django.core.signing import Signer
 from rest_framework import status
 
 from mainframe.meals.models import Meal
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 TYPE_MAPPING = {
     "mic dejun": Meal.TYPE_BREAKFAST,
@@ -38,7 +38,7 @@ async def fetch(session, sem, url):
                         raise ValueError(msg)
                 return await response.text(), url
         except aiohttp.client_exceptions.ClientConnectorError as e:
-            logger.error(e)
+            logger.error("Error fetching URL", url=url, error=str(e))
             return "", url
 
 
@@ -110,7 +110,7 @@ def parse_week(args) -> List[Meal]:
 
     rows = soup.select(".slider-menu-for-day > div > .row")
     if not rows:
-        logger.error("URL: %s. No rows found", url)
+        logger.error("No rows found", url=url)
         return []
 
     meals = []

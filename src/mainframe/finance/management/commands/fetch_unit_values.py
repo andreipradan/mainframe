@@ -1,7 +1,7 @@
 import json
-import logging
 from datetime import datetime
 
+import structlog
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand, CommandError
 
@@ -9,7 +9,7 @@ from mainframe.clients import healthchecks
 from mainframe.clients.scraper import fetch
 from mainframe.finance.models import Pension, UnitValue
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def extract_azt(response, pensions):
@@ -39,7 +39,7 @@ def extracting(response, pensions):
     for fund in json.loads(response.json()):
         name = fund["name"]
         if "data" not in fund:
-            logger.error("[Pension] missing data for '%s'", name)
+            logger.error("Pension missing data key", fund_name=name)
             continue
         for unit in fund["data"]:
             unit_values.append(
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         url = options["url"]
         payload = options["payload"]
 
-        logger.info("[Pension] Fetching unit value from '%s'", url)
+        logger.info("Fetching unit value", url=url)
 
         resp, error = fetch(
             url,
@@ -82,5 +82,5 @@ class Command(BaseCommand):
 
         UnitValue.objects.bulk_create(unit_values, ignore_conflicts=True)
 
-        logger.info("[Pension] Done (%s records)", len(unit_values))
+        logger.info("Unit values fetched!", record_count=len(unit_values))
         healthchecks.ping(logger, "pension")

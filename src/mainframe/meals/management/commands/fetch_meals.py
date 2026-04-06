@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.core.management.base import BaseCommand, CommandError
 
 from mainframe.clients import healthchecks
@@ -8,7 +7,7 @@ from mainframe.clients.meals import FetchMealsException, MealsClient
 
 class Command(BaseCommand):
     def handle(self, *_, **__):
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
 
         logger.info("Fetching menu for the next month")
         try:
@@ -17,5 +16,5 @@ class Command(BaseCommand):
             raise CommandError(e) from e
 
         healthchecks.ping(logger, "meals")
-        logger.info("Fetched %d meals", len(meals))
+        logger.info("Fetched meals", count=len(meals))
         self.stdout.write(self.style.SUCCESS("Done."))
