@@ -1,3 +1,4 @@
+from django.core.management import call_command
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -9,6 +10,11 @@ from mainframe.clients.system import run_cmd
 
 class RpiViewSet(viewsets.ViewSet):
     permission_classes = (IsAdminUser,)
+
+    @action(detail=False, methods=["put"], url_path="migrate")
+    def migrate(self, request, **kwargs):
+        call_command("migrate")
+        return JsonResponse(status=status.HTTP_204_NO_CONTENT, data={})
 
     @staticmethod
     def run_command(cmd):

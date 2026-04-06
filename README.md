@@ -108,7 +108,7 @@ Tasks are defined using [poethepoet](https://github.com/nat-n/poethepoet) and ru
 | `uv run poe dev` | Start Django development server |
 | `uv run poe frontend` | Start React development server |
 | `uv run poe huey` | Start Huey task queue worker |
-| `uv run poe migrate` | Create and apply database migrations |
+| `uv run poe migrate` | Create and apply database migrations (runs both makemigrations and migrate) |
 | `uv run poe shell` | Open Django shell_plus |
 | `uv run poe test` | Run pytest |
 

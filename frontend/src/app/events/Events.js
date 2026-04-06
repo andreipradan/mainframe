@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Audio } from 'react-loader-spinner';
+import AceEditor from 'react-ace';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
@@ -8,6 +9,15 @@ import BottomPagination from '../shared/BottomPagination';
 import EventsApi from '../../api/events';
 import Errors from '../shared/Errors';
 import { selectItem, setKwargs, setModalOpen } from '../../redux/eventsSlice';
+import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
+import Select from 'react-select';
+import { formatTime } from '../earthquakes/Earthquakes';
+
+import 'ace-builds';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/ext-language_tools';
 
 const toDateTimeLocal = (value) => {
   if (!value) return '';
@@ -36,27 +46,39 @@ const Events = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const api = new EventsApi(token);
+  const [additionalData, setAdditionalData] = useState(null);
+  const [additionalDataAnnotations, setAdditionalDataAnnotations] =
+    useState(null);
 
-  const clearModalForm = () => {
-    setTitle('');
-    setDescription('');
-    setLocation('');
-    setSource('');
-    setExternalId('');
-    setStartDate('');
-    setEndDate('');
-  };
+  const api = new EventsApi(token);
 
   const closeModal = () => {
     dispatch(selectItem());
     dispatch(setModalOpen(false));
-    clearModalForm();
   };
 
-  useEffect(() => {
-    if (!results) dispatch(api.getList());
-  }, []);
+  const onAdditionalDataChange = (e, i) => {
+    setAdditionalData(e);
+    try {
+      JSON.parse(e);
+      setAdditionalDataAnnotations(null);
+    } catch (error) {
+      const annotation = { ...i.end, text: error.message, type: 'error' };
+      setAdditionalDataAnnotations(
+        !additionalDataAnnotations
+          ? [annotation]
+          : [...additionalDataAnnotations, annotation]
+      );
+    }
+  };
+  const onCityChange = (e) => {
+    dispatch(setKwargs({ city: e.target.value }));
+  };
+
+  const onCategoryChange = (newValue) => {
+    const newTypes = newValue.map((v) => v.value);
+    dispatch(setKwargs({ category: newTypes, page: 1 }));
+  };
 
   useEffect(() => {
     setFiltered(
@@ -80,6 +102,10 @@ const Events = () => {
       setExternalId(selectedItem.external_id || '');
       setStartDate(toDateTimeLocal(selectedItem.start_date));
       setEndDate(toDateTimeLocal(selectedItem.end_date));
+      setAdditionalData(
+        JSON.stringify(selectedItem.additional_data, null, '\t')
+      );
+
       dispatch(setModalOpen(true));
     }
   }, [selectedItem]);
@@ -95,6 +121,11 @@ const Events = () => {
       start_date: fromDateTimeLocal(startDate),
       end_date: fromDateTimeLocal(endDate),
     };
+    if (additionalData) {
+      payload.additional_data = JSON.parse(
+        additionalData.replace(/[\r\n\t]/g, '')
+      );
+    }
 
     if (selectedItem) {
       dispatch(api.update(selectedItem.id, payload));
@@ -159,6 +190,47 @@ const Events = () => {
 
               <Errors errors={errors} />
 
+              <div className='row mb-3'>
+                <div className='col-md-6'>
+                  <Form.Group>
+                    <Form.Label>City</Form.Label>
+                    <Form.Control
+                      as='select'
+                      value={events.kwargs.city}
+                      onChange={onCityChange}
+                    >
+                      <option value=''>All Cities</option>
+                      {events.cities?.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </Form.Control>
+                  </Form.Group>
+                </div>
+                <div className='col-md-6'>
+                  <Form.Group className='col-md-12'>
+                    <Form.Label>Categories</Form.Label>&nbsp;
+                    <Select
+                      closeMenuOnSelect={false}
+                      isDisabled={events.loading}
+                      isLoading={events.loading}
+                      isMulti
+                      onChange={onCategoryChange}
+                      options={events.categories?.map((t) => ({
+                        label: t,
+                        value: t,
+                      }))}
+                      styles={selectStyles}
+                      value={events.kwargs.category?.map((t) => ({
+                        label: t,
+                        value: t,
+                      }))}
+                    />
+                  </Form.Group>
+                </div>
+              </div>
+
               <div className='form-group mb-3'>
                 <input
                   className='form-control'
@@ -175,9 +247,9 @@ const Events = () => {
                       <th>#</th>
                       <th>Title</th>
                       <th>Source</th>
+                      <td>City</td>
                       <th>Location</th>
-                      <th>Start</th>
-                      <th>End</th>
+                      <th>Categories</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -187,18 +259,72 @@ const Events = () => {
                         (filtered || []).map((event, index) => (
                           <tr key={event.id || index}>
                             <td>{index + 1}</td>
-                            <td>{event.title}</td>
-                            <td>{event.source}</td>
-                            <td>{event.location || '-'}</td>
-                            <td>
-                              {event.start_date
-                                ? new Date(event.start_date).toLocaleString()
-                                : '-'}
+                            <td
+                              className='cursor-pointer'
+                              onClick={() => dispatch(selectItem(event.id))}
+                            >
+                              <span className='text-primary'>
+                                {event.title}
+                              </span>
+                              &nbsp;
+                              <br />
+                              <small>
+                                Starts: {formatTime(event.start_date)}
+                              </small>
+                              <br />
+                              {event.end_date ? (
+                                <small>
+                                  Ends: {formatTime(event.end_date)}
+                                </small>
+                              ) : null}
                             </td>
                             <td>
-                              {event.end_date
-                                ? new Date(event.end_date).toLocaleString()
-                                : '-'}
+                              <a
+                                href={event.url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                              >
+                                {event.source_name}&nbsp;
+                                <i className='mdi mdi mdi-link-variant' />
+                              </a>
+                            </td>
+                            <td>{event.city}</td>
+                            <td>
+                              {event.location_url ? (
+                                <a
+                                  href={event.location_url}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                >
+                                  {event.location}
+                                </a>
+                              ) : (
+                                event.location
+                              )}
+                            </td>
+                            <td>
+                              {event.categories?.map((c) => (
+                                <button
+                                  key={c.toString()}
+                                  disabled={events.kwargs.category?.includes(c)}
+                                  className={'btn btn-sm text-secondary'}
+                                  onClick={() =>
+                                    dispatch(
+                                      setKwargs({
+                                        category: [
+                                          ...new Set([
+                                            ...(events.kwargs.category || []),
+                                            c,
+                                          ]),
+                                        ],
+                                        page: 1,
+                                      })
+                                    )
+                                  }
+                                >
+                                  {c}{' '}
+                                </button>
+                              ))}
                             </td>
                             <td>
                               <Button
@@ -221,14 +347,14 @@ const Events = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={7} className='text-center'>
+                          <td colSpan={8} className='text-center'>
                             No events available
                           </td>
                         </tr>
                       )
                     ) : (
                       <tr>
-                        <td colSpan={7}>
+                        <td colSpan={8}>
                           <Audio
                             width='100%'
                             radius='9'
@@ -303,7 +429,6 @@ const Events = () => {
               <Form.Control
                 value={externalId}
                 onChange={(e) => setExternalId(e.target.value)}
-                required
               />
             </Form.Group>
             <Form.Group className='mb-3'>
@@ -321,6 +446,33 @@ const Events = () => {
                 type='datetime-local'
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className='mb-3'>
+              <Form.Label>Additional data</Form.Label>
+              <AceEditor
+                className={
+                  additionalDataAnnotations ? 'form-control is-invalid' : ''
+                }
+                annotations={additionalDataAnnotations}
+                placeholder='AdditionalData'
+                mode='python'
+                theme='monokai'
+                onChange={onAdditionalDataChange}
+                fontSize={12}
+                showPrintMargin
+                showGutter
+                highlightActiveLine
+                value={additionalData}
+                setOptions={{
+                  enableBasicAutocompletion: false,
+                  enableLiveAutocompletion: false,
+                  enableSnippets: false,
+                  showLineNumbers: true,
+                  tabSize: 2,
+                }}
+                width='100%'
+                height='150px'
               />
             </Form.Group>
             <div className='d-flex justify-content-end'>

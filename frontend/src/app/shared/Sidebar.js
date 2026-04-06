@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useHistory, useLocation, withRouter } from 'react-router-dom';
+import { Link, useLocation, withRouter } from 'react-router-dom';
 import { Collapse, Dropdown, Row } from 'react-bootstrap';
 import { Trans } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,18 +7,20 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import { Circles } from 'react-loader-spinner';
+import { toast } from 'react-toastify';
 
 import Errors from './Errors';
 import RpiApi from '../../api/rpi';
 import logo from '../../assets/images/logo.svg';
 import logoMini from '../../assets/images/logo-mini.svg';
 
+import { toastParams } from '../../api/auth';
+
 const Sidebar = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const history = useHistory();
 
-  const token = useSelector((state) => state.auth.token);
+  const token = useSelector((state) => state.rpi.token);
   const user = useSelector((state) => state.auth.user);
   const { errors, loading, message } = useSelector((state) => state.rpi);
 
@@ -129,7 +131,8 @@ const Sidebar = () => {
   };
   const handleSubmitModal = (evt) => {
     evt.preventDefault();
-    if (currentModal === 'reboot') dispatch(RpiApi.reboot(token));
+    if (currentModal === 'Run migrations') dispatch(RpiApi.migrate(token));
+    else if (currentModal === 'reboot') dispatch(RpiApi.reboot(token));
     else if (currentModal === 'Restart backend')
       dispatch(RpiApi.restartService(token, 'backend'));
     else if (currentModal === 'Restart bot')
@@ -139,6 +142,7 @@ const Sidebar = () => {
     else if (currentModal === 'Restart huey')
       dispatch(RpiApi.restartService(token, 'huey'));
     else if (currentModal === 'Reset tasks') dispatch(RpiApi.resetTasks(token));
+    else toast.warning(`Unhandled action ${currentModal}!`, toastParams);
     setModalOpen(false);
   };
 
@@ -195,136 +199,129 @@ const Sidebar = () => {
                     <span>{new Date(user?.last_login).toLocaleString()}</span>
                   </div>
                 </div>
-                <Dropdown alignRight>
-                  <Dropdown.Toggle as='a' className='cursor-pointer no-caret'>
-                    <i className='mdi mdi-dots-vertical' />
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className='sidebar-dropdown preview-list'>
-                    <a
-                      href='!#'
-                      className='dropdown-item preview-item'
-                      onClick={(evt) => {
-                        evt.preventDefault();
-                        history.push('/profile');
-                      }}
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-account-settings text-primary' />
+                {user?.is_staff && token && (
+                  <Dropdown alignRight>
+                    <Dropdown.Toggle as='a' className='cursor-pointer no-caret'>
+                      <i className='mdi mdi-dots-vertical' />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className='sidebar-dropdown preview-list'>
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={handleSetModalAction}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-database-refresh text-success' />
+                          </div>
                         </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject ellipsis mb-1 text-small'>
-                          Account settings
-                        </p>
-                      </div>
-                    </a>
-                    {user?.is_staff && (
-                      <>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          href='!#'
-                          onClick={handleSetModalAction}
-                          className='preview-item'
-                        >
-                          <div className='preview-thumbnail'>
-                            <div className='preview-icon bg-dark rounded-circle'>
-                              <i className='mdi mdi-timer text-warning' />
-                            </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>Run migrations</p>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={handleSetModalAction}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-autorenew text-info' />
                           </div>
-                          <div className='preview-item-content'>
-                            <p className='preview-subject mb-1'>Reset tasks</p>
+                        </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>Reset tasks</p>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={handleSetModalAction}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-robot text-warning' />
                           </div>
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          href='!#'
-                          onClick={handleSetModalAction}
-                          className='preview-item'
-                        >
-                          <div className='preview-thumbnail'>
-                            <div className='preview-icon bg-dark rounded-circle'>
-                              <i className='mdi mdi-server text-success' />
-                            </div>
+                        </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>Restart bot</p>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={handleSetModalAction}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-poll text-warning' />
                           </div>
-                          <div className='preview-item-content'>
-                            <p className='preview-subject mb-1'>
-                              Restart backend
-                            </p>
+                        </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>
+                            Restart quiz bot
+                          </p>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={handleSetModalAction}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-server text-warning' />
                           </div>
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          href='!#'
-                          onClick={handleSetModalAction}
-                          className='preview-item'
-                        >
-                          <div className='preview-thumbnail'>
-                            <div className='preview-icon bg-dark rounded-circle'>
-                              <i className='mdi mdi-robot text-info' />
-                            </div>
+                        </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>
+                            Restart backend
+                          </p>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={handleSetModalAction}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-sync text-warning' />
                           </div>
-                          <div className='preview-item-content'>
-                            <p className='preview-subject mb-1'>Restart bot</p>
+                        </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>Restart huey</p>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Divider />
+                      <Dropdown.Item
+                        href='!#'
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setModalOpen(true);
+                          setCurrentModal('reboot');
+                        }}
+                        className='preview-item'
+                      >
+                        <div className='preview-thumbnail'>
+                          <div className='preview-icon bg-dark rounded-circle'>
+                            <i className='mdi mdi-restart text-danger' />
                           </div>
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          href='!#'
-                          onClick={handleSetModalAction}
-                          className='preview-item'
-                        >
-                          <div className='preview-thumbnail'>
-                            <div className='preview-icon bg-dark rounded-circle'>
-                              <i className='mdi mdi-head-question-outline text-info' />
-                            </div>
-                          </div>
-                          <div className='preview-item-content'>
-                            <p className='preview-subject mb-1'>
-                              Restart quiz bot
-                            </p>
-                          </div>
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          href='!#'
-                          onClick={handleSetModalAction}
-                          className='preview-item'
-                        >
-                          <div className='preview-thumbnail'>
-                            <div className='preview-icon bg-dark rounded-circle'>
-                              <i className='mdi mdi-timer text-warning' />
-                            </div>
-                          </div>
-                          <div className='preview-item-content'>
-                            <p className='preview-subject mb-1'>Restart huey</p>
-                          </div>
-                        </Dropdown.Item>
-                        <Dropdown.Divider />
-                        <Dropdown.Item
-                          href='!#'
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setModalOpen(true);
-                            setCurrentModal('reboot');
-                          }}
-                          className='preview-item'
-                        >
-                          <div className='preview-thumbnail'>
-                            <div className='preview-icon bg-dark rounded-circle'>
-                              <i className='mdi mdi-restart text-danger' />
-                            </div>
-                          </div>
-                          <div className='preview-item-content'>
-                            <p className='preview-subject mb-1'>
-                              <Trans>Reboot</Trans>
-                            </p>
-                          </div>
-                        </Dropdown.Item>
-                      </>
-                    )}
-                  </Dropdown.Menu>
-                </Dropdown>
+                        </div>
+                        <div className='preview-item-content'>
+                          <p className='preview-subject mb-1'>
+                            <Trans>Reboot</Trans>
+                          </p>
+                        </div>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                )}
               </div>
               {alertOpen && <Errors errors={errors} />}
               {messageOpen && (
@@ -349,7 +346,7 @@ const Sidebar = () => {
             >
               <Link className='nav-link' to='/'>
                 <span className='menu-icon'>
-                  <i className='mdi mdi-speedometer' />
+                  <i className='mdi mdi-view-dashboard' />
                 </span>
                 <span className='menu-title'>
                   <Trans>Dashboard</Trans>
@@ -388,7 +385,7 @@ const Sidebar = () => {
                         }
                         to='/apps/logs'
                       >
-                        <i className='mdi mdi-ballot' />
+                        <i className='mdi mdi-file-document-outline' />
                         &nbsp;Logs
                       </Link>
                     </li>
@@ -401,7 +398,7 @@ const Sidebar = () => {
                         }
                         to='/apps/messages'
                       >
-                        <i className='mdi mdi-message' />
+                        <i className='mdi mdi-message-text' />
                         &nbsp;Messages
                       </Link>
                     </li>
@@ -481,7 +478,7 @@ const Sidebar = () => {
             >
               <Link className='nav-link' to='/bots'>
                 <span className='menu-icon'>
-                  <i className='mdi mdi-speedometer' />
+                  <i className='mdi mdi-robot' />
                 </span>
                 <span className='menu-title'>Bots</span>
               </Link>
@@ -501,7 +498,7 @@ const Sidebar = () => {
                 data-toggle='collapse'
               >
                 <span className='menu-icon'>
-                  <i className='mdi mdi-bash' />
+                  <i className='mdi mdi-console' />
                 </span>
                 <span className='menu-title'>Commands</span>
                 <i className='menu-arrow' />
@@ -518,7 +515,7 @@ const Sidebar = () => {
                         }
                         to='/commands/crons'
                       >
-                        <i className='mdi mdi-timer' />
+                        <i className='mdi mdi-timer-sand' />
                         &nbsp;Crons
                       </Link>
                     </li>
@@ -557,7 +554,7 @@ const Sidebar = () => {
                         }
                         to='/commands/watchers'
                       >
-                        <i className='mdi mdi-eye-plus' />
+                        <i className='mdi mdi-eye-settings-outline' />
                         &nbsp;Watchers
                       </Link>
                     </li>
@@ -786,7 +783,7 @@ const Sidebar = () => {
             >
               <Link className='nav-link' to='/fx-rates'>
                 <span className='menu-icon'>
-                  <i className='mdi mdi-chart-bar' />
+                  <i className='mdi mdi-chart-line' />
                 </span>
                 <span className='menu-title'>FX Rates</span>
               </Link>
@@ -893,7 +890,7 @@ const Sidebar = () => {
             </li>
           </>
         ) : null}
-        {token && (
+        {user && (
           <>
             <li className='nav-item nav-category'>
               <span className='nav-link'>Expenses & Rates</span>
@@ -1013,7 +1010,7 @@ const Sidebar = () => {
             data-toggle='collapse'
           >
             <span className='menu-icon'>
-              <i className='mdi mdi-lock' />
+              <i className='mdi mdi-file-document' />
             </span>
             <span className='menu-title'>Docs</span>
             <i className='menu-arrow' />

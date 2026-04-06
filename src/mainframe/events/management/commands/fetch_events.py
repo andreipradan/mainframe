@@ -1,21 +1,19 @@
-import structlog
+import logging
+
 from django.core.management import BaseCommand, CommandError
 
-from mainframe.clients.events.eb import EBClient
+from mainframe.clients.events import AEClient, EBClient, IBClient, ZnClient
+from mainframe.events.constants import CATEGORY_ID_BY_NAME
+from mainframe.events.models import Event
 from mainframe.sources.models import Source
 
-logger = structlog.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
-CATEGORIES = {
-    "music": 1,
-    "sport": 2,
-    "film": 3,
-    "other": 4,
-    "theater": 5,
-    "online": 6,
-}
 CLIENT_MAPPING = {
+    "ae": AEClient,
     "eb": EBClient,
+    "ib": IBClient,
+    "zn": ZnClient,
 }
 
 
@@ -23,8 +21,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--category",
-            choices=list(CATEGORIES),
-            default="other",
+            choices=list(CATEGORY_ID_BY_NAME.keys()),
             type=str,
         )
         parser.add_argument("--source", type=str, required=True)
@@ -33,27 +30,61 @@ class Command(BaseCommand):
         category = options["category"]
         source = options["source"].lower().strip()
 
-        category_id = CATEGORIES.get(category)
-        if not category_id:
-            raise CommandError(f"Invalid category: {category}")
+        kwargs = {}
 
         try:
             source = Source.objects.get(name__iexact=source)
         except Source.DoesNotExist as e:
             raise CommandError(f"Source '{source}' not found") from e
 
-        self.stdout.write(f"[{source}] Fetching {category} events...")
+        if source.name.lower() == "eb":
+            if not category:
+                raise CommandError("Category is required for source 'eb'")
 
-        client_class = CLIENT_MAPPING.get(source.name)
+            if not (category_id := CATEGORY_ID_BY_NAME.get(category)):
+                raise CommandError(f"Invalid category: {category}")
+            kwargs["category_id"] = category_id
+
+        self.stdout.write(
+            f"[events][{source}] Fetching {f'{category} ' if category else ''}events..."
+        )
+
+        client_class = CLIENT_MAPPING.get(source.name.lower())
         if not client_class:
             raise CommandError(f"No client found for source '{source.name}'") from None
 
         client = client_class(source)
-        try:
-            client.fetch_events(category_id=category_id)
-            self.stdout.write(
-                self.style.SUCCESS(f"Successfully fetched {category} events from EB")
+        events_to_create = client.fetch_events(**kwargs)
+        if events_to_create:
+            Event.objects.bulk_create(
+                events_to_create,
+                update_conflicts=True,
+                update_fields=[
+                    "title",
+                    "categories",
+                    "location",
+                    "start_date",
+                    "additional_data",
+                    "city",
+                    "description",
+                    "end_date",
+                    "external_id",
+                    "location_url",
+                    "updated_at",
+                ],
+                unique_fields=["url"],
             )
-        except Exception as e:
-            logger.error("Failed to fetch events", error=str(e))
-            raise CommandError(f"Failed to fetch events: {e}") from e
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"[events][{source.name}] Successfully fetched and saved "
+                    f"{len(events_to_create)} {f'{category} ' if category else ''}"
+                    f"events"
+                )
+            )
+        else:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"[events][{source.name}] "
+                    f"No {f'{category} ' if category else ''}events found"
+                )
+            )

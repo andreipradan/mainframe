@@ -83,6 +83,10 @@ tests/                # Pytest test suite
 - Triggered from API endpoints or cron jobs
 - Status tracked in `mainframe.api.huey_tasks.models`
 
+### Clients & Storage
+- Google Cloud Storage: a small GCS helper lives at `src/mainframe/clients/storage.py` (`GoogleCloudStorageClient`) and is used to upload/download blobs. It expects environment variables such as `GOOGLE_STORAGE_BUCKET`, `GOOGLE_STORAGE_BACKUP_BUCKET` and `GOOGLE_STORAGE_MODEL_BUCKET` and requires a Google service account (use the standard service account file env vars used across other clients).
+- Redis helper: `RedisClient` is implemented in the same module and connects to `localhost:6379` by default. Many clients (bots, calendar, quiz, etc.) use this `RedisClient` for short-term context and state. Tests often mock or replace Redis access when needed.
+
 ### Telegram Bots
 - Bot model stores credentials and webhook URL
 - Messages logged in `Message` model
@@ -201,9 +205,9 @@ class TestGroupViewSet:
 
     def test_list_groups_success(self, client, staff_session):
         """Test successful group listing"""
-      from tests.factories.groups import GroupFactory
+        from tests.factories.groups import GroupFactory
 
-      GroupFactory.create(name="test-group")
+        GroupFactory.create(name="test-group")
         response = client.get("/groups/", HTTP_AUTHORIZATION=staff_session.token)
         assert response.status_code == status.HTTP_200_OK
 
@@ -299,6 +303,7 @@ uv run poe test -k "permission"
   - Use `@mock.patch()` decorator from `unittest.mock`
   - Always mock third-party API calls (Telegram, Gemini, Yeelight, etc.)
   - Use `mock.MagicMock()` for creating response objects
+  - Tests include an autouse fixture that patches the Gemini client at import-time: see `tests/conftest.py` (`disable_google_generativeai_api_calls`) which patches `mainframe.clients.gemini.genai`. Prefer reusing that pattern in tests that would otherwise call the real Google GenAI client.
 - **Socket Blocking**: Tests run with socket disabled - only local connections allowed
   - Sockets to external hosts will fail - this is intentional
   - All HTTP calls to external services must be mocked
@@ -357,14 +362,6 @@ Key fixtures:
 # Uses filter_backends for query params
 ```
 
-### Async Task Execution
-```python
-from mainframe.bots.tasks import send_notification
-
-# Queue task to run async
-send_notification.delay(chat_id=123, text="Hello!")
-```
-
 ## Code Conventions & Best Practices
 
 - **Naming**: Use snake_case for functions/variables, PascalCase for classes
@@ -372,6 +369,7 @@ send_notification.delay(chat_id=123, text="Hello!")
   - Prefer `validate_email()` over `check()`, `fetch_user_transactions()` over `get_data()`
   - Classes should describe what they represent: `UserSerializer`, `PaymentProcessor`, `EmailValidator`
 - **Imports**: Organize as: stdlib → third-party → local imports
+- **No Code in __init__.py**: Keep `__init__.py` files empty; import directly from modules (e.g., `from package.module import Class`)
 - **Type Hints**: Add where practical (not required but encouraged)
 - **Tests**: Aim for >80% coverage, test API endpoints and business logic
 - **Docstrings & Comments**:
@@ -430,9 +428,10 @@ send_notification.delay(chat_id=123, text="Hello!")
 uv run poe dev              # Start backend
 uv run poe frontend         # Start frontend
 uv run poe huey             # Start task queue worker
+uv run poe bot              # Start Telegram bot polling (management command)
 
 # Database
-uv run poe migrate          # Create and Apply migrations
+uv run poe migrate          # Create and apply migrations (both makemigrations and migrate)
 uv run poe shell            # Launches a django shell_plus
 
 # Testing
@@ -465,5 +464,6 @@ uv run poe shell            # Django shell
 ---
 
 **Last Updated**: February 2026
+
 
 This document is maintained for AI agents. Suggest improvements by opening a PR.

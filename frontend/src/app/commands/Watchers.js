@@ -20,6 +20,7 @@ import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 const Watchers = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
+  const ngrokToken = useSelector((state) => state.rpi.token);
   const {
     results,
     errors,
@@ -292,14 +293,16 @@ const Watchers = () => {
                                   }}
                                   className='cursor-pointer mdi mdi-content-copy'
                                 />
-                                <i
-                                  onClick={() =>
-                                    dispatch(
-                                      WatchersApi.run(token, watcher?.id)
-                                    )
-                                  }
-                                  className='ml-1 cursor-pointer mdi mdi-play text-primary'
-                                />
+                                {ngrokToken ? (
+                                  <i
+                                    onClick={() =>
+                                      dispatch(
+                                        WatchersApi.run(ngrokToken, watcher?.id)
+                                      )
+                                    }
+                                    className='ml-1 cursor-pointer mdi mdi-play text-primary'
+                                  />
+                                ) : null}
                               </td>
                             </tr>
                           ) : (

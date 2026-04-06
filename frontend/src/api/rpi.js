@@ -32,6 +32,16 @@ class RpiApi {
       .finally(() => dispatch(logout()));
   };
 
+  static migrate = (token) => (dispatch) => {
+    dispatch(setLoading(true));
+    ngrokAxios
+      .put(`${base}/migrate/`, {}, { headers: { Authorization: token } })
+      .then(() => {
+        dispatch(completed('Migrations completed.'));
+      })
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
+  };
+
   static reboot = (token) => (dispatch) => {
     dispatch(setLoading(true));
     ngrokAxios
@@ -40,7 +50,7 @@ class RpiApi {
         dispatch(completed('Rebooting'));
         dispatch(
           logout(
-            'Started reboot, please refresh this page after a couple of moments'
+            'Reboot started, please refresh this page after a couple of moments'
           )
         );
       })
@@ -51,7 +61,7 @@ class RpiApi {
     ngrokAxios
       .put(`${base}/reset-tasks/`, {}, { headers: { Authorization: token } })
       .then(() => {
-        dispatch(completed('Resetting Tasks...'));
+        dispatch(completed('Huey tasks reset completed!'));
       })
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
@@ -64,11 +74,7 @@ class RpiApi {
         { headers: { Authorization: token } }
       )
       .then(() => {
-        dispatch(
-          completed(
-            `Restarted ${service}, please refresh this page after a few of moments`
-          )
-        );
+        dispatch(completed(`Restarted ${service}!`));
       })
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };

@@ -1,3 +1,4 @@
+from django.db.models import Func
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -11,24 +12,32 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        city_slug = self.request.query_params.get("city")
+        queryset = super().get_queryset().select_related("source")
+        city = self.request.query_params.get("city")
+        categories = self.request.query_params.getlist("category")
 
-        if city_slug:
-            queryset = queryset.filter(city_slug=city_slug)
+        if city:
+            queryset = queryset.filter(city=city)
+
+        if any(categories):
+            queryset = queryset.filter(categories__overlap=categories)
 
         return queryset
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
 
-        cities = (
-            Event.objects.filter(city_slug__isnull=False)
-            .exclude(city_slug="")
-            .values_list("city_slug", flat=True)
-            .distinct()
-            .order_by("city_slug")
+        response.data["cities"] = (
+            Event.objects.exclude(city="")
+            .values_list("city", flat=True)
+            .distinct("city")
+            .order_by("city")
         )
-        response.data["cities"] = list(cities)
 
+        response.data["categories"] = list(
+            Event.objects.annotate(cat=Func("categories", function="unnest"))
+            .values_list("cat", flat=True)
+            .distinct("cat")
+            .order_by("cat")
+        )
         return response
