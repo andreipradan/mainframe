@@ -156,30 +156,24 @@ class CalendarClient:
                 )
         except HttpError as e:
             if e.resp.status == status.HTTP_404_NOT_FOUND:
-                self.logger.error(
-                    "Couldn't update - not found, recreating...",
-                    event_id=event_id,
+                self.logger.exception(
+                    "Couldn't update - not found, recreating...", event_id=event_id
                 )
                 try:
                     self.service.events().insert(
                         calendarId=self.calendar_id, body=event, sendUpdates="none"
                     ).execute()
-                except HttpError as err:
-                    self.logger.error(
+                except HttpError:
+                    self.logger.exception(
                         "Failed to recreate event after not found error",
-                        event=event,
-                        err=str(err),
+                        event_id=event_id,
                     )
                 else:
                     self.logger.info(
                         "Event recreated", location=event.location, start=event.start
                     )
             else:
-                self.logger.error(
-                    "Failed to update event",
-                    event=self.events[event_id],
-                    error=str(e),
-                )
+                self.logger.exception("Failed to update event", event_id=event_id)
         else:
             self.logger.info(
                 "Event updated", location=event.location, start=event.start

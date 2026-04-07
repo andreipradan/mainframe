@@ -60,12 +60,14 @@ class TestStatusUpdate:
         self, save_to_db, update, logger, _
     ):
         update = prepare_update(update, new_chat_title=1)
-        assert not await handle_new_chat_title(update, mock.ANY, mock.MagicMock())
+        assert not await handle_new_chat_title(
+            update, mock.MagicMock(), mock.MagicMock()
+        )
         assert logger.info.call_args_list == [
             mock.call(
-                "[%s] New chat title: %s",
-                update.effective_chat.id,
-                update.effective_chat.title,
+                "New chat title",
+                chat_id=update.effective_chat.id,
+                title=update.effective_chat.title,
             ),
         ]
         assert not save_to_db.called
@@ -78,9 +80,9 @@ class TestStatusUpdate:
         await handle_new_chat_title(update, mock.ANY, bot)
         assert logger.info.call_args_list == [
             mock.call(
-                "[%s] New chat title: %s",
-                update.effective_chat.id,
-                update.effective_chat.title,
+                "New chat title",
+                chat_id=update.effective_chat.id,
+                title=update.effective_chat.title,
             ),
         ]
         assert not save_to_db.called
@@ -95,9 +97,9 @@ class TestStatusUpdate:
         assert not await handle_new_chat_title(update, mock.ANY, bot)
         assert logger.info.call_args_list == [
             mock.call(
-                "[%s] New chat title: %s",
-                update.effective_chat.id,
-                update.effective_chat.title,
+                "New chat title",
+                chat_id=update.effective_chat.id,
+                title=update.effective_chat.title,
             ),
         ]
         assert not save_to_db.called
@@ -157,7 +159,11 @@ class TestStatusUpdate:
         )
         await is_whitelisted(handle_new_chat_members)(update, MagicMock())
         assert logger.warning.call_args_list == [
-            mock.call("Not whitelisted: %s", update.effective_user)
+            mock.call(
+                "User not whitelisted",
+                username=update.effective_user.username,
+                user_id=update.effective_user.id,
+            )
         ]
 
 
@@ -182,22 +188,13 @@ class TestHandleDex:
         ]
 
     @mock.patch("requests.request", side_effect=DexOnlineError("foo"))
-    async def test_3rd_party_error(self, _, update, logger, __):
+    async def test_3rd_party_error(self, _, update, __, ___):
         update = prepare_update(update, text="/dex 1", mock_class=AsyncMock)
         update.message.reply_text = AsyncMock()
         context = mock.MagicMock(args=["1"])
 
         await handle_dex(update, context)
 
-        assert logger.warning.call_args_list == []
-        assert logger.error.call_args_list == [
-            mock.call(
-                "DexOnlineError: '%s'. Update: '%s'. Context: '%s'",
-                mock.ANY,
-                update.to_dict(),
-                context,
-            )
-        ]
         assert update.message.reply_text.call_args_list == [
             mock.call("Couldn't find definition for '1'", **DEFAULT_REPLY_KWARGS)
         ]

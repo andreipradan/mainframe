@@ -59,8 +59,8 @@ class PnlActionModelViewSet(viewsets.ModelViewSet):
             logger = structlog.get_logger(__name__)
             try:
                 self.pnl_importer_class(file, logger).run()
-            except self.pnl_importer_error_class as e:
-                logger.error("Could not process file", error=str(e))
+            except self.pnl_importer_error_class:
+                logger.exception("Could not process file", file_name=file.name)
                 return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
             request.method = "GET"
             return self.pnl(request, *args, **kwargs)

@@ -53,8 +53,8 @@ class LightsInline(BaseInlines):
     def toggle(cls, update, ip):
         try:
             response = LightsClient.toggle(ip)
-        except LightsException as e:
-            logger.error(str(e))
+        except LightsException:
+            logger.exception("Error toggling light", ip=ip)
             return ""
 
         logger.info("Light toggled", ip=ip, response=str(response))

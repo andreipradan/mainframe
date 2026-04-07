@@ -146,8 +146,7 @@ class Command(BaseCommand):
             "Outages fetched",
             addresses=addresses,
             branch=branch.title(),
-            count=len(outages),
-            totals={
+            counts={
                 "county": len(county_outages),
                 "filtered": len(outages),
                 "all": len(all_outages),

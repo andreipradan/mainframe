@@ -37,8 +37,8 @@ async def fetch(session, sem, url):
                     else:
                         raise ValueError(msg)
                 return await response.text(), url
-        except aiohttp.client_exceptions.ClientConnectorError as e:
-            logger.error("Error fetching URL", url=url, error=str(e))
+        except aiohttp.client_exceptions.ClientConnectorError:
+            logger.exception("Failed to fetch meals", url=url)
             return "", url
 
 

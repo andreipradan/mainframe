@@ -31,12 +31,9 @@ class GoogleCloudStorageClient:
         bucket = self.client.bucket(config("GOOGLE_STORAGE_BACKUP_BUCKET"))
         try:
             bucket.blob(destination).upload_from_filename(source, if_generation_match=0)
-        except ValueError as e:
-            self.logger.error(
-                "Error uploading blob",
-                destination=destination,
-                error=str(e),
-                source=source,
+        except ValueError:
+            self.logger.exception(
+                "Error uploading blob", destination=destination, source=source
             )
         else:
             self.logger.info("Upload completed", destination=destination, source=source)
@@ -50,10 +47,8 @@ class GoogleCloudStorageClient:
         blob = bucket.blob(destination)
         try:
             blob.upload_from_string(string)
-        except ValueError as e:
-            self.logger.error(
-                "Error uploading blob", destination=destination, error=str(e)
-            )
+        except ValueError:
+            self.logger.exception("Error uploading blob", destination=destination)
         else:
             self.logger.info("Upload completed", destination=destination)
             bucket.copy_blob(blob, bucket, destination.replace(f"{prefix}_", "latest_"))

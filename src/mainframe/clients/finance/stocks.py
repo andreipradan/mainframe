@@ -60,7 +60,7 @@ class StockPnLImporter:
                 ignore_conflicts=True,
             )
         except (IntegrityError, ValidationError) as e:
-            self.logger.error(str(e))
+            self.logger.exception("Error importing pnl records")
             raise StockImportError(e) from e
 
         self.logger.info("Imported pnl records", count=len(results))
@@ -102,8 +102,8 @@ class StockTransactionsImporter:
                 update_fields=["price_per_share", "quantity", "ticker"],
                 unique_fields=["date", "currency", "fx_rate", "total_amount", "type"],
             )
-        except (IntegrityError, ValidationError) as e:
-            self.logger.error("Error importing stock transactions", error=str(e))
+        except (IntegrityError, ValidationError):
+            self.logger.exception("Error importing stock transactions")
         else:
             self.logger.info("Imported stock transactions", count=len(results))
 

@@ -77,8 +77,8 @@ async def fetch(session, sem, url, categories):
                     err = f"Unexpected status for {url} ({response.status})"
                     raise CommandError(err)
                 return await response.text(), url, categories
-        except aiohttp.client_exceptions.ClientConnectorError as e:
-            logger.error("Error fetching URL", url=url, error=str(e))
+        except aiohttp.client_exceptions.ClientConnectorError:
+            logger.exception("Error fetching URL", url=url)
             return "", url, []
 
 

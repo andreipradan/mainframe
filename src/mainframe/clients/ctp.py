@@ -153,8 +153,13 @@ class CTPClient:
                         msg = f"Unexpected status for {url}. Status: {response.status}"
                         raise ValueError(msg)
                     return await response.text(), line, occ, url
-            except aiohttp.client_exceptions.ClientConnectorError as e:
-                self.logger.error(e)
+            except aiohttp.client_exceptions.ClientConnectorError:
+                self.logger.exception(
+                    "Failed to fetch transit line schedule",
+                    line=line,
+                    occurrence=occ,
+                    url=url,
+                )
                 return "", url
 
     async def request_many(self, schedules):

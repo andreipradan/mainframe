@@ -1,9 +1,9 @@
 import json
-import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import requests
+import structlog
 from bs4 import BeautifulSoup
 from django.conf import settings
 
@@ -15,7 +15,7 @@ from mainframe.events.constants import (
 from mainframe.events.models import Event
 from mainframe.sources.models import Source
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def parse_datetime(date_str):
@@ -65,10 +65,10 @@ class EventsClient:
         )
         if error:
             logger.error(
-                "[events][%s] Failed to fetch events from: %s. (%s)",
-                self.source.name,
-                url,
-                error,
+                "Failed to fetch events",
+                error=str(error),
+                source=self.source.name,
+                url=url,
             )
             return []
 

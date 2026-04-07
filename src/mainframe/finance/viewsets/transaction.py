@@ -66,8 +66,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
         logger = structlog.get_logger(__name__)
         try:
             import_statement(file, logger)
-        except StatementImportError as e:
-            logger.error("Could not process file", error=str(e))
+        except StatementImportError:
+            logger.exception("Could not process file", file_name=file.name)
             return Response(
                 f"Invalid file: {file.name}", status=status.HTTP_400_BAD_REQUEST
             )

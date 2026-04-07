@@ -56,8 +56,12 @@ def reply(update, text, **kwargs):
             text[:1000] + ("" if len(text) <= 1000 else "[truncated]"),  # noqa: PLR2004
             **kwargs,
         )
-    except telegram.error.BadRequest as e:
-        logger.exception("Error replying to message", error=str(e))
+    except telegram.error.BadRequest:
+        logger.exception(
+            "Error replying to message",
+            username=update.effective_user.username,
+            user_id=update.effective_user.id,
+        )
     return ""
 
 

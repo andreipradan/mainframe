@@ -21,10 +21,9 @@ async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
             parse_mode=ParseMode.HTML,
         )
     except telegram.error.BadRequest as e:
-        logger.error(
+        logger.exception(
             "Error editing message",
             chat_id=chat_id,
-            error=str(e),
             message_id=message_id,
             text=text,
         )

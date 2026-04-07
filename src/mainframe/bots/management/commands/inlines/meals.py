@@ -176,7 +176,9 @@ class MealsInline(BaseInlines):
 
         if not update.callback_query:
             user = update.message.from_user
-            logger.info("User started conversation", user=user.username)
+            logger.info(
+                "User started conversation", username=user.username, user_id=user.id
+            )
 
             return update.message.reply_text(
                 (

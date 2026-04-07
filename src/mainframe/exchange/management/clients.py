@@ -86,7 +86,7 @@ class BNR(BaseExchange):
                 try:
                     value = Decimal(tag.text)
                 except decimal.InvalidOperation:
-                    self.logger.error(
+                    self.logger.exception(
                         "Invalid rate found",
                         currency=currency,
                         origin_currency=orig_currency,
@@ -132,7 +132,7 @@ class ECB(BaseExchange):
                 try:
                     value = Decimal(tag.attrib["rate"])
                 except decimal.InvalidOperation:
-                    self.logger.error(
+                    self.logger.exception(
                         "Invalid EUR rate found",
                         currency=currency,
                         date=date,

@@ -271,13 +271,13 @@ def import_statement(file: str | InMemoryUploadedFile, logger):
     try:
         results = parser.run()
     except (IndexError, ValueError) as e:
-        logger.error(e)
+        logger.exception("Failed to import statements")
         raise StatementImportError(e) from e
 
     try:
         transactions = Transaction.objects.bulk_create(results)
     except (IntegrityError, ValidationError) as e:
-        logger.error(e)
+        logger.exception("Failed to create transaction records")
         raise StatementImportError(e) from e
 
     backup_finance_model(model="Transaction")

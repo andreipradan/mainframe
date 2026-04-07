@@ -106,7 +106,9 @@ class SavedMessagesInlines(BaseInlines):
 
         if not update.callback_query:
             user = update.message.from_user
-            logger.info("User started conversation", user=user.username)
+            logger.info(
+                "User started conversation", username=user.username, user_id=user.id
+            )
             try:
                 return await update.message.reply_text(
                     welcome_message.format(name=user.full_name),
@@ -114,8 +116,10 @@ class SavedMessagesInlines(BaseInlines):
                         is_top_level=True, last_page=last_page
                     ),
                 )
-            except telegram.error.BadRequest as e:
-                logger.error("Error replying to message", error=str(e))
+            except telegram.error.BadRequest:
+                logger.exception(
+                    "Error replying to message", username=user.username, user_id=user.id
+                )
                 return ""
 
         message = update.callback_query.message

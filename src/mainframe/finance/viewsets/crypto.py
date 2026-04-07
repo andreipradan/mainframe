@@ -31,8 +31,8 @@ class CryptoViewSet(PnlActionModelViewSet):
         logger = structlog.get_logger(__name__)
         try:
             CryptoTransactionsImporter(file, logger).run()
-        except CryptoImportError as e:
-            logger.error("Could not process file", error=str(e))
+        except CryptoImportError:
+            logger.exception("Could not process file", file_name=file.name)
             return Response(
                 f"Invalid file: {file.name}", status=status.HTTP_400_BAD_REQUEST
             )

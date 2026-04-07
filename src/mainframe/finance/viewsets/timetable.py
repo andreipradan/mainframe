@@ -20,7 +20,7 @@ class TimetableViewSet(viewsets.ModelViewSet):
         logger = structlog.get_logger(__name__)
         try:
             import_timetable(file, logger)
-        except TimetableImportError as e:
-            logger.error("Could not process file", error=str(e))
+        except TimetableImportError:
+            logger.exception("Could not process file", file_name=file.name)
             return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
         return self.list(request, *args, **kwargs)

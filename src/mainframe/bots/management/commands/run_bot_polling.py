@@ -43,7 +43,11 @@ def is_whitelisted(func):
                 ],
             )
         except Bot.DoesNotExist:
-            logger.warning("User not whitelisted", user=str(update.effective_user))
+            logger.warning(
+                "User not whitelisted",
+                username=update.effective_user.username,
+                user_id=update.effective_user.id,
+            )
             return None
         return await func(update, context, bot=bot, *args, **kwargs)  # noqa: B026
 
@@ -88,7 +92,7 @@ async def handle_chat_id(update: Update, *_, **__):
     return await reply(update, f"Chat ID: {update.effective_chat.id}")
 
 
-async def handle_dex(update, context: CallbackContext, **__):
+async def handle_dex(update, context: CallbackContext, **__) -> None:
     if len(context.args) != 1 or not (word := context.args[0]):
         await reply(
             update,
@@ -99,16 +103,10 @@ async def handle_dex(update, context: CallbackContext, **__):
 
     try:
         word, definition = dexonline.fetch_definition(word=word)
-    except dexonline.DexOnlineNotFoundError:
-        logger.warning("DexOnline - word not found", word=word)
-        return await reply(update, f"Couldn't find definition for '{word}'")
-    except dexonline.DexOnlineError as e:
-        logger.error(
-            "DexOnlineError fetching definition",
-            error=str(e),
-        )
-        return await reply(update, f"Couldn't find definition for '{word}'")
-    return await reply(update, text=f"{word}: {definition}")
+    except (dexonline.DexOnlineNotFoundError, dexonline.DexOnlineError):
+        await reply(update, f"Couldn't find definition for '{word}'")
+        return
+    await reply(update, text=f"{word}: {definition}")
 
 
 async def handle_earthquake(update, context: CallbackContext, bot, **__):

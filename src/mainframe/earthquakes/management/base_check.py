@@ -63,11 +63,11 @@ class BaseEarthquakeCommand:
 
         try:
             instance = Bot.objects.get(additional_data__earthquake__isnull=False)
-        except OperationalError as e:
-            logger.error(str(e))
+        except OperationalError:
+            logger.exception("Failed to get the bot instance with earthquake config")
             return
         except Bot.DoesNotExist:
-            logger.error("No bots with earthquake config")
+            logger.exception("No bots with earthquake config")
             return
 
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]

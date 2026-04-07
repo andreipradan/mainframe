@@ -90,7 +90,7 @@ class CryptoPnLImporter:
                 ],
             )
         except (IntegrityError, ValidationError) as e:
-            self.logger.error(str(e))
+            self.logger.exception("Failed to create crypto PnL records")
             raise CryptoImportError(e) from e
 
         self.logger.info("Imported crypto pnl records", count=len(results))
@@ -141,8 +141,8 @@ class CryptoTransactionsImporter:
                 update_fields=["currency", "fees", "price", "value"],
                 unique_fields=["date", "quantity", "symbol", "type"],
             )
-        except (IntegrityError, ValidationError) as e:
-            self.logger.error(str(e))
+        except (IntegrityError, ValidationError):
+            self.logger.exception("Failed to create crypto transaction records")
         else:
             self.logger.info("Imported crypto transactions", count=len(results))
 

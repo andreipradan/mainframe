@@ -146,7 +146,7 @@ def import_timetable(file, logger):
     try:
         timetable.save()
     except (IntegrityError, ValidationError, ValueError) as e:
-        logger.error(str(e))
+        logger.exception("Failed to create timetable record")
         raise TimetableImportError from e
 
     backup_finance_model(model="Timetable")

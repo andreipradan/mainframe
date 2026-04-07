@@ -249,7 +249,7 @@ class BusInline(BaseInlines):
         markup = cls.get_markup(line_type, lines, count, last_page, int(page))
 
         if not update.callback_query:
-            logger.info("User started conversation", user=user.full_name)
+            logger.info("User started conversation", username=user.username)
             return update.message.reply_text(
                 f"Welcome {user.full_name}\nChoose your favorite line",
                 reply_markup=markup,

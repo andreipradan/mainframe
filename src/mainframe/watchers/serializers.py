@@ -33,7 +33,7 @@ class WatcherSerializer(ScheduleTaskIsRenamedSerializer):
     def get_redis(obj):
         try:
             result = json.loads(get_redis_client().get(f"tasks.{obj.name}") or "{}")
-        except redis.exceptions.ConnectionError as e:
-            logger.error("Error in WatcherSerializer.get_redis", error=str(e))
+        except redis.exceptions.ConnectionError:
+            logger.exception("Error in WatcherSerializer.get_redis", obj_name=obj.name)
             return {}
         return result
