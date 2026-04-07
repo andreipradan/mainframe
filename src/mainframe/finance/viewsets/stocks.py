@@ -31,7 +31,7 @@ class StocksViewSet(PnlActionModelViewSet):
             StockTransactionsImporter(file, logger).run()
         except StockImportError:
             logger.exception("Could not process file", file_name=file.name)
-            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+            return Response(f"Invalid file: {file.name}", status.HTTP_400_BAD_REQUEST)
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):

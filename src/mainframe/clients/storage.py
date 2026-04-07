@@ -72,7 +72,7 @@ class RedisClient:
                     value = zlib.decompress(value)
                 return ast.literal_eval(value.decode())
         except redis.exceptions.ConnectionError:
-            self.logger.exception("Error connecting to Redis")
+            self.logger.exception("Error connecting to Redis", key=key)
 
     def ping(self):
         return self.client.ping()

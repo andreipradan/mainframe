@@ -61,6 +61,8 @@ class PnlActionModelViewSet(viewsets.ModelViewSet):
                 self.pnl_importer_class(file, logger).run()
             except self.pnl_importer_error_class:
                 logger.exception("Could not process file", file_name=file.name)
-                return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f"Invalid file: {file.name}", status.HTTP_400_BAD_REQUEST
+                )
             request.method = "GET"
             return self.pnl(request, *args, **kwargs)

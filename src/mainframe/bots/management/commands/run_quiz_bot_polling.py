@@ -249,7 +249,7 @@ class Handler:
             )
         except GeminiError:
             logger.exception("Error generating questions")
-            return query.edit_message_text(
+            return await query.edit_message_text(
                 "Eroare la generarea intrebarilor",
                 parse_mode=ParseMode.HTML,
                 reply_markup=get_markup(),
