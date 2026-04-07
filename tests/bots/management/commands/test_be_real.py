@@ -10,9 +10,8 @@ from mainframe.crons.models import Cron
 class TestCommand:
     @mock.patch("mainframe.crons.models.schedule_task")
     @mock.patch("mainframe.bots.management.commands.be_real.send_telegram_message")
-    @mock.patch("logging.getLogger")
     @mock.patch("environ.Env")
-    def test_be_real(self, _, __, send_mock, schedule_cron_mock):
+    def test_be_real(self, _, send_mock, schedule_cron_mock):
         call_command("be_real")
         assert send_mock.call_args_list == [
             mock.call(chat_id=mock.ANY, text=mock.ANY, disable_notification=False),
