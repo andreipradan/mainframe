@@ -203,8 +203,13 @@ async def handle_process_message(
     )
     try:
         response = generate_content(prompt=text, history=history, file_path=file_path)
-    except GeminiError as e:
-        logger.exception("Error generating content", error=str(e), text=text)
+    except GeminiError:
+        logger.exception(
+            "Error generating content",
+            chat_id=update.effective_chat.id,
+            username=update.effective_user.username,
+            user_id=update.effective_user.id,
+        )
         await reply(update, "Got an error trying to generate a response")
     else:
         history.append({"role": "model", "parts": response})
@@ -282,7 +287,9 @@ async def reply(update: Update, text: str, **kwargs):
                 char=text[location],
             )
             return await reply(
-                update, f"{text[:location]}\\{text[location]}{text[location + 1 :]}"
+                update,
+                f"{text[:location]}\\{text[location]}{text[location + 1 :]}",
+                **default_kwargs,
             )
         logger.warning("Couldn't send markdown", text=text, error=str(e))
         try:
@@ -336,7 +343,7 @@ class Command(BaseCommand):
         logger.info("Starting bot polling")
         config = environ.Env()
         if not (token := config("TELEGRAM_TOKEN")):
-            logger.error("Telegram token env variable not found")
+            logger.error("TELEGRAM_TOKEN not set on env")
             return
 
         app = Application.builder().token(token).build()

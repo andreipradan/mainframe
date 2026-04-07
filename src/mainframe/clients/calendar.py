@@ -145,8 +145,7 @@ class CalendarClient:
                 )
                 .execute()
             )
-            etag = self.redis.get(f"calendar:{event_id}")
-            if response["etag"] != etag:
+            if response["etag"] != self.redis.get(f"calendar:{event_id}"):
                 self.handle_notification(response, event, is_update=True)
                 self.logger.info(
                     "Event updated",
@@ -174,7 +173,3 @@ class CalendarClient:
                     )
             else:
                 self.logger.exception("Failed to update event", event_id=event_id)
-        else:
-            self.logger.info(
-                "Event updated", location=event.location, start=event.start
-            )

@@ -44,7 +44,9 @@ class Command(BaseCommand):
             ]
 
         logger.info(
-            "Got %d character results. Split in %d batches.", results_size, batches_no
+            "Fetched sport events",
+            results_size=results_size,
+            number_of_batches=batches_no,
         )
         if batches_no > 10:  # noqa: PLR2004
             logger.warning(

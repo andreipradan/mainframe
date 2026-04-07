@@ -247,8 +247,8 @@ class Handler:
                 max_output_tokens=2000,
                 temperature=0.5,
             )
-        except GeminiError as e:
-            logger.exception("Error generating questions", error=str(e))
+        except GeminiError:
+            logger.exception("Error generating questions")
             return query.edit_message_text(
                 "Eroare la generarea intrebarilor",
                 parse_mode=ParseMode.HTML,
@@ -257,8 +257,8 @@ class Handler:
 
         try:
             quiz["questions"] = json.loads(response)["data"]
-        except (json.JSONDecodeError, IndexError) as e:
-            logger.exception("Error processing questions", error=str(e))
+        except (json.JSONDecodeError, IndexError):
+            logger.exception("Error processing questions")
             return await query.edit_message_text(
                 "Eroare la procesarea intrebarilor",
                 parse_mode=ParseMode.HTML,
@@ -374,7 +374,7 @@ class Command(BaseCommand):
         logger.info("Starting quiz bot polling")
         config = environ.Env()
         if not (token := config("TELEGRAM_QUIZ_TOKEN")):
-            logger.error("Missing telegram quiz bot token")
+            logger.error("TELEGRAM_QUIZ_TOKEN not set on env")
             return
 
         client = BotClient(logger)

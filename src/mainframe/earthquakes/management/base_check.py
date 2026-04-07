@@ -47,6 +47,7 @@ class BaseEarthquakeCommand:
 
     def handle(self, *_, **__):
         logger = structlog.get_logger(self.source)
+        logger.bind(source=self.source)
         healthchecks.ping(self.source)
         response, error = fetch(
             self.url,
@@ -56,9 +57,9 @@ class BaseEarthquakeCommand:
         )
         if error:
             if self.source == Earthquake.SOURCE_INFP:
-                logger.warning(str(error))
+                logger.warning("Fetching INFP earthquakes failed", error=str(error))
             else:
-                logger.error(str(error))
+                logger.error("Fetching earthquakes failed", error=str(error))
             return
 
         try:
@@ -73,7 +74,7 @@ class BaseEarthquakeCommand:
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
             self.set_last_check(instance)
-            logger.info("Done")
+            logger.info("No new events!")
             return
 
         Earthquake.objects.bulk_create(
@@ -116,7 +117,6 @@ class BaseEarthquakeCommand:
             "Fetching earthquake data complete!",
             count=len(events),
             min_magnitude=min_magnitude,
-            source=self.source,
         )
 
     def get_kwargs(self) -> dict:

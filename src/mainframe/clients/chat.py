@@ -25,7 +25,7 @@ async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
             "Error editing message",
             chat_id=chat_id,
             message_id=message_id,
-            text=text,
+            text_length=len(text or ""),
         )
         return e.message
 
@@ -71,7 +71,7 @@ def send_telegram_message(text, retries_on_network_error=3, **kwargs):
                 text=text,
             )
             text = f"{text[:location]}{text[location + 1 :]}"
-            return send_telegram_message(text, chat_id=chat_id, logger=msg_logger)
+            return send_telegram_message(text, logger=msg_logger, **bot_kwargs)
         msg_logger.warning(
             "Error sending message. Trying unformatted",
             chat_id=chat_id,

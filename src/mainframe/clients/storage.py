@@ -4,6 +4,7 @@ import zlib
 import environ
 import redis
 import structlog
+from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import storage
 
 config = environ.Env()
@@ -31,7 +32,7 @@ class GoogleCloudStorageClient:
         bucket = self.client.bucket(config("GOOGLE_STORAGE_BACKUP_BUCKET"))
         try:
             bucket.blob(destination).upload_from_filename(source, if_generation_match=0)
-        except ValueError:
+        except GoogleAPICallError:
             self.logger.exception(
                 "Error uploading blob", destination=destination, source=source
             )
@@ -47,7 +48,7 @@ class GoogleCloudStorageClient:
         blob = bucket.blob(destination)
         try:
             blob.upload_from_string(string)
-        except ValueError:
+        except GoogleAPICallError:
             self.logger.exception("Error uploading blob", destination=destination)
         else:
             self.logger.info("Upload completed", destination=destination)
@@ -70,8 +71,8 @@ class RedisClient:
                 if compressed:
                     value = zlib.decompress(value)
                 return ast.literal_eval(value.decode())
-        except redis.exceptions.ConnectionError as e:
-            self.logger.exception("Error connecting to Redis", error=str(e))
+        except redis.exceptions.ConnectionError:
+            self.logger.exception("Error connecting to Redis")
 
     def ping(self):
         return self.client.ping()
