@@ -1,16 +1,16 @@
 import asyncio
-import logging
 
 import environ
 import github
 import logfire
 import requests
+import structlog
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from mainframe.clients.chat import send_telegram_message
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_ngrok_url(name="mainframe"):
@@ -38,7 +38,7 @@ def set_github_hook(ngrok_url):
     repository = g.get_repo(f"{env('GITHUB_USERNAME')}/mainframe")
     hooks = repository.get_hooks()
 
-    logger.warning("[GitHub] Deleting all hooks [%d]", hooks.totalCount)
+    logger.warning("Deleting all GitHub hooks", count=hooks.totalCount)
     for hook in hooks:
         hook.delete()
 
@@ -57,4 +57,6 @@ class Command(BaseCommand):
 
         set_github_hook(ngrok_url)
         asyncio.run(send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}"))
-        logger.info("[Hooks] Done")
+        logger.info(
+            "GitHub hook set successfully and ngrok is up!", ngrok_url=ngrok_url
+        )

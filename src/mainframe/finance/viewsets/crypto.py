@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.db.models import Count, Q, Sum
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
@@ -29,11 +28,11 @@ class CryptoViewSet(PnlActionModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
         try:
             CryptoTransactionsImporter(file, logger).run()
-        except CryptoImportError as e:
-            logger.error("Could not process file. (%s)", e)
+        except CryptoImportError:
+            logger.exception("Could not process file", file_name=file.name)
             return Response(
                 f"Invalid file: {file.name}", status=status.HTTP_400_BAD_REQUEST
             )

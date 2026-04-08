@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.db.models import Q, Sum
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -57,11 +56,13 @@ class PnlActionModelViewSet(viewsets.ModelViewSet):
 
         if request.method == "POST":
             file = request.FILES["file"]
-            logger = logging.getLogger(__name__)
+            logger = structlog.get_logger(__name__)
             try:
                 self.pnl_importer_class(file, logger).run()
-            except self.pnl_importer_error_class as e:
-                logger.error("Could not process file. (%s)", e)
-                return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+            except self.pnl_importer_error_class:
+                logger.exception("Could not process file", file_name=file.name)
+                return Response(
+                    f"Invalid file: {file.name}", status.HTTP_400_BAD_REQUEST
+                )
             request.method = "GET"
             return self.pnl(request, *args, **kwargs)

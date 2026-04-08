@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -15,10 +14,10 @@ class Command(BaseCommand):
         parser.add_argument("--model", type=str, default="")
 
     def handle(self, *_, **options):
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
 
         app = options["app"]
-        healthchecks.ping(logger, f"{app.upper()}_BACKUP")
+        healthchecks.ping(f"{app.upper()}_BACKUP")
 
         file_name = f"{timezone.now():%Y_%m_%d_%H_%M_%S}.json.gz"
 
@@ -30,5 +29,5 @@ class Command(BaseCommand):
         client = GoogleCloudStorageClient(logger)
         client.upload_blob_from_file(file_name, destination)
         run_cmd(f"rm {file_name}")
-        logger.info("Done")
+        logger.info("Backup complete!", app=app, destination=destination, model=model)
         self.stdout.write(self.style.SUCCESS("Done"))

@@ -1,7 +1,7 @@
 import asyncio
-import logging
 from typing import Callable
 
+import structlog
 import telegram
 from asgiref.sync import sync_to_async
 from telegram.constants import ParseMode
@@ -20,7 +20,10 @@ def is_whitelisted(func):
                 ],
             )
         except Bot.DoesNotExist:
-            self.logger.warning("Not whitelisted: %s", update.effective_user)
+            self.logger.warning(
+                "User not whitelisted",
+                username=update.effective_user.username or update.effective_user.id,
+            )
             return
         return await func(self, update, context)
 
@@ -38,7 +41,7 @@ class BaseBotMeta(type):
 
 class BaseBotClient(metaclass=BaseBotMeta):
     def __init__(self, logger=None):
-        self.logger = logger or logging.getLogger(__name__)
+        self.logger = logger or structlog.get_logger(__name__)
         self.redis = RedisClient(self.logger)
 
     async def reply(self, message: telegram.Message, text: str, **kwargs):
@@ -57,17 +60,21 @@ class BaseBotClient(metaclass=BaseBotMeta):
             if "can't find end of the entity" in str(e):
                 location = int(e.message.split()[-1])
                 self.logger.warning(
-                    "Error parsing markdown - skipping '%s'", text[location]
+                    "Error parsing markdown - skipping character",
+                    location=location,
+                    char=text[location],
                 )
                 return await self.reply(
                     message,
                     f"{text[:location]}\\{text[location]}{text[location + 1 :]}",
                 )
-            self.logger.warning("Couldn't send markdown '%s'. (%s)", text, e)
+            self.logger.warning("Couldn't send markdown", text=text, error=str(e))
             try:
                 await message.reply_text(text)
             except telegram.error.TelegramError as err:
-                self.logger.exception("Error sending unformatted message. (%s)", err)
+                self.logger.exception(
+                    "Error sending unformatted message", error=str(err)
+                )
                 await message.reply_text("Got an error trying to send response")
 
     async def safe_send(self, send_message: Callable, **kwargs):
@@ -77,7 +84,10 @@ class BaseBotClient(metaclass=BaseBotMeta):
             if isinstance(err, telegram.error.RetryAfter):
                 seconds = err.retry_after + 1
                 self.logger.warning(
-                    "%s - retrying in %d seconds", err, err.retry_after, extra=kwargs
+                    "Error sending message - rate limited, retrying in a few seconds",
+                    error=str(err),
+                    extra=kwargs,
+                    seconds=seconds,
                 )
                 await asyncio.sleep(seconds)
                 return await send_message(send_message, **kwargs)

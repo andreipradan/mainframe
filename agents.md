@@ -392,7 +392,7 @@ Key fixtures:
     for attempt in range(3):
         ...
     ```
-- **Logging**: Use `logging.getLogger(__name__)` per module
+- **Logging**: Use `structlog.get_logger(__name__)` per module
 - **No Hardcoded Values**: Use environment variables and settings
 - **DRY Principle**: Extract common logic into utilities and base classes
 

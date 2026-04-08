@@ -9,7 +9,6 @@ from tests.factories.source import SourceFactory
 @pytest.mark.django_db
 class TestFetchEBEventsCommand:
     def setup_method(self):
-        # Create a test source for EB
         self.source = SourceFactory.create(name="eb", url="https://api.example.com")
 
     @mock.patch("mainframe.events.management.commands.fetch_events.CLIENT_MAPPING")

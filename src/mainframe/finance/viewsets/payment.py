@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from rest_framework import status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
@@ -23,11 +22,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
         try:
             PaymentsImporter(file, logger).run()
-        except PaymentImportError as e:
-            logger.error("Could not process file. (%s)", e)
+        except PaymentImportError:
+            logger.exception("Could not process file", file_name=file.name)
             return Response(
                 f"Invalid file: {file.name}", status=status.HTTP_400_BAD_REQUEST
             )

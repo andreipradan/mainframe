@@ -104,7 +104,7 @@ class PaymentsImporter:
         try:
             Payment.objects.bulk_create(payments, ignore_conflicts=True)
         except (IntegrityError, ValidationError) as e:
-            self.logger.error(str(e))
+            self.logger.exception("Failed to create payment records")
             raise PaymentImportError from e
 
         backup_finance_model(model="Payment")

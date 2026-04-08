@@ -162,14 +162,16 @@ def test_event_callback_other_error_logs(monkeypatch, patch_env_and_clients):
     client = calendar.CalendarClient(logger=log)
     client.events = {"abc": DummyEvent(id="abc")}
 
-    client.event_callback("abc", {}, ValueError("boom"))
+    client.event_callback("abc", {}, ValueError("err"))
 
-    assert log.error.call_args_list == [
+    assert log.bind.call_args_list == [
+        mock.call(calendar_id="fake", source=None),
+    ]
+    assert log.bind().error.call_args_list == [
         mock.call(
-            "%s[create][%s] Request failed: %s",
-            client.prefix,
-            "abc",
-            mock.ANY,
+            "Calendar event creation failed",
+            request_id="abc",
+            exception="err",
         )
     ]
 
@@ -291,12 +293,7 @@ def test_update_logs_other_http_errors(patch_env_and_clients):
 
     client.update("evt")
 
-    # Should log the error with update context
-    assert log.error.call_args_list == [
-        mock.call(
-            "%s[update][%s] Failed to update: %s",
-            "[Calendar]",
-            mock.ANY,
-            err,
-        )
+    assert log.bind.call_args_list == [mock.call(calendar_id="fake", source=None)]
+    assert log.bind().exception.call_args_list == [
+        mock.call("Failed to update event", event_id=event.id)
     ]

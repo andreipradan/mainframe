@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.core.management import BaseCommand, CommandError
 
 from mainframe.clients.events import AEClient, EBClient, IBClient, ZnClient
@@ -7,14 +6,13 @@ from mainframe.events.constants import CATEGORY_ID_BY_NAME
 from mainframe.events.models import Event
 from mainframe.sources.models import Source
 
-logger = logging.getLogger(__name__)
-
 CLIENT_MAPPING = {
     "ae": AEClient,
     "eb": EBClient,
     "ib": IBClient,
     "zn": ZnClient,
 }
+logger = structlog.get_logger(__name__)
 
 
 class Command(BaseCommand):
@@ -45,9 +43,7 @@ class Command(BaseCommand):
                 raise CommandError(f"Invalid category: {category}")
             kwargs["category_id"] = category_id
 
-        self.stdout.write(
-            f"[events][{source}] Fetching {f'{category} ' if category else ''}events..."
-        )
+        logger.info("Fetching events...", source=source.name, category=category)
 
         client_class = CLIENT_MAPPING.get(source.name.lower())
         if not client_class:
@@ -74,17 +70,8 @@ class Command(BaseCommand):
                 ],
                 unique_fields=["url"],
             )
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"[events][{source.name}] Successfully fetched and saved "
-                    f"{len(events_to_create)} {f'{category} ' if category else ''}"
-                    f"events"
-                )
+            logger.info(
+                "Events fetched successfully!", source=source.name, category=category
             )
         else:
-            self.stdout.write(
-                self.style.WARNING(
-                    f"[events][{source.name}] "
-                    f"No {f'{category} ' if category else ''}events found"
-                )
-            )
+            logger.warning("No events found", source=source.name, category=category)

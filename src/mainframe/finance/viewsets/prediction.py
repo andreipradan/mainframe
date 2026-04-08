@@ -1,7 +1,7 @@
 import json
-import logging
 
 import redis
+import structlog
 from django.http import Http404, JsonResponse
 from huey.signals import (
     SIGNAL_CANCELED,
@@ -20,7 +20,7 @@ from mainframe.core.tasks import get_redis_client, log_status
 from mainframe.finance.models import Category, Transaction
 from mainframe.finance.tasks import predict, train
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 FINAL_STATUSES = [
     SIGNAL_CANCELED,

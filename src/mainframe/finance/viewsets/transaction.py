@@ -1,6 +1,6 @@
-import logging
 from operator import itemgetter
 
+import structlog
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Count, F, Sum
 from django.http import JsonResponse
@@ -63,11 +63,11 @@ class TransactionViewSet(viewsets.ModelViewSet):
     @action(methods=["post"], detail=False, url_path="upload")
     def upload(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
         try:
             import_statement(file, logger)
-        except StatementImportError as e:
-            logger.error("Could not process file. (%s)", e)
+        except StatementImportError:
+            logger.exception("Could not process file", file_name=file.name)
             return Response(
                 f"Invalid file: {file.name}", status=status.HTTP_400_BAD_REQUEST
             )

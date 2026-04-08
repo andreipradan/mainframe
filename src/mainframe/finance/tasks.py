@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from django.conf import settings
 from django.core.management import call_command
 from huey.contrib.djhuey import db_task
@@ -8,14 +7,14 @@ from huey.signals import SIGNAL_ERROR
 from mainframe.core.tasks import log_status
 from mainframe.finance.models import Category, Transaction
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def backup_finance_model(model):
     if settings.ENV != "local":
         backup_finance(model)
         return
-    logger.warning("Attempted to backup '%s' in local env", model)
+    logger.warning("Attempted to backup in local env", model=model)
 
 
 @db_task(expires=30)
@@ -43,7 +42,7 @@ def predict(queryset, logger):
                 progress=f"{progress / 2:.2f}",
             )
 
-    logger.info("Bulk updating %d", len(transactions))
+    logger.info("Bulk updating transactions", count=len(transactions))
     log_status("predict", operation="3/3 saving to db", progress=70)
     Transaction.objects.bulk_update(
         transactions,
@@ -72,5 +71,5 @@ def train(logger):
         log_status("train", status=SIGNAL_ERROR, error="No trained data")
         raise ValueError("No trained data")
     log_status("train", count=count)
-    logger.info("Training on %d confirmed transactions...", count)
+    logger.info("Training on confirmed transactions", count=count)
     return SKLearn.train(pd.DataFrame(qs), logger)  # noqa: F821

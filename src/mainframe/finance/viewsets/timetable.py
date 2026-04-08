@@ -1,5 +1,4 @@
-import logging
-
+import structlog
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -18,10 +17,10 @@ class TimetableViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         file = request.FILES["file"]
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
         try:
             import_timetable(file, logger)
-        except TimetableImportError as e:
-            logger.error("Could not process file. (%s)", e)
-            return Response(f"Invalid file: {file}", status.HTTP_400_BAD_REQUEST)
+        except TimetableImportError:
+            logger.exception("Could not process file", file_name=file.name)
+            return Response(f"Invalid file: {file.name}", status.HTTP_400_BAD_REQUEST)
         return self.list(request, *args, **kwargs)

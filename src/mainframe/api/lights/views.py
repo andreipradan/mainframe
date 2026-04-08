@@ -1,6 +1,6 @@
 import json
-import logging
 
+import structlog
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser
 
 from mainframe.clients.lights import LightsClient, LightsException
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 IP_REGEX = (
@@ -23,7 +23,7 @@ class LightsViewSet(viewsets.ViewSet):
 
     @staticmethod
     def _request(what, **kwargs):
-        logger.info("Lights: %s, args: %s", what, kwargs)
+        logger.info("Lights request", operation=what, **kwargs)
         try:
             data = {"data": getattr(LightsClient, what)(**kwargs)}
             status_code = status.HTTP_200_OK

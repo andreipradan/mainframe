@@ -1,5 +1,3 @@
-import logging
-
 from django.conf import settings
 from huey import crontab
 from huey.contrib.djhuey import HUEY, periodic_task
@@ -12,5 +10,4 @@ from mainframe.clients import healthchecks
 def healthcheck():
     if settings.ENV != "rpi":
         return
-    logger = logging.getLogger(__name__)
-    healthchecks.ping(logger)
+    healthchecks.ping()

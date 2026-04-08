@@ -3,6 +3,7 @@ import logging
 from typing import TypedDict
 from urllib.parse import urljoin
 
+import structlog
 from croniter import croniter
 from django.conf import settings
 from django.db import models
@@ -142,7 +143,7 @@ class Watcher(TimeStampedModel):
         return results[:5]
 
     def run(self):
-        logger = logging.getLogger(__name__)
+        logger = structlog.get_logger(__name__)
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
             matching_cron = (
                 croniter.match(self.cron_notification, timezone.now())
@@ -150,16 +151,16 @@ class Watcher(TimeStampedModel):
                 else True
             )
             if self.pending_data and matching_cron:
-                logger.info("[%s] Sending pending data", self.name)
+                logger.info("Sending pending data", name=self.name)
                 self.send_notification(self.pending_data)
                 self.pending_data = []
                 self.save()
 
             if not (results := self.fetch(logger)):
-                logger.info("[%s] No new items", self.name)
+                logger.info("No new items", name=self.name)
                 return None
 
-            logger.info("[%s] Found new items!", self.name)
+            logger.info("Found new items", name=self.name)
 
             urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")
             is_urgent = any(
@@ -168,15 +169,15 @@ class Watcher(TimeStampedModel):
             )
             if is_urgent or matching_cron:
                 logger.info(
-                    "[%s] Sending notification (is_urgent=%s, matching_cron=%s)",
-                    self.name,
-                    is_urgent,
-                    matching_cron,
+                    "Sending notification.",
+                    is_urgent=is_urgent,
+                    matching_cron=matching_cron,
+                    name=self.name,
                 )
                 self.send_notification(results)
             else:
                 logger.info(
-                    "[%s] Deferring notification to next cron window", self.name
+                    "Deferring notification to next cron window", watcher=self.name
                 )
                 self._accumulate_pending_data(results, logger)
 
@@ -188,7 +189,7 @@ class Watcher(TimeStampedModel):
             }
             self.save()
 
-            logger.info("[%s] Done", self.name)
+            logger.info("Watcher completed", name=self.name)
             return self
 
     def _accumulate_pending_data(self, new_results: list[Link], logger) -> None:
@@ -230,14 +231,13 @@ class Watcher(TimeStampedModel):
                 kept_items.append(item)
                 current_text_length += item_length
             else:
-                # Doesn't fit, we're done accumulating
                 if len(combined) > len(kept_items):
                     dropped_count = len(combined) - len(kept_items)
                     logger.warning(
-                        "[%s] Dropped %d items. Telegram message size limit: %d chars",
-                        self.name,
-                        dropped_count,
-                        TELEGRAM_LIMIT,
+                        "Dropped items because of telegram's message size limit",
+                        watcher=self.name,
+                        dropped_count=dropped_count,
+                        telegram_limit=TELEGRAM_LIMIT,
                     )
                 break
 

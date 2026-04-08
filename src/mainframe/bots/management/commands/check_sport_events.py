@@ -1,6 +1,5 @@
 import asyncio
 import json
-import logging
 import math
 from datetime import datetime
 from unicodedata import normalize
@@ -8,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 import aiohttp
 import environ
+import structlog
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
@@ -15,7 +15,7 @@ from rest_framework import status
 
 from mainframe.clients.chat import send_telegram_message
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(BaseCommand):
@@ -44,10 +44,14 @@ class Command(BaseCommand):
             ]
 
         logger.info(
-            "Got %d character results. Split in %d batches.", results_size, batches_no
+            "Fetched sport events",
+            results_size=results_size,
+            number_of_batches=batches_no,
         )
         if batches_no > 10:  # noqa: PLR2004
-            logger.warning("Too many batches: %s, sending only first 10", batches_no)
+            logger.warning(
+                "Too many batches - only sending the first 10", batches_no=batches_no
+            )
             chunks = chunks[:10]
 
         for i, chunk in enumerate(chunks):
@@ -75,8 +79,8 @@ async def fetch(session, sem, url, categories):
                     err = f"Unexpected status for {url} ({response.status})"
                     raise CommandError(err)
                 return await response.text(), url, categories
-        except aiohttp.client_exceptions.ClientConnectorError as e:
-            logger.error(e)
+        except aiohttp.client_exceptions.ClientConnectorError:
+            logger.exception("Error fetching URL", url=url)
             return "", url, []
 
 

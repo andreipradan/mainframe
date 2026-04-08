@@ -81,14 +81,15 @@ class DevicesClient:
                 if device.is_active and device.mac not in active_macs
             ]
             self.logger.info(
-                "Got %d devices%s",
-                len(devices),
-                f" ({len(new_devices)} new ones)" if new_devices else "",
-                extra={
-                    "new_devices": new_devices,
-                    "went_online": went_online,
-                    "went_offline": went_offline,
+                "Successfully fetched devices",
+                counts={
+                    "total": len(devices),
+                    "new": len(new_devices),
+                    "went_online": len(went_online),
+                    "went_offline": len(went_offline),
                 },
+                went_offline=[str(d) for d in went_offline],
+                went_online=[str(d) for d in went_online],
             )
 
             if went_offline:
@@ -111,9 +112,8 @@ class DevicesClient:
                 )
             except IntegrityError as e:
                 self.logger.exception(
-                    "Error while trying to store devices: %s\n\nDevices to save: %s",
-                    e,
-                    devices,
+                    "Error while trying to store devices",
+                    devices=[str(d) for d in devices],
                 )
                 raise DevicesException(
                     "Error while trying to store devices. Check the logs"

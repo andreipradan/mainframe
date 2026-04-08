@@ -96,7 +96,7 @@ class CTPClient:
                 update_fields=["type", "terminal1", "terminal2"],
                 unique_fields=["name"],
             )
-            self.logger.info("Stored %d transit lines in db", len(lines))
+            self.logger.info("Transit lines created!", count=len(lines))
         return lines
 
     async def fetch_schedules(
@@ -123,7 +123,8 @@ class CTPClient:
                     ]
                 )
         self.logger.info(
-            "Fetching %d schedules for %d transit lines", len(schedules), lines_count
+            "Fetching schedules...",
+            counts={"schedules": len(schedules), "lines": lines_count},
         )
         schedules = [s for s in await self.request_many(schedules) if s]
         if commit:
@@ -137,7 +138,7 @@ class CTPClient:
                 ],
                 unique_fields=list(*Schedule._meta.unique_together),
             )
-            self.logger.info("Stored %d schedules in db", len(schedules))
+            self.logger.info("Schedules created!", count=len(schedules))
         return schedules
 
     async def request(self, session, sem, schedule):
@@ -153,8 +154,13 @@ class CTPClient:
                         msg = f"Unexpected status for {url}. Status: {response.status}"
                         raise ValueError(msg)
                     return await response.text(), line, occ, url
-            except aiohttp.client_exceptions.ClientConnectorError as e:
-                self.logger.error(e)
+            except aiohttp.client_exceptions.ClientConnectorError:
+                self.logger.exception(
+                    "Failed to fetch transit line schedule",
+                    line=line,
+                    occurrence=occ,
+                    url=url,
+                )
                 return "", url
 
     async def request_many(self, schedules):
@@ -170,7 +176,7 @@ class CTPClient:
     def parse_schedule(self, args) -> Optional[Schedule]:  # noqa: C901
         response, line, occ, url = args
         if not response or "<title> 404 Not Found" in response:
-            self.logger.warning("No or 404 in response for %s", url)
+            self.logger.warning("Schedule not found", line=line, occ=occ, url=url)
             return None
 
         rows = [row.strip() for row in response.split("\n") if row.strip()]
@@ -209,5 +215,5 @@ def handle_wrong_date_row(row, logger):
     if row == "24.02.2024v":
         return datetime.strptime(row, "%d.%m.%Yv")
 
-    logger.exception("Unexpected date format %s", row)
+    logger.exception("Unexpected date format", row=row)
     return None

@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -10,8 +9,6 @@ from mainframe.earthquakes.models import Earthquake
 
 
 class Command(BaseEarthquakeCommand, BaseCommand):
-    logger = logging.getLogger(__name__)
-
     source = Earthquake.SOURCE_USGS
     url = r"https://earthquake.usgs.gov/fdsnws/event/1/query?"
 

@@ -1,11 +1,13 @@
 import asyncio
-import logging
 import sys
 import time
 
 import dotenv
+import structlog
 import telegram
 from telegram.constants import ParseMode
+
+logger = structlog.get_logger(__name__)
 
 
 async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
@@ -19,18 +21,23 @@ async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
             parse_mode=ParseMode.HTML,
         )
     except telegram.error.BadRequest as e:
-        logging.error(e)
+        logger.exception(
+            "Error editing message",
+            chat_id=chat_id,
+            message_id=message_id,
+            text_length=len(text or ""),
+        )
         return e.message
 
 
 def send_telegram_message(text, retries_on_network_error=3, **kwargs):
-    logger = kwargs.pop("logger", logging)
+    msg_logger = kwargs.pop("logger", logger)
     config = dotenv.dotenv_values()
     if not (chat_id := config.get("TELEGRAM_CHAT_ID")):
-        logger.error("TELEGRAM_CHAT_ID not set on env")
+        msg_logger.error("TELEGRAM_CHAT_ID not set on env")
         return None
     if not (token := config.get("TELEGRAM_TOKEN")):
-        logger.error("TELEGRAM_TOKEN not set on env")
+        msg_logger.error("TELEGRAM_TOKEN not set on env")
         return None
 
     bot_kwargs = {
@@ -56,14 +63,30 @@ def send_telegram_message(text, retries_on_network_error=3, **kwargs):
 
         if "can't find end of the entity" in str(e):
             location = int(e.message.split()[-1])
-            logger.warning("Error parsing markdown - skipping '%s'", text[location])
-            text = f"{text[location:]}{text[location + 1 :]}"
-            return send_telegram_message(text, chat_id=chat_id, logger=logger)
-        logger.warning("Error sending message. Trying unformatted. (%s)", e)
+            msg_logger.warning(
+                "Error parsing markdown - skipping character",
+                char=text[location],
+                chat_id=chat_id,
+                location=location,
+                text=text,
+            )
+            text = f"{text[:location]}{text[location + 1 :]}"
+            return send_telegram_message(text, logger=msg_logger, **bot_kwargs)
+        msg_logger.warning(
+            "Error sending message. Trying unformatted",
+            chat_id=chat_id,
+            error=str(e),
+            text=text,
+        )
         try:
             return bot.send_message(text=text, **{**bot_kwargs, "parse_mode": None})
         except telegram.error.BadRequest as err:
-            logger.exception("Error sending unformatted message. (%s)", err)
+            msg_logger.exception(
+                "Error sending unformatted message",
+                chat_id=chat_id,
+                error=str(err),
+                text=text,
+            )
 
 
 if __name__ == "__main__":

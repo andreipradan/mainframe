@@ -60,10 +60,10 @@ class StockPnLImporter:
                 ignore_conflicts=True,
             )
         except (IntegrityError, ValidationError) as e:
-            self.logger.error(str(e))
+            self.logger.exception("Error importing pnl records")
             raise StockImportError(e) from e
 
-        self.logger.info("Imported '%d' pnl records", len(results))
+        self.logger.info("Imported pnl records", count=len(results))
         backup_finance_model(model="PnL")
 
 
@@ -102,9 +102,9 @@ class StockTransactionsImporter:
                 update_fields=["price_per_share", "quantity", "ticker"],
                 unique_fields=["date", "currency", "fx_rate", "total_amount", "type"],
             )
-        except (IntegrityError, ValidationError) as e:
-            self.logger.error(str(e))
+        except (IntegrityError, ValidationError):
+            self.logger.exception("Error importing stock transactions")
         else:
-            self.logger.info("Imported '%d' stock transactions", len(results))
+            self.logger.info("Imported stock transactions", count=len(results))
 
         backup_finance_model(model="StockTransaction")

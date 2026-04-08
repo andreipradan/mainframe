@@ -2,9 +2,9 @@ import asyncio
 import datetime
 import itertools
 import json
-import logging
 
 import environ
+import structlog
 import telegram
 from django.core.management import BaseCommand
 from telegram import (
@@ -25,11 +25,7 @@ from telegram.ext import (
 from mainframe.clients.bot import BaseBotClient
 from mainframe.clients.gemini import GeminiError, generate_content
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-logging.getLogger("httpx").setLevel(logging.WARNING)
+logger = structlog.get_logger(__name__)
 
 DEFAULT_CATEGORIES = [
     "Cultură generală",
@@ -140,7 +136,7 @@ class Handler:
         try:
             bot_data = context.bot_data[answer.poll_id]
         except KeyError:
-            logger.info("Old poll")
+            logger.info("Old poll, aborting...")
             return
 
         chat_id = bot_data["chat_id"]
@@ -251,9 +247,9 @@ class Handler:
                 max_output_tokens=2000,
                 temperature=0.5,
             )
-        except GeminiError as e:
-            logger.exception(e)
-            return query.edit_message_text(
+        except GeminiError:
+            logger.exception("Error generating questions")
+            return await query.edit_message_text(
                 "Eroare la generarea intrebarilor",
                 parse_mode=ParseMode.HTML,
                 reply_markup=get_markup(),
@@ -261,8 +257,8 @@ class Handler:
 
         try:
             quiz["questions"] = json.loads(response)["data"]
-        except (json.JSONDecodeError, IndexError) as e:
-            logger.exception(e)
+        except (json.JSONDecodeError, IndexError):
+            logger.exception("Error processing questions")
             return await query.edit_message_text(
                 "Eroare la procesarea intrebarilor",
                 parse_mode=ParseMode.HTML,
@@ -378,7 +374,7 @@ class Command(BaseCommand):
         logger.info("Starting quiz bot polling")
         config = environ.Env()
         if not (token := config("TELEGRAM_QUIZ_TOKEN")):
-            logger.error("Missing telegram quiz bot token")
+            logger.error("TELEGRAM_QUIZ_TOKEN not set on env")
             return
 
         client = BotClient(logger)

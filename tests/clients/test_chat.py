@@ -8,12 +8,15 @@ from mainframe.clients import chat as chat_mod
 
 @pytest.mark.django_db
 class TestSendTelegramMessage:
+    @mock.patch("mainframe.clients.chat.logger")
     @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
-    def test_send_telegram_message_missing_env(self, mock_dotenv, caplog):
+    def test_send_telegram_message_missing_env(self, mock_dotenv, logger_mock):
         mock_dotenv.return_value = {}
         res = chat_mod.send_telegram_message("hi")
         assert res is None
-        assert "TELEGRAM_CHAT_ID not set" in caplog.text
+        assert logger_mock.error.call_args_list == [
+            mock.call("TELEGRAM_CHAT_ID not set on env"),
+        ]
 
     @mock.patch("mainframe.clients.chat.telegram.Bot")
     @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
@@ -31,9 +34,7 @@ class TestSendTelegramMessage:
     @mock.patch("mainframe.clients.chat.time.sleep")
     @mock.patch("mainframe.clients.chat.telegram.Bot")
     @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
-    def test_send_telegram_message_network_retry(
-        self, mock_dotenv, mock_bot_class, mock_sleep
-    ):
+    def test_send_telegram_message_network_retry(self, mock_dotenv, mock_bot_class, _):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
 
         mock_bot_instance = mock.MagicMock()

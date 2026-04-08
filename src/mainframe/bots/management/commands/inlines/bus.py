@@ -1,9 +1,9 @@
-import logging
 import math
 from datetime import datetime
 from typing import List
 from zoneinfo import ZoneInfo
 
+import structlog
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from telegram import InlineKeyboardButton as Button
@@ -14,7 +14,7 @@ from mainframe.clients.chat import edit_message
 from mainframe.clients.ctp import CTPClient
 from mainframe.transit_lines.models import Schedule, TransitLine
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_next_time(times: List[str], now):
@@ -249,7 +249,9 @@ class BusInline(BaseInlines):
         markup = cls.get_markup(line_type, lines, count, last_page, int(page))
 
         if not update.callback_query:
-            logger.info("User %s started the conversation.", user.full_name)
+            logger.info(
+                "User started conversation", username=user.username, user_id=user.id
+            )
             return update.message.reply_text(
                 f"Welcome {user.full_name}\nChoose your favorite line",
                 reply_markup=markup,
