@@ -17,7 +17,6 @@ import RpiApi from '../../api/rpi';
 import Errors from '../shared/Errors';
 import ActivityApi from '../../api/activity';
 import DevicesApi from '../../api/devices';
-import CronsApi from '../../api/crons';
 import {
   doughnutPieOptions,
   getLightsData,
@@ -35,7 +34,6 @@ const Dashboard = () => {
 
   const activity = useSelector((state) => state.activity);
   const bots = useSelector((state) => state.bots);
-  const crons = useSelector((state) => state.crons);
   const devices = useSelector((state) => state.devices);
   const lights = useSelector((state) => state.lights);
 
@@ -76,7 +74,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     !bots.results && dispatch(botsApi.getList());
-    !crons.results && dispatch(new CronsApi(token).getList());
     !devices.results && dispatch(devicesApi.getList());
     ngrokToken && !lights.results && dispatch(lightsApi.getList());
     !activity.results && dispatch(activityApi.getList());
