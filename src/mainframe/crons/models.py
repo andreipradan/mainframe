@@ -1,6 +1,5 @@
 import logging
 
-import structlog
 from django.core.management import call_command, get_commands
 from django.db import models
 from django.db.models import signals
@@ -31,7 +30,7 @@ class Cron(TimeStampedModel):
 
     def run(self) -> None:
         app = get_commands().get(self.command, "django.core")
-        logger = structlog.get_logger(f"{app}.management.commands.{self.command}")
+        logger = logging.getLogger(f"{app}.management.commands.{self.command}")
 
         with capture_command_logs(logger, self.log_level, span_name=str(self)):
             call_command(self.command, **self.kwargs)

@@ -123,7 +123,8 @@ class CTPClient:
                     ]
                 )
         self.logger.info(
-            "Fetching %d schedules for %d transit lines", len(schedules), lines_count
+            "Fetching schedules...",
+            counts={"schedules": len(schedules), "lines": lines_count},
         )
         schedules = [s for s in await self.request_many(schedules) if s]
         if commit:

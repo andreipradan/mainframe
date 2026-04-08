@@ -212,17 +212,19 @@ TESTING = False
 # ##################################################################### #
 
 # Configure structlog for structured logging
+shared_processors = [
+    structlog.processors.TimeStamper(fmt="iso"),
+    structlog.stdlib.add_logger_name,
+    structlog.stdlib.add_log_level,
+]
 structlog.configure(
-    processors=[
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
+    processors=shared_processors
+    + [
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
         structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ],
     logger_factory=structlog.stdlib.LoggerFactory(),
-    wrapper_class=structlog.stdlib.BoundLogger,
     cache_logger_on_first_use=True,
 )
 
@@ -234,13 +236,23 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
+        "console": {
+            "()": structlog.stdlib.ProcessorFormatter,
+            "processor": structlog.dev.ConsoleRenderer(),
+            "foreign_pre_chain": shared_processors,
+        },
+        "json": {
             "()": structlog.stdlib.ProcessorFormatter,
             "processor": structlog.processors.JSONRenderer(),
+            "foreign_pre_chain": shared_processors,
+        },
+        "verbose": {
+            "format": "{asctime} - {levelname} - {name} - {message}",
+            "style": "{",
         },
     },
     "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
+        "console": {"class": "logging.StreamHandler", "formatter": "console"},
         "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
     },
     "loggers": {
