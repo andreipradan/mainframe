@@ -117,8 +117,6 @@ class Command(BaseCommand):
         else:
             raise CommandError("Invalid outage type in URL")
 
-        prefix = f"[Outages][{branch.title()}][{outage_type}]"
-
         response, error = fetch(url, timeout=15, soup=False)
         if error:
             raise CommandError(error)
@@ -140,6 +138,7 @@ class Command(BaseCommand):
             ]
         )
 
+        logger = logger.bind(identifier=outage_type)
         logger.info(
             "Outages fetched",
             addresses=addresses,
@@ -152,7 +151,7 @@ class Command(BaseCommand):
             type=outage_type,
         )
 
-        client = CalendarClient(logger=logger, source=prefix)
+        client = CalendarClient(logger=logger)
 
         if outages:
             client.create_events(outages)

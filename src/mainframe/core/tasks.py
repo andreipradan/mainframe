@@ -108,14 +108,19 @@ def schedule_task(instance, **kwargs):
     elif class_name == "Watcher":
         expression = instance.cron
     else:
-        logger.error("Unknown task class", class_name=class_name)
+        logger.error(
+            "Unknown task class. Must be one of: Watcher, Cron",
+            identifier=class_name,
+        )
         return
 
+    # Unscheduling is made with full dotted path
+    # Scheduling just with the name
     task_name = f"{instance.__module__}.{instance.name}"
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
-        logger.info("Unscheduled task", task_name=task_name, instance=str(instance))
+        logger.info("Unscheduled task", identifier=instance.name, instance=str(instance))
     if expression and instance.is_active:
         schedule = crontab(*expression.split())
         lock_task = HUEY.lock_task(f"{task_name}-lock")
@@ -123,6 +128,6 @@ def schedule_task(instance, **kwargs):
         logger.info(
             "Scheduled task",
             class_name=class_name,
-            task_name=instance.name,
             expression=expression,
+            identifier=instance.name,
         )

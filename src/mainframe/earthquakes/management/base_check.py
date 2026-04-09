@@ -46,7 +46,7 @@ class BaseEarthquakeCommand:
 
     def handle(self, *_, **__):
         logger = structlog.get_logger(f"{__name__}.{self.source}")
-        logger.bind(source=self.source)
+        logger = logger.bind(identifier=self.source)
         healthchecks.ping(self.source)
         response, error = fetch(
             self.url,

@@ -141,20 +141,20 @@ class Watcher(TimeStampedModel):
 
     def run(self):
         logger = structlog.get_logger(__name__)
-        logger.bind(watcher=self.name)
+        logger = logger.bind(identifier=self.name)
         matching_cron = (
             croniter.match(self.cron_notification, timezone.now())
             if self.cron_notification
             else True
         )
         if self.pending_data and matching_cron:
-            logger.info("[Watcher] Sending pending data")
+            logger.info("Sending pending data")
             self.send_notification(self.pending_data)
             self.pending_data = []
             self.save()
 
         if not (results := self.fetch()):
-            logger.info("[Watcher] No new items")
+            logger.info("No new items")
             return None
 
         urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")
@@ -163,13 +163,13 @@ class Watcher(TimeStampedModel):
         )
         if is_urgent or matching_cron:
             logger.info(
-                "[Watcher] Sending notification.",
+                "Sending notification.",
                 is_urgent=is_urgent,
                 matching_cron=matching_cron,
             )
             self.send_notification(results)
         else:
-            logger.info("[Watcher] Deferring notification to next cron window")
+            logger.info("Deferring notification to next cron window")
             self._accumulate_pending_data(results, logger)
 
         result = results[0]
@@ -179,8 +179,6 @@ class Watcher(TimeStampedModel):
             "timestamp": timezone.now().isoformat(),
         }
         self.save()
-
-        logger.info("[Watcher] Completed")
         return self
 
     def _accumulate_pending_data(self, new_results: list[Link], logger) -> None:
@@ -226,7 +224,6 @@ class Watcher(TimeStampedModel):
                     dropped_count = len(combined) - len(kept_items)
                     logger.warning(
                         "Dropped items because of telegram's message size limit",
-                        watcher=self.name,
                         dropped_count=dropped_count,
                         telegram_limit=TELEGRAM_LIMIT,
                     )

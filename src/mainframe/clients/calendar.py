@@ -20,7 +20,7 @@ TYPE_PLANNED_TODAY = "Planned (today)"
 class CalendarClient:
     url = "https://www.googleapis.com/batch/calendar/v3"
 
-    def __init__(self, logger=None, source=None):
+    def __init__(self, logger=None):
         config = environ.Env()
         creds = Credentials.from_service_account_file(
             config("GOOGLE_CALENDAR_SERVICE_ACCOUNT_FILE"),
@@ -29,7 +29,7 @@ class CalendarClient:
         self.calendar_id = config("GOOGLE_CALENDAR_ID")
         self.events = {}
         self.logger = logger or structlog.get_logger(__name__)
-        self.logger = self.logger.bind(calendar_id=self.calendar_id, source=source)
+        self.logger = self.logger.bind(calendar_id=self.calendar_id)
         self.redis = RedisClient(self.logger)
         self.service = build("calendar", "v3", credentials=creds)
 

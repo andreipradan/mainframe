@@ -152,7 +152,7 @@ async def handle_new_chat_title(
     chat_id = update.effective_chat.id
     if bot.additional_data.get("whos_next", {}).get("chat_id") != chat_id:
         logger.info(
-            "New chat title", chat_id=chat_id, title=update.effective_chat.title
+            "New chat title", chat_id=chat_id, identifier=update.effective_chat.title
         )
         return
 
