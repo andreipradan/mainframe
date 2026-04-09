@@ -2,9 +2,8 @@
 venv
 react-ui/.env
 .DS_Store
-/pradan-dev-storage.json
 .keys
-/calendar-key.json
+/.keys/calendar-key.json
 dump.rdb
 
 # Byte-compiled / optimized / DLL files
@@ -138,9 +137,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .env__
-/mainframe.json
 
-/src/mainframe/.env
 /src/mainframe/finance/data/model/latest_model.pkl
 /src/mainframe/finance/data/model/latest_vectorizer.pkl
 /node_modules
