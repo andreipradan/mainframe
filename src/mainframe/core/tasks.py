@@ -120,7 +120,9 @@ def schedule_task(instance, **kwargs):
     if task_name in HUEY._registry._registry:
         task_class = HUEY._registry.string_to_task(task_name)
         HUEY._registry.unregister(task_class)
-        logger.info("Unscheduled task", identifier=instance.name, instance=str(instance))
+        logger.info(
+            "Unscheduled task", identifier=instance.name, instance=str(instance)
+        )
     if expression and instance.is_active:
         schedule = crontab(*expression.split())
         lock_task = HUEY.lock_task(f"{task_name}-lock")
