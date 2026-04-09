@@ -253,11 +253,6 @@ LOGGING = {
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "console"},
-        "json_file": {
-            "class": "logging.FileHandler",
-            "formatter": "json",
-            "filename": "/var/log/mainframe/log.json",
-        },
         "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
     },
     "loggers": {
@@ -290,7 +285,7 @@ LOGGING = {
         "root": {
             "handlers": ["console", "json_file"],
             "level": "INFO",
-            "propagate": True,
+            "propagate": False,
         },
     },
 }
@@ -309,6 +304,16 @@ DATABASES = {
     }
 }
 if ENV in ["local", "prod", "rpi"]:
+    LOGGING["handlers"]["json_file"] = {
+        "class": "logging.FileHandler",
+        "formatter": "json",
+        "filename": "/var/log/mainframe/log.json",
+    }
+    exceptions = ["huey.consumer.Scheduler", "logfire"]
+    for logger in LOGGING["loggers"]:
+        if logger not in exceptions:
+            LOGGING["loggers"][logger]["handlers"].append("json_file")
+
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
     logfire.configure(
