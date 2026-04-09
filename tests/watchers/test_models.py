@@ -1,4 +1,3 @@
-from types import SimpleNamespace
 from unittest import mock
 
 import pytest
@@ -225,11 +224,11 @@ class TestWatcherHelpers:
         w = WatcherFactory(url="http://api", selector="items title url")
         payload = {"items": [{"title": "T1", "url": "http://u"}]}
 
-        def fake_fetch(url, logger, retries=1, soup=False, **kwargs):
+        def fake_fetch(url, retries=1, soup=False, **kwargs):
             return DummyResponse(payload), None
 
         with mock.patch("mainframe.watchers.models.fetch", fake_fetch):
-            res = fetch_api(w, None)
+            res = fetch_api(w)
 
         assert isinstance(res, list)
         assert res[0]["title"] == "T1"
@@ -237,15 +236,14 @@ class TestWatcherHelpers:
     def test_fetch_api_bad_selector_raises(self):
         w = WatcherFactory(url="http://api", selector="one two")
 
-        def fake_fetch(url, logger, retries=1, soup=False, **kwargs):
+        def fake_fetch(url, retries=1, soup=False, **kwargs):
             return DummyResponse({}), None
 
-        logger = SimpleNamespace(info=lambda *a, **k: None)
         with (
             mock.patch("mainframe.watchers.models.fetch", fake_fetch),
             pytest.raises(WatcherError),
         ):
-            fetch_api(w, logger)
+            fetch_api(w)
 
     def test_fetch_web_success(self):
         w = WatcherFactory(url="http://example.com/path", selector="a.link")
@@ -253,11 +251,11 @@ class TestWatcherHelpers:
         el = DummyElement("Title", "/item/1")
         soup = DummySoup([el])
 
-        def fake_fetch(url, logger, retries=1, **kwargs):
+        def fake_fetch(url, retries=1, **kwargs):
             return soup, None
 
         with mock.patch("mainframe.watchers.models.fetch", fake_fetch):
-            res = fetch_web(w, None)
+            res = fetch_web(w)
 
         assert isinstance(res, list)
         assert res[0]["url"].startswith("http://example.com")
@@ -267,14 +265,14 @@ class TestWatcherHelpers:
 
         soup = DummySoup([])
 
-        def fake_fetch(url, logger, retries=1, **kwargs):
+        def fake_fetch(url, retries=1, **kwargs):
             return soup, None
 
         with (
             mock.patch("mainframe.watchers.models.fetch", fake_fetch),
             pytest.raises(WatcherElementsNotFound),
         ):
-            fetch_web(w, None)
+            fetch_web(w)
 
     def test_send_notification_uses_telegram(self):
         w = WatcherFactory(url="http://example.com", selector="a")

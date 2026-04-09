@@ -165,7 +165,7 @@ def test_event_callback_other_error_logs(monkeypatch, patch_env_and_clients):
     client.event_callback("abc", {}, ValueError("err"))
 
     assert log.bind.call_args_list == [
-        mock.call(calendar_id="fake", source=None),
+        mock.call(calendar_id="fake"),
     ]
     assert log.bind().error.call_args_list == [
         mock.call(
@@ -293,7 +293,7 @@ def test_update_logs_other_http_errors(patch_env_and_clients):
 
     client.update("evt")
 
-    assert log.bind.call_args_list == [mock.call(calendar_id="fake", source=None)]
+    assert log.bind.call_args_list == [mock.call(calendar_id="fake")]
     assert log.bind().exception.call_args_list == [
         mock.call("Failed to update event", event_id=event.id)
     ]

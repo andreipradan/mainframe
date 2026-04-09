@@ -67,7 +67,7 @@ class TestStatusUpdate:
             mock.call(
                 "New chat title",
                 chat_id=update.effective_chat.id,
-                title=update.effective_chat.title,
+                identifier=update.effective_chat.title,
             ),
         ]
         assert not save_to_db.called
@@ -82,7 +82,7 @@ class TestStatusUpdate:
             mock.call(
                 "New chat title",
                 chat_id=update.effective_chat.id,
-                title=update.effective_chat.title,
+                identifier=update.effective_chat.title,
             ),
         ]
         assert not save_to_db.called
@@ -99,7 +99,7 @@ class TestStatusUpdate:
             mock.call(
                 "New chat title",
                 chat_id=update.effective_chat.id,
-                title=update.effective_chat.title,
+                identifier=update.effective_chat.title,
             ),
         ]
         assert not save_to_db.called

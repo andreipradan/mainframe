@@ -138,8 +138,8 @@ class Command(BaseCommand):
             ]
         )
 
-        logger = logger.bind(identifier=outage_type)
-        logger.info(
+        bounded_logger = logger.bind(identifier=outage_type)
+        bounded_logger.info(
             "Outages fetched",
             addresses=addresses,
             branch=branch.title(),
@@ -151,7 +151,7 @@ class Command(BaseCommand):
             type=outage_type,
         )
 
-        client = CalendarClient(logger=logger)
+        client = CalendarClient(logger=bounded_logger)
 
         if outages:
             client.create_events(outages)

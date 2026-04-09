@@ -257,7 +257,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "json_file"],
+            "handlers": ["console"],
             "propagate": False,
             "level": "INFO",
         },
@@ -267,23 +267,23 @@ LOGGING = {
             "propagate": False,
         },
         "huey": {
-            "handlers": ["console", "json_file"],
+            "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
         },
         "httpx": {
-            "handlers": ["console", "json_file"],
+            "handlers": ["console"],
             "level": "WARNING",
             "propagate": False,
         },
         "logfire": {"handlers": ["logfire"], "level": "INFO", "propagate": False},
         "mainframe": {
-            "handlers": ["console", "json_file"],
+            "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
         },
         "root": {
-            "handlers": ["console", "json_file"],
+            "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
         },
@@ -304,15 +304,16 @@ DATABASES = {
     }
 }
 if ENV in ["local", "prod", "rpi"]:
-    LOGGING["handlers"]["json_file"] = {
-        "class": "logging.FileHandler",
-        "formatter": "json",
-        "filename": "/var/log/mainframe/log.json",
-    }
-    exceptions = ["huey.consumer.Scheduler", "logfire"]
-    for logger in LOGGING["loggers"]:
-        if logger not in exceptions:
-            LOGGING["loggers"][logger]["handlers"].append("json_file")
+    if ENV != "local":
+        LOGGING["handlers"]["json_file"] = {
+            "class": "logging.FileHandler",
+            "formatter": "json",
+            "filename": "/var/log/mainframe/log.json",
+        }
+        exceptions = ["huey.consumer.Scheduler", "logfire"]
+        for logger in LOGGING["loggers"]:
+            if logger not in exceptions:
+                LOGGING["loggers"][logger]["handlers"].append("json_file")
 
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
