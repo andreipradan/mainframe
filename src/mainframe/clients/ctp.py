@@ -63,7 +63,7 @@ class CTPClient:
             f"{line_type}-line"
             f"{'s' if line_type != TransitLine.LINE_TYPE_EXPRESS else ''}"
         )
-        soup, error = scraper.fetch(url, self.logger)
+        soup, error = scraper.fetch(url)
         if error or "EROARE" in soup.text:
             raise FetchTransitLinesException(soup)
 

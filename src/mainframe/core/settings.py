@@ -216,11 +216,11 @@ shared_processors = [
     structlog.processors.TimeStamper(fmt="iso"),
     structlog.stdlib.add_logger_name,
     structlog.stdlib.add_log_level,
+    structlog.processors.format_exc_info,
 ]
 structlog.configure(
     processors=shared_processors
     + [
-        structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
         structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
     ],
@@ -253,15 +253,45 @@ LOGGING = {
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "console"},
+        "json_file": {
+            "class": "logging.FileHandler",
+            "formatter": "json",
+            "filename": "/var/log/mainframe/log.json",
+        },
         "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
     },
     "loggers": {
-        "django": {"handlers": ["console"], "propagate": False, "level": "INFO"},
-        "huey": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "httpx": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "django": {
+            "handlers": ["console", "json_file"],
+            "propagate": False,
+            "level": "INFO",
+        },
+        "huey.consumer.Scheduler": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "huey": {
+            "handlers": ["console", "json_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "httpx": {
+            "handlers": ["console", "json_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
         "logfire": {"handlers": ["logfire"], "level": "INFO", "propagate": False},
-        "mainframe": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "root": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "mainframe": {
+            "handlers": ["console", "json_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "root": {
+            "handlers": ["console", "json_file"],
+            "level": "INFO",
+            "propagate": True,
+        },
     },
 }
 

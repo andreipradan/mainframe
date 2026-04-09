@@ -57,7 +57,6 @@ class EventsClient:
 
         response, error = fetch(
             url,
-            logger,
             headers=headers,
             params=params,
             soup=soup,

@@ -21,7 +21,7 @@ class BaseExchange:
         self.logger = logger
 
     def do_request(self, url):
-        resp, error = fetch(url, self.logger, soup=False, timeout=20)
+        resp, error = fetch(url, soup=False, timeout=20)
         if error:
             raise FetchExchangeRatesException("Error fetching exchange rates")
         return resp.content

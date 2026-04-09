@@ -1,11 +1,10 @@
 import logging
 
-from django.core.management import call_command, get_commands
+from django.core.management import call_command
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
 
-from mainframe.core.logs import capture_command_logs
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
 
@@ -29,11 +28,7 @@ class Cron(TimeStampedModel):
         return display
 
     def run(self) -> None:
-        app = get_commands().get(self.command, "django.core")
-        logger = logging.getLogger(f"{app}.management.commands.{self.command}")
-
-        with capture_command_logs(logger, self.log_level, span_name=str(self)):
-            call_command(self.command, **self.kwargs)
+        call_command(self.command, **self.kwargs)
 
 
 @receiver(signals.post_delete, sender=Cron)

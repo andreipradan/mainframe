@@ -4,7 +4,6 @@ from zoneinfo import ZoneInfo
 
 import structlog
 from django.conf import settings
-from django.db import OperationalError
 from telegram.constants import ParseMode
 
 from mainframe.bots.models import Bot
@@ -46,12 +45,11 @@ class BaseEarthquakeCommand:
     url = NotImplemented
 
     def handle(self, *_, **__):
-        logger = structlog.get_logger(self.source)
+        logger = structlog.get_logger(f"{__name__}.{self.source}")
         logger.bind(source=self.source)
         healthchecks.ping(self.source)
         response, error = fetch(
             self.url,
-            logger,
             soup=False,
             **self.get_kwargs(),
         )
@@ -59,18 +57,10 @@ class BaseEarthquakeCommand:
             if self.source == Earthquake.SOURCE_INFP:
                 logger.warning("Fetching INFP earthquakes failed", error=str(error))
             else:
-                logger.error("Fetching earthquakes failed", error=str(error))
+                logger.error("Fetching USGS earthquakes failed", error=str(error))
             return
 
-        try:
-            instance = Bot.objects.get(additional_data__earthquake__isnull=False)
-        except OperationalError:
-            logger.exception("Failed to get the bot instance with earthquake config")
-            return
-        except Bot.DoesNotExist:
-            logger.exception("No bots with earthquake config")
-            return
-
+        instance = Bot.objects.get(additional_data__earthquake__isnull=False)
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
             self.set_last_check(instance)
@@ -101,7 +91,7 @@ class BaseEarthquakeCommand:
 
         if events:
             logger.warning(
-                "Got new events!",
+                "New earthquakes!",
                 count=len(events),
                 min_magnitude=min_magnitude,
             )
@@ -113,11 +103,6 @@ class BaseEarthquakeCommand:
             )
 
         self.set_last_check(instance)
-        logger.info(
-            "Fetching earthquake data complete!",
-            count=len(events),
-            min_magnitude=min_magnitude,
-        )
 
     def get_kwargs(self) -> dict:
         raise NotImplementedError

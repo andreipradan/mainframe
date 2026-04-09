@@ -25,7 +25,7 @@ def fetch_definition(word=None):
             while len(word := random.choice(file.readlines())) < min_len:  # noqa: S311
                 ...
 
-    response, error = fetch(dex_url.format(word.strip()), logger, 1, False)
+    response, error = fetch(dex_url.format(word.strip()), 1, False)
     if error:
         logger.error("Failed to fetch definition", word=word, error=str(error))
         raise DexOnlineError(error)

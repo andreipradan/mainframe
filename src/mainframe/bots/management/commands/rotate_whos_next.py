@@ -13,14 +13,14 @@ logger = structlog.get_logger(__name__)
 class Sources:
     @staticmethod
     def fetch_tomorrow(url):
-        soup, error = fetch(url, logger, timeout=30)
+        soup, error = fetch(url)
         if not soup or error:
             raise CommandError(error)
 
         tomorrow = soup.find(id="calendar-azi").find_next_sibling()
         if not tomorrow:
             url = soup.li.find_next_sibling().a.attrs["href"]
-            soup, _ = fetch(url, logger, timeout=30)
+            soup, _ = fetch(url)
             tomorrow = soup.tr
         if not tomorrow.th:
             tomorrow = tomorrow.find_next_sibling()

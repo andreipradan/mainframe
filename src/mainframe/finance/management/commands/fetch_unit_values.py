@@ -66,7 +66,6 @@ class Command(BaseCommand):
         resp, error = fetch(
             url,
             method="POST" if ":7777" not in url else "GET",
-            logger=logger,
             timeout=15,
             soup=False,
             json=json.loads(payload) if ":7777" not in url else None,

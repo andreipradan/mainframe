@@ -14,7 +14,6 @@ from telegram.constants import ParseMode
 
 from mainframe.clients.chat import send_telegram_message
 from mainframe.clients.scraper import fetch
-from mainframe.core.logs import capture_command_logs
 from mainframe.core.models import TimeStampedModel
 from mainframe.core.tasks import schedule_task
 
@@ -38,10 +37,8 @@ def extract(structure, keys):
     return extract(structure[keys[0]], keys[1:])
 
 
-def fetch_api(watcher, logger) -> list[Link]:
-    response, error = fetch(
-        watcher.url, logger, retries=1, soup=False, **watcher.request
-    )
+def fetch_api(watcher) -> list[Link]:
+    response, error = fetch(watcher.url, retries=1, soup=False, **watcher.request)
     if error:
         raise WatcherError(error)
 
@@ -69,7 +66,7 @@ def fetch_api(watcher, logger) -> list[Link]:
         raise WatcherError(e) from e
 
 
-def fetch_web(watcher, logger) -> list[Link]:
+def fetch_web(watcher) -> list[Link]:
     def get_title(element):
         return (
             element.text.strip()
@@ -77,7 +74,7 @@ def fetch_web(watcher, logger) -> list[Link]:
             or element.attrs.get("aria-label")
         )
 
-    soup, error = fetch(watcher.url, logger, retries=1, **watcher.request)
+    soup, error = fetch(watcher.url, retries=1, **watcher.request)
     if soup and (elements := soup.select(watcher.selector)):
         return [
             {
@@ -119,7 +116,7 @@ class Watcher(TimeStampedModel):
     def __str__(self):
         return self.name
 
-    def fetch(self, logger):
+    def fetch(self):
         fetcher = {
             self.TYPE_API: fetch_api,
             self.TYPE_WEB: fetch_web,
@@ -127,7 +124,7 @@ class Watcher(TimeStampedModel):
         if not fetcher:
             raise WatcherError(f"Unexpected watcher type: {self.type}")
 
-        results = fetcher(self, logger)
+        results = fetcher(self)
         if not (self.latest and self.latest.get("timestamp")):
             return results[:5]
 
@@ -144,53 +141,47 @@ class Watcher(TimeStampedModel):
 
     def run(self):
         logger = structlog.get_logger(__name__)
-        with capture_command_logs(logger, self.log_level, span_name=str(self)):
-            matching_cron = (
-                croniter.match(self.cron_notification, timezone.now())
-                if self.cron_notification
-                else True
-            )
-            if self.pending_data and matching_cron:
-                logger.info("Sending pending data", name=self.name)
-                self.send_notification(self.pending_data)
-                self.pending_data = []
-                self.save()
-
-            if not (results := self.fetch(logger)):
-                logger.info("No new items", name=self.name)
-                return None
-
-            logger.info("Found new items", name=self.name)
-
-            urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")
-            is_urgent = any(
-                result["title"].lower().startswith(urgent_keywords)
-                for result in results
-            )
-            if is_urgent or matching_cron:
-                logger.info(
-                    "Sending notification.",
-                    is_urgent=is_urgent,
-                    matching_cron=matching_cron,
-                    name=self.name,
-                )
-                self.send_notification(results)
-            else:
-                logger.info(
-                    "Deferring notification to next cron window", watcher=self.name
-                )
-                self._accumulate_pending_data(results, logger)
-
-            result = results[0]
-            self.latest = {
-                "title": result["title"],
-                "url": result["url"],
-                "timestamp": timezone.now().isoformat(),
-            }
+        logger.bind(watcher=self.name)
+        matching_cron = (
+            croniter.match(self.cron_notification, timezone.now())
+            if self.cron_notification
+            else True
+        )
+        if self.pending_data and matching_cron:
+            logger.info("[Watcher] Sending pending data")
+            self.send_notification(self.pending_data)
+            self.pending_data = []
             self.save()
 
-            logger.info("Watcher completed", name=self.name)
-            return self
+        if not (results := self.fetch()):
+            logger.info("[Watcher] No new items")
+            return None
+
+        urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")
+        is_urgent = any(
+            result["title"].lower().startswith(urgent_keywords) for result in results
+        )
+        if is_urgent or matching_cron:
+            logger.info(
+                "[Watcher] Sending notification.",
+                is_urgent=is_urgent,
+                matching_cron=matching_cron,
+            )
+            self.send_notification(results)
+        else:
+            logger.info("[Watcher] Deferring notification to next cron window")
+            self._accumulate_pending_data(results, logger)
+
+        result = results[0]
+        self.latest = {
+            "title": result["title"],
+            "url": result["url"],
+            "timestamp": timezone.now().isoformat(),
+        }
+        self.save()
+
+        logger.info("[Watcher] Completed")
+        return self
 
     def _accumulate_pending_data(self, new_results: list[Link], logger) -> None:
         """Accumulate new results into pending_data

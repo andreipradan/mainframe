@@ -119,9 +119,7 @@ class Command(BaseCommand):
 
         prefix = f"[Outages][{branch.title()}][{outage_type}]"
 
-        response, error = fetch(
-            url, logger=logger, prefix=prefix, timeout=15, soup=False
-        )
+        response, error = fetch(url, timeout=15, soup=False)
         if error:
             raise CommandError(error)
 

@@ -4,11 +4,9 @@ from requests import Response
 
 
 def fetch(
-    url, logger, retries=0, soup=True, timeout=10, **kwargs
+    url, retries=0, soup=True, timeout=10, **kwargs
 ) -> tuple[BeautifulSoup | Response | None, Exception | None]:
     method = kwargs.pop("method", "GET")
-    prefix = kwargs.pop("prefix", "") or ""
-    logger.info("Sending HTTP request", source=prefix, method=method, url=url)
     try:
         response = requests.request(method, url, timeout=timeout, **kwargs)
         response.raise_for_status()
@@ -19,7 +17,7 @@ def fetch(
         requests.exceptions.TooManyRedirects,
     ) as e:
         if retries > 0:
-            return fetch(url, logger, retries - 1, soup, timeout, **kwargs)
+            return fetch(url, retries - 1, soup, timeout, **kwargs)
         return None, e
     if not soup:
         return response, None
