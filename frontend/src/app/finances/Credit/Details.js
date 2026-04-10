@@ -68,7 +68,7 @@ const Details = () => {
   const getInterest = (payments) =>
     payments ? payments.map((p) => p.interest).reverse() : [];
   const getRemaining = (payments) =>
-    payments ? payments.map((p) => p.remaining).reverse() : [];
+    payments ? payments.map((p) => -p.remaining).reverse() : [];
 
   const doughnutPieOptions = {
     responsive: true,
@@ -180,6 +180,12 @@ const Details = () => {
           .map((p) => p.interest)
           .reverse()
       );
+      setBarChartRemaining(
+        payment.results
+          ?.filter((p) => !p.is_prepayment)
+          .map((p) => -p.remaining)
+          .reverse()
+      );
       setBarChartLabels(
         payment.results
           ?.filter((p) => !p.is_prepayment)
@@ -229,39 +235,6 @@ const Details = () => {
         data: barChartInterest,
         backgroundColor: 'rgba(255,0,52,0.2)',
         borderColor: 'rgba(255,0,52,1)',
-        borderWidth: 1,
-        fill: false,
-      },
-    ],
-  };
-
-  const remainingGraphData = {
-    labels: barChartLabels,
-    datasets: [
-      {
-        label: 'Remaining',
-        data: barChartRemaining,
-        backgroundColor: (context) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-          gradient.addColorStop(0, 'rgba(243,16,65,0.2)');
-          gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
-          gradient.addColorStop(1, 'rgba(47,113,190,0.2)');
-          return gradient;
-        },
-        borderColor: (context) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            context.height || 100
-          );
-          gradient.addColorStop(0, 'rgba(243,16,65,1)');
-          gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
-          gradient.addColorStop(1, 'rgb(47,113,190)');
-          return gradient;
-        },
         borderWidth: 1,
         fill: false,
       },
@@ -368,6 +341,59 @@ const Details = () => {
     labels: ['Interest', 'Principal'],
   };
 
+  const data = {
+    labels: barChartLabels,
+    datasets: [
+      {
+        label: 'Remaining',
+        data: barChartRemaining,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgb(255,0,0)',
+        ],
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
+  };
+
+  const options = {
+    scales: {
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+            min: 0,
+          },
+          gridLines: {
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+      xAxes: [
+        {
+          gridLines: {
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+    },
+    legend: {
+      display: false,
+    },
+  };
   useEffect(() => {
     !payment.results && dispatch(paymentsApi.getList());
     !timetable.results && dispatch(timetableApi.getList());
@@ -809,13 +835,13 @@ const Details = () => {
         </div>
       </div>
 
-      {/* Bar chart - Remaining */}
+      {/* Line chart - Remaining */}
       <div className='row'>
         <div className='col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card'>
           <div className='card'>
             <div className='card-body'>
               <h6 className='card-title'>
-                Remaining{' '}
+                Remaining
                 <sup>
                   <small>
                     {selectedCurrency?.label
@@ -834,14 +860,8 @@ const Details = () => {
               {payment.loading ? (
                 <Circles />
               ) : payment.results ? (
-                <Bar
-                  data={remainingGraphData}
-                  options={paymentsOptions}
-                  height={100}
-                />
-              ) : (
-                '-'
-              )}
+                <Line data={data} options={options} />
+              ) : null}
             </div>
           </div>
         </div>
