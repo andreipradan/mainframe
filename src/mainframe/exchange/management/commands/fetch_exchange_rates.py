@@ -6,8 +6,6 @@ from mainframe.exchange.management.clients import BNR, ECB, FetchExchangeRatesEx
 
 CLIENTS = {"bnr": BNR, "ecb": ECB}
 
-logger = structlog.get_logger(__name__)
-
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -25,7 +23,9 @@ class Command(BaseCommand):
 
     def handle(self, *_, **options):
         source = options["source"]
-        logger.info("Fetching exchange rates", source=source.upper())
+        logger = structlog.get_logger(__name__)
+        logger = logger.bind(identifier=source)
+        logger.info("Fetching exchange rates")
         healthchecks.ping(f"{source}-fx")
 
         try:
@@ -33,5 +33,5 @@ class Command(BaseCommand):
         except FetchExchangeRatesException as e:
             raise CommandError(e) from e
 
-        logger.info("Fetched exchange rates", source=source.upper(), count=count)
+        logger.info("Fetched exchange rates", count=count)
         self.stdout.write(self.style.SUCCESS("Done."))

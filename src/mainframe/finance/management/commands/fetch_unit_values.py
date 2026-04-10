@@ -39,7 +39,7 @@ def extracting(response, pensions):
     for fund in json.loads(response.json()):
         name = fund["name"]
         if "data" not in fund:
-            logger.error("Pension missing data key", fund_name=name)
+            logger.error("Pension missing data key", identifier=name)
             continue
         for unit in fund["data"]:
             unit_values.append(

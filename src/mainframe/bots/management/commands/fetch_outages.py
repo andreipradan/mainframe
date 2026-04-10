@@ -13,8 +13,6 @@ from mainframe.clients import healthchecks
 from mainframe.clients.calendar import CalendarClient
 from mainframe.clients.scraper import fetch
 
-logger = structlog.get_logger(__name__)
-
 TYPE_ACCIDENTAL = "Accidental"
 TYPE_PLANNED_15_DAYS = "Planned (15 days)"
 TYPE_PLANNED_TODAY = "Planned (today)"
@@ -138,8 +136,9 @@ class Command(BaseCommand):
             ]
         )
 
-        bounded_logger = logger.bind(identifier=outage_type)
-        bounded_logger.info(
+        logger = structlog.get_logger(__name__)
+        logger = logger.bind(identifier=outage_type)
+        logger.info(
             "Outages fetched",
             addresses=addresses,
             branch=branch.title(),
@@ -151,7 +150,7 @@ class Command(BaseCommand):
             type=outage_type,
         )
 
-        client = CalendarClient(logger=bounded_logger)
+        client = CalendarClient(logger=logger)
 
         if outages:
             client.create_events(outages)
