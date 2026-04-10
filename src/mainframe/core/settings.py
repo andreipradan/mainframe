@@ -306,9 +306,11 @@ DATABASES = {
 if ENV in ["local", "prod", "rpi"]:
     if ENV == "rpi":
         LOGGING["handlers"]["json_file"] = {
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "formatter": "json",
             "filename": "/var/log/mainframe/log.json",
+            "maxBytes": 50 * 1024 * 1024,  # 50 MB
+            "backupCount": 3,
         }
         exceptions = ["huey.consumer.Scheduler", "logfire"]
         for logger in LOGGING["loggers"]:
