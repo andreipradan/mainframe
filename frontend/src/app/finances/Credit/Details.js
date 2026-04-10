@@ -56,6 +56,8 @@ const Details = () => {
   const [barChartInterest, setBarChartInterest] = useState(null);
   const [barChartLabels, setBarChartLabels] = useState(null);
 
+  const [barChartRemaining, setBarChartRemaining] = useState(null);
+
   const [lineChartIRCC, setLineChartIRCC] = useState(null);
   const [lineChartMargin, setLineChartMargin] = useState(null);
   const [lineChartInterest, setLineChartInterest] = useState(null);
@@ -65,6 +67,8 @@ const Details = () => {
     payments ? payments.map((p) => p.principal).reverse() : [];
   const getInterest = (payments) =>
     payments ? payments.map((p) => p.interest).reverse() : [];
+  const getRemaining = (payments) =>
+    payments ? payments.map((p) => p.remaining).reverse() : [];
 
   const doughnutPieOptions = {
     responsive: true,
@@ -151,6 +155,9 @@ const Details = () => {
       getAmountInCurrency(overview.payment_stats?.principal, currency)
     );
 
+    setBarChartRemaining(
+      getRemaining(payment.results).map((p) => getAmountInCurrency(p, currency))
+    );
     setBarChartPrincipal(
       getPrincipal(payment.results).map((p) => getAmountInCurrency(p, currency))
     );
@@ -228,6 +235,39 @@ const Details = () => {
     ],
   };
 
+  const remainingGraphData = {
+    labels: barChartLabels,
+    datasets: [
+      {
+        label: 'Remaining',
+        data: barChartRemaining,
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, 'rgba(243,16,65,0.2)');
+          gradient.addColorStop(0.5, 'rgb(255,210,64, 0.2)');
+          gradient.addColorStop(1, 'rgba(47,113,190,0.2)');
+          return gradient;
+        },
+        borderColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            context.height || 100
+          );
+          gradient.addColorStop(0, 'rgba(243,16,65,1)');
+          gradient.addColorStop(0.5, 'rgb(255,210,64, 1)');
+          gradient.addColorStop(1, 'rgb(47,113,190)');
+          return gradient;
+        },
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
+  };
+
   const interestData = {
     labels: lineChartLabels,
     datasets: [
@@ -284,7 +324,7 @@ const Details = () => {
               100
             ).toFixed(1)
           );
-          return `${data.datasets[tooltipItem.datasetIndex].label}: ${currentValue} (${percentage}%)`
+          return `${data.datasets[tooltipItem.datasetIndex].label}: ${currentValue} (${percentage}%)`;
         },
         title: (tooltipItem, data) => {
           const item = tooltipItem[0];
@@ -509,15 +549,22 @@ const Details = () => {
                     value={remainingTotal}
                     textType={'primary'}
                   />
-                  <ListItem
-                    label={'Last day'}
-                    value={latestTimetable[latestTimetable.length - 1]?.date}
-                    textType={'warning'}
-                  />
-                  <ListItem
-                    label={'Months'}
-                    value={`${latestTimetable.length} (${(latestTimetable.length / 12).toFixed(1)} yrs)`}
-                  />
+                  {latestTimetable ? (
+                    <>
+                      <ListItem
+                        label={'Last day'}
+                        value={
+                          latestTimetable[latestTimetable?.length - 1]?.date
+                        }
+                        textType={'warning'}
+                      />
+                      <ListItem
+                        label={'Months'}
+                        value={`${latestTimetable?.length} (${(latestTimetable?.length / 12).toFixed(1)} yrs)`}
+                      />
+                    </>
+                  ) : null}
+
                   <ListItem label={'Insurance'} value={remainingInsurance} />
                   <ListItem
                     label={'Principal'}
@@ -754,6 +801,44 @@ const Details = () => {
                     className='mr-3'
                   />
                 </Marquee>
+              ) : (
+                '-'
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bar chart - Remaining */}
+      <div className='row'>
+        <div className='col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card'>
+          <div className='card'>
+            <div className='card-body'>
+              <h6 className='card-title'>
+                Remaining{' '}
+                <sup>
+                  <small>
+                    {selectedCurrency?.label
+                      ? `(${selectedCurrency?.label})`
+                      : null}
+                  </small>
+                </sup>
+                <button
+                  type='button'
+                  className='btn btn-outline-success btn-sm border-0 bg-transparent'
+                  onClick={() => dispatch(paymentsApi.getList())}
+                >
+                  <i className='mdi mdi-refresh' />
+                </button>
+              </h6>
+              {payment.loading ? (
+                <Circles />
+              ) : payment.results ? (
+                <Bar
+                  data={remainingGraphData}
+                  options={paymentsOptions}
+                  height={100}
+                />
               ) : (
                 '-'
               )}
