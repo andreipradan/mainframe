@@ -304,7 +304,7 @@ DATABASES = {
     }
 }
 if ENV in ["local", "prod", "rpi"]:
-    if ENV != "local":
+    if ENV == "rpi":
         LOGGING["handlers"]["json_file"] = {
             "class": "logging.FileHandler",
             "formatter": "json",
