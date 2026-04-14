@@ -14,22 +14,6 @@ import { capitalize } from '../utils';
 import { select, setModalOpen } from '../../redux/cronsSlice';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 
-export const NOTSET = 0;
-export const DEBUG = 10;
-export const INFO = 20;
-export const WARNING = 30;
-export const ERROR = 40;
-export const CRITICAL = 50;
-
-export const logLevels = {
-  [NOTSET]: { label: 'NOTSET', value: NOTSET },
-  [DEBUG]: { label: 'DEBUG', value: DEBUG },
-  [INFO]: { label: 'INFO', value: INFO },
-  [WARNING]: { label: 'WARNING', value: WARNING },
-  [ERROR]: { label: 'ERROR', value: ERROR },
-  [CRITICAL]: { label: 'CRITICAL', value: CRITICAL },
-};
-
 const Crons = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -81,7 +65,6 @@ const Crons = () => {
       setExpression(selectedItem.expression);
       setIsActive(selectedItem.is_active);
       setKwargs(JSON.stringify(selectedItem.kwargs, null, '\t'));
-      setLogLevel(logLevels[selectedItem.log_level]);
       setRedis(JSON.stringify(selectedItem.redis, null, '\t'));
       setName(selectedItem.name);
     }
@@ -93,7 +76,6 @@ const Crons = () => {
     setExpression('');
     setIsActive(false);
     setKwargs(null);
-    setLogLevel(logLevels[3]);
     setRedis(null);
     setName('');
   };
@@ -103,7 +85,6 @@ const Crons = () => {
     setExpression(cron.expression);
     setIsActive(cron.is_active);
     setKwargs(JSON.stringify(cron.kwargs, null, '\t'));
-    setLogLevel(logLevels[cron.log_level]);
     setName(cron.name);
     setRedis(JSON.stringify({}, null, '\t'));
   };
@@ -169,44 +150,18 @@ const Crons = () => {
     },
     [annotations]
   );
-  const onLogLevelChange = useCallback((e) => {
-    setLogLevel(logLevels[e.value]);
-  }, []);
   const onNameChange = useCallback((e) => setName(e.target.value), []);
   const onSubmit = useCallback(() => {
     const data = {
       command: command.value,
       expression,
       is_active: isActive,
-      log_level: logLevel?.value,
       name,
     };
     if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ''));
     if (selectedItem) dispatch(api.update(selectedItem.id, data));
     else dispatch(api.create(data));
-  }, [
-    command,
-    selectedItem,
-    dispatch,
-    expression,
-    isActive,
-    kwargs,
-    logLevel,
-    name,
-  ]);
-
-  const hasChanges = () => {
-    if (!selectedItem) return false;
-    return (
-      command?.value !== selectedItem.command ||
-      expression !== selectedItem.expression ||
-      isActive !== selectedItem.is_active ||
-      logLevel?.value !== selectedItem.log_level ||
-      name !== selectedItem.name ||
-      kwargs !== JSON.stringify(selectedItem.kwargs) ||
-      JSON.stringify(JSON.parse(redis)) !== JSON.stringify(selectedItem.redis)
-    );
-  };
+  }, [command, selectedItem, dispatch, expression, isActive, kwargs, name]);
 
   useEffect(() => {
     !crons && dispatch(api.getList());
@@ -265,9 +220,8 @@ const Crons = () => {
                     <tr>
                       <th> # </th>
                       <th> Name </th>
-                      <th> Expression </th>
+                      <th> Schedule </th>
                       <th> Is Active? </th>
-                      <th> Log level </th>
                       <th> Last run </th>
                       <th> Status </th>
                       <th> Run </th>
@@ -304,24 +258,6 @@ const Crons = () => {
                                 <i
                                   className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`}
                                 />
-                              </td>
-                              <td
-                                className={`cursor-pointer text-${
-                                  cron.log_level === DEBUG
-                                    ? 'info'
-                                    : cron.log_level === INFO
-                                      ? 'primary'
-                                      : cron.log_level === WARNING
-                                        ? 'warning'
-                                        : [CRITICAL, ERROR].includes(
-                                              cron.log_level
-                                            )
-                                          ? 'danger'
-                                          : 'secondary'
-                                }`}
-                                onClick={() => dispatch(select(cron.id))}
-                              >
-                                {logLevels[cron.log_level].label}
                               </td>
                               <td
                                 onClick={() => dispatch(select(cron.id))}
@@ -562,17 +498,6 @@ const Crons = () => {
                   id='checkbox'
                   label=''
                   onChange={onIsActiveChange}
-                />
-              </Form.Group>
-              <Form.Group className='mb-3'>
-                <Form.Label>Log level</Form.Label>
-                <Select
-                  isDisabled={commands.loading}
-                  isLoading={commands.loading}
-                  onChange={onLogLevelChange}
-                  options={Object.values(logLevels)}
-                  styles={selectStyles}
-                  value={logLevel}
                 />
               </Form.Group>
               <Form.Group className='mb-3'>

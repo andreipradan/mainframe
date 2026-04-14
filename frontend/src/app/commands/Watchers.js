@@ -13,7 +13,6 @@ import WatchersApi from '../../api/watchers';
 import { capitalize } from '../utils';
 import { parseStatus } from './Tasks';
 import { selectItem, setModalOpen } from '../../redux/watchersSlice';
-import { CRITICAL, DEBUG, ERROR, INFO, logLevels, WARNING } from './Crons';
 import Select from 'react-select';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 
@@ -37,7 +36,6 @@ const Watchers = () => {
   const [cron, setCron] = useState('');
   const [cronNotification, setCronNotification] = useState('');
   const [isActive, setIsActive] = useState(false);
-  const [logLevel, setLogLevel] = useState(null);
   const [name, setName] = useState('');
   const [selector, setSelector] = useState('');
   const [type, setType] = useState('');
@@ -62,7 +60,6 @@ const Watchers = () => {
       setCronNotification(selectedItem.cron_notification || '');
       setIsActive(selectedItem.is_active);
       setLatest(JSON.stringify(selectedItem.latest, null, '\t'));
-      setLogLevel(logLevels[selectedItem.log_level]);
       setName(selectedItem.name);
       setRequest(JSON.stringify(selectedItem.request, null, '\t'));
       setSelector(selectedItem.selector);
@@ -83,9 +80,6 @@ const Watchers = () => {
       );
     }
   };
-  const onLogLevelChange = useCallback((e) => {
-    setLogLevel(logLevels[e.value]);
-  }, []);
   const onRequestChange = (e, i) => {
     setRequest(e);
     try {
@@ -105,7 +99,6 @@ const Watchers = () => {
     setCronNotification('* * * * *');
     setIsActive(false);
     setLatest('{}');
-    setLogLevel(logLevels[3]);
     setName('');
     setRequest('{}');
     setSelector('');
@@ -123,7 +116,6 @@ const Watchers = () => {
     setCronNotification(watcher.cron_notification);
     setIsActive(watcher.is_active);
     setLatest(JSON.stringify(watcher.latest, null, '\t'));
-    setLogLevel(logLevels[watcher.log_level]);
     setName(watcher.name);
     setRequest(JSON.stringify(watcher.request, null, '\t'));
     setSelector(watcher.selector);
@@ -187,7 +179,6 @@ const Watchers = () => {
                       <th> Cron </th>
                       <th> Cron Notification </th>
                       <th> Is Active? </th>
-                      <th> Log level </th>
                       <th> URL </th>
                       <th> Last status </th>
                       <th> Last update </th>
@@ -231,24 +222,6 @@ const Watchers = () => {
                                 <i
                                   className={`mdi mdi-${watcher.is_active ? 'check text-success' : 'alert text-danger'}`}
                                 />
-                              </td>
-                              <td
-                                className={`cursor-pointer text-${
-                                  watcher.log_level === DEBUG
-                                    ? 'info'
-                                    : watcher.log_level === INFO
-                                      ? 'primary'
-                                      : watcher.log_level === WARNING
-                                        ? 'warning'
-                                        : [CRITICAL, ERROR].includes(
-                                              watcher.log_level
-                                            )
-                                          ? 'danger'
-                                          : 'secondary'
-                                }`}
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {logLevels[watcher.log_level].label}
                               </td>
                               <td>
                                 <a
@@ -490,17 +463,6 @@ const Watchers = () => {
               />
             </Form.Group>
             <Form.Group className='mb-3'>
-              <Form.Label>Log level</Form.Label>
-              <Select
-                isDisabled={loading}
-                isLoading={loading}
-                onChange={onLogLevelChange}
-                options={Object.values(logLevels)}
-                styles={selectStyles}
-                value={logLevel}
-              />
-            </Form.Group>
-            <Form.Group className='mb-3'>
               <Form.Label>Chat Id</Form.Label>
               <Form.Control
                 type='text'
@@ -648,7 +610,6 @@ const Watchers = () => {
                       cron_notification: cronNotification,
                       is_active: isActive,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
-                      log_level: logLevel.value,
                       name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, '')),
                       selector,
@@ -675,7 +636,6 @@ const Watchers = () => {
                     cron_notification: cronNotification,
                     is_active: isActive,
                     latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
-                    log_level: logLevel.value,
                     name,
                     request: JSON.parse(request.replace(/[\r\n\t]/g, '')),
                     selector,

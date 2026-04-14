@@ -1,289 +1,317 @@
 import React, { Component } from 'react';
-import {Line, Bar, Doughnut, Pie, Scatter} from 'react-chartjs-2';
+import {
+  BarElement,
+  Chart,
+  LineElement,
+  LinearScale,
+  PointElement,
+} from 'chart.js';
+import { Line, Bar, Doughnut, Pie, Scatter } from 'react-chartjs-2';
+
+Chart.register(BarElement, LinearScale, PointElement, LineElement);
 
 export class ChartJs extends Component {
+  data = {
+    labels: ['2013', '2014', '2014', '2015', '2016', '2017'],
+    datasets: [
+      {
+        label: '# of Votes',
+        data: [10, 19, 3, 5, 2, 3],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgb(255,0,0)',
+        ],
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
+  };
 
-    data = {
-        labels: ["2013", "2014", "2014", "2015", "2016", "2017"],
-        datasets: [{
-          label: '# of Votes',
-          data: [10, 19, 3, 5, 2, 3],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgb(255,0,0)'
-          ],
-          borderWidth: 1,
-          fill: false
-        }]
-    };
-
-    options = {
-      scales: {
-        yAxes: [{
+  options = {
+    scales: {
+      yAxes: [
+        {
           ticks: {
-            beginAtZero: true
+            beginAtZero: true,
           },
           gridLines: {
-            color: "rgba(204, 204, 204,0.1)"
-          }
-        }],
-        xAxes: [{
-          gridLines: {
-            color: "rgba(204, 204, 204,0.1)"
-          }
-        }]
-      },
-      legend: {
-        display: false
-      },
-      elements: {
-        point: {
-          radius: 0
-        }
-      }
-    }
-
-    areaData = {
-        labels: ["2013", "2014", "2015", "2016", "2017"],
-        datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5, 2, 3],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1,
-          fill: true, // 3: no fill
-        }]
-    };
-
-    areaOptions = {
-        plugins: {
-          filler: {
-            propagate: true
-          }
+            color: 'rgba(204, 204, 204,0.1)',
+          },
         },
-        scales: {
-          yAxes: [{
-            gridLines: {
-              color: "rgba(204, 204, 204,0.1)"
-            }
-          }],
-          xAxes: [{
-            gridLines: {
-              color: "rgba(204, 204, 204,0.1)"
-            }
-          }]
-        }
-    }
+      ],
+      xAxes: [
+        {
+          gridLines: {
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+    },
+    legend: {
+      display: false,
+    },
+    elements: {
+      point: {
+        radius: 0,
+      },
+    },
+  };
 
-    doughnutPieData = {
-        datasets: [{
-          data: [30, 40, 30],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.5)',
-            'rgba(54, 162, 235, 0.5)',
-            'rgba(255, 206, 86, 0.5)',
-            'rgba(75, 192, 192, 0.5)',
-            'rgba(153, 102, 255, 0.5)',
-            'rgba(255, 159, 64, 0.5)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-        }],
-    
-        // These labels appear in the legend and in the tooltips when hovering different arcs
-        labels: [
-          'Pink',
-          'Blue',
-          'Yellow',
-        ]
-    };
+  areaData = {
+    labels: ['2013', '2014', '2015', '2016', '2017'],
+    datasets: [
+      {
+        label: '# of Votes',
+        data: [12, 19, 3, 5, 2, 3],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)',
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+        ],
+        borderWidth: 1,
+        fill: true, // 3: no fill
+      },
+    ],
+  };
 
-    doughnutPieOptions = {
-        responsive: true,
-        animation: {
-          animateScale: true,
-          animateRotate: true
-        }
-    };
+  areaOptions = {
+    plugins: {
+      filler: {
+        propagate: true,
+      },
+    },
+    scales: {
+      yAxes: [
+        {
+          gridLines: {
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+      xAxes: [
+        {
+          gridLines: {
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+    },
+  };
 
-    scatterChartData = {
-        datasets: [{
-          label: 'First Dataset',
-          data: [{
+  doughnutPieData = {
+    datasets: [
+      {
+        data: [30, 40, 30],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.5)',
+          'rgba(54, 162, 235, 0.5)',
+          'rgba(255, 206, 86, 0.5)',
+          'rgba(75, 192, 192, 0.5)',
+          'rgba(153, 102, 255, 0.5)',
+          'rgba(255, 159, 64, 0.5)',
+        ],
+        borderColor: [
+          'rgba(255,99,132,1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
+        ],
+      },
+    ],
+
+    // These labels appear in the legend and in the tooltips when hovering different arcs
+    labels: ['Pink', 'Blue', 'Yellow'],
+  };
+
+  doughnutPieOptions = {
+    responsive: true,
+    animation: {
+      animateScale: true,
+      animateRotate: true,
+    },
+  };
+
+  scatterChartData = {
+    datasets: [
+      {
+        label: 'First Dataset',
+        data: [
+          {
             x: -10,
-            y: 0
+            y: 0,
           },
           {
             x: 0,
-            y: 3
+            y: 3,
           },
           {
             x: -25,
-            y: 5
+            y: 5,
           },
           {
             x: 40,
-            y: 5
-          }
-          ],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)'
-          ],
-          borderWidth: 1
-        },
-        {
-          label: 'Second Dataset',
-          data: [{
+            y: 5,
+          },
+        ],
+        backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+        borderColor: ['rgba(255,99,132,1)'],
+        borderWidth: 1,
+      },
+      {
+        label: 'Second Dataset',
+        data: [
+          {
             x: 10,
-            y: 5
+            y: 5,
           },
           {
             x: 20,
-            y: -30
+            y: -30,
           },
           {
             x: -25,
-            y: 15
+            y: 15,
           },
           {
             x: -10,
-            y: 5
-          }
-          ],
-          backgroundColor: [
-            'rgba(54, 162, 235, 0.2)',
-          ],
-          borderColor: [
-            'rgba(54, 162, 235, 1)',
-          ],
-          borderWidth: 1
-        }
-        ]
-    }
+            y: 5,
+          },
+        ],
+        backgroundColor: ['rgba(54, 162, 235, 0.2)'],
+        borderColor: ['rgba(54, 162, 235, 1)'],
+        borderWidth: 1,
+      },
+    ],
+  };
 
-    scatterChartOptions = {
-      scales: {
-        xAxes: [{
+  scatterChartOptions = {
+    scales: {
+      xAxes: [
+        {
           type: 'linear',
           position: 'bottom',
           gridLines: {
-            color: "rgba(204, 204, 204,0.1)"
-          }
-        }],
-        yAxes: [{
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+      yAxes: [
+        {
           gridLines: {
-            color: "rgba(204, 204, 204,0.1)"
-          }
-        }]
-      }
-    }
-      
-    render() {
-        return (
-            <div>
-                <div className="page-header">
-                    <h3 className="page-title">
-                        Chart-js
-                    </h3>
-                    <nav aria-label="breadcrumb">
-                        <ol className="breadcrumb">
-                        <li className="breadcrumb-item"><a href="!#">Charts</a></li>
-                        <li className="breadcrumb-item active" aria-current="page">Chart-js</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div className="row">
-                    <div className="col-md-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Line Chart</h4>
-                                <Line data={this.data} options={this.options} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Bar Chart</h4>
-                                <Bar data={this.data} options={this.options} />    
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Area Chart</h4>
-                                <Line data={this.areaData} options={this.areaOptions} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Doughnut Chart</h4>
-                                <Doughnut data={this.doughnutPieData} options={this.doughnutPieOptions} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Pie Chart</h4>
-                                <Pie data={this.doughnutPieData} options={this.doughnutPieOptions} />                                
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-6 grid-margin stretch-card">
-                        <div className="card">
-                            <div className="card-body">
-                                <h4 className="card-title">Scatter Chart</h4>
-                                <Scatter data={this.scatterChartData} options={this.scatterChartOptions} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            color: 'rgba(204, 204, 204,0.1)',
+          },
+        },
+      ],
+    },
+  };
+
+  render() {
+    return (
+      <div>
+        <div className='page-header'>
+          <h3 className='page-title'>Chart-js</h3>
+          <nav aria-label='breadcrumb'>
+            <ol className='breadcrumb'>
+              <li className='breadcrumb-item'>
+                <a href='!#'>Charts</a>
+              </li>
+              <li className='breadcrumb-item active' aria-current='page'>
+                Chart-js
+              </li>
+            </ol>
+          </nav>
+        </div>
+        <div className='row'>
+          <div className='col-md-6 grid-margin stretch-card'>
+            <div className='card'>
+              <div className='card-body'>
+                <h4 className='card-title'>Line Chart</h4>
+                <Line data={this.data} options={this.options} />
+              </div>
             </div>
-        )
-    }
+          </div>
+          <div className='col-md-6 grid-margin stretch-card'>
+            <div className='card'>
+              <div className='card-body'>
+                <h4 className='card-title'>Bar Chart</h4>
+                <Bar data={this.data} options={this.options} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-6 grid-margin stretch-card'>
+            <div className='card'>
+              <div className='card-body'>
+                <h4 className='card-title'>Area Chart</h4>
+                <Line data={this.areaData} options={this.areaOptions} />
+              </div>
+            </div>
+          </div>
+          <div className='col-md-6 grid-margin stretch-card'>
+            <div className='card'>
+              <div className='card-body'>
+                <h4 className='card-title'>Doughnut Chart</h4>
+                <Doughnut
+                  data={this.doughnutPieData}
+                  options={this.doughnutPieOptions}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col-md-6 grid-margin stretch-card'>
+            <div className='card'>
+              <div className='card-body'>
+                <h4 className='card-title'>Pie Chart</h4>
+                <Pie
+                  data={this.doughnutPieData}
+                  options={this.doughnutPieOptions}
+                />
+              </div>
+            </div>
+          </div>
+          <div className='col-md-6 grid-margin stretch-card'>
+            <div className='card'>
+              <div className='card-body'>
+                <h4 className='card-title'>Scatter Chart</h4>
+                <Scatter
+                  data={this.scatterChartData}
+                  options={this.scatterChartOptions}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
-export default ChartJs
+export default ChartJs;
