@@ -36,7 +36,7 @@ class WatcherViewSet(viewsets.ModelViewSet):
     def test(self, request):
         watcher = Watcher(**request.data)
         try:
-            return JsonResponse({"results": watcher.fetch(logger)})
+            return JsonResponse({"results": watcher.fetch()})
         except WatcherError as e:
             logger.exception("Error testing watcher", watcher_name=watcher.name)
             raise ValidationError(e) from e

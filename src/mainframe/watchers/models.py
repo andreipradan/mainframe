@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from typing import TypedDict
 from urllib.parse import urljoin
 
@@ -51,8 +50,12 @@ def fetch_api(watcher) -> list[Link]:
             "selectors separated by space"
         ) from e
 
-    if not all((list_selector, title_selector, url_selector)):
-        raise WatcherError("Missing one of the selectors")
+    if list_selector == "-":
+        items = [results]
+    else:
+        if not all((list_selector, title_selector, url_selector)):
+            raise WatcherError("Missing one of the selectors")
+        items = extract(results, list_selector.split("."))
 
     try:
         return [
@@ -60,7 +63,7 @@ def fetch_api(watcher) -> list[Link]:
                 "title": extract(result, title_selector.split(".")),
                 "url": extract(result, url_selector.split(".")),
             }
-            for result in extract(results, list_selector.split("."))
+            for result in items
         ]
     except (IndexError, ValueError) as e:
         raise WatcherError(e) from e
@@ -103,7 +106,6 @@ class Watcher(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
     pending_data = models.JSONField(default=list)
-    log_level = models.IntegerField(default=logging.WARNING)
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
     selector = models.CharField(max_length=128)

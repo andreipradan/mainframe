@@ -1,5 +1,3 @@
-import logging
-
 from django.core.management import call_command
 from django.db import models
 from django.db.models import signals
@@ -14,7 +12,6 @@ class Cron(TimeStampedModel):
     expression = models.CharField(max_length=32)
     is_active = models.BooleanField(default=False)
     kwargs = models.JSONField(default=dict)
-    log_level = models.IntegerField(default=logging.WARNING)
     name = models.CharField(max_length=255, unique=True)
 
     class Meta:
