@@ -13,19 +13,13 @@ import Errors from '../shared/Errors';
 import { capitalize } from '../utils';
 import { select, setModalOpen } from '../../redux/cronsSlice';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
+import BottomPagination from '../shared/BottomPagination';
 
 const Crons = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
   const ngrokToken = useSelector((state) => state.rpi.token);
-  const {
-    selectedItem,
-    results: crons,
-    errors,
-    loading,
-    loadingItems,
-    modalOpen,
-  } = useSelector((state) => state.crons);
+  const state = useSelector((state) => state.crons);
   const commands = useSelector((state) => state.commands);
 
   const api = new CronsApi(token);
@@ -39,7 +33,6 @@ const Crons = () => {
   const [expression, setExpression] = useState('');
   const [isActive, setIsActive] = useState(false);
   const [kwargs, setKwargs] = useState(null);
-  const [logLevel, setLogLevel] = useState(null);
   const [redis, setRedis] = useState(null);
   const [name, setName] = useState('');
 
@@ -58,18 +51,18 @@ const Crons = () => {
     }
   }, [commands.results]);
   useEffect(() => {
-    if (selectedItem) {
+    if (state.selectedItem) {
       setCommand(
-        allCommands?.find((c) => c.value === selectedItem.command) || null
+        allCommands?.find((c) => c.value === state.selectedItem.command) || null
       );
-      setExpression(selectedItem.expression);
-      setIsActive(selectedItem.is_active);
-      setKwargs(JSON.stringify(selectedItem.kwargs, null, '\t'));
-      setRedis(JSON.stringify(selectedItem.redis, null, '\t'));
-      setName(selectedItem.name);
+      setExpression(state.selectedItem.expression);
+      setIsActive(state.selectedItem.is_active);
+      setKwargs(JSON.stringify(state.selectedItem.kwargs, null, '\t'));
+      setRedis(JSON.stringify(state.selectedItem.redis, null, '\t'));
+      setName(state.selectedItem.name);
     }
     if (!commands.results) dispatch(new CommandsApi(token).getList());
-  }, [allCommands, commands.results, selectedItem, dispatch, token]);
+  }, [allCommands, commands.results, state.selectedItem, dispatch, token]);
 
   const clearModal = () => {
     setCommand(null);
@@ -98,7 +91,7 @@ const Crons = () => {
     (e) => {
       const cmd = allCommands?.find((c) => c.value === e.value);
       allCommands && setCommand({ label: cmd.label, value: e.value });
-      if (!selectedItem) {
+      if (!state.selectedItem) {
         const placeholders = {
           str: '<placeholder str>',
           bool: false,
@@ -122,11 +115,11 @@ const Crons = () => {
         }
       }
     },
-    [allCommands, selectedItem]
+    [allCommands, state.selectedItem]
   );
   const onDelete = useCallback(
-    () => dispatch(api.delete(selectedItem.id, selectedItem.name)),
-    [dispatch, selectedItem]
+    () => dispatch(api.delete(state.selectedItem.id, state.selectedItem.name)),
+    [dispatch, state.selectedItem]
   );
   const onExpressionChange = useCallback(
     (e) => setExpression(e.target.value),
@@ -159,13 +152,17 @@ const Crons = () => {
       name,
     };
     if (kwargs) data.kwargs = JSON.parse(kwargs.replace(/[\r\n\t]/g, ''));
-    if (selectedItem) dispatch(api.update(selectedItem.id, data));
+    if (state.selectedItem) dispatch(api.update(state.selectedItem.id, data));
     else dispatch(api.create(data));
-  }, [command, selectedItem, dispatch, expression, isActive, kwargs, name]);
-
-  useEffect(() => {
-    !crons && dispatch(api.getList());
-  }, []);
+  }, [
+    command,
+    state.selectedItem,
+    dispatch,
+    expression,
+    isActive,
+    kwargs,
+    name,
+  ]);
 
   return (
     <div>
@@ -193,7 +190,7 @@ const Crons = () => {
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
-                  onClick={() => dispatch(api.getList())}
+                  onClick={() => dispatch(api.getList(state.kwargs))}
                 >
                   <i className='mdi mdi-refresh' />
                 </button>
@@ -206,8 +203,10 @@ const Crons = () => {
                 </button>
               </h4>
 
-              {!selectedItem && !modalOpen && <Errors errors={errors} />}
-              {!selectedItem && !modalOpen && commands.errors && (
+              {!state.selectedItem && !state.modalOpen && (
+                <Errors errors={state.errors} />
+              )}
+              {!state.selectedItem && !state.modalOpen && commands.errors && (
                 <small className={'text-danger'}>
                   Commands
                   <Errors errors={commands.errors} />
@@ -228,10 +227,10 @@ const Crons = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!loading ? (
-                      crons?.length ? (
-                        crons.map((cron, i) =>
-                          !loadingItems?.includes(cron.id) ? (
+                    {!state.loading ? (
+                      state.results?.length ? (
+                        state.results.map((cron, i) =>
+                          !state.loadingItems?.includes(cron.id) ? (
                             <tr key={i}>
                               <td
                                 onClick={() => dispatch(select(cron.id))}
@@ -351,6 +350,13 @@ const Crons = () => {
                   </tbody>
                 </table>
               </div>
+
+              <BottomPagination
+                items={state}
+                fetchMethod={api.getList}
+                newApi={true}
+                setKwargs={setKwargs}
+              />
             </div>
           </div>
         </div>
@@ -409,27 +415,30 @@ const Crons = () => {
       </Modal>
       <Modal
         centered
-        show={Boolean(selectedItem) || modalOpen}
+        show={Boolean(state.selectedItem) || state.modalOpen}
         onHide={onCloseModal}
       >
         <Modal.Header closeButton>
           <Modal.Title>
             <div className='row'>
               <div className='col-lg-12 grid-margin stretch-card'>
-                {selectedItem ? 'Edit' : 'Add new cron'} {selectedItem?.name}
-                {selectedItem ? (
+                {state.selectedItem ? 'Edit' : 'Add new cron'}{' '}
+                {state.selectedItem?.name}
+                {state.selectedItem ? (
                   <button
                     type='button'
                     className='btn btn-outline-success btn-sm border-0 bg-transparent'
-                    onClick={() => dispatch(api.getItem(selectedItem.id))}
+                    onClick={() => dispatch(api.getItem(state.selectedItem.id))}
                   >
                     <i className='mdi mdi-refresh' />
                   </button>
                 ) : null}
               </div>
             </div>
-            {selectedItem && (
-              <p className='text-muted mb-0'>{selectedItem?.description}</p>
+            {state.selectedItem && (
+              <p className='text-muted mb-0'>
+                {state.selectedItem?.description}
+              </p>
             )}
             {command ? (
               allCommands?.find((c) => c.value === command.value)?.args
@@ -461,7 +470,7 @@ const Crons = () => {
             ) : null}
           </Modal.Title>
         </Modal.Header>
-        {loadingItems?.includes(selectedItem?.id) ? (
+        {state.loadingItems?.includes(state.selectedItem?.id) ? (
           <ColorRing
             width='100%'
             height='50'
@@ -470,7 +479,7 @@ const Crons = () => {
         ) : (
           <Modal.Body>
             <Form onSubmit={onSubmit}>
-              <Errors errors={errors} />
+              <Errors errors={state.errors} />
               <Form.Group className='mb-3'>
                 <Form.Label>Management Command</Form.Label>
                 <Select
@@ -560,7 +569,7 @@ const Crons = () => {
           </Modal.Body>
         )}
         <Modal.Footer>
-          {selectedItem && (
+          {state.selectedItem && (
             <Button variant='danger' className='float-left' onClick={onDelete}>
               Delete
             </Button>
