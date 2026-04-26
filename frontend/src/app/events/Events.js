@@ -80,6 +80,11 @@ const Events = () => {
     dispatch(setKwargs({ category: newTypes, page: 1 }));
   };
 
+  const onTodayChange = () => {
+    // Toggle the 'today' filter. Backend expects a truthy value (true) to filter.
+    dispatch(setKwargs({ today: !events.kwargs?.today, page: 1 }));
+  };
+
   useEffect(() => {
     setFiltered(
       results?.filter((item) =>
@@ -150,7 +155,7 @@ const Events = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <a href='!#' onClick={(event) => event.preventDefault()}>
+              <a href='#' onClick={(event) => event.preventDefault()}>
                 Home
               </a>
             </li>
@@ -206,6 +211,13 @@ const Events = () => {
                         </option>
                       ))}
                     </Form.Control>
+                    <Form.Check
+                      type='checkbox'
+                      id='today-filter'
+                      label='Only show events happening today'
+                      onChange={onTodayChange}
+                      checked={Boolean(events.kwargs?.today)}
+                    />
                   </Form.Group>
                 </div>
                 <div className='col-md-6'>
