@@ -71,7 +71,10 @@ class Command(BaseCommand):
                 unique_fields=["url"],
             )
             logger.info(
-                "Events fetched successfully!", source=source.name, category=category
+                "Events fetched successfully!",
+                count=len(events_to_create),
+                category=category,
+                source=source.name,
             )
         else:
             logger.warning("No events found", source=source.name, category=category)
