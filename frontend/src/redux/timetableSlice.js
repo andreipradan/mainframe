@@ -12,6 +12,7 @@ export const {
   setItem,
   setLoading,
   setLoadingItems,
+  setKwargs,
   update,
 } = timetableSlice.actions;
 export default timetableSlice.reducer;
