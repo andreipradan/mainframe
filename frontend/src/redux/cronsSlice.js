@@ -1,8 +1,8 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 import { getBaseSliceOptions } from './shared';
-export const cronsSlice = createSlice(getBaseSliceOptions(
-  "crons", {ordering: ["-is_active", "name"]}
-));
+export const cronsSlice = createSlice(
+  getBaseSliceOptions('crons', { ordering: ['-is_active', 'name'] })
+);
 
 export const {
   create,
@@ -11,11 +11,11 @@ export const {
   set,
   setCompletedLoadingItem,
   setErrors,
+  setKwargs,
   setLoading,
   setLoadingItems: setLoadingCron,
   setModalOpen,
-  update
-} =
-  cronsSlice.actions;
+  update,
+} = cronsSlice.actions;
 
 export default cronsSlice.reducer;

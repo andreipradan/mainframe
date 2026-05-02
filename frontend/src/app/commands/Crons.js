@@ -11,7 +11,11 @@ import CommandsApi from '../../api/commands';
 import CronsApi from '../../api/crons';
 import Errors from '../shared/Errors';
 import { capitalize } from '../utils';
-import { select, setModalOpen } from '../../redux/cronsSlice';
+import {
+  select,
+  setModalOpen,
+  setKwargs as setCronKwargs,
+} from '../../redux/cronsSlice';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 import BottomPagination from '../shared/BottomPagination';
 
@@ -355,7 +359,7 @@ const Crons = () => {
                 items={state}
                 fetchMethod={api.getList}
                 newApi={true}
-                setKwargs={setKwargs}
+                setKwargs={setCronKwargs}
               />
             </div>
           </div>
