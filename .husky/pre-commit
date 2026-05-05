@@ -5,3 +5,7 @@ set -e
 cd frontend || exit 1
 npx --no-install lint-staged --verbose
 CI=true npm test
+
+# Also run pre-commit hooks for Python linting and other checks
+cd .. || exit 1
+uv run pre-commit run

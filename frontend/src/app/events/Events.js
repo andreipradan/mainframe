@@ -72,7 +72,7 @@ const Events = () => {
     }
   };
   const onCityChange = (e) => {
-    dispatch(setKwargs({ city: e.target.value }));
+    dispatch(setKwargs({ city: e.target.value, location: undefined, page: 1 }));
   };
 
   const onCategoryChange = (newValue) => {
@@ -80,9 +80,8 @@ const Events = () => {
     dispatch(setKwargs({ category: newTypes, page: 1 }));
   };
 
-  const onTodayChange = () => {
-    // Toggle the 'today' filter. Backend expects a truthy value (true) to filter.
-    dispatch(setKwargs({ today: !events.kwargs?.today, page: 1 }));
+  const onTodayModeChange = (e) => {
+    dispatch(setKwargs({ today_mode: e.target.value || undefined, page: 1 }));
   };
 
   useEffect(() => {
@@ -201,7 +200,7 @@ const Events = () => {
                     <Form.Label>City</Form.Label>
                     <Form.Control
                       as='select'
-                      value={events.kwargs.city}
+                      value={events.kwargs?.city || ''}
                       onChange={onCityChange}
                     >
                       <option value=''>All Cities</option>
@@ -211,13 +210,48 @@ const Events = () => {
                         </option>
                       ))}
                     </Form.Control>
-                    <Form.Check
-                      type='checkbox'
-                      id='today-filter'
-                      label='Only show events happening today'
-                      onChange={onTodayChange}
-                      checked={Boolean(events.kwargs?.today)}
+                    <Form.Label className='mt-3'>Location</Form.Label>
+                    <Select
+                      isClearable
+                      isDisabled={events.loading}
+                      isLoading={events.loading}
+                      options={events.locations?.map((location) => ({
+                        label: location,
+                        value: location,
+                      }))}
+                      placeholder='All Locations'
+                      styles={selectStyles}
+                      value={
+                        events.kwargs?.location
+                          ? {
+                              label: events.kwargs.location,
+                              value: events.kwargs.location,
+                            }
+                          : null
+                      }
+                      onChange={(selected) =>
+                        dispatch(
+                          setKwargs({
+                            location: selected?.value,
+                            page: 1,
+                          })
+                        )
+                      }
                     />
+                    <Form.Label className='mt-3'>Today filter</Form.Label>
+                    <Form.Control
+                      as='select'
+                      value={events.kwargs?.today_mode || ''}
+                      onChange={onTodayModeChange}
+                    >
+                      <option value=''>All events</option>
+                      <option value='active'>
+                        Only show events happening today
+                      </option>
+                      <option value='started'>
+                        Only show events that started today
+                      </option>
+                    </Form.Control>
                   </Form.Group>
                 </div>
                 <div className='col-md-6'>
