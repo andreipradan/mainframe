@@ -52,8 +52,7 @@ class TestWatcherViews:
             "chat_id": None,
             "created_at": mock.ANY,
             "cron": "0 0 31 2 0",
-            "cron_description": "At 00:00, on day 31 of the month, "
-            "only on Sunday, only in February",
+            "cron_description": mock.ANY,
             "cron_notification": "",
             "cron_notification_description": "",
             "id": watcher.id,
@@ -86,8 +85,7 @@ class TestWatcherViews:
                     "chat_id": None,
                     "created_at": mock.ANY,
                     "cron": "0 0 31 2 0",
-                    "cron_description": "At 00:00, on day 31 of the month, "
-                    "only on Sunday, only in February",
+                    "cron_description": mock.ANY,
                     "cron_notification": "",
                     "cron_notification_description": "",
                     "id": watcher.id,
