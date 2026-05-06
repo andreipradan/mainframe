@@ -165,7 +165,7 @@ class IBClient(EventsClient):
             source=self.source,
             title=title,
             categories=["music" if "concert" in title.lower() else "other"],
-            location=raw["location"].pop("name"),
+            location=raw["location"].pop("name").strip(),
             start_date=datetime.strptime(raw.pop("startDate"), "%Y-%m-%d").replace(
                 tzinfo=ZoneInfo(settings.TIME_ZONE)
             ),
