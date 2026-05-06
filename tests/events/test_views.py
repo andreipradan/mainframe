@@ -106,3 +106,62 @@ class TestEventViewSet:
         assert "Venue A1" in locations
         assert "Venue A2" in locations
         assert "Venue B1" not in locations
+
+    def test_weekend_mode_filter(self, client, staff_session):
+        """Test weekend filter returns events from upcoming/current weekend"""
+        now = django_timezone.now()
+        local_now = django_timezone.localtime(now)
+        today = local_now.date()
+        weekday = today.weekday()  # 0 is Monday, 6 is Sunday
+
+        # Calculate when the weekend starts for test expectations
+        if weekday < 5:  # Mon-Fri
+            days_to_sat = 5 - weekday
+            sat_date = today + timedelta(days=days_to_sat)
+            sun_date = sat_date + timedelta(days=1)
+        elif weekday == 5:  # Saturday
+            sat_date = today
+            sun_date = today + timedelta(days=1)
+        else:  # Sunday
+            sat_date = today
+            sun_date = today
+
+        # Create test events
+        sat_start = django_timezone.make_aware(
+            datetime.combine(sat_date, datetime.min.time())
+        ).astimezone(timezone.utc)
+        sun_start = django_timezone.make_aware(
+            datetime.combine(sun_date, datetime.min.time())
+        ).astimezone(timezone.utc)
+        weekday_before = django_timezone.make_aware(
+            datetime.combine(
+                today - timedelta(days=max(1, weekday + 1)), datetime.min.time()
+            )
+        ).astimezone(timezone.utc)
+
+        EventFactory(
+            title="Weekday Event",
+            start_date=weekday_before,
+            end_date=None,
+        )
+        EventFactory(
+            title="Saturday Event",
+            start_date=sat_start + timedelta(hours=10),
+            end_date=None,
+        )
+        EventFactory(
+            title="Sunday Event",
+            start_date=sun_start + timedelta(hours=14),
+            end_date=None,
+        )
+
+        # Test weekend filter
+        weekend_response = client.get(
+            "/events/?today_mode=weekend",
+            HTTP_AUTHORIZATION=staff_session.token,
+        )
+        assert weekend_response.status_code == status.HTTP_200_OK
+        weekend_titles = {item["title"] for item in weekend_response.data["results"]}
+        assert "Saturday Event" in weekend_titles
+        assert "Sunday Event" in weekend_titles
+        assert "Weekday Event" not in weekend_titles

@@ -30,40 +30,66 @@ class EventViewSet(viewsets.ModelViewSet):
         if any(categories):
             queryset = queryset.filter(categories__overlap=categories)
 
-        if today_mode in {"active", "started"}:
+        if today_mode in {"active", "started", "weekend"}:
             # Calculate local date boundaries and convert to UTC for filtering
             local_now = django_timezone.localtime(django_timezone.now())
-
-            # Create local date boundaries
             today = local_now.date()
-            today_start_naive = datetime.combine(today, datetime.min.time())
-            today_start_local = django_timezone.make_aware(today_start_naive)
+            weekday = today.weekday()  # 0 - Monday, 6 - Sunday
 
-            today_end_naive = datetime.combine(
-                today + timedelta(days=1), datetime.min.time()
-            )
-            today_end_local = django_timezone.make_aware(today_end_naive)
+            if today_mode == "weekend":
+                saturday = 5
+                if weekday < saturday:
+                    sat_date = today + timedelta(days=5 - weekday)
+                    sun_date = sat_date + timedelta(days=1)
+                elif weekday == saturday:  # Saturday
+                    sat_date = today
+                    sun_date = today + timedelta(days=1)
+                else:  # Sunday
+                    sat_date = today
+                    sun_date = today
 
-            # Convert to UTC for database queries
-            today_start = today_start_local.astimezone(timezone.utc)
-            today_end = today_end_local.astimezone(timezone.utc)
+                # Create local weekend boundaries
+                weekend_start_naive = datetime.combine(sat_date, datetime.min.time())
+                weekend_start_local = django_timezone.make_aware(weekend_start_naive)
 
-            if today_mode == "active":
+                weekend_end_naive = datetime.combine(
+                    sun_date + timedelta(days=1), datetime.min.time()
+                )
+                weekend_end_local = django_timezone.make_aware(weekend_end_naive)
+
+                # Convert to UTC for database queries
+                range_start = weekend_start_local.astimezone(timezone.utc)
+                range_end = weekend_end_local.astimezone(timezone.utc)
+            else:
+                # Create local date boundaries for today
+                today_start_naive = datetime.combine(today, datetime.min.time())
+                today_start_local = django_timezone.make_aware(today_start_naive)
+
+                today_end_naive = datetime.combine(
+                    today + timedelta(days=1), datetime.min.time()
+                )
+                today_end_local = django_timezone.make_aware(today_end_naive)
+
+                # Convert to UTC for database queries
+                range_start = today_start_local.astimezone(timezone.utc)
+                range_end = today_end_local.astimezone(timezone.utc)
+
+            if today_mode in ("active", "weekend"):
                 queryset = queryset.filter(
-                    Q(start_date__lt=today_end)
+                    Q(start_date__lt=range_end)
                     & (
-                        Q(end_date__gte=today_start)
+                        Q(end_date__gte=range_start)
                         | (
                             Q(end_date__isnull=True)
-                            & Q(start_date__gte=today_start)
-                            & Q(start_date__lt=today_end)
+                            & Q(start_date__gte=range_start)
+                            & Q(start_date__lt=range_end)
                         )
                     )
                 )
-            else:
+            else:  # started
                 queryset = queryset.filter(
-                    start_date__gte=today_start,
-                    start_date__lt=today_end,
+                    start_date__gte=range_start,
+                    start_date__lt=range_end,
                 )
 
         return queryset
