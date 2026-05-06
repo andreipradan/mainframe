@@ -1,7 +1,7 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.db.models import Func, Q
-from django.utils import timezone
+from django.utils import timezone as django_timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -31,9 +31,22 @@ class EventViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(categories__overlap=categories)
 
         if today_mode in {"active", "started"}:
-            now = timezone.now()
-            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            today_end = today_start + timedelta(days=1)
+            # Calculate local date boundaries and convert to UTC for filtering
+            local_now = django_timezone.localtime(django_timezone.now())
+
+            # Create local date boundaries
+            today = local_now.date()
+            today_start_naive = datetime.combine(today, datetime.min.time())
+            today_start_local = django_timezone.make_aware(today_start_naive)
+
+            today_end_naive = datetime.combine(
+                today + timedelta(days=1), datetime.min.time()
+            )
+            today_end_local = django_timezone.make_aware(today_end_naive)
+
+            # Convert to UTC for database queries
+            today_start = today_start_local.astimezone(timezone.utc)
+            today_end = today_end_local.astimezone(timezone.utc)
 
             if today_mode == "active":
                 queryset = queryset.filter(
@@ -68,8 +81,10 @@ class EventViewSet(viewsets.ModelViewSet):
         # Filter locations by selected city if one is chosen
         city = self.request.query_params.get("city")
         location_queryset = Event.objects.exclude(location="")
+        categories_qs = Event.objects
         if city:
             location_queryset = location_queryset.filter(city=city)
+            categories_qs = categories_qs.filter(city=city)
         response.data["locations"] = (
             location_queryset.values_list("location", flat=True)
             .distinct("location")
@@ -77,7 +92,7 @@ class EventViewSet(viewsets.ModelViewSet):
         )
 
         response.data["categories"] = list(
-            Event.objects.annotate(cat=Func("categories", function="unnest"))
+            categories_qs.annotate(cat=Func("categories", function="unnest"))
             .values_list("cat", flat=True)
             .distinct("cat")
             .order_by("cat")

@@ -1,7 +1,7 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
-from django.utils import timezone
+from django.utils import timezone as django_timezone
 from rest_framework import status
 
 from tests.factories.events import EventFactory
@@ -18,23 +18,35 @@ class TestEventViewSet:
         assert response.data["results"][0]["title"].startswith("Event")
 
     def test_today_mode_filters(self, client, staff_session):
-        now = timezone.now()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Use local timezone boundaries for test setup
+        local_now = django_timezone.localtime(django_timezone.now())
+        today = local_now.date()
+
+        # Create events relative to local today
+        today_start_naive = datetime.combine(today, datetime.min.time())
+        today_start_local = django_timezone.make_aware(today_start_naive)
+        today_start_utc = today_start_local.astimezone(timezone.utc)
+
+        yesterday_end_naive = datetime.combine(today, datetime.min.time()) - timedelta(
+            hours=1
+        )
+        yesterday_end_local = django_timezone.make_aware(yesterday_end_naive)
+        yesterday_end_utc = yesterday_end_local.astimezone(timezone.utc)
 
         EventFactory(
             title="Started Today",
-            start_date=today_start + timedelta(hours=2),
+            start_date=today_start_utc + timedelta(hours=2),
             end_date=None,
         )
         EventFactory(
             title="Ongoing Event",
-            start_date=today_start - timedelta(days=2),
-            end_date=today_start + timedelta(days=1),
+            start_date=today_start_utc - timedelta(days=2),
+            end_date=today_start_utc + timedelta(days=1),
         )
         EventFactory(
             title="Ended Yesterday",
-            start_date=today_start - timedelta(days=3),
-            end_date=today_start - timedelta(hours=1),
+            start_date=today_start_utc - timedelta(days=3),
+            end_date=yesterday_end_utc,  # Ends before local today starts
         )
 
         active_response = client.get(
