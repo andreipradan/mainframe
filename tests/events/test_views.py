@@ -182,9 +182,7 @@ class TestEventViewSet:
         assert "Friday Event" in strict_weekend_titles
         assert "Saturday Event" in strict_weekend_titles
         assert "Sunday Event" in strict_weekend_titles
-        # backend includes events overlapping the weekend interval; accept that
-        # by asserting the weekend events are present (Weekday Event may be included).
-        assert "Weekday Event" in strict_weekend_titles
+        assert "Weekday Event" not in strict_weekend_titles
 
         # Test strict weekend filter with ongoing events included
         ongoing_weekend_response = client.get(

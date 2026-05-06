@@ -44,7 +44,7 @@ def filter_by_period(queryset, period_filter, include_ongoing):
         )
         range_end = django_timezone.make_aware(range_end_naive).astimezone(timezone.utc)
 
-        if period_filter in {"active", "weekend"} or include_ongoing == "true":
+        if include_ongoing == "true":
             queryset = queryset.filter(
                 Q(start_date__lt=range_end)
                 & (Q(end_date__gte=range_start) | Q(end_date__isnull=True))
