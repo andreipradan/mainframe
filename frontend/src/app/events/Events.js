@@ -80,8 +80,19 @@ const Events = () => {
     dispatch(setKwargs({ category: newTypes, page: 1 }));
   };
 
-  const onTodayModeChange = (e) => {
-    dispatch(setKwargs({ today_mode: e.target.value || undefined, page: 1 }));
+  const onPeriodFilterChange = (e) => {
+    dispatch(
+      setKwargs({ period_filter: e.target.value || undefined, page: 1 })
+    );
+  };
+
+  const onIncludeOngoingChange = (e) => {
+    dispatch(
+      setKwargs({
+        include_ongoing: e.target.checked ? 'true' : undefined,
+        page: 1,
+      })
+    );
   };
 
   useEffect(() => {
@@ -235,17 +246,25 @@ const Events = () => {
                 </div>
                 <div className='col-md-6'>
                   <Form.Group>
-                    <Form.Label>Today / Weekend</Form.Label>
+                    <Form.Label>When</Form.Label>
                     <Form.Control
                       as='select'
-                      value={events.kwargs?.today_mode || ''}
-                      onChange={onTodayModeChange}
+                      value={events.kwargs?.period_filter || ''}
+                      onChange={onPeriodFilterChange}
                     >
-                      <option value=''>No filtering</option>
-                      <option value='started'>Starts today</option>
-                      <option value='weekend'>Weekend</option>
-                      <option value='active'>Active</option>
+                      <option value=''>Any time</option>
+                      <option value='today'>Today</option>
+                      <option value='weekend'>This weekend</option>
                     </Form.Control>
+                    <Form.Check
+                      className='mt-2'
+                      disabled={!events.kwargs?.period_filter}
+                      type='checkbox'
+                      id='include-ongoing'
+                      label='Older ongoing events'
+                      checked={events.kwargs?.include_ongoing === 'true'}
+                      onChange={onIncludeOngoingChange}
+                    />
                   </Form.Group>
                 </div>
                 <div className='col-md-6'>
