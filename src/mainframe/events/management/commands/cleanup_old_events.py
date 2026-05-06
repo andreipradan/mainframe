@@ -1,8 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 import structlog
 from django.core.management import BaseCommand
 from django.db.models import Q
+from django.utils import timezone
 
 from mainframe.events.models import Event
 
@@ -13,13 +14,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.info("Cleaning up all past events...")
 
+        now = timezone.now()
+        local_today_start = timezone.make_aware(
+            datetime.combine(timezone.localtime(now).date(), datetime.min.time())
+        )
+
         events_to_delete = list(
             Event.objects.filter(
-                Q(end_date__lt=datetime.now(timezone.utc))
-                | Q(
-                    end_date__isnull=True,
-                    start_date__lt=datetime.now(timezone.utc),
-                )
+                Q(end_date__lt=now)
+                | Q(end_date__isnull=True, start_date__lt=local_today_start)
             ).values_list("id", flat=True)
         )
         if events_to_delete:
