@@ -178,17 +178,6 @@ const Events = () => {
                 >
                   <i className='mdi mdi-refresh' />
                 </button>
-                <button
-                  type='button'
-                  className='float-right btn btn-outline-primary btn-rounded btn-icon pl-1'
-                  onClick={() => {
-                    clearModalForm();
-                    dispatch(selectItem());
-                    dispatch(setModalOpen(true));
-                  }}
-                >
-                  <i className='mdi mdi-plus' />
-                </button>
                 <p className='text-small text-muted'>Total: {count}</p>
               </h4>
 
@@ -210,7 +199,11 @@ const Events = () => {
                         </option>
                       ))}
                     </Form.Control>
-                    <Form.Label className='mt-3'>Location</Form.Label>
+                  </Form.Group>
+                </div>
+                <div className='col-md-6'>
+                  <Form.Group>
+                    <Form.Label>Location</Form.Label>
                     <Select
                       isClearable
                       isDisabled={events.loading}
@@ -238,24 +231,24 @@ const Events = () => {
                         )
                       }
                     />
-                    <Form.Label className='mt-3'>Today filter</Form.Label>
+                  </Form.Group>
+                </div>
+                <div className='col-md-6'>
+                  <Form.Group>
+                    <Form.Label>Today</Form.Label>
                     <Form.Control
                       as='select'
                       value={events.kwargs?.today_mode || ''}
                       onChange={onTodayModeChange}
                     >
-                      <option value=''>All events</option>
-                      <option value='active'>
-                        Only show events happening today
-                      </option>
-                      <option value='started'>
-                        Only show events that started today
-                      </option>
+                      <option value=''>No filtering</option>
+                      <option value='started'>Starts today</option>
+                      <option value='active'>Ongoing today</option>
                     </Form.Control>
                   </Form.Group>
                 </div>
                 <div className='col-md-6'>
-                  <Form.Group className='col-md-12'>
+                  <Form.Group>
                     <Form.Label>Categories</Form.Label>&nbsp;
                     <Select
                       closeMenuOnSelect={false}
@@ -305,34 +298,24 @@ const Events = () => {
                         (filtered || []).map((event, index) => (
                           <tr key={event.id || index}>
                             <td>{index + 1}</td>
-                            <td
-                              className='cursor-pointer'
-                              onClick={() => dispatch(selectItem(event.id))}
-                            >
-                              <span className='text-primary'>
-                                {event.title}
-                              </span>
-                              &nbsp;
-                              <br />
-                              <small>
-                                Starts: {formatTime(event.start_date)}
-                              </small>
-                              <br />
-                              {event.end_date ? (
-                                <small>
-                                  Ends: {formatTime(event.end_date)}
-                                </small>
-                              ) : null}
-                            </td>
                             <td>
                               <a
                                 href={event.url}
                                 target='_blank'
                                 rel='noopener noreferrer'
                               >
-                                {event.source_name}&nbsp;
-                                <i className='mdi mdi mdi-link-variant' />
+                                {event.title}
                               </a>
+                              &nbsp;
+                              <br />
+                              <small>{formatTime(event.start_date)}</small>
+                              <br />
+                              {event.end_date ? (
+                                <small>{formatTime(event.end_date)}</small>
+                              ) : null}
+                            </td>
+                            <td>
+                              <span>{event.source_name}&nbsp;</span>
                             </td>
                             <td>{event.city}</td>
                             <td>
