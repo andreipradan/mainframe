@@ -65,9 +65,9 @@ const Events = () => {
     } catch (error) {
       const annotation = { ...i.end, text: error.message, type: 'error' };
       setAdditionalDataAnnotations(
-        !additionalDataAnnotations
-          ? [annotation]
-          : [...additionalDataAnnotations, annotation]
+        additionalDataAnnotations
+          ? [...additionalDataAnnotations, annotation]
+          : [annotation]
       );
     }
   };
@@ -127,7 +127,7 @@ const Events = () => {
     };
     if (additionalData) {
       payload.additional_data = JSON.parse(
-        additionalData.replace(/[\r\n\t]/g, '')
+        additionalData.replaceAll(/[\r\n\t]/g, '')
       );
     }
 
@@ -170,7 +170,7 @@ const Events = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Event list
+                Event list{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -235,7 +235,7 @@ const Events = () => {
                 </div>
                 <div className='col-md-6'>
                   <Form.Group>
-                    <Form.Label>Today</Form.Label>
+                    <Form.Label>Today / Weekend</Form.Label>
                     <Form.Control
                       as='select'
                       value={events.kwargs?.today_mode || ''}
@@ -243,7 +243,8 @@ const Events = () => {
                     >
                       <option value=''>No filtering</option>
                       <option value='started'>Starts today</option>
-                      <option value='active'>Ongoing today</option>
+                      <option value='weekend'>Weekend</option>
+                      <option value='active'>Active</option>
                     </Form.Control>
                   </Form.Group>
                 </div>
@@ -293,95 +294,7 @@ const Events = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!loading ? (
-                      (filtered || []).length ? (
-                        (filtered || []).map((event, index) => (
-                          <tr key={event.id || index}>
-                            <td>{index + 1}</td>
-                            <td>
-                              <a
-                                href={event.url}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                              >
-                                {event.title}
-                              </a>
-                              &nbsp;
-                              <br />
-                              <small>{formatTime(event.start_date)}</small>
-                              <br />
-                              {event.end_date ? (
-                                <small>{formatTime(event.end_date)}</small>
-                              ) : null}
-                            </td>
-                            <td>
-                              <span>{event.source_name}&nbsp;</span>
-                            </td>
-                            <td>{event.city}</td>
-                            <td>
-                              {event.location_url ? (
-                                <a
-                                  href={event.location_url}
-                                  target='_blank'
-                                  rel='noopener noreferrer'
-                                >
-                                  {event.location}
-                                </a>
-                              ) : (
-                                event.location
-                              )}
-                            </td>
-                            <td>
-                              {event.categories?.map((c) => (
-                                <button
-                                  key={c.toString()}
-                                  disabled={events.kwargs.category?.includes(c)}
-                                  className={'btn btn-sm text-secondary'}
-                                  onClick={() =>
-                                    dispatch(
-                                      setKwargs({
-                                        category: [
-                                          ...new Set([
-                                            ...(events.kwargs.category || []),
-                                            c,
-                                          ]),
-                                        ],
-                                        page: 1,
-                                      })
-                                    )
-                                  }
-                                >
-                                  {c}{' '}
-                                </button>
-                              ))}
-                            </td>
-                            <td>
-                              <Button
-                                size='sm'
-                                variant='outline-primary'
-                                className='mr-2'
-                                onClick={() => onEdit(event)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size='sm'
-                                variant='outline-danger'
-                                onClick={() => onDelete(event)}
-                              >
-                                Delete
-                              </Button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={8} className='text-center'>
-                            No events available
-                          </td>
-                        </tr>
-                      )
-                    ) : (
+                    {loading ? (
                       <tr>
                         <td colSpan={8}>
                           <Audio
@@ -390,6 +303,92 @@ const Events = () => {
                             color='green'
                             wrapperStyle={{ width: '100%' }}
                           />
+                        </td>
+                      </tr>
+                    ) : (filtered || []).length ? (
+                      (filtered || []).map((event, index) => (
+                        <tr key={event.id || index}>
+                          <td>{index + 1}</td>
+                          <td>
+                            <a
+                              href={event.url}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                            >
+                              {event.title}
+                            </a>
+                            &nbsp;
+                            <br />
+                            <small>{formatTime(event.start_date)}</small>
+                            <br />
+                            {event.end_date ? (
+                              <small>{formatTime(event.end_date)}</small>
+                            ) : null}
+                          </td>
+                          <td>
+                            <span>{event.source_name}&nbsp;</span>
+                          </td>
+                          <td>{event.city}</td>
+                          <td>
+                            {event.location_url ? (
+                              <a
+                                href={event.location_url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                              >
+                                {event.location}
+                              </a>
+                            ) : (
+                              event.location
+                            )}
+                          </td>
+                          <td>
+                            {event.categories?.map((c) => (
+                              <button
+                                key={c.toString()}
+                                disabled={events.kwargs.category?.includes(c)}
+                                className={'btn btn-sm text-secondary'}
+                                onClick={() =>
+                                  dispatch(
+                                    setKwargs({
+                                      category: [
+                                        ...new Set([
+                                          ...(events.kwargs.category || []),
+                                          c,
+                                        ]),
+                                      ],
+                                      page: 1,
+                                    })
+                                  )
+                                }
+                              >
+                                {c}{' '}
+                              </button>
+                            ))}
+                          </td>
+                          <td>
+                            <Button
+                              size='sm'
+                              variant='outline-primary'
+                              className='mr-2'
+                              onClick={() => onEdit(event)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size='sm'
+                              variant='outline-danger'
+                              onClick={() => onDelete(event)}
+                            >
+                              Delete
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={8} className='text-center'>
+                          No events available
                         </td>
                       </tr>
                     )}
