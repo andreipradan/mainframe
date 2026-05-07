@@ -122,16 +122,24 @@ class EBClient(EventsClient):
 
             start_date = parse_datetime(event_data.pop("starting_date"))
             end_date = parse_datetime(event_data.pop("ending_date"))
+            title = event_data.pop("title")
+            city = event_data.pop("city_name") or ""
+
+            if city:
+                if title.endswith(f" {city}"):
+                    title = title.replace(f" {city}", "").strip()
+                if title.endswith(f" | {city.upper()}"):
+                    title = title.replace(f" | {city.upper()}", "").strip()
 
             events.append(
                 Event(
                     source=self.source,
-                    title=event_data.pop("title"),
+                    title=title,
                     categories=[CATEGORY_NAME_BY_ID[event_data.pop("category_id")]],
                     location=event_data.pop("hall_name", ""),
                     start_date=start_date,
                     url=url,
-                    city=event_data.pop("city_name") or "",
+                    city=city,
                     description=event_data.pop("subtitle") or "",
                     end_date=end_date,
                     external_id=event_data.pop("id"),
@@ -161,16 +169,23 @@ class IBClient(EventsClient):
             tag.text.strip().replace("/*<![CDATA[*/", "").replace("/*]]>*/", "").strip()
         )
         title = raw.pop("name")
+        city = raw["location"]["address"].pop("addressLocality").strip()
+        location = raw["location"].pop("name").strip()
+        if title.startswith(f"{city}: "):
+            title = title.replace(f"{city}: ", "").strip()
+        if title.endswith(f" la {location}"):
+            title = title.replace(f" la {location}", "").strip()
+
         return Event(
             source=self.source,
             title=title,
             categories=["music" if "concert" in title.lower() else "other"],
-            location=raw["location"].pop("name").strip(),
+            location=location,
             start_date=datetime.strptime(raw.pop("startDate"), "%Y-%m-%d").replace(
                 tzinfo=ZoneInfo(settings.TIME_ZONE)
             ),
             url=raw.pop("url"),
-            city=raw["location"]["address"].pop("addressLocality"),
+            city=city,
             description=raw.pop("description"),
             end_date=datetime.strptime(raw.pop("endDate"), "%Y-%m-%d").replace(
                 tzinfo=ZoneInfo(settings.TIME_ZONE)
@@ -211,6 +226,13 @@ class ZnClient(EventsClient):
                 location = title.split("@")[-1].strip()
             else:
                 location = location_tag.text.strip()
+
+            if location.endswith(f" {city}"):
+                location = location.replace(f" {city}", "").strip()
+
+            if title.endswith(f" @ {location}"):
+                title = title.replace(f" @ {location}", "").strip()
+
             events.append(
                 Event(
                     source=self.source,
