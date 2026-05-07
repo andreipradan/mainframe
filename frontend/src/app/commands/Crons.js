@@ -218,7 +218,7 @@ const Crons = () => {
               )}
 
               <div className='table-responsive'>
-                <table className='table table-hover'>
+                <table className='table'>
                   <thead>
                     <tr>
                       <th> # </th>
@@ -236,36 +236,20 @@ const Crons = () => {
                         state.results.map((cron, i) =>
                           !state.loadingItems?.includes(cron.id) ? (
                             <tr key={i}>
+                              <td>{i + 1}</td>
                               <td
                                 onClick={() => dispatch(select(cron.id))}
-                                className='cursor-pointer'
-                              >
-                                {i + 1}
-                              </td>
-                              <td
-                                onClick={() => dispatch(select(cron.id))}
-                                className='cursor-pointer'
+                                className='cursor-pointer text-primary'
                               >
                                 {cron.name}
                               </td>
-                              <td
-                                onClick={() => dispatch(select(cron.id))}
-                                className='cursor-pointer'
-                              >
-                                {cron.cron_description}
-                              </td>
-                              <td
-                                onClick={() => dispatch(select(cron.id))}
-                                className='cursor-pointer'
-                              >
+                              <td>{cron.cron_description}</td>
+                              <td>
                                 <i
                                   className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`}
                                 />
                               </td>
-                              <td
-                                onClick={() => dispatch(select(cron.id))}
-                                className='cursor-pointer'
-                              >
+                              <td>
                                 {cron.redis?.history?.[0]?.timestamp
                                   ? new Date(
                                       cron.redis.history[0].timestamp
@@ -273,7 +257,7 @@ const Crons = () => {
                                   : '-'}
                               </td>
                               <td
-                                className={`cursor-pointer text-${
+                                className={`text-${
                                   cron.redis.history?.[0]?.status === 'complete'
                                     ? 'success'
                                     : cron.redis.history?.[0]?.status ===

@@ -147,7 +147,11 @@ const Navbar = () => {
           </li>
 
           {/* Mail Icon */}
-          <Dropdown alignRight as='li' className='nav-item border-left'>
+          <Dropdown
+            alignRight
+            as='li'
+            className='nav-item border-left d-none d-lg-block'
+          >
             <Dropdown.Toggle
               as='a'
               className='nav-link count-indicator cursor-pointer'
@@ -242,7 +246,11 @@ const Navbar = () => {
           </Dropdown>
 
           {/* Notifications */}
-          <Dropdown alignRight as='li' className='nav-item border-left'>
+          <Dropdown
+            alignRight
+            as='li'
+            className='nav-item border-left d-none d-lg-block'
+          >
             <Dropdown.Toggle
               as='a'
               className='nav-link count-indicator cursor-pointer'
@@ -320,7 +328,7 @@ const Navbar = () => {
 
           {/* RPi Status */}
           <li
-            className='nav-item border-left border-right d-none d-lg-block'
+            className='nav-item'
             type='button'
             onClick={() =>
               ngrokToken
