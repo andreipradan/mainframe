@@ -157,4 +157,8 @@ class Command(BaseCommand):
         else:
             client.clear_events(event_type=outage_type, branch=branch.title())
 
-        healthchecks.ping("outages")
+        healthcheck_name = {
+            TYPE_ACCIDENTAL: "outages_accidental",
+            TYPE_PLANNED_15_DAYS: "outages_planned_15_days",
+        }
+        healthchecks.ping(healthcheck_name[outage_type])
