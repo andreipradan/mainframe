@@ -1,0 +1,261 @@
+// EXAMPLE CONFIG FILE FOR ALLOY CHECK INTEGRATION
+// MAY NOT WORK OUT OF THE BOX, MUST BE CUSTOMIZED TO FIT YOUR ENVIRONMENT
+
+
+prometheus.exporter.self "alloy_check" { }
+
+discovery.relabel "alloy_check" {
+  targets = prometheus.exporter.self.alloy_check.targets
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+
+  rule {
+    target_label = "alloy_hostname"
+    replacement  = constants.hostname
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "integrations/alloy-check"
+  }
+}
+
+prometheus.scrape "alloy_check" {
+  targets    = discovery.relabel.alloy_check.output
+  forward_to = [prometheus.relabel.alloy_check.receiver]
+
+  scrape_interval = "60s"
+}
+
+prometheus.relabel "alloy_check" {
+  forward_to = [prometheus.remote_write.metrics_service.receiver]
+
+  rule {
+    source_labels = ["__name__"]
+    regex         = "(prometheus_target_sync_length_seconds_sum|prometheus_target_scrapes_.*|prometheus_target_interval.*|prometheus_sd_discovered_targets|alloy_build.*|prometheus_remote_write_wal_samples_appended_total|process_start_time_seconds)"
+    action        = "keep"
+  }
+}
+
+prometheus.remote_write "metrics_service" {
+  endpoint {
+    url = sys.env("PROMETHEUS_PUSH_URL")
+
+    basic_auth {
+      username = sys.env("PROMETHEUS_USERNAME")  // this may already be populated at install
+      password = sys.env("GCLOUD_RW_API_KEY")
+    }
+  }
+}
+
+loki.write "grafana_cloud_loki" {
+  endpoint {
+    url = sys.env("LOKI_PUSH_URL")
+
+    basic_auth {
+      username = sys.env("LOKI_USERNAME")  // this may already be populated at install
+      password = sys.env("GCLOUD_RW_API_KEY")
+    }
+  }
+}
+
+prometheus.exporter.unix "integrations_node_exporter" { }
+
+discovery.relabel "integrations_node_exporter" {
+	targets = prometheus.exporter.unix.integrations_node_exporter.targets
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+
+	rule {
+		target_label = "job"
+		replacement  = "integrations/raspberrypi-node"
+	}
+}
+
+prometheus.scrape "integrations_node_exporter" {
+	targets    = discovery.relabel.integrations_node_exporter.output
+	forward_to = [prometheus.remote_write.metrics_service.receiver]
+	job_name   = "integrations/node_exporter"
+}
+
+discovery.relabel "logs_integrations_integrations_node_exporter_journal_scrape" {
+  targets = []
+
+  // these are collected separately via file scraping to get richer metadata,
+  // so we drop them from the journal scrape to avoid duplication
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(backend|huey)\\.service"
+    action        = "drop"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  rule {
+	source_labels = ["__journal__boot_id"]
+	target_label  = "boot_id"
+  }
+
+  rule {
+	source_labels = ["__journal__transport"]
+	target_label  = "transport"
+  }
+
+  rule {
+	source_labels = ["__journal_priority_keyword"]
+	target_label  = "level"
+  }
+}
+
+loki.source.journal "logs_integrations_integrations_node_exporter_journal_scrape" {
+  max_age       = "24h0m0s"
+  relabel_rules = discovery.relabel.logs_integrations_integrations_node_exporter_journal_scrape.rules
+  forward_to    = [loki.write.grafana_cloud_loki.receiver]
+  labels        = {
+	instance = constants.hostname,
+	job      = "integrations/raspberrypi-node",
+  }
+}
+
+local.file_match "logs_integrations_integrations_node_exporter_direct_scrape" {
+	path_targets = [
+	    {
+		__address__ = "localhost",
+		__path__    = "/var/log/{syslog,messages,*.log}",
+		instance    = constants.hostname,
+		job         = "integrations/raspberrypi-node",
+	    },
+        ]
+}
+
+// custom nginx log processing to parse access and error logs, add structured labels
+local.file_match "nginx_logs" {
+  path_targets = [
+    {
+      __path__ = "/var/log/nginx/access.log",
+      instance = constants.hostname,
+      job      = "integrations/raspberrypi-node",
+      log_type = "access",
+    },
+    {
+      __path__ = "/var/log/nginx/error.log",
+      instance = constants.hostname,
+      job      = "integrations/raspberrypi-node",
+      log_type = "error",
+    },
+  ]
+}
+
+loki.source.file "nginx_source" {
+  targets    = local.file_match.nginx_logs.targets
+  forward_to = [loki.process.nginx_process.receiver]
+}
+
+loki.process "nginx_process" {
+  // Access log lines
+  stage.match {
+    selector = `{log_type="access"}`
+    stage.regex {
+      expression = `^(?P<extra>.+)$`
+    }
+    stage.regex {
+      expression = `^(?P<remote_addr>\S+) \S+ \S+ \[.*?\] "(?P<method>\S+) (?P<uri>\S+) (?P<protocol>[^"]+)" (?P<status>\d+) (?P<bytes>\d+) "(?P<referer>[^"]*)" "(?P<user_agent>[^"]*)"`
+    }
+    stage.template {
+      source   = "event"
+      template = `{{ if .method }}{"event":"{{ .method }} {{ .uri }} {{ .status }}","remote_addr":"{{ .remote_addr }}","method":"{{ .method }}","uri":"{{ .uri }}","protocol":"{{ .protocol }}","status":"{{ .status }}","bytes":"{{ .bytes }}","referer":"{{ .referer }}","user_agent":"{{ .user_agent }}"}{{ else }}{{ .extra }}{{ end }}`
+    }
+    stage.output {
+      source = "event"
+    }
+    stage.static_labels {
+      values = {
+        logger = "nginx.access",
+        level  = "info",
+      }
+    }
+  }
+
+  // Error log lines
+  stage.match {
+    selector = `{log_type="error"}`
+    stage.regex {
+      expression = `^(?P<extra>.+)$`
+    }
+    stage.regex {
+      expression = `^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[(?P<error_level>[^\]]+)\] \S+ (?P<event>.*)`
+    }
+    stage.template {
+      source   = "event"
+      template = `{{ if .event }}{"event":"{{ .event }}","error_level":"{{ .error_level }}"}{{ else }}{{ .extra }}{{ end }}`
+    }
+    stage.output {
+      source = "event"
+    }
+    stage.static_labels {
+      values = {
+        logger = "nginx.error",
+        level  = "error",
+      }
+    }
+  }
+
+  forward_to = [loki.write.grafana_cloud_loki.receiver]
+}
+
+loki.source.file "logs_integrations_integrations_node_exporter_direct_scrape" {
+	targets    = local.file_match.logs_integrations_integrations_node_exporter_direct_scrape.targets
+	forward_to = [loki.write.grafana_cloud_loki.receiver]
+}
+local.file_match "mainframe_json_logs" {
+  path_targets = [
+    {
+      __path__ = "/var/log/mainframe/log.json",
+      instance = constants.hostname,
+      job      = "integrations/raspberrypi-node",
+    },
+  ]
+}
+
+loki.source.file "mainframe_source" {
+  targets    = local.file_match.mainframe_json_logs.targets
+  forward_to = [loki.process.mainframe_json_process.receiver]
+}
+
+loki.process "mainframe_json_process" {
+  forward_to = [loki.write.grafana_cloud_loki.receiver]
+
+  stage.json {
+    expressions = {
+      event     = "event",
+      timestamp = "timestamp",
+      logger    = "logger",
+      level     = "level",
+    }
+  }
+
+  stage.drop {
+    expression = "^(Executing |Enqueueing periodic task )mainframe\\.|executed in \\d+\\.\\d+s$"
+    source     = "event"
+  }
+
+  stage.labels {
+    values = {
+      level = "level",
+    }
+  }
+
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339Nano"
+  }
+}

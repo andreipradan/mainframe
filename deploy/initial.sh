@@ -130,7 +130,9 @@ curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trust
 
 echo "[ngrok] Done."
 echo "[ngrok] Log into your ngrok account https://dashboard.ngrok.com/get-started/your-authtoken"
-echo "and copy add your auth token here by doing:"
-echo "ngrok config add-authtoken <your auth token here>"
+echo "[ngrok] and copy add your auth token here by doing:"
+echo "[ngrok] ngrok config add-authtoken <your auth token here>"
+echo "[grafana] Go to grafana website and install it"
+echo "[grafana] then update /etc/alloy/config.alloy with details from ${PROJECT_DIR}/deploy/example.config.alloy"
 echo "then continue with ./deploy/initial.sh --continue"
 exit 0
