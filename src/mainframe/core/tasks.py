@@ -19,6 +19,9 @@ def get_redis_client():
 
 
 def log_status(key, error=None, **kwargs):
+    if not error and key in ["[earthquakes] INFP", "[earthquakes] USGS"]:
+        return {}
+
     stamp = {"timestamp": timezone.now().isoformat()}
     redis_client = get_redis_client()
     key = f"tasks.{key}"
