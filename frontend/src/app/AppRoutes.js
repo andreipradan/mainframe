@@ -11,6 +11,7 @@ const Crons = lazy(() => import('./commands/Crons'));
 const Devices = lazy(() => import('./devices/Devices'));
 const Earthquakes = lazy(() => import('./earthquakes/Earthquakes'));
 const Events = lazy(() => import('./events/Events'));
+const FavoritesManager = lazy(() => import('./events/FavoritesManager'));
 const ExpensesCar = lazy(() => import('./expenses/Car'));
 const ExpensesTravel = lazy(() => import('./expenses/Travel'));
 const ExpenseTravelGroups = lazy(() => import('./expenses/ExpenseGroups'));
@@ -197,6 +198,9 @@ const AppRoutes = () => {
           />
         )}
         {user?.is_staff && <Route exact path='/events' component={Events} />}
+        {user?.is_staff && (
+          <Route exact path='/events/favorites' component={FavoritesManager} />
+        )}
         {user?.is_staff && <Route exact path='/sources' component={Sources} />}
 
         <Route path='/basic-ui/buttons' component={Buttons} />

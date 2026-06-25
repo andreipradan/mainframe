@@ -5,12 +5,16 @@ import AceEditor from 'react-ace';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
+import Select from 'react-select';
+
 import BottomPagination from '../shared/BottomPagination';
 import EventsApi from '../../api/events';
+import FavoritesApi from '../../api/favorites';
+import FavoriteBandsFilter from './FavoriteBandsFilter';
 import Errors from '../shared/Errors';
+
 import { selectItem, setKwargs, setModalOpen } from '../../redux/eventsSlice';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
-import Select from 'react-select';
 import { formatTime } from '../earthquakes/Earthquakes';
 
 import 'ace-builds';
@@ -33,11 +37,14 @@ const fromDateTimeLocal = (value) =>
 const Events = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
+
   const events = useSelector((state) => state.events);
   const { results, errors, loading, count, selectedItem, modalOpen } = events;
 
+  const favorites = useSelector((state) => state.favorites);
+  const favResults = favorites.results || [];
+
   const [filtered, setFiltered] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -96,17 +103,25 @@ const Events = () => {
   };
 
   useEffect(() => {
-    setFiltered(
-      results?.filter((item) =>
-        ['title', 'location', 'source'].some((key) =>
-          item[key]
-            ?.toString()
-            ?.toLowerCase()
-            ?.includes(searchTerm.toLowerCase())
-        )
-      ) ?? []
-    );
-  }, [results, searchTerm]);
+    const favoritesFilter = favorites.favoritesFilter;
+
+    if (favoritesFilter && favResults.length) {
+      const lowerFavs = favResults.map((f) =>
+        String(f.name || '').toLowerCase()
+      );
+      const filteredByFavs = (results || []).filter((item) => {
+        const title = String(item.title || '').toLowerCase();
+        return lowerFavs.some((fav) => title.includes(fav));
+      });
+      setFiltered(filteredByFavs);
+    } else {
+      setFiltered(results ?? []);
+    }
+  }, [results, events.favoritesFilter]);
+
+  useEffect(() => {
+    if (!favResults.length) dispatch(new FavoritesApi(token).getList());
+  }, [token]);
 
   useEffect(() => {
     if (selectedItem) {
@@ -286,17 +301,9 @@ const Events = () => {
                         value: t,
                       }))}
                     />
+                    <FavoriteBandsFilter />
                   </Form.Group>
                 </div>
-              </div>
-
-              <div className='form-group mb-3'>
-                <input
-                  className='form-control'
-                  placeholder='Search events'
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
               </div>
 
               <div className='table-responsive table-hover'>

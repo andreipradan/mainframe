@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
@@ -26,3 +27,15 @@ class Event(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+
+class FavoriteBand(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
+    external_id = models.CharField(blank=True, max_length=100)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.user})"

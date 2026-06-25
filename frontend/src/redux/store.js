@@ -16,6 +16,8 @@ import devicesReducer from '../redux/devicesSlice';
 import expensesReducer from '../redux/expensesSlice';
 import exchangeReducer from '../redux/exchangeSlice';
 import earthquakesReducer from '../redux/earthquakesSlice';
+import eventsReducer from '../redux/eventsSlice';
+import favoritesReducer from '../redux/favoritesSlice';
 import groupsReducer from '../redux/groupsSlice';
 import investmentsReducer from '../redux/investmentsSlice';
 import lightsReducer from '../redux/lightsSlice';
@@ -35,7 +37,6 @@ import transactionsReducer from '../redux/transactionsSlice';
 import transitSlice from './transitSlice';
 import usersSlice from '../redux/usersSlice';
 import watchersSlice from '../redux/watchersSlice';
-import eventsReducer from '../redux/eventsSlice';
 
 export default configureStore({
   reducer: {
@@ -56,6 +57,8 @@ export default configureStore({
     exchange: exchangeReducer,
     expenses: expensesReducer,
     earthquakes: earthquakesReducer,
+    events: eventsReducer,
+    favorites: favoritesReducer,
     investments: investmentsReducer,
     groups: groupsReducer,
     lights: lightsReducer,
@@ -73,7 +76,6 @@ export default configureStore({
     timetable: timetableReducer,
     transactions: transactionsReducer,
     transit: transitSlice,
-    events: eventsReducer,
     users: usersSlice,
     watchers: watchersSlice,
   },

@@ -6,8 +6,8 @@ from django.utils import timezone as django_timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from mainframe.events.models import Event
-from mainframe.events.serializers import EventSerializer
+from mainframe.events.models import Event, FavoriteBand
+from mainframe.events.serializers import EventSerializer, FavoriteBandSerializer
 
 
 def filter_by_period(queryset, period_filter, include_ongoing):
@@ -80,6 +80,18 @@ class EventViewSet(viewsets.ModelViewSet):
         if any(categories):
             queryset = queryset.filter(categories__overlap=categories)
 
+        search_term = self.request.query_params.get("search")
+        if search_term:
+            queryset = queryset.filter(title__icontains=search_term)
+
+        favorites = self.request.query_params.getlist("favorites")
+        if favorites:
+            fav_q = Q()
+            for fav in favorites:
+                if fav:
+                    fav_q |= Q(title__icontains=fav)
+            queryset = queryset.filter(fav_q)
+
         return filter_by_period(queryset, period_filter, include_ongoing)
 
     def list(self, request, *args, **kwargs):
@@ -125,3 +137,19 @@ class EventViewSet(viewsets.ModelViewSet):
             .order_by("location")
         )
         return response
+
+
+class FavoriteBandViewSet(viewsets.ModelViewSet):
+    queryset = FavoriteBand.objects.all()
+    serializer_class = FavoriteBandSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user = self.request.user
+        return FavoriteBand.objects.filter(user=user).order_by("name")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
