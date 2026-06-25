@@ -1,72 +1,80 @@
-import React from 'react'
-import { useDispatch, useSelector } from "react-redux";
-import { Audio, ColorRing } from "react-loader-spinner";
-import Form from "react-bootstrap/Form";
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Audio, ColorRing } from 'react-loader-spinner';
+import Form from 'react-bootstrap/Form';
 
-import { selectItem, setKwargs } from "../../redux/messagesSlice";
-import { selectStyles } from "../finances/Accounts/Categorize/EditModal";
-import BottomPagination from "../shared/BottomPagination";
-import EditModal from "./components/EditModal";
-import Errors from "../shared/Errors";
-import MessagesApi from "../../api/messages";
-import Select from "react-select";
+import { selectItem, setKwargs } from '../../redux/messagesSlice';
+import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
+import BottomPagination from '../shared/BottomPagination';
+import EditModal from './components/EditModal';
+import Errors from '../shared/Errors';
+import MessagesApi from '../../api/messages';
+import Select from 'react-select';
 
-
-const Messages = () =>  {
+const Messages = () => {
   const dispatch = useDispatch();
-  const messages = useSelector(state => state.messages)
-  const token = useSelector(state => state.auth.token)
+  const messages = useSelector((state) => state.messages);
+  const token = useSelector((state) => state.auth.token);
 
-  const api = new MessagesApi(token)
+  const api = new MessagesApi(token);
 
-  const onAuthorChange = newValue => {
-    const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({author: newTypes, page: 1}))
-  }
+  const onAuthorChange = (newValue) => {
+    const newTypes = newValue.map((v) => v.value);
+    dispatch(setKwargs({ author: newTypes, page: 1 }));
+  };
 
-  const onChatIdChange = newValue => {
-    const newTypes = newValue.map(v => v.value)
-    dispatch(setKwargs({chat_id: newTypes, page: 1}))
-  }
+  const onChatIdChange = (newValue) => {
+    const newTypes = newValue.map((v) => v.value);
+    dispatch(setKwargs({ chat_id: newTypes, page: 1 }));
+  };
 
   return (
     <div>
-      <div className="page-header">
-        <h3 className="page-title">Messages</h3>
-        <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Home</a></li>
-            <li className="breadcrumb-item active" aria-current="page">Messages</li>
+      <div className='page-header'>
+        <h3 className='page-title'>Messages</h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <span className={'text-primary'}>Home</span>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Messages
+            </li>
           </ol>
         </nav>
       </div>
-      <div className="row">
-        <div className="col-lg-12 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <Errors errors={messages.errors}/>
-              <div className="table-responsive">
-                <div className="mb-0 text-muted">
-                  <div className="row">
-                    <div className="col-sm-6">
-                      <h4 className="text-secondary">
+      <div className='row'>
+        <div className='col-lg-12 grid-margin stretch-card'>
+          <div className='card'>
+            <div className='card-body'>
+              <Errors errors={messages.errors} />
+              <div className='table-responsive'>
+                <div className='mb-0 text-muted'>
+                  <div className='row'>
+                    <div className='col-sm-6'>
+                      <h4 className='text-secondary'>
                         Saved messages
                         <button
-                            type="button"
-                            className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                            onClick={() => dispatch(api.getList(messages.kwargs))}
+                          type='button'
+                          className='btn btn-outline-success btn-sm border-0 bg-transparent'
+                          onClick={() => dispatch(api.getList(messages.kwargs))}
                         >
-                          <i className="mdi mdi-refresh" />
+                          <i className='mdi mdi-refresh' />
                         </button>
-                        <p className="text-small text-muted">Total: {messages.count}</p>
+                        <p className='text-small text-muted'>
+                          Total: {messages.count}
+                        </p>
                       </h4>
                     </div>
-                    <div className="col-sm-6">
+                    <div className='col-sm-6'>
                       <Form
-                        className="row"
-                        onSubmit={e => {e.preventDefault(); dispatch(api.getList(messages.kwargs))}}
+                        className='row'
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          dispatch(api.getList(messages.kwargs));
+                        }}
                       >
-                        <Form.Group className="col-md-6">
+                        <Form.Group className='col-md-6'>
                           <Form.Label>Author</Form.Label>&nbsp;
                           <Select
                             closeMenuOnSelect={false}
@@ -74,12 +82,18 @@ const Messages = () =>  {
                             isLoading={messages.loading}
                             isMulti
                             onChange={onAuthorChange}
-                            options={messages.authors?.map(t => ({label: t, value: t}))}
+                            options={messages.authors?.map((t) => ({
+                              label: t,
+                              value: t,
+                            }))}
                             styles={selectStyles}
-                            value={messages.kwargs.author?.map(t => ({label: t, value: t}))}
+                            value={messages.kwargs.author?.map((t) => ({
+                              label: t,
+                              value: t,
+                            }))}
                           />
                         </Form.Group>
-                        <Form.Group className="col-md-6">
+                        <Form.Group className='col-md-6'>
                           <Form.Label>Chat ID</Form.Label>&nbsp;
                           <Select
                             closeMenuOnSelect={false}
@@ -87,16 +101,22 @@ const Messages = () =>  {
                             isLoading={messages.loading}
                             isMulti
                             onChange={onChatIdChange}
-                            options={messages.chat_ids?.map(t => ({label: t, value: t}))}
+                            options={messages.chat_ids?.map((t) => ({
+                              label: t,
+                              value: t,
+                            }))}
                             styles={selectStyles}
-                            value={messages.kwargs.chat_id?.map(t => ({label: t, value: t}))}
+                            value={messages.kwargs.chat_id?.map((t) => ({
+                              label: t,
+                              value: t,
+                            }))}
                           />
                         </Form.Group>
                       </Form>
                     </div>
                   </div>
                 </div>
-                <table className="table table-hover">
+                <table className='table table-hover'>
                   <thead>
                     <tr>
                       <th> # </th>
@@ -106,52 +126,81 @@ const Messages = () =>  {
                     </tr>
                   </thead>
                   <tbody>
-                    {
-                      !messages.loading
-                        ? messages.results?.length
-                          ? messages.results.map(
-                            (msg, i) => !messages.loadingItems?.includes(msg.id)
-                              ? <tr key={i}>
-                                <td onClick={() => dispatch(selectItem(msg.id))} className="cursor-pointer">{i + 1}</td>
-                                <td onClick={() => dispatch(selectItem(msg.id))} className="cursor-pointer">{new Date(msg.date).toLocaleString()}</td>
-                                <td onClick={() => dispatch(selectItem(msg.id))} className="cursor-pointer">{msg.chat_title}</td>
-                                <td onClick={() => dispatch(selectItem(msg.id))} className="cursor-pointer">{msg.author.full_name}</td>
-                              </tr>
-                          : <tr key={i}>
-                            <td colSpan={6}>
-                              <ColorRing
-                                  width = "100%"
-                                  height = "50"
-                                  wrapperStyle={{width: "100%"}}
+                    {!messages.loading ? (
+                      messages.results?.length ? (
+                        messages.results.map((msg, i) =>
+                          !messages.loadingItems?.includes(msg.id) ? (
+                            <tr key={i}>
+                              <td
+                                onClick={() => dispatch(selectItem(msg.id))}
+                                className='cursor-pointer'
+                              >
+                                {i + 1}
+                              </td>
+                              <td
+                                onClick={() => dispatch(selectItem(msg.id))}
+                                className='cursor-pointer'
+                              >
+                                {new Date(msg.date).toLocaleString()}
+                              </td>
+                              <td
+                                onClick={() => dispatch(selectItem(msg.id))}
+                                className='cursor-pointer'
+                              >
+                                {msg.chat_title}
+                              </td>
+                              <td
+                                onClick={() => dispatch(selectItem(msg.id))}
+                                className='cursor-pointer'
+                              >
+                                {msg.author.full_name}
+                              </td>
+                            </tr>
+                          ) : (
+                            <tr key={i}>
+                              <td colSpan={6}>
+                                <ColorRing
+                                  width='100%'
+                                  height='50'
+                                  wrapperStyle={{ width: '100%' }}
                                 />
-                            </td>
-                          </tr>
-                            )
-                          : <tr><td colSpan={6}>No crons available</td></tr>
-                        : <tr>
-                          <td colSpan={6}>
-                            <Audio
-                                width = "100%"
-                                radius = "9"
-                                color = 'green'
-                                wrapperStyle={{width: "100%"}}
-                              />
-                            </td>
-                          </tr>
-                    }
+                              </td>
+                            </tr>
+                          )
+                        )
+                      ) : (
+                        <tr>
+                          <td colSpan={6}>No crons available</td>
+                        </tr>
+                      )
+                    ) : (
+                      <tr>
+                        <td colSpan={6}>
+                          <Audio
+                            width='100%'
+                            radius='9'
+                            color='green'
+                            wrapperStyle={{ width: '100%' }}
+                          />
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
-                <BottomPagination items={messages} fetchMethod={api.getList} newApi={true} setKwargs={setKwargs} />
-
+                <BottomPagination
+                  items={messages}
+                  fetchMethod={api.getList}
+                  newApi
+                  setKwargs={setKwargs}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
       <EditModal />
-
     </div>
-  )
-}
+  );
+};
 
 export default Messages;

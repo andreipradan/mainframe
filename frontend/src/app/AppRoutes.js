@@ -1,8 +1,8 @@
 import React, { Suspense, lazy } from 'react';
+import { useSelector } from 'react-redux';
 import { Switch, Route, Redirect } from 'react-router-dom';
 
-import Spinner from '../app/shared/Spinner';
-import { useSelector } from 'react-redux';
+import Spinner from './shared/Spinner';
 
 const Dashboard = lazy(() => import('./dashboard/Dashboard'));
 const Bots = lazy(() => import('./bots/Bots'));

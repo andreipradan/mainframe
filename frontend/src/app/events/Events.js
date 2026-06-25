@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Audio } from 'react-loader-spinner';
+import { useHistory } from 'react-router-dom';
+
 import AceEditor from 'react-ace';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -36,6 +38,7 @@ const fromDateTimeLocal = (value) =>
 
 const Events = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const token = useSelector((state) => state.auth.token);
 
   const events = useSelector((state) => state.events);
@@ -44,7 +47,6 @@ const Events = () => {
   const favorites = useSelector((state) => state.favorites);
   const favResults = favorites.results || [];
 
-  const [filtered, setFiltered] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -101,23 +103,6 @@ const Events = () => {
       })
     );
   };
-
-  useEffect(() => {
-    const favoritesFilter = favorites.favoritesFilter;
-
-    if (favoritesFilter && favResults.length) {
-      const lowerFavs = favResults.map((f) =>
-        String(f.name || '').toLowerCase()
-      );
-      const filteredByFavs = (results || []).filter((item) => {
-        const title = String(item.title || '').toLowerCase();
-        return lowerFavs.some((fav) => title.includes(fav));
-      });
-      setFiltered(filteredByFavs);
-    } else {
-      setFiltered(results ?? []);
-    }
-  }, [results, events.favoritesFilter]);
 
   useEffect(() => {
     if (!favResults.length) dispatch(new FavoritesApi(token).getList());
@@ -180,9 +165,7 @@ const Events = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <a href='#' onClick={(event) => event.preventDefault()}>
-                Home
-              </a>
+              <span>Home</span>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Events
@@ -234,9 +217,9 @@ const Events = () => {
                       isClearable
                       isDisabled={events.loading}
                       isLoading={events.loading}
-                      options={events.locations?.map((location) => ({
-                        label: location,
-                        value: location,
+                      options={events.locations?.map((loc) => ({
+                        label: loc,
+                        value: loc,
                       }))}
                       placeholder='All Locations'
                       styles={selectStyles}
@@ -331,8 +314,8 @@ const Events = () => {
                           />
                         </td>
                       </tr>
-                    ) : (filtered || []).length ? (
-                      (filtered || []).map((event, index) => (
+                    ) : (results || []).length ? (
+                      (results || []).map((event, index) => (
                         <tr key={event.id || index}>
                           <td>{index + 1}</td>
                           <td>
@@ -369,9 +352,9 @@ const Events = () => {
                             )}
                           </td>
                           <td>
-                            {event.categories?.map((c) => (
+                            {event.categories?.map((c, index) => (
                               <button
-                                key={c.toString()}
+                                key={index}
                                 disabled={events.kwargs.category?.includes(c)}
                                 className={'btn btn-sm text-secondary'}
                                 onClick={() =>
@@ -425,7 +408,7 @@ const Events = () => {
               <BottomPagination
                 items={events}
                 fetchMethod={api.getList}
-                newApi={true}
+                newApi
                 setKwargs={setKwargs}
               />
             </div>

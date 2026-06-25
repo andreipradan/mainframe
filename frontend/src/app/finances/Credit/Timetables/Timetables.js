@@ -179,7 +179,7 @@ const Timetables = () => {
                 <BottomPagination
                   items={timetable}
                   fetchMethod={api.getList}
-                  newApi={true}
+                  newApi
                   setKwargs={setKwargs}
                 />
               </div>

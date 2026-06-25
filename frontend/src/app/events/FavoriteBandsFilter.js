@@ -69,12 +69,12 @@ const FavoriteBandsFilter = () => {
         disabled={favorites.results?.length === 0}
         label={label}
         checked={favorites.favoritesFilter}
-        onChange={async (e) => {
+        onChange={(e) => {
           const enabled = e.target.checked;
           dispatch(setFavoritesFilter(enabled));
           if (enabled) {
             // If we don't have favorites loaded, fetch them first
-            let favsList = favorites.results || [];
+            const favsList = favorites.results || [];
             const favs = (favsList || []).map((f) => f.name);
             if (favs.length) dispatch(setKwargs({ favorites: favs, page: 1 }));
             else dispatch(setKwargs({ favorites: undefined, page: 1 }));

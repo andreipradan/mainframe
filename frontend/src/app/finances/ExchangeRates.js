@@ -201,7 +201,7 @@ const ExchangeRates = () => {
               <BottomPagination
                 items={exchange}
                 fetchMethod={api.getList}
-                newApi={true}
+                newApi
                 setKwargs={setKwargs}
                 perPage={31}
               />

@@ -342,7 +342,7 @@ const Crons = () => {
               <BottomPagination
                 items={state}
                 fetchMethod={api.getList}
-                newApi={true}
+                newApi
                 setKwargs={setCronKwargs}
               />
             </div>
