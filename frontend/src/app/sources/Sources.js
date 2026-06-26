@@ -5,6 +5,7 @@ import AceEditor from 'react-ace';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
+import Select from 'react-select';
 
 import 'ace-builds';
 import 'ace-builds/webpack-resolver';
@@ -16,6 +17,7 @@ import BottomPagination from '../shared/BottomPagination';
 import Errors from '../shared/Errors';
 import SourcesApi from '../../api/sources';
 import { selectItem, setKwargs, setModalOpen } from '../../redux/sourcesSlice';
+import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 
 const Sources = () => {
   const dispatch = useDispatch();
@@ -28,6 +30,7 @@ const Sources = () => {
   const [isDefault, setIsDefault] = useState(false);
   const [headers, setHeaders] = useState(null);
   const [name, setName] = useState('');
+  const [sourceType, setSourceType] = useState('');
   const [url, setUrl] = useState('');
 
   const [configAnnotations, setConfigAnnotations] = useState(null);
@@ -38,6 +41,7 @@ const Sources = () => {
     setIsDefault(false);
     setHeaders(null);
     setName('');
+    setSourceType('');
     setUrl('');
   };
   const closeModal = () => {
@@ -73,7 +77,12 @@ const Sources = () => {
   };
   const onSubmit = (e) => {
     e.preventDefault();
-    const data = { is_default: isDefault, name, url };
+    const data = {
+      is_default: isDefault,
+      name,
+      type: sourceType[0],
+      url,
+    };
     if (config) data.config = JSON.parse(config.replace(/[\r\n\t]/g, ''));
     if (headers) data.headers = JSON.parse(headers.replace(/[\r\n\t]/g, ''));
     if (sources.selectedItem)
@@ -86,6 +95,9 @@ const Sources = () => {
       setIsDefault(sources.selectedItem.is_default);
       setHeaders(JSON.stringify(sources.selectedItem.headers, null, '\t'));
       setName(sources.selectedItem.name);
+      setSourceType(
+        sources.types?.find((t) => t[0] === sources.selectedItem.type)
+      );
       setUrl(sources.selectedItem.url);
     }
   }, [sources.selectedItem]);
@@ -142,6 +154,7 @@ const Sources = () => {
                       <th> #</th>
                       <th> Name</th>
                       <th> URL </th>
+                      <th> Type </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -157,6 +170,13 @@ const Sources = () => {
                               <td>{i + 1}</td>
                               <td>{s.name}</td>
                               <td>{s.url}</td>
+                              <td>
+                                {
+                                  sources.types?.find(
+                                    (t) => t[0] === s.type
+                                  )?.[1]
+                                }
+                              </td>
                             </tr>
                           ) : (
                             <tr key={i}>
@@ -242,6 +262,24 @@ const Sources = () => {
                   type='text'
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Type</Form.Label>
+                <Select
+                  placeholder={'Type'}
+                  value={{ label: sourceType?.[1], value: sourceType?.[0] }}
+                  onChange={(sourceType) => {
+                    setSourceType(
+                      sources.types.find((t) => t[0] === sourceType.value)
+                    );
+                  }}
+                  options={sources.types?.map((u) => ({
+                    label: u[1],
+                    value: u[0],
+                  }))}
+                  styles={selectStyles}
+                  closeMenuOnSelect
                 />
               </Form.Group>
               <Form.Group className='mb-3'>
