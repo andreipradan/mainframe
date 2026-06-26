@@ -1,10 +1,9 @@
 from rest_framework import routers
 
-from mainframe.events.views import EventViewSet, FavoriteBandViewSet
+from mainframe.events.views import EventViewSet
 
 router = routers.SimpleRouter()
 
-router.register("favorites", FavoriteBandViewSet, basename="favorite-bands")
 router.register("", EventViewSet, basename="events")
 
 

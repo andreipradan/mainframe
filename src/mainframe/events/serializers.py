@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from mainframe.events.models import Event, FavoriteBand
+from mainframe.events.models import Event
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -9,9 +9,3 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = "__all__"
-
-
-class FavoriteBandSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FavoriteBand
-        fields = ("id", "name", "external_id")

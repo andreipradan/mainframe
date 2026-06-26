@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-import requests
 import structlog
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -35,7 +34,6 @@ def parse_datetime(date_str):
 class EventsClient:
     def __init__(self, source: Source):
         self.source = source
-        self.session = requests.Session()
 
     def fetch_events(self, **kwargs):
         headers = self.source.headers
