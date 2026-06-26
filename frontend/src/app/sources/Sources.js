@@ -27,7 +27,7 @@ const Sources = () => {
   const api = new SourcesApi(token);
 
   const [config, setConfig] = useState(null);
-  const [isDefault, setIsDefault] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const [headers, setHeaders] = useState(null);
   const [name, setName] = useState('');
   const [sourceType, setSourceType] = useState('');
@@ -38,7 +38,7 @@ const Sources = () => {
 
   const clearModal = () => {
     setConfig(null);
-    setIsDefault(false);
+    setIsActive(false);
     setHeaders(null);
     setName('');
     setSourceType('');
@@ -78,7 +78,7 @@ const Sources = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     const data = {
-      is_default: isDefault,
+      is_active: isActive,
       name,
       type: sourceType[0],
       url,
@@ -92,7 +92,7 @@ const Sources = () => {
   useEffect(() => {
     if (sources.selectedItem) {
       setConfig(JSON.stringify(sources.selectedItem.config, null, '\t'));
-      setIsDefault(sources.selectedItem.is_default);
+      setIsActive(sources.selectedItem.is_active);
       setHeaders(JSON.stringify(sources.selectedItem.headers, null, '\t'));
       setName(sources.selectedItem.name);
       setSourceType(
@@ -126,7 +126,7 @@ const Sources = () => {
                   <div className='row'>
                     <div className='col-sm-12'>
                       <h4 className='text-secondary'>
-                        Network sources
+                        Sources
                         <button
                           type='button'
                           className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -134,6 +134,11 @@ const Sources = () => {
                         >
                           <i className='mdi mdi-refresh' />
                         </button>
+                        <sup>
+                          <a href='/events/favorites' className='small ml-2'>
+                            [bands]
+                          </a>
+                        </sup>
                         <button
                           type='button'
                           className='float-right btn btn-outline-primary btn-rounded btn-icon pl-1'
@@ -155,6 +160,7 @@ const Sources = () => {
                       <th> Name</th>
                       <th> URL </th>
                       <th> Type </th>
+                      <th> Is Active? </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -176,6 +182,11 @@ const Sources = () => {
                                     (t) => t[0] === s.type
                                   )?.[1]
                                 }
+                              </td>
+                              <td>
+                                <i
+                                  className={`mdi mdi-${s.is_active ? 'check text-success' : 'alert text-danger'}`}
+                                />
                               </td>
                             </tr>
                           ) : (
@@ -264,6 +275,18 @@ const Sources = () => {
                   onChange={(e) => setName(e.target.value)}
                 />
               </Form.Group>
+              <Form.Group className='mb-3'>
+                <Form.Label>Is Active?</Form.Label>
+                <Form.Check
+                  checked={isActive}
+                  type='switch'
+                  id='checkbox'
+                  label=''
+                  onChange={() => {
+                    setIsActive(!isActive);
+                  }}
+                />
+              </Form.Group>
               <Form.Group>
                 <Form.Label>Type</Form.Label>
                 <Select
@@ -288,18 +311,6 @@ const Sources = () => {
                   type='text'
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className='mb-3'>
-                <Form.Label>Is Default?</Form.Label>
-                <Form.Check
-                  checked={isDefault}
-                  type='switch'
-                  id='checkbox'
-                  label=''
-                  onChange={() => {
-                    setIsDefault(!isDefault);
-                  }}
                 />
               </Form.Group>
               <Form.Group className='mb-3'>

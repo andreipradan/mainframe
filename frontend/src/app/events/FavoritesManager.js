@@ -24,23 +24,22 @@ const FavoritesManager = () => {
   const [editing, setEditing] = useState(null);
   const [editName, setEditName] = useState('');
   const [editExternalId, setEditExternalId] = useState('');
+
   const [input, setInput] = useState('');
+  const [url, setUrl] = useState('');
 
   const onAdd = async (e) => {
     e?.preventDefault?.();
     const name = (input || '').trim();
-    if (!name) return;
+    if (!name || !url) return;
     try {
       setAdding(true);
-      await dispatch(api.create({ name }));
+      await dispatch(api.create({ name, type: 'band', url }));
       setInput('');
+      setUrl('');
     } finally {
       setAdding(false);
     }
-  };
-
-  const onRemove = async (id) => {
-    await dispatch(api.delete(id));
   };
 
   const startEdit = (item) => {
@@ -60,7 +59,7 @@ const FavoritesManager = () => {
   };
 
   useEffect(() => {
-    if (token && !favorites.results) dispatch(api.getList());
+    if (token && !favorites.results) dispatch(api.getList({ type: 'band' }));
   }, [token]);
 
   return (
@@ -80,6 +79,11 @@ const FavoritesManager = () => {
               [back to events]
             </a>
           </sup>
+          <sup>
+            <a href='/sources' className='small ml-2'>
+              [sources]
+            </a>
+          </sup>
         </h4>
 
         <Errors errors={favorites.errors} />
@@ -87,7 +91,13 @@ const FavoritesManager = () => {
           <Form.Control
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder='Add favorite band'
+            placeholder='Name'
+            className='mr-2'
+          />
+          <Form.Control
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder='URL'
             className='mr-2'
           />
           <Button variant='primary' onClick={onAdd} disabled={adding}>
@@ -101,7 +111,6 @@ const FavoritesManager = () => {
               <tr>
                 <th>#</th>
                 <th>Name</th>
-                <th>External ID</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -151,16 +160,6 @@ const FavoritesManager = () => {
                     </td>
                     <td>
                       {editing === item.id ? (
-                        <Form.Control
-                          value={editExternalId}
-                          onChange={(e) => setEditExternalId(e.target.value)}
-                        />
-                      ) : (
-                        item.external_id || '-'
-                      )}
-                    </td>
-                    <td>
-                      {editing === item.id ? (
                         <>
                           <Button
                             size='sm'
@@ -187,13 +186,6 @@ const FavoritesManager = () => {
                             className='mr-2'
                           >
                             Edit
-                          </Button>
-                          <Button
-                            size='sm'
-                            variant='outline-danger'
-                            onClick={() => onRemove(item.id)}
-                          >
-                            Remove
                           </Button>
                         </>
                       )}

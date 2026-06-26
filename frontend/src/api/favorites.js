@@ -24,7 +24,7 @@ class FavoritesApi extends mix(
   TokenMixin,
   UpdateApi
 ) {
-  static baseUrl = 'events/favorites';
+  static baseUrl = 'sources';
   static methods = {
     create,
     delete: deleteItem,

@@ -105,7 +105,8 @@ const Events = () => {
   };
 
   useEffect(() => {
-    if (!favResults.length) dispatch(new FavoritesApi(token).getList());
+    if (!favResults.length)
+      dispatch(new FavoritesApi(token).getList({ type: 'band' }));
   }, [token]);
 
   useEffect(() => {
