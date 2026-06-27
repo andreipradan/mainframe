@@ -37,7 +37,7 @@ def clean_url(url):
     return urlunsplit(parts._replace(query=query, fragment=""))
 
 
-def store_concerts(concerts):
+def store_concerts(band_name, concerts):
     try:
         Event.objects.bulk_create(
             concerts,
@@ -61,6 +61,11 @@ def store_concerts(concerts):
         logger.error(
             "Error saving concerts to database",
             error=str(e),
+        )
+    else:
+        logger.info(
+            "Successfully saved concerts to database",
+            identifier=f"{band_name}: {len(concerts)}",
         )
 
 
@@ -120,7 +125,7 @@ def get_band_concerts(band: Source):
         )
 
     if concerts:
-        store_concerts(concerts)
+        store_concerts(band.name, concerts)
         return
 
     logger.warning("No concerts found", band=band.name)
