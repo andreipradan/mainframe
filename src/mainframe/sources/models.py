@@ -26,6 +26,8 @@ class Source(TimeStampedModel):
     )
     url = models.URLField()
 
+    objects = SourceQuerySet.as_manager()
+
     class Meta:
         ordering = ("name",)
 
