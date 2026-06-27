@@ -68,7 +68,7 @@ class Command(BaseCommand):
                     "location_url",
                     "updated_at",
                 ],
-                unique_fields=["url"],
+                unique_fields=["location", "start_date", "url"],
             )
             logger.info(
                 "Events fetched successfully!",
