@@ -152,13 +152,14 @@ class TestStatusUpdate:
     @mock.patch.object(Bot, "objects")
     async def test_ignoring_non_whitelisted_users(self, objects, update, logger, _):
         objects.get.side_effect = Bot.DoesNotExist
+        update.channel_post = None
         prepare_update(
             update,
             mock_class=AsyncMock,
             from_user=MagicMock(full_name="foo", username="foo_username", id="foo_id"),
         )
         await is_whitelisted(handle_new_chat_members)(update, MagicMock())
-        assert logger.warning.call_args_list == [
+        assert logger.error.call_args_list == [
             mock.call(
                 "User not whitelisted",
                 username=update.effective_user.username,
