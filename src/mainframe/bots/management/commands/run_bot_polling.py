@@ -35,6 +35,8 @@ logger = structlog.get_logger(__name__)
 
 def is_whitelisted(func):
     async def wrapper(update, context, *args, **kwargs):
+        if update.channel_post:
+            return None
         try:
             bot = await sync_to_async(Bot.objects.get)(
                 username=context.bot.username,
@@ -43,7 +45,7 @@ def is_whitelisted(func):
                 ],
             )
         except Bot.DoesNotExist:
-            logger.warning(
+            logger.error(
                 "User not whitelisted",
                 username=update.effective_user.username,
                 user_id=update.effective_user.id,
