@@ -25,11 +25,17 @@ class Earthquake(TimeStampedModel):
             (SOURCE_USGS, "United States Geological Survey"),
         ),
     )
-    timestamp = models.DateTimeField(unique=True)
+    timestamp = models.DateTimeField()
 
     class Meta:
         indexes = (
             models.Index(fields=["source", "-timestamp"], name="source_timestamp_idx"),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=("latitude", "longitude", "source", "timestamp"),
+                name="unique_source",
+            ),
         )
         ordering = ("-timestamp",)
 

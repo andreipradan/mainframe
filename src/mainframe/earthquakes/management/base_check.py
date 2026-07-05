@@ -74,11 +74,9 @@ class BaseEarthquakeCommand:
                 "depth",
                 "intensity",
                 "location",
-                "latitude",
-                "longitude",
                 "magnitude",
             ],
-            unique_fields=["timestamp"],
+            unique_fields=["latitude", "longitude", "source", "timestamp"],
         )
 
         earthquake_config = instance.additional_data["earthquake"]

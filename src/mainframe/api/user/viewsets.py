@@ -1,5 +1,3 @@
-import asyncio
-
 from django.conf import settings
 from django.db import IntegrityError
 from rest_framework import status, viewsets
@@ -74,5 +72,5 @@ class UserViewSet(viewsets.ModelViewSet):
         user = serializer.save()
         data = {"msg": "You were successfully registered 🎉"}
         if settings.ENV == "prod":
-            asyncio.run(send_telegram_message(f"New mainframe user: {user.email}"))
+            send_telegram_message(f"New mainframe user: {user.email}")
         return Response(data=data, status=status.HTTP_201_CREATED)
