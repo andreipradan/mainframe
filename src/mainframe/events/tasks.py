@@ -17,10 +17,18 @@ class FetchBandError(Exception): ...
 logger = structlog.get_logger(__name__)
 
 
-def clean_date(result, date_format, missing_year):
-    dt = datetime.strptime(result, date_format).replace(
-        tzinfo=ZoneInfo(settings.TIME_ZONE)
-    )
+def clean_date(result, config):
+    date_format = config.get("date_format")
+    date_format_alternative = config.get("date_format_alternative")
+    missing_year = config.get("missing_year")
+    try:
+        dt = datetime.strptime(result, date_format).replace(
+            tzinfo=ZoneInfo(settings.TIME_ZONE)
+        )
+    except ValueError:
+        dt = datetime.strptime(result, date_format_alternative).replace(
+            tzinfo=ZoneInfo(settings.TIME_ZONE)
+        )
     if not missing_year:
         return dt
 
@@ -92,12 +100,12 @@ def get_band_concerts(band: Source):
         if not selector_name.endswith("_date"):
             return result
 
-        if not (date_format := band.config.get("date_format")):
+        if not (band.config.get("date_format")):
             raise FetchBandError(
                 f"[{band.name}] Date format not set on the Source object"
             )
 
-        return clean_date(result, date_format, band.config.get("missing_year"))
+        return clean_date(result, band.config)
 
     concerts = []
     response, error = fetch(band.url)
