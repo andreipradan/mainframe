@@ -191,6 +191,7 @@ const Crons = () => {
             <div className='card-body'>
               <h4 className='card-title'>
                 Available crons
+                <p className='text-small text-muted'>Total: {state.count}</p>
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'

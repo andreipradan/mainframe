@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Audio } from 'react-loader-spinner';
-import { useHistory } from 'react-router-dom';
 
 import AceEditor from 'react-ace';
 import Button from 'react-bootstrap/Button';
@@ -38,7 +37,6 @@ const fromDateTimeLocal = (value) =>
 
 const Events = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
   const token = useSelector((state) => state.auth.token);
 
   const events = useSelector((state) => state.events);
