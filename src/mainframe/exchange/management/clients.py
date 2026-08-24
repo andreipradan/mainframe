@@ -1,4 +1,5 @@
 import decimal
+import re
 from decimal import Decimal
 
 from bs4 import BeautifulSoup
@@ -58,34 +59,40 @@ class BaseExchange:
 
 
 class BNR(BaseExchange):
-    base = "https://www.bnr.ro"
+    base = "https://curs.bnr.ro"
     url = f"{base}/nbrfxrates.xml"
 
     def fetch_available_urls(self):
-        url = f"{self.base}/Cursurile-pietei-valutare-in-format-XML-3424-Mobile.aspx"
-        soup = BeautifulSoup(self.do_request(url), "html.parser")
+        soup = BeautifulSoup(self.do_request(self.base), "html.parser")
 
         return [
-            f"{self.base}{x.attrs['href']}"
-            for x in soup.find("div", {"id": "column-secondary"}).select("A")
+            x.attrs["href"]
+            for x in soup.find("ul", {"class": "links"}).select("A")
             if "/years/" in x.attrs["href"]
         ]
 
     def parse(self, content) -> list[ExchangeRate]:
-        root = ElementTree.fromstring(content)
-        namespaces = {"ns": "http://www.bnr.ro/xsd"}
+        raw = content
+        if isinstance(content, (bytes, bytearray)):
+            raw = content.decode("utf-8", errors="ignore")
 
-        orig_currency = root.find("ns:Body/ns:OrigCurrency", namespaces).text
-        source = root.find("ns:Header/ns:Publisher", namespaces).text
+        # Remove default xmlns (e.g. xmlns="https://...")
+        # so ElementTree finds tags by local name
+        raw = re.sub(r'\sxmlns="[^"]+"', "", raw, count=1)
+
+        root = ElementTree.fromstring(raw)
+
+        orig_currency = root.find("Body/OrigCurrency").text
+        source = root.find("Header/Publisher") or root.find(".//Publisher").text
 
         rates = []
-        for cube in root.findall(".//ns:Cube[@date]", namespaces):
-            date = cube.attrib["date"]
-            for tag in cube.findall(".//ns:Rate", namespaces):
-                currency = tag.attrib["currency"]
+        for cube in root.findall(".//Cube[@date]"):
+            date = cube.attrib.get("date")
+            for tag in cube.findall(".//Rate"):
+                currency = tag.attrib.get("currency")
                 try:
                     value = Decimal(tag.text)
-                except decimal.InvalidOperation:
+                except (decimal.InvalidOperation, TypeError):
                     self.logger.exception(
                         "Invalid rate found",
                         currency=currency,

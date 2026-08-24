@@ -26,7 +26,6 @@ class Command(BaseCommand):
         logger = structlog.get_logger(__name__)
         logger = logger.bind(identifier=source)
         logger.info("Fetching exchange rates")
-        healthchecks.ping(f"{source}-fx")
 
         try:
             count = CLIENTS[source](logger).fetch(full=options["full"])
@@ -35,3 +34,5 @@ class Command(BaseCommand):
 
         logger.info("Fetched exchange rates", count=count)
         self.stdout.write(self.style.SUCCESS("Done."))
+
+        healthchecks.ping(f"{source}-fx")
