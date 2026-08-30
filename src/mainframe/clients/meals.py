@@ -116,7 +116,8 @@ def parse_week(args) -> List[Meal]:
     meals = []
     for row in rows:
         meal = parse_meal(row)
-        if row.attrs["class"] == ["row"]:
+        # the breakfast (meal_1) -> new day starts
+        if set(row.attrs["class"]) == {"row", "meals", "meal_1"}:
             current_date = current_date + timedelta(days=1)
         meal.date = current_date
         meals.append(meal)
