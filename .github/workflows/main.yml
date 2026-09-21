@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
         id: filter
         with:
@@ -59,10 +59,10 @@ jobs:
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       - name: Installing dev dependencies for migration check
-        run: uv sync
+        run: uv sync --no-build
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
         env:
           ENV: ci
@@ -73,7 +73,7 @@ jobs:
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') }}
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Run Safety CLI to check for vulnerabilities
         uses: pyupio/safety-action@2591cf2f3e67ba68b923f4c92f0d36e281c65023
         with:
@@ -101,13 +101,13 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       - name: Run CI
-        run: uv run poe ci
+        run: uv run --no-build poe ci
       - name: Upload backend coverage
         # make backend coverage.xml available to other jobs (e.g. sonar scan)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: backend-coverage
           path: coverage.xml
@@ -118,13 +118,13 @@ jobs:
     needs: changes
     if: ${{ (needs.changes.outputs.frontend == 'true') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Setup Node.js (NPM)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20.x'
       - name: Use cached node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: frontend/node_modules
           key: nodeModules-${{ hashFiles('frontend/**/package-lock.json') }}
@@ -138,7 +138,7 @@ jobs:
         run: |
           CI=true npm test -- --coverage --watchAll=false --coverageReporters=lcov
       - name: Upload frontend coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: frontend-coverage
           path: frontend/coverage/lcov.info
@@ -155,18 +155,18 @@ jobs:
       - tests
       - frontend-tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Download backend coverage
         if: ${{ needs.changes.outputs.backend == 'true' }}  
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: backend-coverage
           path: .
       - name: Download frontend coverage
         if: ${{ needs.changes.outputs.frontend == 'true' }}  
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: frontend-coverage
           path: frontend/coverage
@@ -202,7 +202,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       - name: Setup GCloud Auth
         id: auth
@@ -262,15 +262,15 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
       # Build the image
       - name: Setup Node.js (NPM)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20.x'
       - name: Use cached node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: frontend/node_modules
           key: nodeModules-${{ hashFiles('frontend/**/package-lock.json') }}

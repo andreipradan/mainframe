@@ -8,11 +8,12 @@ set -e
 
 git config --unset-all core.hooksPath || true
 
-uv run poe migrate
-uv run pre-commit install
+uv sync --no-build
+uv run --no-build poe migrate
+uv run --no-build pre-commit install
 npm run install:all
 
-uv run poe manage shell -c \
+uv run --no-build poe manage shell -c \
     "from mainframe.api.user.models import User; \
     User.objects.filter(email='user@test.com').exists() or \
     User.objects.create_superuser('user@test.com', 'user@test.com', 'pass')"
