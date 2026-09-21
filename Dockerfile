@@ -11,7 +11,7 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
 # copy pyproject only; README may not always exist in context so create a stub if absent
 COPY pyproject.toml /tmp/
 RUN if [ ! -f /tmp/README.md ]; then printf "# dummy\n" > /tmp/README.md; fi \
-    && pip install --no-cache-dir --only-binary=:all: /tmp/ \
+    && pip install --no-cache-dir /tmp/ \
     && apk del .tmp-build-deps \
     && rm -rf /var/cache/apk/*
 

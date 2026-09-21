@@ -1,7 +1,7 @@
 #!/bin/sh
-set -eu
+set -e
 
-python3 -m pip install --user --no-cache-dir --disable-pip-version-check "uv==0.8.22"
+curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 
-uv sync --no-build
+uv sync
