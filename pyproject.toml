@@ -24,7 +24,6 @@ dependencies = [
     "google-genai>=1.60.0",
     "gunicorn>=23.0.0",
     "huey==2.5.0",
-    "logfire[django,psycopg2]>=3.4.0",
     "openpyxl==3.1.2",
     "psutil==5.9.5",
     "psycopg2-binary>=2.9.9",

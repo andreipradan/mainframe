@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 import environ
-import logfire
 import sentry_sdk
 import structlog
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -246,14 +245,9 @@ LOGGING = {
             "processor": structlog.processors.JSONRenderer(),
             "foreign_pre_chain": shared_processors,
         },
-        "verbose": {
-            "format": "{asctime} - {levelname} - {name} - {message}",
-            "style": "{",
-        },
     },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "console"},
-        "logfire": {"class": "logfire.LogfireLoggingHandler", "formatter": "verbose"},
     },
     "loggers": {
         "django": {
@@ -276,7 +270,6 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
-        "logfire": {"handlers": ["logfire"], "level": "INFO", "propagate": False},
         "mainframe": {
             "handlers": ["console"],
             "level": "INFO",
@@ -318,15 +311,6 @@ if ENV in ["local", "prod", "rpi"]:
                 LOGGING["loggers"][logger]["handlers"].append("json_file")
 
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
-
-    logfire.configure(
-        environment=ENV,
-        distributed_tracing=True,
-        send_to_logfire="if-token-present",
-    )
-    logfire.instrument_django()
-    if ENV != "rpi":
-        logfire.instrument_psycopg()
 
     if ENV == "local":
         INSTALLED_APPS += ["debug_toolbar"]

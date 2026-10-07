@@ -2,7 +2,6 @@ import asyncio
 
 import environ
 import github
-import logfire
 import requests
 import structlog
 from django.conf import settings
@@ -46,7 +45,6 @@ def set_github_hook(ngrok_url):
 
 
 class Command(BaseCommand):
-    @logfire.instrument("set_hooks")
     def handle(self, *_, **__):
         try:
             ngrok_url = get_ngrok_url()
