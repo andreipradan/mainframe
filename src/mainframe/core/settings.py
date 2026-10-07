@@ -299,6 +299,7 @@ DATABASES = {
 if ENV in ["local", "prod", "rpi"]:
     if ENV == "rpi":
         LOGGING["handlers"]["console"]["formatter"] = "json"
+        LOGGING["handlers"]["console"]["stream"] = "ext://sys.stdout"
 
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
