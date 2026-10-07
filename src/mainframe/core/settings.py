@@ -298,17 +298,8 @@ DATABASES = {
 }
 if ENV in ["local", "prod", "rpi"]:
     if ENV == "rpi":
-        LOGGING["handlers"]["json_file"] = {
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "json",
-            "filename": "/var/log/mainframe/log.json",
-            "maxBytes": 50 * 1024 * 1024,  # 50 MB
-            "backupCount": 3,
-        }
-        exceptions = ["huey.consumer.Scheduler", "logfire"]
-        for logger in LOGGING["loggers"]:
-            if logger not in exceptions:
-                LOGGING["loggers"][logger]["handlers"].append("json_file")
+        LOGGING["handlers"]["console"]["formatter"] = "json"
+        LOGGING["handlers"]["console"]["stream"] = "ext://sys.stdout"
 
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 
