@@ -17,7 +17,7 @@ class Command(BaseEarthquakeCommand, BaseCommand):
 
     @staticmethod
     def get_kwargs():
-        return {"timeout": 10, "verify": False}
+        return {"timeout": 10}
 
     @staticmethod
     def fetch_events(response):

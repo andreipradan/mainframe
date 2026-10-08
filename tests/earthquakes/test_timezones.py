@@ -17,6 +17,10 @@ def test_check_infp_get_datetime_uses_zoneinfo():
     assert dt.tzinfo == ZoneInfo("Europe/Bucharest")
 
 
+def test_check_infp_uses_default_tls_verification():
+    assert InfpCommand.get_kwargs() == {"timeout": 10}
+
+
 def make_usgs_event(timestamp_ms: int):
     return {
         "properties": {"time": timestamp_ms, "place": "Somewhere", "mag": 4.2},
