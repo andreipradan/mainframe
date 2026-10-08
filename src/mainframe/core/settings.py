@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -300,6 +301,7 @@ if ENV in ["local", "prod", "rpi"]:
     if ENV == "rpi":
         LOGGING["handlers"]["console"]["formatter"] = "json"
         LOGGING["handlers"]["console"]["stream"] = "ext://sys.stdout"
+        logging.captureWarnings(True)
 
     EARTHQUAKE_DEFAULT_COORDINATES = env("EARTHQUAKE_DEFAULT_COORDINATES")
 

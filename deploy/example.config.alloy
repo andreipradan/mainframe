@@ -122,7 +122,7 @@ loki.process "mainframe_journal_process" {
   forward_to = [loki.write.grafana_cloud_loki.receiver]
 
   stage.match {
-    selector = `{unit=~"(backend|huey|bot)\.service"}`
+    selector = `{unit=~"(backend|huey|bot)[.]service"}`
 
     stage.json {
       expressions = {
