@@ -1,3 +1,5 @@
+import json
+import re
 from datetime import datetime
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
@@ -87,8 +89,96 @@ def validate_selectors(band, selectors):
         )
 
 
-@task(expires=10)
-def get_band_concerts(band: Source):
+def get_embedded_event_blocks(band, response):
+    if not band.config.get("date_format"):
+        raise FetchBandError(f"[{band.name}] Date format not set on the Source object")
+
+    script = response.select_one('script[id$="-smart-data"]')
+    if script is None:
+        raise FetchBandError(f"[{band.name}] Embedded event data not found")
+
+    script_data = script.string or script.get_text()
+    blocks_match = re.search(r"\bblocks\s*:\s*", script_data)
+    if not blocks_match:
+        raise FetchBandError(f"[{band.name}] Embedded event blocks not found")
+
+    try:
+        blocks, _ = json.JSONDecoder().raw_decode(
+            script_data[blocks_match.end() :].lstrip()
+        )
+    except json.JSONDecodeError as e:
+        raise FetchBandError(
+            f"[{band.name}] Could not parse embedded event blocks"
+        ) from e
+
+    if not isinstance(blocks, list):
+        raise FetchBandError(f"[{band.name}] Embedded event blocks are not a list")
+
+    return blocks
+
+
+def parse_embedded_event(band, event):
+    if not isinstance(event, dict):
+        raise FetchBandError(f"[{band.name}] Invalid embedded event")
+
+    title = event.get("title")
+    url = event.get("url")
+    if not title or not url:
+        raise FetchBandError(f"[{band.name}] Embedded event is missing a title or URL")
+
+    date_label, separator, place = title.partition("|")
+    if not separator or not date_label.strip() or not place.strip():
+        raise FetchBandError(f"[{band.name}] Invalid embedded event title: {title}")
+
+    place = place.rstrip()
+    sold_out_marker = "*SOLD OUT*"
+    sold_out = place.upper().endswith(sold_out_marker)
+    if sold_out:
+        place = place[: -len(sold_out_marker)].rstrip()
+    place_parts = re.split(r"[,\.]\s+", place, maxsplit=1)
+    city = place_parts[0].strip() if len(place_parts) > 1 else ""
+    location = place_parts[-1].strip()
+    if not location:
+        raise FetchBandError(
+            f"[{band.name}] Missing location in embedded event: {title}"
+        )
+
+    try:
+        start_date = clean_date(date_label.strip(), band.config)
+    except (TypeError, ValueError) as e:
+        raise FetchBandError(
+            f"[{band.name}] Invalid embedded event date in title: {title}"
+        ) from e
+
+    return Event(
+        source=band,
+        title=f"{band.name} @ {location}",
+        categories=["music"],
+        location=location,
+        start_date=start_date,
+        url=clean_url(url),
+        city=city,
+        description="Sold out" if sold_out else "",
+        external_id=event.get("id", ""),
+    )
+
+
+def extract_embedded_concerts(band, response):
+    concerts = []
+    for block in get_embedded_event_blocks(band, response):
+        if not isinstance(block, dict):
+            raise FetchBandError(f"[{band.name}] Invalid embedded event block")
+        if block.get("type") != "ExternalLinks" or not block.get("isEnabled"):
+            continue
+
+        concerts.extend(
+            parse_embedded_event(band, event) for event in block.get("content") or []
+        )
+
+    return concerts
+
+
+def extract_html_concerts(band, response):
     selectors = band.config.get("selectors")
     validate_selectors(band, selectors)
 
@@ -108,10 +198,6 @@ def get_band_concerts(band: Source):
         return clean_date(result, band.config)
 
     concerts = []
-    response, error = fetch(band.url)
-    if error:
-        raise FetchBandError(error)
-
     for concert in response.select(selectors["list"]):
         location = extract_text(concert, "location")
         if not (title := extract_text(concert, "title")):
@@ -131,6 +217,25 @@ def get_band_concerts(band: Source):
                 external_id=extract_text(concert, "external_id"),
             )
         )
+
+    return concerts
+
+
+@task(expires=10)
+def get_band_concerts(band: Source):
+    parser = band.config.get("parser", "html")
+    extract_concerts = {
+        "embedded": extract_embedded_concerts,
+        "html": extract_html_concerts,
+    }.get(parser)
+    if extract_concerts is None:
+        raise FetchBandError(f"[{band.name}] Unsupported parser: {parser}")
+
+    response, error = fetch(band.url)
+    if error:
+        raise FetchBandError(error)
+
+    concerts = extract_concerts(band, response)
 
     if concerts:
         store_concerts(band.name, concerts)
