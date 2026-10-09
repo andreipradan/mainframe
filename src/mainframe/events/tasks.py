@@ -19,18 +19,55 @@ class FetchBandError(Exception): ...
 logger = structlog.get_logger(__name__)
 
 
+def parse_date_range(result, date_formats):
+    date_range = re.fullmatch(
+        r"(?P<month>[A-Za-z]+)\s+(?P<day>\d{1,2})"
+        r"(?:-\d{1,2})+(?:,\s*(?P<year>\d{4}))?",
+        result.strip(),
+    )
+    if not date_range:
+        return None
+
+    for date_format in date_formats:
+        if not date_format or not date_format.endswith("%Y"):
+            continue
+        start_date_format = date_format[:-2].rstrip(", ")
+        try:
+            dt = datetime.strptime(
+                f"{date_range['month']} {date_range['day']}", start_date_format
+            )
+        except ValueError:
+            continue
+        return dt.replace(year=int(date_range["year"] or datetime.now().year))
+
+    return None
+
+
+def parse_date(result, date_formats):
+    parse_error = None
+    for date_format in date_formats:
+        if not date_format:
+            continue
+        try:
+            return datetime.strptime(result, date_format)
+        except ValueError as e:
+            parse_error = e
+
+    if dt := parse_date_range(result, date_formats):
+        return dt
+    if parse_error:
+        raise parse_error
+    raise ValueError(f"No date format configured for {result!r}")
+
+
 def clean_date(result, config):
-    date_format = config.get("date_format")
-    date_format_alternative = config.get("date_format_alternative")
+    date_formats = (
+        config.get("date_format"),
+        config.get("date_format_alternative"),
+    )
     missing_year = config.get("missing_year")
-    try:
-        dt = datetime.strptime(result, date_format).replace(
-            tzinfo=ZoneInfo(settings.TIME_ZONE)
-        )
-    except ValueError:
-        dt = datetime.strptime(result, date_format_alternative).replace(
-            tzinfo=ZoneInfo(settings.TIME_ZONE)
-        )
+    dt = parse_date(result, date_formats)
+    dt = dt.replace(tzinfo=ZoneInfo(settings.TIME_ZONE))
     if not missing_year:
         return dt
 
@@ -158,7 +195,7 @@ def parse_embedded_event(band, event):
         start_date=start_date,
         url=clean_url(url),
         city=city,
-        description="Sold out" if sold_out else "",
+        additional_data={"sold_out": True} if sold_out else {},
         external_id=event.get("id", ""),
     )
 

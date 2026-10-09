@@ -3,8 +3,25 @@ from datetime import datetime
 import pytest
 from bs4 import BeautifulSoup
 
-from mainframe.events.tasks import FetchBandError, extract_embedded_concerts
+from mainframe.events.tasks import FetchBandError, clean_date, extract_embedded_concerts
 from tests.factories.source import SourceFactory
+
+
+class TestCleanDate:
+    config = {
+        "date_format": "%B %d, %Y",
+        "date_format_alternative": "%b %d, %Y",
+    }
+
+    def test_parses_range_without_year_using_current_year(self):
+        date = clean_date("OCT 30-31-01", self.config)
+
+        assert (date.year, date.month, date.day) == (datetime.now().year, 10, 30)
+
+    def test_parses_range_with_year(self):
+        date = clean_date("FEB 04-10, 2027", self.config)
+
+        assert (date.year, date.month, date.day) == (2027, 2, 4)
 
 
 class TestExtractEmbeddedConcerts:
@@ -91,7 +108,8 @@ class TestExtractEmbeddedConcerts:
             datetime.now().month > 1
         )
         assert concerts[1].url == "https://tickets.example/event-2?afflky=partner"
-        assert concerts[2].description == "Sold out"
+        assert concerts[2].additional_data == {"sold_out": True}
+        assert concerts[2].description == ""
         assert concerts[2].location == "Hall C"
 
     def test_raises_when_event_data_is_missing(self):

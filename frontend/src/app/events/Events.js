@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Audio } from 'react-loader-spinner';
 
 import AceEditor from 'react-ace';
+import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
@@ -318,6 +319,15 @@ const Events = () => {
                         <tr key={event.id || index}>
                           <td>{index + 1}</td>
                           <td>
+                            {event.additional_data?.sold_out ||
+                            event.description === 'Sold out' ? (
+                              <Badge
+                                variant='danger'
+                                className='mr-2 py-1 px-2'
+                              >
+                                Sold out
+                              </Badge>
+                            ) : null}
                             <a
                               href={event.url}
                               target='_blank'
