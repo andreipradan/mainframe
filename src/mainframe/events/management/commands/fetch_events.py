@@ -3,7 +3,7 @@ from django.core.management import BaseCommand, CommandError
 
 from mainframe.clients.events import AEClient, EBClient, IBClient, ZnClient
 from mainframe.events.constants import CATEGORY_ID_BY_NAME
-from mainframe.events.models import Event
+from mainframe.events.persistence import persist_events
 from mainframe.sources.models import Source
 
 CLIENT_MAPPING = {
@@ -52,24 +52,7 @@ class Command(BaseCommand):
         client = client_class(source)
         events_to_create = client.fetch_events(**kwargs)
         if events_to_create:
-            Event.objects.bulk_create(
-                events_to_create,
-                update_conflicts=True,
-                update_fields=[
-                    "title",
-                    "categories",
-                    "location",
-                    "start_date",
-                    "additional_data",
-                    "city",
-                    "description",
-                    "end_date",
-                    "external_id",
-                    "location_url",
-                    "updated_at",
-                ],
-                unique_fields=["location", "start_date", "url"],
-            )
+            persist_events(events_to_create, source.name)
             logger.info(
                 "Events fetched successfully!",
                 count=len(events_to_create),

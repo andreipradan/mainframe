@@ -10,6 +10,7 @@ from huey.contrib.djhuey import task
 
 from mainframe.clients.scraper import fetch
 from mainframe.events.models import Event
+from mainframe.events.persistence import persist_events
 from mainframe.sources.models import Source
 
 
@@ -85,34 +86,11 @@ def clean_url(url):
 
 
 def store_concerts(band_name, concerts):
-    try:
-        Event.objects.bulk_create(
-            concerts,
-            update_conflicts=True,
-            update_fields=[
-                "title",
-                "categories",
-                "location",
-                "start_date",
-                "additional_data",
-                "city",
-                "description",
-                "end_date",
-                "external_id",
-                "location_url",
-                "updated_at",
-            ],
-            unique_fields=["location", "start_date", "url"],
-        )
-    except Exception as e:
-        logger.error(
-            "Error saving concerts to database",
-            error=str(e),
-        )
-    else:
+    saved_count = persist_events(concerts, band_name)
+    if saved_count:
         logger.info(
             "Successfully saved concerts to database",
-            identifier=f"{band_name}: {len(concerts)}",
+            identifier=f"{band_name}: {saved_count}",
         )
 
 
