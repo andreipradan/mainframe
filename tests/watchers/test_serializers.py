@@ -26,21 +26,41 @@ class TestWatcherSerializer:
         assert instance.name == "foo"
         assert instance.selector == ".foo-selector"
         assert instance.url == "https://example.com"
-        assert not getattr(instance, "is_renamed", None)
+        assert not hasattr(instance, "is_renamed")
         assert instance.cron == "0 10 31 2 *"
         assert instance.latest == {}
         assert instance.request == {}
 
-    def test_renaming_clears_cron(self, schedule_task_mock, __):
+    def test_renaming_preserves_cron_and_reschedules(
+        self, schedule_task_mock, __, django_assert_num_queries
+    ):
         instance = WatcherFactory(name="foo", cron="0 10 31 2 *")
         serializer = WatcherSerializer(
             instance=instance, data={"name": "renamed foo"}, partial=True
         )
         assert serializer.is_valid(), serializer.errors
 
-        instance = serializer.save()
-        assert instance.cron == ""
+        with django_assert_num_queries(2):
+            instance = serializer.save()
         assert instance.chat_id is None
         assert instance.name == "renamed foo"
-        assert getattr(instance, "is_renamed", None) is True
-        assert schedule_task_mock.call_args_list == [mock.call(instance)]
+        assert not hasattr(instance, "is_renamed")
+        assert instance.cron == "0 10 31 2 *"
+        instance.refresh_from_db()
+        assert instance.cron == "0 10 31 2 *"
+        assert schedule_task_mock.call_args_list == [
+            mock.call(instance, previous_name="foo")
+        ]
+
+    def test_partial_update_without_name_keeps_cron(self, schedule_task_mock, __):
+        instance = WatcherFactory(name="foo", cron="0 10 31 2 *")
+        serializer = WatcherSerializer(
+            instance=instance, data={"url": "https://example.com/new"}, partial=True
+        )
+        assert serializer.is_valid(), serializer.errors
+
+        updated = serializer.save()
+
+        assert updated.cron == "0 10 31 2 *"
+        assert not hasattr(updated, "is_renamed")
+        schedule_task_mock.assert_not_called()

@@ -105,7 +105,7 @@ def schedule_deploy():
 
 
 @task()
-def schedule_task(instance, **kwargs):
+def schedule_task(instance, previous_name=None, **kwargs):
     if (class_name := instance.__class__.__qualname__) == "Cron":
         expression = instance.expression
     elif class_name == "Watcher":
@@ -117,19 +117,35 @@ def schedule_task(instance, **kwargs):
         )
         return
 
-    # Unscheduling is made with full dotted path
-    # Scheduling just with the name
     task_name = f"{instance.__module__}.{instance.name}"
-    if task_name in HUEY._registry._registry:
-        task_class = HUEY._registry.string_to_task(task_name)
-        HUEY._registry.unregister(task_class)
-        logger.info(
-            "Unscheduled task", identifier=instance.name, instance=str(instance)
-        )
+    task_names = [task_name]
+    if previous_name and previous_name != instance.name:
+        task_names.append(f"{instance.__module__}.{previous_name}")
+
+    for registered_name in task_names:
+        if registered_name in HUEY._registry._registry:
+            task_class = HUEY._registry.string_to_task(registered_name)
+            HUEY._registry.unregister(task_class)
+            logger.info(
+                "Unscheduled task", identifier=instance.name, instance=str(instance)
+            )
+
     if expression and instance.is_active:
         schedule = crontab(*expression.split())
+        task_function = instance.run
+        if class_name == "Watcher":
+            from mainframe.watchers.models import run_scheduled_watcher
+
+            watcher_id = instance.pk
+
+            def run_watcher():
+                return run_scheduled_watcher(watcher_id)
+
+            run_watcher.__module__ = instance.__module__
+            task_function = run_watcher
+
         lock_task = HUEY.lock_task(f"{task_name}-lock")
-        lock_task(periodic_task(schedule, name=instance.name)(instance.run))
+        lock_task(periodic_task(schedule, name=instance.name)(task_function))
         logger.info(
             "Scheduled task",
             class_name=class_name,

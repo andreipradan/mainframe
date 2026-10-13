@@ -6,14 +6,13 @@ from cron_descriptor import get_description
 from crontab import CronTab
 from rest_framework import serializers
 
-from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.crons.models import Cron
 
 logger = structlog.get_logger(__name__)
 
 
-class CronSerializer(ScheduleTaskIsRenamedSerializer):
+class CronSerializer(serializers.ModelSerializer):
     cron_description = serializers.SerializerMethodField()
     redis = serializers.SerializerMethodField()
 

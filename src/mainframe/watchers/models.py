@@ -153,7 +153,7 @@ class Watcher(TimeStampedModel):
             logger.info("Sending pending data")
             self.send_notification(self.pending_data)
             self.pending_data = []
-            self.save()
+            self.save(update_fields=("pending_data", "updated_at"))
 
         if not (results := self.fetch()):
             logger.info("No new items")
@@ -180,7 +180,7 @@ class Watcher(TimeStampedModel):
             "url": result["url"],
             "timestamp": timezone.now().isoformat(),
         }
-        self.save()
+        self.save(update_fields=("latest", "pending_data", "updated_at"))
         return self
 
     def _accumulate_pending_data(self, new_results: list[Link], logger) -> None:
@@ -254,16 +254,67 @@ class Watcher(TimeStampedModel):
         asyncio.run(send_telegram_message(f"{header}{text}{footer}", **kwargs))
 
 
+def run_scheduled_watcher(watcher_id: int) -> Watcher | None:
+    try:
+        watcher = Watcher.objects.get(pk=watcher_id)
+    except Watcher.DoesNotExist:
+        structlog.get_logger(__name__).info(
+            "Skipping scheduled watcher that no longer exists", watcher_id=watcher_id
+        )
+        return None
+
+    if not watcher.is_active or not watcher.cron:
+        structlog.get_logger(__name__).info(
+            "Skipping inactive scheduled watcher",
+            watcher_id=watcher_id,
+            identifier=watcher.name,
+        )
+        return None
+
+    return watcher.run()
+
+
+@receiver(signals.pre_save, sender=Watcher)
+def pre_save(sender, instance, update_fields=None, **kwargs):
+    schedule_fields = ("name", "cron", "is_active")
+    if update_fields is not None and not set(schedule_fields).intersection(
+        update_fields
+    ):
+        instance._schedule_task_changed = False
+        return
+
+    if instance._state.adding:
+        instance._previous_task_name = None
+        instance._schedule_task_changed = True
+        return
+
+    previous = sender.objects.filter(pk=instance.pk).values(*schedule_fields).first()
+    if previous is None:
+        instance._previous_task_name = None
+        instance._schedule_task_changed = True
+        return
+
+    instance._previous_task_name = previous.get("name")
+
+    instance._schedule_task_changed = any(
+        getattr(instance, field) != previous.get(field)
+        for field in schedule_fields
+        if update_fields is None or field in update_fields
+    )
+
+
 @receiver(signals.post_delete, sender=Watcher)
 def post_delete(sender, instance, **kwargs):
     if settings.ENV != "local":
         instance.cron = ""
-        schedule_task(instance)
+        schedule_task(instance, previous_name=instance.name)
 
 
 @receiver(signals.post_save, sender=Watcher)
 def post_save(sender, instance, **kwargs):
-    if settings.ENV != "local":
-        if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
-            instance.cron = ""
-        schedule_task(instance)
+    if settings.ENV != "local" and getattr(instance, "_schedule_task_changed", True):
+        previous_name = getattr(instance, "_previous_task_name", None)
+        if previous_name and previous_name != instance.name:
+            schedule_task(instance, previous_name=previous_name)
+        else:
+            schedule_task(instance)

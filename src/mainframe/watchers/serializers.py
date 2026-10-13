@@ -5,14 +5,13 @@ import structlog
 from cron_descriptor import get_description
 from rest_framework import serializers
 
-from mainframe.core.serializers import ScheduleTaskIsRenamedSerializer
 from mainframe.core.tasks import get_redis_client
 from mainframe.watchers.models import Watcher
 
 logger = structlog.get_logger(__name__)
 
 
-class WatcherSerializer(ScheduleTaskIsRenamedSerializer):
+class WatcherSerializer(serializers.ModelSerializer):
     cron_description = serializers.SerializerMethodField()
     cron_notification_description = serializers.SerializerMethodField()
     redis = serializers.SerializerMethodField()

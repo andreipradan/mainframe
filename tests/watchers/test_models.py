@@ -12,12 +12,43 @@ from mainframe.watchers.models import (
     extract,
     fetch_api,
     fetch_web,
+    run_scheduled_watcher,
 )
 from tests.factories.watchers import WatcherFactory
 
 
 @pytest.mark.django_db
 class TestWatcherRun:
+    def test_runtime_state_save_does_not_reschedule(self):
+        watcher = WatcherFactory(cron="*/5 * * * *", is_active=True)
+        watcher.latest = {"title": "new", "url": "https://example.com/new"}
+
+        with mock.patch("mainframe.watchers.models.schedule_task") as schedule_task:
+            watcher.save(update_fields=("latest",))
+
+        schedule_task.assert_not_called()
+
+    def test_schedule_change_reschedules(self):
+        watcher = WatcherFactory(cron="*/5 * * * *", is_active=True)
+        watcher.cron = "*/10 * * * *"
+
+        with mock.patch("mainframe.watchers.models.schedule_task") as schedule_task:
+            watcher.save(update_fields=("cron",))
+
+        schedule_task.assert_called_once_with(watcher)
+
+    def test_scheduled_watcher_uses_current_database_state(self):
+        watcher = WatcherFactory(cron="*/5 * * * *", is_active=True)
+        Watcher.objects.filter(pk=watcher.pk).update(url="https://example.com/updated")
+
+        with mock.patch.object(Watcher, "run", autospec=True) as run:
+            run.return_value = "completed"
+            result = run_scheduled_watcher(watcher.pk)
+
+        assert result == "completed"
+        run.assert_called_once()
+        assert run.call_args.args[0].url == "https://example.com/updated"
+
     @freeze_time("2026-02-06 00:14:00")
     def test_run_no_results_sends_pending_at_cron(self):
         w = WatcherFactory(

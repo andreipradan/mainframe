@@ -28,6 +28,17 @@ class Cron(TimeStampedModel):
         call_command(self.command, **self.kwargs)
 
 
+@receiver(signals.pre_save, sender=Cron)
+def pre_save(sender, instance, **kwargs):  # noqa: F841
+    if instance._state.adding:
+        instance._previous_task_name = None
+        return
+
+    instance._previous_task_name = (
+        sender.objects.filter(pk=instance.pk).values_list("name", flat=True).first()
+    )
+
+
 @receiver(signals.post_delete, sender=Cron)
 def post_delete(sender, instance: Cron, **kwargs):  # noqa: F841
     instance.expression = ""
@@ -36,6 +47,8 @@ def post_delete(sender, instance: Cron, **kwargs):  # noqa: F841
 
 @receiver(signals.post_save, sender=Cron)
 def post_save(sender, instance, **kwargs):  # noqa: F841
-    if getattr(instance, "is_renamed", False):  # set in core/serializers.py update
-        instance.expression = ""
-    schedule_task(instance)
+    previous_name = getattr(instance, "_previous_task_name", None)
+    if previous_name and previous_name != instance.name:
+        schedule_task(instance, previous_name=previous_name)
+    else:
+        schedule_task(instance)
