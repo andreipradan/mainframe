@@ -236,17 +236,94 @@ def extract_html_concerts(band, response):
     return concerts
 
 
+def api_event_datetime(value, timezone_name, band):
+    if not value:
+        raise FetchBandError(f"[{band.name}] API event is missing a date")
+
+    try:
+        event_date = datetime.fromisoformat(value)
+        event_timezone = ZoneInfo(timezone_name or settings.TIME_ZONE)
+    except (TypeError, ValueError, KeyError) as e:
+        raise FetchBandError(f"[{band.name}] Invalid API event date: {value}") from e
+
+    if event_date.tzinfo is None:
+        event_date = event_date.replace(tzinfo=event_timezone)
+    return event_date
+
+
+def parse_api_event(band, event):
+    if not isinstance(event, dict) or not isinstance(event.get("attributes"), dict):
+        raise FetchBandError(f"[{band.name}] Invalid API event")
+
+    attributes = event["attributes"]
+    venue = attributes.get("venue-display-name") or attributes.get("venue-name")
+    url = (
+        attributes.get("primary-link-url")
+        or attributes.get("promoted-link-url")
+        or attributes.get("exchange-listing-url")
+    )
+    if not venue or not url:
+        raise FetchBandError(
+            f"[{band.name}] API event is missing a venue or ticket URL"
+        )
+
+    timezone_name = attributes.get("venue-time-zone")
+    start_date = api_event_datetime(
+        attributes.get("starts-at-date-local"), timezone_name, band
+    )
+    end_date_value = attributes.get("ends-at-date-local")
+    end_date = (
+        api_event_datetime(end_date_value, timezone_name, band)
+        if end_date_value
+        else None
+    )
+
+    return Event(
+        source=band,
+        title=f"{band.name} @ {venue.strip()}",
+        categories=["music"],
+        location=venue.strip(),
+        start_date=start_date,
+        end_date=end_date,
+        url=url,
+        city=attributes.get("venue-city") or "",
+        additional_data={"sold_out": True} if attributes.get("is-sold-out") else {},
+        external_id=event.get("id", ""),
+    )
+
+
+def extract_api_concerts(band, response):
+    try:
+        events = response.json().get("data")
+    except (AttributeError, ValueError) as e:
+        raise FetchBandError(f"[{band.name}] Invalid API response") from e
+
+    if not isinstance(events, list):
+        raise FetchBandError(f"[{band.name}] API response has no event list")
+
+    return [parse_api_event(band, event) for event in events]
+
+
 @task(expires=10)
 def get_band_concerts(band: Source):
     parser = band.config.get("parser", "html")
     extract_concerts = {
         "embedded": extract_embedded_concerts,
         "html": extract_html_concerts,
+        "api": extract_api_concerts,
     }.get(parser)
     if extract_concerts is None:
         raise FetchBandError(f"[{band.name}] Unsupported parser: {parser}")
 
-    response, error = fetch(band.url)
+    if parser == "api":
+        headers = {
+            "Accept": "application/vnd.api+json",
+            "Content-Type": "application/vnd.api+json",
+            **band.headers,
+        }
+        response, error = fetch(band.url, soup=False, headers=headers)
+    else:
+        response, error = fetch(band.url)
     if error:
         raise FetchBandError(error)
 
