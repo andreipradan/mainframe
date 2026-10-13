@@ -277,6 +277,14 @@ def parse_api_event(band, event):
         if end_date_value
         else None
     )
+    city_parts = [
+        part
+        for part in (
+            attributes.get("venue-city"),
+            attributes.get("venue-country-code"),
+        )
+        if part
+    ]
 
     return Event(
         source=band,
@@ -286,8 +294,12 @@ def parse_api_event(band, event):
         start_date=start_date,
         end_date=end_date,
         url=url,
-        city=attributes.get("venue-city") or "",
-        additional_data={"sold_out": True} if attributes.get("is-sold-out") else {},
+        city=", ".join(city_parts),
+        description=attributes.get("additional-info") or "",
+        additional_data={
+            "sold_out": bool(attributes.get("is-sold-out")),
+            "api": event,
+        },
         external_id=event.get("id", ""),
     )
 

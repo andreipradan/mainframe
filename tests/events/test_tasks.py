@@ -145,8 +145,16 @@ class TestExtractApiConcerts:
                         "ends-at-date-local": "2027-02-13",
                         "venue-display-name": "The Venue",
                         "venue-city": "Sample City",
+                        "venue-country": "United States",
                         "venue-time-zone": "America/Los_Angeles",
                         "primary-link-url": "https://tickets.example/event-1",
+                        "primary-button-text": "Tickets",
+                        "additional-info": "The Example Tour",
+                        "venue-formatted-address": "Sample City, CA",
+                        "venue-address-line1": "123 Example Street",
+                        "venue-country-code": "US",
+                        "venue-latitude": 34.0,
+                        "venue-longitude": -118.0,
                         "is-sold-out": True,
                     },
                 }
@@ -158,12 +166,16 @@ class TestExtractApiConcerts:
         assert len(concerts) == 1
         assert concerts[0].title == "Test Artist @ The Venue"
         assert concerts[0].location == "The Venue"
-        assert concerts[0].city == "Sample City"
+        assert concerts[0].city == "Sample City, US"
         assert concerts[0].start_date.isoformat() == "2027-02-13T00:00:00-08:00"
         assert concerts[0].end_date == concerts[0].start_date
         assert concerts[0].url == "https://tickets.example/event-1"
         assert concerts[0].external_id == "event-1"
-        assert concerts[0].additional_data == {"sold_out": True}
+        assert concerts[0].description == "The Example Tour"
+        assert concerts[0].additional_data == {
+            "sold_out": True,
+            "api": response.json.return_value["data"][0],
+        }
 
     def test_rejects_invalid_event_date(self):
         response = mock.Mock()
