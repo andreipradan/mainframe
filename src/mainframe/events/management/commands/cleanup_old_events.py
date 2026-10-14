@@ -28,5 +28,3 @@ class Command(BaseCommand):
         if events_to_delete:
             Event.objects.filter(id__in=events_to_delete).delete()
             logger.info("Events deleted successfully!", count=len(events_to_delete))
-        else:
-            logger.warning("No past events found to delete")

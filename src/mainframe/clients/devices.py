@@ -80,17 +80,19 @@ class DevicesClient:
                 for device in existing_devices
                 if device.is_active and device.mac not in active_macs
             ]
-            self.logger.info(
-                "Successfully fetched devices",
-                counts={
-                    "total": len(devices),
-                    "new": len(new_devices),
-                    "went_online": len(went_online),
-                    "went_offline": len(went_offline),
-                },
-                went_offline=[str(d) for d in went_offline],
-                went_online=[str(d) for d in went_online],
-            )
+            if new_devices or went_online or went_offline:
+                self.logger.info(
+                    "Device changes detected",
+                    counts={
+                        "total": len(devices),
+                        "new": len(new_devices),
+                        "went_online": len(went_online),
+                        "went_offline": len(went_offline),
+                    },
+                    new_devices=[str(d) for d in new_devices],
+                    went_offline=[str(d) for d in went_offline],
+                    went_online=[str(d) for d in went_online],
+                )
 
             if went_offline:
                 Device.objects.filter(

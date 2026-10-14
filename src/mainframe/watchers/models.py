@@ -156,7 +156,6 @@ class Watcher(TimeStampedModel):
             self.save(update_fields=("pending_data", "updated_at"))
 
         if not (results := self.fetch()):
-            logger.info("No new items")
             return None
 
         urgent_keywords = ("breaking", "urgent", "alert", "ultima", "ultimă")

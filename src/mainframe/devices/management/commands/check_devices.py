@@ -46,10 +46,3 @@ class Command(BaseCommand):
             asyncio.run(
                 send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
             )
-
-        logger.info(
-            "Check devices complete!",
-            new_devices=len(raw_new_devices),
-            went_online=len(raw_went_online),
-            went_offline=len(raw_went_offline),
-        )

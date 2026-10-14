@@ -64,7 +64,6 @@ class BaseEarthquakeCommand:
         events = [self.parse_earthquake(event) for event in self.fetch_events(response)]
         if not events:
             self.set_last_check(instance)
-            logger.info("No new events!")
             return
 
         Earthquake.objects.bulk_create(

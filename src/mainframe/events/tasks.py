@@ -343,6 +343,3 @@ def get_band_concerts(band: Source):
 
     if concerts:
         store_concerts(band.name, concerts)
-        return
-
-    logger.warning("No concerts found", band=band.name)

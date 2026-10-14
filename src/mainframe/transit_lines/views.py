@@ -31,7 +31,6 @@ class TransitViewSet(viewsets.GenericViewSet):
             if cache:
                 cache.last_checked = timezone.now()
                 cache.save(update_fields=["last_checked"])
-            logger.info("No changes in external api", entity=entity)
             return HttpResponse(status=status.HTTP_304_NOT_MODIFIED)
         if resp.status_code == status.HTTP_200_OK:
             headers = {"ETag": resp.headers.get("ETag")}
@@ -97,11 +96,6 @@ class TransitViewSet(viewsets.GenericViewSet):
             and cache.last_checked
             and cache.last_checked + timedelta(days=1) > timezone.now()
         ):
-            logger.info(
-                "Matching ETag and recently checked. Serving cached version",
-                entity=entity,
-                last_checked=cache.last_checked,
-            )
             return HttpResponse(status=304)
 
         return self.handle_no_db(url, headers, entity, cache)
