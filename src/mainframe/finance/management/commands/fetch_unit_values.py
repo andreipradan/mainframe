@@ -61,8 +61,6 @@ class Command(BaseCommand):
         url = options["url"]
         payload = options["payload"]
 
-        logger.info("Fetching unit value", url=url)
-
         resp, error = fetch(
             url,
             method="POST" if ":7777" not in url else "GET",

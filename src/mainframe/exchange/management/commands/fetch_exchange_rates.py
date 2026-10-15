@@ -32,7 +32,9 @@ class Command(BaseCommand):
         except FetchExchangeRatesException as e:
             raise CommandError(e) from e
 
-        logger.info("Fetched exchange rates", count=count)
-        self.stdout.write(self.style.SUCCESS("Done."))
+        if not count:
+            logger.warning("No exchange rates fetched")
+        else:
+            logger.info("Fetched exchange rates", count=count)
 
         healthchecks.ping(f"{source}-fx")

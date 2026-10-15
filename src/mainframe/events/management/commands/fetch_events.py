@@ -43,8 +43,6 @@ class Command(BaseCommand):
                 raise CommandError(f"Invalid category: {category}")
             kwargs["category_id"] = category_id
 
-        logger.info("Fetching events...", source=source.name, category=category)
-
         client_class = CLIENT_MAPPING.get(source.name.lower())
         if not client_class:
             raise CommandError(f"No client found for source '{source.name}'") from None
@@ -53,11 +51,18 @@ class Command(BaseCommand):
         events_to_create = client.fetch_events(**kwargs)
         if events_to_create:
             persist_events(events_to_create, source.name)
+            count = len(events_to_create)
+            identifier = (
+                f"{source.name} - {category}: {count}"
+                if category
+                else f"{source.name}: {count}"
+            )
             logger.info(
                 "Events fetched successfully!",
-                count=len(events_to_create),
+                count=count,
                 category=category,
                 source=source.name,
+                identifier=identifier,
             )
         else:
             logger.warning("No events found", source=source.name, category=category)

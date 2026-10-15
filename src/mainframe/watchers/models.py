@@ -170,7 +170,6 @@ class Watcher(TimeStampedModel):
             )
             self.send_notification(results)
         else:
-            logger.info("Deferring notification to next cron window")
             self._accumulate_pending_data(results, logger)
 
         result = results[0]

@@ -140,7 +140,8 @@ loki.process "mainframe_journal_process" {
 
     stage.labels {
       values = {
-        level = "level",
+        level  = "level",
+        logger = "logger",
       }
     }
 
