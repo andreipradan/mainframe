@@ -58,13 +58,21 @@ def fetch_api(watcher) -> list[Link]:
         items = extract(results, list_selector.split("."))
 
     try:
-        return [
-            {
-                "title": extract(result, title_selector.split(".")),
-                "url": extract(result, url_selector.split(".")),
-            }
-            for result in items
-        ]
+        links = []
+        for result in items:
+            item_url = extract(result, url_selector.split("."))
+            if watcher.link_base_url:
+                item_url = urljoin(
+                    f"{watcher.link_base_url.rstrip('/')}/",
+                    item_url,
+                )
+            links.append(
+                {
+                    "title": extract(result, title_selector.split(".")),
+                    "url": item_url,
+                }
+            )
+        return links
     except (IndexError, ValueError) as e:
         raise WatcherError(e) from e
 
@@ -106,6 +114,7 @@ class Watcher(TimeStampedModel):
     is_active = models.BooleanField(default=False)
     latest = models.JSONField(default=dict)
     pending_data = models.JSONField(default=list)
+    link_base_url = models.URLField(blank=True, default="")
     name = models.CharField(max_length=255, unique=True)
     request = models.JSONField(default=dict)
     selector = models.CharField(max_length=128)

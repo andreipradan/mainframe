@@ -264,6 +264,50 @@ class TestWatcherHelpers:
         assert isinstance(res, list)
         assert res[0]["title"] == "T1"
 
+    def test_fetch_api_resolves_relative_urls_with_optional_link_base(self):
+        w = WatcherFactory(
+            url="http://api",
+            selector="records name slug",
+            link_base_url="https://community.newpress.com/c/new-videos-shorts/",
+        )
+        payload = {
+            "records": [
+                {"name": "Video title", "slug": "the-real-reason-china-built-so-much"}
+            ]
+        }
+
+        def fake_fetch(url, retries=1, soup=False, **kwargs):
+            return DummyResponse(payload), None
+
+        with mock.patch("mainframe.watchers.models.fetch", fake_fetch):
+            results = fetch_api(w)
+
+        assert results == [
+            {
+                "title": "Video title",
+                "url": (
+                    "https://community.newpress.com/c/new-videos-shorts/"
+                    "the-real-reason-china-built-so-much"
+                ),
+            }
+        ]
+
+    def test_fetch_api_preserves_absolute_urls_with_link_base(self):
+        w = WatcherFactory(
+            url="http://api",
+            selector="items title url",
+            link_base_url="https://community.newpress.com/c/new-videos-shorts/",
+        )
+        payload = {"items": [{"title": "T1", "url": "https://example.com/post"}]}
+
+        def fake_fetch(url, retries=1, soup=False, **kwargs):
+            return DummyResponse(payload), None
+
+        with mock.patch("mainframe.watchers.models.fetch", fake_fetch):
+            results = fetch_api(w)
+
+        assert results[0]["url"] == "https://example.com/post"
+
     def test_fetch_api_bad_selector_raises(self):
         w = WatcherFactory(url="http://api", selector="one two")
 
