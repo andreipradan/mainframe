@@ -40,6 +40,7 @@ const Watchers = () => {
   const [selector, setSelector] = useState('');
   const [type, setType] = useState('');
   const [url, setUrl] = useState('');
+  const [linkBaseUrl, setLinkBaseUrl] = useState('');
 
   const [latest, setLatest] = useState(null);
   const [latestAnnotations, setLatestAnnotations] = useState(null);
@@ -59,6 +60,7 @@ const Watchers = () => {
       setCron(selectedItem.cron);
       setCronNotification(selectedItem.cron_notification || '');
       setIsActive(selectedItem.is_active);
+      setLinkBaseUrl(selectedItem.link_base_url || '');
       setLatest(JSON.stringify(selectedItem.latest, null, '\t'));
       setName(selectedItem.name);
       setRequest(JSON.stringify(selectedItem.request, null, '\t'));
@@ -104,6 +106,7 @@ const Watchers = () => {
     setSelector('');
     setType('');
     setUrl('');
+    setLinkBaseUrl('');
   };
   const closeModal = () => {
     dispatch(selectItem());
@@ -121,6 +124,7 @@ const Watchers = () => {
     setSelector(watcher.selector);
     setType(types?.find((t) => t[0] === watcher.type));
     setUrl(watcher.url);
+    setLinkBaseUrl(watcher.link_base_url || '');
   };
 
   const onIsActiveChange = useCallback(() => {
@@ -495,6 +499,14 @@ const Watchers = () => {
               />
             </Form.Group>
             <Form.Group className='mb-3'>
+              <Form.Label>Link base URL (API only, optional)</Form.Label>
+              <Form.Control
+                type='text'
+                value={linkBaseUrl}
+                onChange={(e) => setLinkBaseUrl(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className='mb-3'>
               <Form.Label>Selector</Form.Label>
               <Form.Control
                 type='text'
@@ -575,6 +587,7 @@ const Watchers = () => {
               dispatch(
                 WatchersApi.test(token, {
                   name,
+                  link_base_url: linkBaseUrl,
                   url,
                   latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
                   request: JSON.parse(request.replace(/[\r\n\t]/g, '')),
@@ -609,6 +622,7 @@ const Watchers = () => {
                       cron,
                       cron_notification: cronNotification,
                       is_active: isActive,
+                      link_base_url: linkBaseUrl,
                       latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
                       name,
                       request: JSON.parse(request.replace(/[\r\n\t]/g, '')),
@@ -635,6 +649,7 @@ const Watchers = () => {
                     cron,
                     cron_notification: cronNotification,
                     is_active: isActive,
+                    link_base_url: linkBaseUrl,
                     latest: JSON.parse(latest.replace(/[\r\n\t]/g, '')),
                     name,
                     request: JSON.parse(request.replace(/[\r\n\t]/g, '')),
