@@ -2,30 +2,28 @@ FROM python:3.14.3-alpine AS builder
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
 
+WORKDIR /app
+
 # Install build dependencies for psutil
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
         build-base \
         linux-headers
 
-# Install Python dependencies
-# copy pyproject only; README may not always exist in context so create a stub if absent
-COPY pyproject.toml /tmp/
-RUN if [ ! -f /tmp/README.md ]; then printf "# dummy\n" > /tmp/README.md; fi \
-    && pip install --no-cache-dir /tmp/ \
+# Install the locked production dependencies into a virtual environment.
+COPY pyproject.toml uv.lock README.md ./
+RUN pip install --no-cache-dir uv==0.12.23 \
+    && uv sync --locked --no-dev --no-install-project \
     && apk del .tmp-build-deps \
     && rm -rf /var/cache/apk/*
 
 FROM python:3.14.3-alpine
 
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PATH="/app/.venv/bin:${PATH}"
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copy pre-built Python packages from builder
-COPY --from=builder /usr/local/lib/python3.14/site-packages/ /usr/local/lib/python3.14/site-packages/
-COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
-
 WORKDIR /app
+COPY --from=builder /app/.venv /app/.venv
 COPY src gunicorn.config.py ./
 
 USER appuser
