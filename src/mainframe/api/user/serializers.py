@@ -18,7 +18,18 @@ class UserSerializer(serializers.ModelSerializer):
             "last_login",
             "username",
         ]
-        read_only_field = ["id"]
+        read_only_fields = ["id"]
+
+
+class SelfUserSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        read_only_fields = [
+            "id",
+            "date",
+            "is_active",
+            "is_staff",
+            "last_login",
+        ]
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):

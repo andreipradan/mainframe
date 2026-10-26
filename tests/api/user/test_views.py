@@ -179,6 +179,19 @@ class TestLogin:
             "detail": "You do not have permission to perform this action."
         }
 
+    def test_edit_self_cannot_promote_to_staff(self, client, session):
+        response = client.patch(
+            f"/users/{session.user_id}",
+            data=json.dumps({"is_staff": True, "username": "updated"}),
+            HTTP_AUTHORIZATION=session.token,
+            content_type="application/json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK, response.data
+        session.user.refresh_from_db()
+        assert not session.user.is_staff
+        assert session.user.username == "updated"
+
     def test_list_as_staff(self, client, staff_session):
         user = UserFactory(is_active=False)
         response = client.get("/users/", HTTP_AUTHORIZATION=staff_session.token)

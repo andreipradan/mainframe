@@ -9,7 +9,11 @@ from rest_framework.response import Response
 from mainframe.api.authentication.models import ActiveSession
 from mainframe.api.authentication.serializers import LoginSerializer, RegisterSerializer
 from mainframe.api.user.models import User
-from mainframe.api.user.serializers import ChangePasswordSerializer, UserSerializer
+from mainframe.api.user.serializers import (
+    ChangePasswordSerializer,
+    SelfUserSerializer,
+    UserSerializer,
+)
 from mainframe.clients.chat import send_telegram_message
 
 
@@ -32,6 +36,14 @@ class UserViewSet(viewsets.ModelViewSet):
         ):
             return [IsAuthenticated()]
         return super().get_permissions()
+
+    def get_serializer_class(self):
+        if (
+            self.action == "partial_update"
+            and str(self.request.user.pk) == self.kwargs["pk"]
+        ):
+            return SelfUserSerializer
+        return super().get_serializer_class()
 
     def destroy(self, request, *args, **kwargs):
         try:
