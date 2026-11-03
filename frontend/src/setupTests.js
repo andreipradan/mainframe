@@ -17,9 +17,9 @@ if (typeof jest !== 'undefined' && typeof jest.mock === 'function') {
   });
 
   // Some libraries (ace-builds) include webpack-specific resolver imports that
-  // Jest can't resolve. Provide lightweight mocks here to avoid errors.
-  jest.mock('ace-builds/webpack-resolver', () => ({}));
-  jest.mock('ace-builds', () => ({}));
+  // Jest can't resolve. Provide lightweight virtual mocks here to avoid errors.
+  jest.mock('ace-builds/webpack-resolver', () => ({}), { virtual: true });
+  jest.mock('ace-builds', () => ({}), { virtual: true });
 }
 
 // jsdom doesn't implement window.scrollTo; provide a noop to avoid warnings/errors
