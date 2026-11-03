@@ -1,6 +1,8 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import pytest
+from bs4 import BeautifulSoup
 from django.test import override_settings
 
 from mainframe.earthquakes.management.base_check import (
@@ -19,6 +21,19 @@ def test_check_infp_get_datetime_uses_zoneinfo():
 
 def test_check_infp_uses_default_tls_verification():
     assert InfpCommand.get_kwargs() == {"timeout": 10}
+
+
+def test_check_infp_parse_earthquake_rejects_missing_event_extras():
+    card = BeautifulSoup(
+        '<div data-time="2026-02-21 12:00:00">'
+        '<div class="event-data"><div></div><div></div><div></div></div>'
+        "</div>",
+        "html.parser",
+    ).div
+    command = InfpCommand()
+
+    with pytest.raises(ValueError, match="missing event extras"):
+        command.parse_earthquake(card)
 
 
 def make_usgs_event(timestamp_ms: int):

@@ -41,7 +41,7 @@ dependencies = [
     "structlog>=25.5.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 
 [build-system]
 requires = ["hatchling"]
@@ -95,6 +95,7 @@ dev = [
     "black>=26.10.1",
     "django-debug-toolbar>=4.3.0",
     "factory-boy>=3.3.0",
+    "filelock>=4.2.1",
     "freezegun>=1.5.0",
     "ipython>=8.24.0",
     "poethepoet>=0.32.0",

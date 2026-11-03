@@ -97,19 +97,16 @@ const Transactions = () => {
   const getSpecificCategory = (description) =>
     checkedCategories?.find((c) => c.description === description)?.category;
   const paymentsData = {
-    labels: accounts.analytics?.per_month.map((p) => p.month),
-    datasets: accounts.analytics
-      ? [
-          ...accounts.analytics?.categories?.map((cat) => ({
-            label: capitalize(cat).replace('-', ' '),
-            data: accounts.analytics?.per_month?.map((item) => item[cat]),
-            backgroundColor: getColor(cat),
-            borderColor: getColor(cat, true),
-            borderWidth: 1,
-            fill: false,
-          })),
-        ]
-      : [],
+    labels: accounts.analytics?.per_month?.map((p) => p.month),
+    datasets:
+      accounts.analytics?.categories?.map((cat) => ({
+        label: capitalize(cat).replace('-', ' '),
+        data: accounts.analytics?.per_month?.map((item) => item[cat]),
+        backgroundColor: getColor(cat),
+        borderColor: getColor(cat, true),
+        borderWidth: 1,
+        fill: false,
+      })) ?? [],
   };
   const paymentsOptions = {
     scales: {

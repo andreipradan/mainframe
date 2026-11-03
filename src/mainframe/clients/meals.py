@@ -96,11 +96,11 @@ def parse_week(args) -> List[Meal]:
     response_text, url = args
     soup = BeautifulSoup(response_text, features="html.parser")
 
-    week = (
-        soup.find("div", {"class": "weekly-buttons"})
-        .find("button", {"class": "active"})
-        .text.split("-")[1]
-    )
+    active_week = soup.select_one(".weekly-buttons button.active")
+    if active_week is None:
+        logger.error("No active week found", url=url)
+        return []
+    week = active_week.text.split("-")[1]
     for k, v in months.items():
         week = week.replace(f" {k}", f" {v}")
 

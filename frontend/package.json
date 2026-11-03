@@ -77,6 +77,15 @@
       "last 1 safari version"
     ]
   },
+  "overrides": {
+    "postcss": "^8.5.32",
+    "qs": "^6.17.1",
+    "serialize-javascript": "^7.1.4",
+    "sockjs": "^0.3.24",
+    "svgo": "^2.8.4",
+    "webpack-dev-middleware": "^7.4.6",
+    "webpack-dev-server": "^6.1.0"
+  },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "identity-obj-proxy": "^3.0.0",

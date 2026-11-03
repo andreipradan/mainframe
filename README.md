@@ -19,7 +19,7 @@ Personal automation and monitoring platform built with Django REST Framework and
 ## Tech Stack
 
 **Backend:**
-- Python 3.10+
+- Python 3.11+
 - Django 5.x with Django REST Framework
 - PostgreSQL
 - Redis + Huey (task queue)
@@ -39,7 +39,7 @@ Personal automation and monitoring platform built with Django REST Framework and
 
 ## Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - Node.js 20+
 - PostgreSQL
 - Redis

@@ -11,7 +11,7 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
 
 # Install the locked production dependencies into a virtual environment.
 COPY pyproject.toml uv.lock README.md ./
-RUN pip install --no-cache-dir uv==0.12.23 \
+RUN pip install --no-cache-dir --only-binary=:all: uv==0.12.23 \
     && uv sync --locked --no-dev --no-install-project \
     && apk del .tmp-build-deps \
     && rm -rf /var/cache/apk/*

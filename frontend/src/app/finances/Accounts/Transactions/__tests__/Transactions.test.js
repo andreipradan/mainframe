@@ -63,6 +63,7 @@ jest.mock('react-datepicker', () => {
       React.createElement('input', {
         type: 'text',
         value: props.selected ? props.selected.toString() : '',
+        readOnly: true,
       }),
   };
 });
@@ -242,13 +243,13 @@ describe('Transactions component (basic)', () => {
     root.unmount();
   });
 
-  test('shows "No transactions found" when there are no results', () => {
+  test('renders without monthly analytics when there are no transactions', () => {
     const initialState = {
       auth: { token: 'tok' },
       accounts: {
         selectedItem: { bank: 'TestBank', type: 'Checking', id: 1 },
         results: [],
-        analytics: null,
+        analytics: { years: [] },
         loading: false,
         modalOpen: false,
       },
@@ -299,7 +300,7 @@ describe('Transactions component (basic)', () => {
     expect(container.textContent).toContain('Lunch at cafe');
     root.unmount();
   });
-  
+
   test('shows modal errors when deleting a transaction and errors exist', () => {
     const tx = {
       id: 22,

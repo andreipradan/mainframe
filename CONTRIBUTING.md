@@ -8,6 +8,18 @@ This file contains developer-facing contribution and testing guidelines for the 
 - Configure environment: edit `src/mainframe/.env` (see README.md template)
 - Run migrations: `uv run poe migrate` (this command runs both `makemigrations` and `migrate`)
 
+## Dependabot Alerts
+
+The devcontainer includes the GitHub CLI. The Codespaces `GITHUB_TOKEN` does not have permission to read Dependabot alerts, so authenticate the CLI with GitHub's `security_events` scope when you need to inspect them:
+
+```bash
+env -u GITHUB_TOKEN -u GH_TOKEN gh auth login --hostname github.com --web --scopes security_events
+env -u GITHUB_TOKEN -u GH_TOKEN gh api 'repos/andreipradan/mainframe/dependabot/alerts?state=open&per_page=100' \
+	--jq '.[] | [.number, .security_advisory.severity, .dependency.package.name, .dependency.manifest_path] | @tsv'
+```
+
+The login is interactive and stores its credential in the user's GitHub CLI config, not in the repository or container image.
+
 ## Running Tests
 
 - Run all tests: `uv run poe test`

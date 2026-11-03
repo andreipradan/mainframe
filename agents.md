@@ -14,7 +14,7 @@ Mainframe is a personal automation and monitoring platform built with Django RES
 - Provide real-time notifications through Telegram bots
 
 ### Tech Stack
-- **Backend**: Python 3.10+ / Django 5.x / Django REST Framework
+- **Backend**: Python 3.11+ / Django 5.x / Django REST Framework
 - **Frontend**: React 18 / Redux Toolkit / Bootstrap 4 / Leaflet
 - **Database**: PostgreSQL
 - **Task Queue**: Redis + Huey

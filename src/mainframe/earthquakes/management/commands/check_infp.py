@@ -36,12 +36,26 @@ class Command(BaseEarthquakeCommand, BaseCommand):
 
     def parse_earthquake(self, card: BeautifulSoup) -> Earthquake:
         timestamp = self.get_datetime(card.attrs["data-time"])
+        event_data = card.find("div", {"class": "event-data"})
+        if event_data is None:
+            raise ValueError("INFP earthquake is missing event data")
+        event_divs = event_data.find_all("div")
+        minimum_event_divs = 3
+        if len(event_divs) < minimum_event_divs:
+            raise ValueError("INFP earthquake event data is incomplete")
+
+        event_extras = card.find("div", {"class": "event-extras"})
+        if event_extras is None:
+            raise ValueError("INFP earthquake is missing event extras")
+        extras_list = event_extras.find("ul")
+        if extras_list is None:
+            raise ValueError("INFP earthquake is missing event extras")
         additional_data = {
             x.span.attrs["title"]: x.text.strip()
-            for x in card.find("div", {"class": "event-extras"}).ul.find_all("li")
+            for x in extras_list.find_all("li")
             if x.span.attrs["title"] != "labels.latlon"
         }
-        url, _, region, *__ = card.find("div", {"class": "event-data"}).find_all("div")
+        url, _, region, *__ = event_divs
         additional_data["url"] = url.a.attrs["href"]
         region = region.text.strip()
         lat, lon = card.attrs["data-lat"], card.attrs["data-lon"]

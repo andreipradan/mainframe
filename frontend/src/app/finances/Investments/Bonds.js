@@ -194,7 +194,7 @@ const Bonds = () => {
                           {Object.keys(state.aggregations)
                             .filter((item) => item.split('_')[1] === currency)
                             .filter((item) => !!state.aggregations[item])
-                            .sort()
+                            .sort((left, right) => left.localeCompare(right))
                             .map((k) => k.split('_')[0])
                             .map((item) => (
                               <ListItem

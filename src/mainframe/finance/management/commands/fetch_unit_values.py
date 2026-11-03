@@ -15,8 +15,16 @@ logger = structlog.get_logger(__name__)
 def extract_azt(response, pensions):
     soup = BeautifulSoup(response.content, "html.parser")
     rows = [r for r in soup.find_all("tr")[4:] if r.text.strip()]
-    date_row = soup.find("td", text="Evolutie Fonduri de Pensii raportate la data de:")
-    date = date_row.find_next_sibling("td").text.strip()
+    date_row = soup.find(
+        "td",
+        string=("Evolutie Fonduri de Pensii raportate la data de:"),
+    )
+    if date_row is None:
+        raise ValueError("AZT response is missing its reporting date")
+    date_cell = date_row.find_next_sibling("td")
+    if date_cell is None:
+        raise ValueError("AZT response is missing its reporting date")
+    date = date_cell.text.strip()
     unit_values = []
     for row in rows:
         fund_name, value, *_ = [

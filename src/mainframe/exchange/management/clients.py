@@ -64,11 +64,12 @@ class BNR(BaseExchange):
 
     def fetch_available_urls(self):
         soup = BeautifulSoup(self.do_request(self.base), "html.parser")
+        links = soup.find("ul", {"class": "links"})
+        if links is None:
+            raise FetchExchangeRatesException("BNR archive links were not found")
 
         return [
-            x.attrs["href"]
-            for x in soup.find("ul", {"class": "links"}).select("A")
-            if "/years/" in x.attrs["href"]
+            x.attrs["href"] for x in links.select("A") if "/years/" in x.attrs["href"]
         ]
 
     def parse(self, content) -> list[ExchangeRate]:
