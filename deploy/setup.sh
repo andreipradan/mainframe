@@ -21,6 +21,12 @@ for arg in "$@"; do
     restart)
       HAS_RESTART=true
       ;;
+    noreq)
+      ;;
+    *)
+      echo "Unknown argument: ${arg}. Expected requirements, migrate, restart, or noreq." >&2
+      exit 2
+      ;;
   esac
 done
 
