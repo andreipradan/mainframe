@@ -173,6 +173,8 @@ jobs:
               *.js|*.jsx|*.css|*.scss|*.json|*.md)
                 format_files+=("${file#frontend/}")
                 ;;
+              *)
+                ;;
             esac
           done
           if ((${#format_files[@]})); then

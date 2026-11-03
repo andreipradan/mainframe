@@ -194,54 +194,51 @@ class IBClient(EventsClient):
 
 class ZnClient(EventsClient):
     def parse_data(self, soup) -> list[Event]:
-        events = []
         marker = soup.find(string=self.source.config["soup"]["string"])
         if not marker:
-            return events
+            return []
 
         section = marker.find_parent("section")
         if not section:
-            return events
+            return []
 
         tags = section.select(self.source.config["soup"]["children"])
-        for t in tags:
-            tag = t.div
-            category = tag.find("div", {"class": "kzn-sw-item-textsus"}).text.strip()
-            title = tag.h3.a.text.strip()
-            url = tag.h3.a["href"]
-            description = tag.find("div", {"class": "kzn-sw-item-sumar"}).text.strip()
-            date, time = tag.find("div", {"class": "kzn-one-event-date"}).select("div")
-            now = datetime.now()
-            start_date = datetime.strptime(
-                f"{date.text.strip().split()[1]} {time.text.strip()}",
-                "%d/%m %H:%M",
-            ).replace(year=now.year, tzinfo=ZoneInfo(settings.TIME_ZONE))
-            if start_date.month < now.month:
-                start_date = start_date.replace(year=now.year + 1)
-            location_tag = tag.find("div", {"class": "kzn-sw-item-adresa"})
-            city = self.source.config["city"].lower()
-            if location_tag.text.strip().lower() == city and " @ " in title:
-                location = title.split("@")[-1].strip()
-            else:
-                location = location_tag.text.strip()
+        return [self.parse_event(tag.div) for tag in tags]
 
-            if location.endswith(f" {city}"):
-                location = location.replace(f" {city}", "").strip()
+    def parse_event(self, tag) -> Event:
+        category = tag.find("div", {"class": "kzn-sw-item-textsus"}).text.strip()
+        title = tag.h3.a.text.strip()
+        url = tag.h3.a["href"]
+        description = tag.find("div", {"class": "kzn-sw-item-sumar"}).text.strip()
+        date, time = tag.find("div", {"class": "kzn-one-event-date"}).select("div")
+        now = datetime.now()
+        start_date = datetime.strptime(
+            f"{date.text.strip().split()[1]} {time.text.strip()}",
+            "%d/%m %H:%M",
+        ).replace(year=now.year, tzinfo=ZoneInfo(settings.TIME_ZONE))
+        if start_date.month < now.month:
+            start_date = start_date.replace(year=now.year + 1)
+        location_tag = tag.find("div", {"class": "kzn-sw-item-adresa"})
+        city = self.source.config["city"].lower()
+        if location_tag.text.strip().lower() == city and " @ " in title:
+            location = title.split("@")[-1].strip()
+        else:
+            location = location_tag.text.strip()
 
-            if title.endswith(f" @ {location}"):
-                title = title.replace(f" @ {location}", "").strip()
+        if location.endswith(f" {city}"):
+            location = location.replace(f" {city}", "").strip()
 
-            events.append(
-                Event(
-                    source=self.source,
-                    title=title,
-                    categories=[get_category(category)],
-                    location=location,
-                    start_date=start_date,
-                    url=url,
-                    city=self.source.config["city"],
-                    description=description if description != title else "",
-                    location_url=location_tag.a["href"] if location_tag.a else "",
-                )
-            )
-        return events
+        if title.endswith(f" @ {location}"):
+            title = title.replace(f" @ {location}", "").strip()
+
+        return Event(
+            source=self.source,
+            title=title,
+            categories=[get_category(category)],
+            location=location,
+            start_date=start_date,
+            url=url,
+            city=self.source.config["city"],
+            description=description if description != title else "",
+            location_url=location_tag.a["href"] if location_tag.a else "",
+        )

@@ -161,7 +161,7 @@ class CTPClient:
                     occurrence=occ,
                     url=url,
                 )
-                return "", url
+                return "", line, occ, url
 
     async def request_many(self, schedules):
         sem = asyncio.Semaphore(1000)
