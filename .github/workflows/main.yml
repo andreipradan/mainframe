@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       - name: Installing dev dependencies for migration check
-          run: uv sync --locked
+        run: uv sync --locked
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
         env:
           ENV: ci
@@ -104,7 +104,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       - name: Run CI
-          run: uv run --locked poe ci
+        run: uv run --locked poe ci
       - name: Upload backend coverage
         # make backend coverage.xml available to other jobs (e.g. sonar scan)
         uses: actions/upload-artifact@v4
