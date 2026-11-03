@@ -5,7 +5,7 @@ PROJECT_DIR=${HOME}/projects/mainframe
 
 # For new rpi https://www.thedigitalpictureframe.com/stay-connected-enhancing-raspberry-pi-wi-fi-stability-by-turning-off-power-management/
 
-if [ "$1" == "--continue" ]; then
+if [[ "$1" == "--continue" ]]; then
 
   cat "${PROJECT_DIR}/deploy/ngrok.yml" >> "$HOME/.config/ngrok/ngrok.yml"
   echo "WARNING: If you have a custom domain - fill it in the ~/.config/ngrok.yml"
@@ -56,7 +56,7 @@ echo "[homeassistant] running docker" && \
     --network=host \
     ghcr.io/home-assistant/home-assistant:stable
 
-if [ -d "${HOME}/.oh-my-zsh" ]; then
+if [[ -d "${HOME}/.oh-my-zsh" ]]; then
   echo "[zsh] ${HOME}/.oh-my-zsh - path already exists - skipping installation"
 else
   echo "[zsh] Installing zsh" && sudo apt-get install -y zsh
@@ -69,7 +69,7 @@ fi
 
 echo "[env] Setting .env placeholder" &&
 ENV_FILE="${PROJECT_DIR}/src/mainframe/.env"
-if [ -f "$ENV_FILE" ]; then
+if [[ -f "$ENV_FILE" ]]; then
   echo "env file already exists";
 else
   cat "${PROJECT_DIR}/deploy/.env" >> "$ENV_FILE";
@@ -77,7 +77,7 @@ fi
 
 LOGS_DIR=/var/log/mainframe
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Creating logs path"
-if [ -d "${LOGS_DIR}" ]; then
+if [[ -d "${LOGS_DIR}" ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [logs] Path already exists";
 else
   sudo mkdir -p "${LOGS_DIR}";
@@ -87,7 +87,7 @@ fi
 
 VIRTUALENV_DIR=${HOME}/projects/.virtualenvs/mainframe
 echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Creating venv"
-if [ -d "${VIRTUALENV_DIR}" ]; then
+if [[ -d "${VIRTUALENV_DIR}" ]]; then
   echo "$(date -u +"%Y-%m-%d %H:%M:%SZ") - [venv] Already exists"
 else
   python -m venv "${VIRTUALENV_DIR}";
@@ -114,9 +114,9 @@ NGINX_ENABLED_DEFAULT="${NGINX_DIR}/sites-enabled/default"
 PROJECT_DIR=${HOME}/projects/mainframe
 echo "[nginx] Installing nginx" && sudo apt-get -y install nginx
 echo "[nginx] Adding configuration"
-if [ -f "$NGINX_AVAILABLE" ]; then sudo rm $NGINX_AVAILABLE && echo "Deleted ${NGINX_AVAILABLE}"; else echo "File not found: ${NGINX_AVAILABLE}"; fi
-if [ -f "$NGINX_ENABLED" ]; then sudo rm $NGINX_ENABLED && echo "Deleted ${NGINX_ENABLED}"; else echo "File not found: ${NGINX_ENABLED}"; fi
-if [ -f "$NGINX_ENABLED_DEFAULT" ]; then sudo rm $NGINX_ENABLED_DEFAULT && echo "Deleted ${NGINX_ENABLED_DEFAULT}"; else echo "File not found: ${NGINX_ENABLED_DEFAULT}"; fi
+if [[ -f "$NGINX_AVAILABLE" ]]; then sudo rm $NGINX_AVAILABLE && echo "Deleted ${NGINX_AVAILABLE}"; else echo "File not found: ${NGINX_AVAILABLE}"; fi
+if [[ -f "$NGINX_ENABLED" ]]; then sudo rm $NGINX_ENABLED && echo "Deleted ${NGINX_ENABLED}"; else echo "File not found: ${NGINX_ENABLED}"; fi
+if [[ -f "$NGINX_ENABLED_DEFAULT" ]]; then sudo rm $NGINX_ENABLED_DEFAULT && echo "Deleted ${NGINX_ENABLED_DEFAULT}"; else echo "File not found: ${NGINX_ENABLED_DEFAULT}"; fi
 sudo touch ${NGINX_AVAILABLE}
 sudo chown rpi $NGINX_AVAILABLE
 cat "${PROJECT_DIR}/deploy/nginx.conf" >> $NGINX_AVAILABLE
