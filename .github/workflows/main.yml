@@ -150,6 +150,8 @@ jobs:
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Node.js (NPM)
         uses: actions/setup-node@v4
         with:
@@ -159,7 +161,25 @@ jobs:
         run: npm ci --no-audit --no-fund --ignore-scripts
       - name: Check frontend formatting
         working-directory: frontend
-        run: npx --no-install prettier --check 'src/**/*.{js,jsx,css,scss,json,md}'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          mapfile -d '' changed_files < <(
+            git diff --name-only -z --diff-filter=ACMR "$BASE_SHA" "$GITHUB_SHA" -- src
+          )
+          format_files=()
+          for file in "${changed_files[@]}"; do
+            case "$file" in
+              *.js|*.jsx|*.css|*.scss|*.json|*.md)
+                format_files+=("${file#frontend/}")
+                ;;
+            esac
+          done
+          if ((${#format_files[@]})); then
+            npx --no-install prettier --check "${format_files[@]}"
+          else
+            echo "No supported frontend source files changed."
+          fi
 
   sonarqube:
     name: SonarQube

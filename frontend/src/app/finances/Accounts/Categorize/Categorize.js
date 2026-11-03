@@ -972,7 +972,9 @@ const Categorize = () => {
             {checkedCategories?.map((c, i) => (
               <li key={i}>
                 {c.description}
-                <span className='text-warning'> -> New category ->&nbsp;</span>
+                <span className='text-warning'>
+                  {' -> New category ->'}&nbsp;
+                </span>
                 <span className='text-success'>
                   {capitalize(c.category).replace('-', ' ')}
                 </span>

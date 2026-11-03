@@ -89,7 +89,10 @@
     "svgo": "^2.8.4",
     "underscore": "^1.13.8",
     "webpack-dev-middleware": "^7.4.6",
-    "webpack-dev-server": "^6.1.0"
+    "webpack-dev-server": "^6.1.0",
+    "babel-plugin-istanbul": {
+      "test-exclude": "^7.0.2"
+    }
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
