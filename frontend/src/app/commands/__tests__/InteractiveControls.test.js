@@ -55,7 +55,7 @@ jest.mock('react-bootstrap/Modal', () => {
 });
 jest.mock('react-ace', () => ({
   __esModule: true,
-  default: ({ value, onChange, placeholder }) =>
+  default: ({ value, placeholder }) =>
     require('react').createElement('textarea', {
       value: value ?? '',
       placeholder,

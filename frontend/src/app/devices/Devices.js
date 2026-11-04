@@ -21,6 +21,7 @@ const Devices = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState(null);
 
+  /** Returns devices matching the current search term. */
   function search() {
     return results.filter((d) =>
       ['ip', 'mac', 'name'].some((key) =>
@@ -29,6 +30,7 @@ const Devices = () => {
     );
   }
 
+  /** Builds the sort control for a device table column. */
   function getSortingComponent(column) {
     const sortingClass = `cursor-pointer mdi mdi-sort-alphabetical${
       sorting?.includes(`${column}-asc`)
@@ -78,7 +80,10 @@ const Devices = () => {
 
   useEffect(() => {
     if (!devices) return;
-    if (!sorting?.length) return setDevices(results);
+    if (!sorting?.length) {
+      setDevices(results);
+      return;
+    }
     const devicesCopy = devices.slice();
     setDevices(
       devicesCopy.sort((a, b) => {

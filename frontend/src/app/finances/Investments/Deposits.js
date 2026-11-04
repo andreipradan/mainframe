@@ -39,7 +39,7 @@ const getGrossInterest = (amount, interest, date, maturity) => {
 const Deposits = () => {
   const dispatch = useDispatch();
 
-  const state = useSelector((state) => state.deposits);
+  const state = useSelector((store) => store.deposits);
   const token = useSelector((state) => state.auth.token);
 
   const api = new DepositsApi(token);
@@ -156,9 +156,9 @@ const Deposits = () => {
           <div>Count: {state.count}</div>
           Active:
           <ul className={'list-arrow'}>
-            {state.currencies?.map((currency) => (
-              <li className={'pt-0'} key={currency}>
-                {state.aggregations[currency]} {currency}
+            {state.currencies?.map((currencyCode) => (
+              <li className={'pt-0'} key={currencyCode}>
+                {state.aggregations[currencyCode]} {currencyCode}
               </li>
             ))}
           </ul>
@@ -485,7 +485,7 @@ const Deposits = () => {
                     className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd MMM yyyy'}
                     isClearable={false}
-                    onChange={(date) => setDate(date)}
+                    onChange={(newDate) => setDate(newDate)}
                     readOnly={state.loading}
                     scrollableYearDropdown
                     selected={date}
@@ -501,7 +501,7 @@ const Deposits = () => {
                     className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd MMM yyyy'}
                     isClearable={false}
-                    onChange={(maturity) => setMaturity(maturity)}
+                    onChange={(newMaturity) => setMaturity(newMaturity)}
                     readOnly={state.loading}
                     scrollableYearDropdown
                     selected={maturity}
