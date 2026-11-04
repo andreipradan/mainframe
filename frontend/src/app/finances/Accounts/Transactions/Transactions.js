@@ -245,7 +245,7 @@ const Transactions = () => {
     );
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('file', selectedFile);

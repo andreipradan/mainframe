@@ -2,19 +2,25 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Car from '../Car';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
 jest.mock('src/api/expenses', () => ({
-  CarApi: class {
-    getList = () => ({ type: 'car/getList' });
-    deleteServiceEntry = (carId, entryId) => ({
-      type: 'car/deleteServiceEntry',
-      payload: { carId, entryId },
-    });
+  CarApi: function CarApiMock() {
+    return {
+      getList() {
+        return { type: 'car/getList' };
+      },
+      deleteServiceEntry(carId, entryId) {
+        return {
+          type: 'car/deleteServiceEntry',
+          payload: { carId, entryId },
+        };
+      },
+    };
   },
 }));
 jest.mock(
@@ -61,7 +67,7 @@ jest.mock('react-bootstrap/Modal', () => {
 });
 
 describe('Car service-entry actions', () => {
-  test('deletes the selected service entry from its car', async () => {
+  test('deletes the selected service entry from its car', () => {
     mockDispatch.mockReset();
     mockState = {
       auth: { token: 'token' },
@@ -92,7 +98,7 @@ describe('Car service-entry actions', () => {
     };
     const container = document.createElement('div');
     const root = createRoot(container);
-    await act(async () => root.render(<Car />));
+    act(() => root.render(<Car />));
 
     const deleteButton = container.querySelector(
       'button[aria-label="Delete service entry: Oil change"]'

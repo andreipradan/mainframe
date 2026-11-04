@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import FavoritesManager from '../FavoritesManager';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -11,16 +11,18 @@ jest.mock('react-redux', () => ({
 }));
 jest.mock('../../../api/favorites', () => ({
   __esModule: true,
-  default: class FavoritesApiMock {
-    create(data) {
-      return { type: 'favorites/create', payload: data };
-    }
-    getList(kwargs) {
-      return { type: 'favorites/getList', payload: kwargs };
-    }
-    update(id, data) {
-      return { type: 'favorites/update', payload: { id, data } };
-    }
+  default: function FavoritesApiMock() {
+    return {
+      create(data) {
+        return { type: 'favorites/create', payload: data };
+      },
+      getList(kwargs) {
+        return { type: 'favorites/getList', payload: kwargs };
+      },
+      update(id, data) {
+        return { type: 'favorites/update', payload: { id, data } };
+      },
+    };
   },
 }));
 jest.mock('../../shared/Errors', () => () => null);
@@ -46,10 +48,10 @@ const CurrentPath = () => {
   return <output data-testid='current-path'>{location.pathname}</output>;
 };
 
-const renderFavorites = async () => {
+const renderFavorites = () => {
   const container = document.createElement('div');
   const root = createRoot(container);
-  await act(async () => {
+  act(() => {
     root.render(
       <MemoryRouter initialEntries={['/favorites']}>
         <CurrentPath />
@@ -76,8 +78,8 @@ describe('FavoritesManager interactions', () => {
     };
   });
 
-  test('selecting a favorite filters events and navigates to them', async () => {
-    const { container, unmount } = await renderFavorites();
+  test('selecting a favorite filters events and navigates to them', () => {
+    const { container, unmount } = renderFavorites();
     const favoriteButton = Array.from(
       container.querySelectorAll('button')
     ).find((button) => button.textContent === 'Radiohead');
@@ -99,8 +101,8 @@ describe('FavoritesManager interactions', () => {
     unmount();
   });
 
-  test('editing saves a trimmed name and preserves the external id', async () => {
-    const { container, unmount } = await renderFavorites();
+  test('editing saves a trimmed name and preserves the external id', () => {
+    const { container, unmount } = renderFavorites();
     act(() =>
       Array.from(container.querySelectorAll('button'))
         .find((button) => button.textContent === 'Edit')
@@ -134,18 +136,19 @@ describe('FavoritesManager interactions', () => {
   });
 
   test('adds a favorite from trimmed form values', async () => {
-    const { container, unmount } = await renderFavorites();
+    const { container, unmount } = renderFavorites();
     const [nameInput, urlInput] = container.querySelectorAll('form input');
     const setInputValue = Object.getOwnPropertyDescriptor(
       window.HTMLInputElement.prototype,
       'value'
     ).set;
-    await act(async () => {
+    act(() => {
       setInputValue.call(nameInput, '  New band  ');
       nameInput.dispatchEvent(new Event('input', { bubbles: true }));
       setInputValue.call(urlInput, 'https://example.test/band');
       urlInput.dispatchEvent(new Event('input', { bubbles: true }));
     });
+    mockDispatch.mockReturnValueOnce(Promise.resolve());
     await act(async () => {
       container
         .querySelector('form')

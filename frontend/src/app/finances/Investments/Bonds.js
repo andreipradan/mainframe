@@ -599,7 +599,11 @@ const Bonds = () => {
                 <Form.Label>Maturity</Form.Label>
                 <div>
                   {interestDates?.map((d, index) => (
-                    <div key={`mat-${index}`}>
+                    <div
+                      key={
+                        d instanceof Date ? d.toISOString() : String(d ?? index)
+                      }
+                    >
                       <DatePicker
                         className='btn btn-outline-secondary rounded btn-sm'
                         dateFormat={'dd MMM yyyy'}

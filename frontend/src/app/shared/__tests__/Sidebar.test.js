@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -62,11 +62,11 @@ jest.mock('react-i18next', () => ({
 jest.mock('../Errors', () => () => null);
 jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
 
-const renderSidebar = async () => {
+const renderSidebar = () => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
-  await act(async () => {
+  act(() => {
     root.render(
       <MemoryRouter initialEntries={['/investments/bonds']}>
         <Sidebar />
@@ -94,8 +94,8 @@ describe('Sidebar navigation controls', () => {
     };
   });
 
-  test('route opens the matching menu and every menu button toggles accessibly', async () => {
-    const { container, unmount } = await renderSidebar();
+  test('route opens the matching menu and every menu button toggles accessibly', () => {
+    const { container, unmount } = renderSidebar();
     const menuButtons = Array.from(
       container.querySelectorAll('button[aria-controls^="sidebar-"]')
     );
@@ -125,9 +125,9 @@ describe('Sidebar navigation controls', () => {
     unmount();
   });
 
-  test('confirms a staff service restart and dispatches the selected service', async () => {
+  test('confirms a staff service restart and dispatches the selected service', () => {
     mockState.rpi.token = 'rpi-token';
-    const { container, unmount } = await renderSidebar();
+    const { container, unmount } = renderSidebar();
     const restartBot = Array.from(
       container.querySelectorAll('.preview-subject')
     ).find((item) => item.textContent.trim() === 'Restart bot');

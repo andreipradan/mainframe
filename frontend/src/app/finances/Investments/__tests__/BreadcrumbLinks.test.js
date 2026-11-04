@@ -7,7 +7,7 @@ import Deposits from '../Deposits';
 import Pension from '../Pension';
 import Stocks from '../Stocks';
 
-let mockState;
+let mockState = null;
 jest.mock('react-redux', () => ({
   useDispatch: () => jest.fn(),
   useSelector: (selector) => selector(mockState),
@@ -47,7 +47,7 @@ const emptyResource = {
   modalOpen: false,
 };
 
-const renderPage = async (Component) => {
+const renderPage = (Component) => {
   mockState = {
     auth: { token: null },
     bonds: { ...emptyResource },
@@ -80,7 +80,7 @@ const renderPage = async (Component) => {
   };
   const container = document.createElement('div');
   const root = createRoot(container);
-  await act(async () => {
+  act(() => {
     root.render(
       <MemoryRouter initialEntries={['/investments/current']}>
         <Component />
@@ -100,8 +100,8 @@ describe.each([
   ['Pension', Pension],
   ['Stocks', Stocks],
 ])('%s breadcrumb', (_name, Component) => {
-  test('uses a navigable link to the investment summary', async () => {
-    const { container, unmount } = await renderPage(Component);
+  test('uses a navigable link to the investment summary', () => {
+    const { container, unmount } = renderPage(Component);
     const summaryLink = container.querySelector(
       'a[href="/investments/summary"]'
     );
@@ -112,8 +112,8 @@ describe.each([
   });
 });
 
-test('Pension contribution controls enter and leave edit/delete states accessibly', async () => {
-  const { container, unmount } = await renderPage(Pension);
+test('Pension contribution controls enter and leave edit/delete states accessibly', () => {
+  const { container, unmount } = renderPage(Pension);
   const selectFundButton = Array.from(
     container.querySelectorAll('button')
   ).find((button) => button.textContent === 'Select');

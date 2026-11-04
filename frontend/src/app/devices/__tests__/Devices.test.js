@@ -6,8 +6,12 @@ import Devices from '../Devices';
 
 jest.mock('../../../api/devices', () => {
   class DevicesApi {
+    constructor(token) {
+      this.token = token;
+    }
+
     getList() {
-      return { type: 'devices/getList' };
+      return { type: 'devices/getList', token: this.token };
     }
   }
   DevicesApi.sync = jest.fn(() => ({ type: 'devices/sync' }));
@@ -44,7 +48,7 @@ const devices = [
   },
 ];
 
-const renderDevices = async () => {
+const renderDevices = () => {
   const initialState = {
     auth: { token: 'token' },
     devices: {
@@ -59,7 +63,7 @@ const renderDevices = async () => {
   const store = configureStore({ reducer: (state = initialState) => state });
   const container = document.createElement('div');
   const root = createRoot(container);
-  await act(async () => {
+  act(() => {
     root.render(
       <Provider store={store}>
         <Devices />
@@ -78,8 +82,8 @@ const visibleIps = (container) =>
     .map((row) => row.querySelectorAll('td')[3].textContent);
 
 describe('Devices sorting', () => {
-  test('cycles a column through ascending, descending, and original order', async () => {
-    const { container, unmount } = await renderDevices();
+  test('cycles a column through ascending, descending, and original order', () => {
+    const { container, unmount } = renderDevices();
     const sortButton = container.querySelector(
       'button[aria-label="Sort by ip"]'
     );
@@ -87,13 +91,13 @@ describe('Devices sorting', () => {
     expect(sortButton).not.toBeNull();
     expect(visibleIps(container)).toEqual(['10.0.0.2', '10.0.0.1']);
 
-    await act(async () => sortButton.click());
+    act(() => sortButton.click());
     expect(visibleIps(container)).toEqual(['10.0.0.1', '10.0.0.2']);
 
-    await act(async () => sortButton.click());
+    act(() => sortButton.click());
     expect(visibleIps(container)).toEqual(['10.0.0.2', '10.0.0.1']);
 
-    await act(async () => sortButton.click());
+    act(() => sortButton.click());
     expect(visibleIps(container)).toEqual(['10.0.0.2', '10.0.0.1']);
     unmount();
   });

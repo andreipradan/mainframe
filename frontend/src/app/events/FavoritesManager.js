@@ -28,7 +28,7 @@ const FavoritesManager = () => {
   const [input, setInput] = useState('');
   const [url, setUrl] = useState('');
 
-  const onAdd = async (e) => {
+  async function onAdd(e) {
     e?.preventDefault?.();
     const name = (input || '').trim();
     if (!name || !url) return;
@@ -40,15 +40,15 @@ const FavoritesManager = () => {
     } finally {
       setAdding(false);
     }
-  };
+  }
 
-  const startEdit = (item) => {
+  function startEdit(item) {
     setEditing(item.id);
     setEditName(item.name);
     setEditExternalId(item.external_id);
-  };
+  }
 
-  const saveEdit = (item) => {
+  function saveEdit(item) {
     const name = (editName || '').trim();
     if (!name && !editExternalId) return setEditing(null);
 
@@ -56,7 +56,7 @@ const FavoritesManager = () => {
       return setEditing(null);
     dispatch(api.update(item.id, { name, external_id: editExternalId }));
     setEditing(null);
-  };
+  }
 
   useEffect(() => {
     if (token && !favorites.results) dispatch(api.getList({ type: 'band' }));
@@ -133,9 +133,13 @@ const FavoritesManager = () => {
                   </td>
                 </tr>
               ) : (
-                (favorites.results || []).map((item, i) => (
+                (favorites.results || []).map((item) => (
                   <tr key={item.id || item.name} className='align-items-center'>
-                    <td>{i + 1}</td>
+                    <td>
+                      {(favorites.results || []).findIndex(
+                        (row) => (row.id || row.name) === (item.id || item.name)
+                      ) + 1}
+                    </td>
                     <td>
                       {editing === item.id ? (
                         <Form.Control
@@ -146,7 +150,7 @@ const FavoritesManager = () => {
                         <button
                           type='button'
                           className='btn btn-link p-0'
-                          onClick={(e) => {
+                          onClick={() => {
                             dispatch(
                               setKwargs({ favorites: [item.name], page: 1 })
                             );

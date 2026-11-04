@@ -15,11 +15,10 @@ import { setKwargs as setPnlKwargs } from '../../../redux/pnlSlice';
 import { setKwargs } from '../../../redux/stocksSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { StocksApi, StocksPnlApi } from '../../../api/finance';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Stocks = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
 
   const pnl = useSelector((state) => state.pnl);
   const stocks = useSelector((state) => state.stocks);
@@ -72,7 +71,7 @@ const Stocks = () => {
   };
 
   const onCurrencyChange = (newValue, store) => {
-    let setKwargsMethod;
+    let setKwargsMethod = null;
     if (store === stocks) {
       setKwargsMethod = setKwargs;
     } else if (store === pnl) {
