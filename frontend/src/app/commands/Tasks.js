@@ -1,237 +1,369 @@
-import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from "react-redux";
-import { Collapse } from "react-bootstrap";
-import { ColorRing } from "react-loader-spinner";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Collapse } from 'react-bootstrap';
+import { ColorRing } from 'react-loader-spinner';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
-import { capitalize } from "../utils";
-import { selectItem } from "../../redux/tasksSlice";
-import Errors from "../shared/Errors";
-import TasksApi from "../../api/tasks";
+import { capitalize } from '../utils';
+import { selectItem } from '../../redux/tasksSlice';
+import Errors from '../shared/Errors';
+import TasksApi from '../../api/tasks';
 
-export const parseStatus = status =>
-  <span className={
-    `text-${status === "complete" ? 'success' : status === "executing" ? 'warning' : 'danger'}`
-  }>{capitalize(status)}</span>
+export const parseStatus = (status) => (
+  <span
+    className={`text-${status === 'complete' ? 'success' : status === 'executing' ? 'warning' : 'danger'}`}
+  >
+    {capitalize(status)}
+  </span>
+);
 
-const Tasks = () =>  {
+const Tasks = () => {
   const dispatch = useDispatch();
-  const token = useSelector(state => state.auth.token)
-  const {errors, loading, loadingItems, results, selectedItem } = useSelector(state => state.tasks)
-  const [taskErrorsOpen, setTaskErrorsOpen] = useState(false)
-  const [taskHistoryOpen, setTaskHistoryOpen] = useState(false)
+  const token = useSelector((state) => state.auth.token);
+  const { errors, loading, loadingItems, results, selectedItem } = useSelector(
+    (state) => state.tasks
+  );
+  const [taskErrorsOpen, setTaskErrorsOpen] = useState(false);
+  const [taskHistoryOpen, setTaskHistoryOpen] = useState(false);
 
   useEffect(() => {
-    if (!results) dispatch(TasksApi.getList(token))
-  }, [])
+    if (!results) dispatch(TasksApi.getList(token));
+  }, []);
 
   return (
     <div>
-      <div className="page-header">
-        <h3 className="page-title">Tasks</h3>
-        <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item"><a href="!#" onClick={event => event.preventDefault()}>Home</a></li>
-            <li className="breadcrumb-item active" aria-current="page">Tasks</li>
+      <div className='page-header'>
+        <h3 className='page-title'>Tasks</h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <a href='!#' onClick={(event) => event.preventDefault()}>
+                Home
+              </a>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Tasks
+            </li>
           </ol>
         </nav>
       </div>
-      <div className="row">
-        <div className="col-lg-12 grid-margin stretch-card">
-          <div className="card">
-            <div className="card-body">
-              <h4 className="card-title">
+      <div className='row'>
+        <div className='col-lg-12 grid-margin stretch-card'>
+          <div className='card'>
+            <div className='card-body'>
+              <h4 className='card-title'>
                 Current tasks
                 <button
-                  type="button"
-                  className="btn btn-outline-success btn-sm border-0 bg-transparent"
+                  type='button'
+                  className='btn btn-outline-success btn-sm border-0 bg-transparent'
                   onClick={() => dispatch(TasksApi.getList(token))}
                 >
-                  <i className="mdi mdi-refresh" />
+                  <i className='mdi mdi-refresh' />
                 </button>
               </h4>
-              {!selectedItem && <Errors errors={errors}/>}
-              <div className="table-responsive">
-                <table className="table table-hover">
+              {!selectedItem && <Errors errors={errors} />}
+              <div className='table-responsive'>
+                <table className='table table-hover'>
                   <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Task</th>
-                    <th className="text-center">Is revoked?</th>
-                    <th className="text-center">Is periodic?</th>
-                    <th>Status</th>
-                    <th>Last Run</th>
-                    <th>Events</th>
-                    <th>Errors</th>
-                  </tr>
+                    <tr>
+                      <th>#</th>
+                      <th>Task</th>
+                      <th className='text-center'>Is revoked?</th>
+                      <th className='text-center'>Is periodic?</th>
+                      <th>Status</th>
+                      <th>Last Run</th>
+                      <th>Events</th>
+                      <th>Errors</th>
+                    </tr>
                   </thead>
                   <tbody>
-                  {
-                    !loading
-                      ? results?.length
-                        ? results.map(
-                          (task, i) => <tr
-                            key={i}
-                            onClick={() => dispatch(selectItem(task.id))}
-                            className="cursor-pointer"
-                          >
+                    {!loading ? (
+                      results?.length ? (
+                        results.map((task, i) => (
+                          <tr key={task.id}>
                             <td>{i + 1}</td>
-                            <td>{task.app}.{task.name}</td>
-                            <td className="text-center">{task.is_revoked ? <i className="mdi mdi-check text-danger" /> : null}</td>
-                            <td className="text-center">{task.is_periodic ? <i className="mdi mdi-check text-success" /> : null}</td>
-                            {
-                              task.history?.length
-                                ? <>
-                                  <td className={
-                                    `text-${task.history[0].status === "complete" ? 'success' : task.history[0].status === "executing" ? 'warning' : 'danger'}`
-                                  }
-                                  >
-                                    {task.history[0].status ? capitalize(task.history[0].status) : "-"}
-                                  </td>
-                                  <td>{new Date(task.history?.[0]?.timestamp).toLocaleString()}</td>
-                                  <td>{task.history.length}</td>
-                                  <td>{task.errors?.length}</td>
-                                </>
-                                : <td colSpan={4} className="text-center">Didn&apos;t run</td>
-                            }
+                            <td>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-left'
+                                onClick={() => dispatch(selectItem(task.id))}
+                              >
+                                {task.app}.{task.name}
+                              </button>
+                            </td>
+                            <td className='text-center'>
+                              {task.is_revoked ? (
+                                <i className='mdi mdi-check text-danger' />
+                              ) : null}
+                            </td>
+                            <td className='text-center'>
+                              {task.is_periodic ? (
+                                <i className='mdi mdi-check text-success' />
+                              ) : null}
+                            </td>
+                            {task.history?.length ? (
+                              <>
+                                <td
+                                  className={`text-${task.history[0].status === 'complete' ? 'success' : task.history[0].status === 'executing' ? 'warning' : 'danger'}`}
+                                >
+                                  {task.history[0].status
+                                    ? capitalize(task.history[0].status)
+                                    : '-'}
+                                </td>
+                                <td>
+                                  {new Date(
+                                    task.history?.[0]?.timestamp
+                                  ).toLocaleString()}
+                                </td>
+                                <td>{task.history.length}</td>
+                                <td>{task.errors?.length}</td>
+                              </>
+                            ) : (
+                              <td colSpan={4} className='text-center'>
+                                Didn&apos;t run
+                              </td>
+                            )}
                           </tr>
-                        )
-                        : <tr>
+                        ))
+                      ) : (
+                        <tr>
                           <td colSpan={7}>No tasks available</td>
                         </tr>
-                      : <tr>
+                      )
+                    ) : (
+                      <tr>
                         <td colSpan={8}>
                           <ColorRing
-                            width="100%"
-                            radius="9"
+                            width='100%'
+                            radius='9'
                             color='green'
-                            wrapperStyle={{width: "100%"}}
+                            wrapperStyle={{ width: '100%' }}
                           />
                         </td>
                       </tr>
-                  }
+                    )}
                   </tbody>
                 </table>
               </div>
-              <Modal centered show={Boolean(selectedItem)} onHide={() => {
-                dispatch(selectItem(null))
-                setTaskErrorsOpen(false)
-                setTaskHistoryOpen(false)
-              }}
-              dialogClassName="min-vw-50"
-
+              <Modal
+                centered
+                show={Boolean(selectedItem)}
+                onHide={() => {
+                  dispatch(selectItem(null));
+                  setTaskErrorsOpen(false);
+                  setTaskHistoryOpen(false);
+                }}
+                dialogClassName='min-vw-50'
               >
                 <Modal.Header closeButton>
                   <Modal.Title>
-                    <div className="row">
-                      <div className="col-lg-12 stretch-card">
+                    <div className='row'>
+                      <div className='col-lg-12 stretch-card'>
                         {selectedItem?.name}
                         <button
-                          type="button"
-                          className="btn btn-outline-success btn-sm border-0 bg-transparent"
-                          onClick={() => dispatch(TasksApi.getItem(token, selectedItem?.name, selectedItem?.id))}
+                          type='button'
+                          className='btn btn-outline-success btn-sm border-0 bg-transparent'
+                          onClick={() =>
+                            dispatch(
+                              TasksApi.getItem(
+                                token,
+                                selectedItem?.name,
+                                selectedItem?.id
+                              )
+                            )
+                          }
                         >
-                          <i className="mdi mdi-refresh" />
+                          <i className='mdi mdi-refresh' />
                         </button>
                       </div>
                     </div>
-                    <p
-                      className="text-muted mt-0 mb-0">App: {selectedItem?.app} </p>
-                    {
-                      selectedItem?.timestamp
-                        ? <p className="text-muted mt-0 mb-0">Last
-                          run: {selectedItem?.timestamp ? new Date(selectedItem.timestamp).toLocaleString() : null} </p>
-                        : null
-                    }
-                    <p className="text-muted mt-0 mb-0">ID: {selectedItem?.id} </p>
-
+                    <p className='text-muted mt-0 mb-0'>
+                      App: {selectedItem?.app}{' '}
+                    </p>
+                    {selectedItem?.timestamp ? (
+                      <p className='text-muted mt-0 mb-0'>
+                        Last run:{' '}
+                        {selectedItem?.timestamp
+                          ? new Date(selectedItem.timestamp).toLocaleString()
+                          : null}{' '}
+                      </p>
+                    ) : null}
+                    <p className='text-muted mt-0 mb-0'>
+                      ID: {selectedItem?.id}{' '}
+                    </p>
                   </Modal.Title>
                 </Modal.Header>
-                {selectedItem && <Errors errors={errors}/>}
+                {selectedItem && <Errors errors={errors} />}
                 <Modal.Body>
-                  {
-                    loadingItems?.includes(selectedItem?.id)
-                      ? <ColorRing
-                        width="100%"
-                        radius="9"
-                        color='green'
-                        wrapperStyle={{width: "100%"}}
-                      />
-                      : <ul className="list-unstyled">
-                        {
-                          selectedItem
-                            ? Object.keys(selectedItem).filter(k => !["timestamp", "name", "app", "id"].includes(k)).map((k, i) =>
-                              ["errors", "history"].includes(k)
-                                ? <li key={i}>
+                  {loadingItems?.includes(selectedItem?.id) ? (
+                    <ColorRing
+                      width='100%'
+                      radius='9'
+                      color='green'
+                      wrapperStyle={{ width: '100%' }}
+                    />
+                  ) : (
+                    <ul className='list-unstyled'>
+                      {selectedItem
+                        ? Object.keys(selectedItem)
+                            .filter(
+                              (itemKey) =>
+                                !['timestamp', 'name', 'app', 'id'].includes(
+                                  itemKey
+                                )
+                            )
+                            .map((itemKey) =>
+                              ['errors', 'history'].includes(itemKey) ? (
+                                <li key={itemKey}>
                                   {
                                     <div>
-                                      <div style={{cursor: "pointer"}}
-                                           onClick={() => k === "history" ? setTaskHistoryOpen(!taskHistoryOpen) : setTaskErrorsOpen(!taskErrorsOpen)}>
+                                      <button
+                                        type='button'
+                                        className='btn btn-link p-0'
+                                        aria-expanded={
+                                          itemKey === 'history'
+                                            ? taskHistoryOpen
+                                            : taskErrorsOpen
+                                        }
+                                        aria-controls={`task-${selectedItem.id}-${itemKey}`}
+                                        onClick={() =>
+                                          itemKey === 'history'
+                                            ? setTaskHistoryOpen(
+                                                !taskHistoryOpen
+                                              )
+                                            : setTaskErrorsOpen(!taskErrorsOpen)
+                                        }
+                                      >
                                         <i
-                                          className={`mdi mdi-chevron-${(k === "history" ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}/>
-                                        {capitalize(k)} ({selectedItem[k]?.length})
-                                      </div>
+                                          className={`mdi mdi-chevron-${(itemKey === 'history' ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}
+                                        />
+                                        {capitalize(itemKey)} (
+                                        {selectedItem[itemKey]?.length})
+                                      </button>
                                       <Collapse
-                                        in={k === "history" ? taskHistoryOpen : taskErrorsOpen}>
-                                        <ul className="list-unstyled">
-                                          {
-                                            selectedItem[k].map((h, i) =>
-                                              <li key={i} className="pl-4 mt-1">
-                                                <i
-                                                  className="text-secondary mdi mdi-arrow-right mr-1"/>
-                                                {new Date(h.timestamp).toLocaleString()}
-                                                <ul className="list-unstyled">
-                                                  {Object.keys(h).filter(k => k !== "timestamp").map(hkey =>
-                                                    <li key={hkey} className="pl-3 mt-1">{capitalize(hkey)}: {hkey === "status" ? parseStatus(h.status) : h[hkey]}</li>)}
+                                        in={
+                                          itemKey === 'history'
+                                            ? taskHistoryOpen
+                                            : taskErrorsOpen
+                                        }
+                                      >
+                                        <ul
+                                          id={`task-${selectedItem.id}-${itemKey}`}
+                                          className='list-unstyled'
+                                        >
+                                          {selectedItem[itemKey].map(
+                                            (historyItem) => (
+                                              <li
+                                                key={
+                                                  historyItem.timestamp ||
+                                                  JSON.stringify(historyItem)
+                                                }
+                                                className='pl-4 mt-1'
+                                              >
+                                                <i className='text-secondary mdi mdi-arrow-right mr-1' />
+                                                {new Date(
+                                                  historyItem.timestamp
+                                                ).toLocaleString()}
+                                                <ul className='list-unstyled'>
+                                                  {Object.keys(historyItem)
+                                                    .filter(
+                                                      (historyKey) =>
+                                                        historyKey !==
+                                                        'timestamp'
+                                                    )
+                                                    .map((hkey) => (
+                                                      <li
+                                                        key={hkey}
+                                                        className='pl-3 mt-1'
+                                                      >
+                                                        {capitalize(hkey)}:{' '}
+                                                        {hkey === 'status'
+                                                          ? parseStatus(
+                                                              historyItem.status
+                                                            )
+                                                          : historyItem[hkey]}
+                                                      </li>
+                                                    ))}
                                                 </ul>
                                               </li>
                                             )
-                                          }
+                                          )}
                                         </ul>
                                       </Collapse>
                                     </div>
                                   }
                                 </li>
-                                : k === "is_periodic"
-                                  ? <li key={i}>Is periodic: {
-                                    selectedItem.is_periodic ?
-                                      <i className="mdi mdi-check text-success"/> :
-                                      <i className="mdi mdi-close text-danger"/>
-                                  }
-                                  </li>
-                                  : k === "is_revoked"
-                                    ? <li key={i}>Is revoked: {
-                                      selectedItem.is_revoked ?
-                                        <i className="mdi mdi-check text-danger"/> :
-                                        <i className="mdi mdi-close text-success"/>
-                                    }
-                                    </li>
-                                    : k === "status"
-                                      ?
-                                      <li key={i}>Status: {parseStatus(selectedItem[k])}</li>
-                                      : <li key={i}>{capitalize(k)}: {selectedItem[k]}</li>
+                              ) : itemKey === 'is_periodic' ? (
+                                <li key={itemKey}>
+                                  Is periodic:{' '}
+                                  {selectedItem.is_periodic ? (
+                                    <i className='mdi mdi-check text-success' />
+                                  ) : (
+                                    <i className='mdi mdi-close text-danger' />
+                                  )}
+                                </li>
+                              ) : itemKey === 'is_revoked' ? (
+                                <li key={itemKey}>
+                                  Is revoked:{' '}
+                                  {selectedItem.is_revoked ? (
+                                    <i className='mdi mdi-check text-danger' />
+                                  ) : (
+                                    <i className='mdi mdi-close text-success' />
+                                  )}
+                                </li>
+                              ) : itemKey === 'status' ? (
+                                <li key={itemKey}>
+                                  Status: {parseStatus(selectedItem[itemKey])}
+                                </li>
+                              ) : (
+                                <li key={itemKey}>
+                                  {capitalize(itemKey)}: {selectedItem[itemKey]}
+                                </li>
+                              )
                             )
-                            : null
-                        }
-                      </ul>
-                  }
+                        : null}
+                    </ul>
+                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button variant="secondary" onClick={e => {
-                    e.preventDefault()
-                    dispatch(selectItem(null))
-                  }}>Close</Button>
-                  <Button variant={selectedItem?.is_revoked ? "success" : "warning"}
-                          className="float-left" onClick={evt => {
-                    evt.preventDefault()
-                    dispatch(TasksApi.revoke(token, selectedItem?.name, selectedItem?.app, selectedItem?.is_revoked ? "restore" : "revoke"))
-                  }}>{selectedItem?.is_revoked ? "Restore" : "Revoke"}
+                  <Button
+                    variant='secondary'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      dispatch(selectItem(null));
+                    }}
+                  >
+                    Close
                   </Button>
-                  <Button variant="danger" className="float-left" onClick={evt => {
-                    evt.preventDefault()
-                    dispatch(TasksApi.deleteHistory(token, selectedItem?.name))
-                  }}>Delete history
+                  <Button
+                    variant={selectedItem?.is_revoked ? 'success' : 'warning'}
+                    className='float-left'
+                    onClick={(evt) => {
+                      evt.preventDefault();
+                      dispatch(
+                        TasksApi.revoke(
+                          token,
+                          selectedItem?.name,
+                          selectedItem?.app,
+                          selectedItem?.is_revoked ? 'restore' : 'revoke'
+                        )
+                      );
+                    }}
+                  >
+                    {selectedItem?.is_revoked ? 'Restore' : 'Revoke'}
+                  </Button>
+                  <Button
+                    variant='danger'
+                    className='float-left'
+                    onClick={(evt) => {
+                      evt.preventDefault();
+                      dispatch(
+                        TasksApi.deleteHistory(token, selectedItem?.name)
+                      );
+                    }}
+                  >
+                    Delete history
                   </Button>
                 </Modal.Footer>
               </Modal>
@@ -240,7 +372,7 @@ const Tasks = () =>  {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Tasks;

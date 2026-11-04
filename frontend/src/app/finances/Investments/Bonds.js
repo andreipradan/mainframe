@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import BottomPagination from '../../shared/BottomPagination';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
@@ -20,9 +20,8 @@ import { BondsApi } from '../../../api/finance';
 
 const Bonds = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
-  const state = useSelector((state) => state.bonds);
-  const token = useSelector((state) => state.auth.token);
+  const state = useSelector((store) => store.bonds);
+  const token = useSelector((store) => store.auth.token);
 
   const api = new BondsApi(token);
 
@@ -148,12 +147,7 @@ const Bonds = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Bonds
@@ -189,10 +183,12 @@ const Bonds = () => {
                     className='mr-3'
                   />
                   {state.aggregations
-                    ? state.currencies?.map((currency) => (
-                        <div key={currency}>
+                    ? state.currencies?.map((currencyCode) => (
+                        <div key={currencyCode}>
                           {Object.keys(state.aggregations)
-                            .filter((item) => item.split('_')[1] === currency)
+                            .filter(
+                              (item) => item.split('_')[1] === currencyCode
+                            )
                             .filter((item) => !!state.aggregations[item])
                             .sort((left, right) => left.localeCompare(right))
                             .map((k) => k.split('_')[0])
@@ -204,13 +200,13 @@ const Bonds = () => {
                                     ? 'Profit / Loss'
                                     : item[0].toUpperCase() + item.slice(1)
                                 }
-                                value={`${state.aggregations[`${item}_${currency}`]} ${currency}`}
+                                value={`${state.aggregations[`${item}_${currencyCode}`]} ${currencyCode}`}
                                 textType={
                                   item === 'dividend'
                                     ? 'success'
                                     : item === 'pnl'
                                       ? state.aggregations[
-                                          `${item}_${currency}`
+                                          `${item}_${currencyCode}`
                                         ] > 0
                                         ? 'success'
                                         : 'danger'
@@ -588,7 +584,7 @@ const Bonds = () => {
                     className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd MMM yyyy HH:mm'}
                     isClearable={false}
-                    onChange={(date) => setDate(date)}
+                    onChange={(selectedDate) => setDate(selectedDate)}
                     readOnly={state.loading}
                     scrollableYearDropdown
                     selected={date}
@@ -603,8 +599,8 @@ const Bonds = () => {
               <Form.Group className='mb-3'>
                 <Form.Label>Maturity</Form.Label>
                 <div>
-                  {interestDates?.map((d, index) => (
-                    <div key={`mat-${index}`}>
+                  {interestDates?.map((interestDate, index) => (
+                    <div key={interestDate.toISOString()}>
                       <DatePicker
                         className='btn btn-outline-secondary rounded btn-sm'
                         dateFormat={'dd MMM yyyy'}
@@ -626,7 +622,9 @@ const Bonds = () => {
                         className='btn btn-outline-primary btn-sm border-0 bg-transparent'
                         onClick={() =>
                           setInterestDates(
-                            interestDates.filter((d, id) => id !== index)
+                            interestDates.filter(
+                              (_filteredDate, dateIndex) => dateIndex !== index
+                            )
                           )
                         }
                       >

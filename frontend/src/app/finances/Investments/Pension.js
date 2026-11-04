@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
@@ -11,7 +11,7 @@ import Errors from '../../shared/Errors';
 import ListItem from '../../shared/ListItem';
 import { selectItem, setModalOpen } from '../../../redux/pensionSlice';
 import { PensionApi } from '../../../api/finance';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export const getEvaluation = (p, justValue = false) => {
   const evaluation =
@@ -44,7 +44,8 @@ export const getPnl = (p, justValue = false) => {
 
 const Pension = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const confirmDeleteRef = useRef();
+  const deleteButtonRefs = useRef({});
 
   const pension = useSelector((state) => state.pension);
   const token = useSelector((state) => state.auth.token);
@@ -128,6 +129,7 @@ const Pension = () => {
     if (contribToDelete) {
       setContribAddOpen(false);
       setContribToEdit(null);
+      requestAnimationFrame(() => confirmDeleteRef.current?.focus());
     }
   }, [contribToDelete]);
   useEffect(() => {
@@ -192,12 +194,7 @@ const Pension = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Pension
@@ -324,7 +321,7 @@ const Pension = () => {
 
       {/* Contributions table */}
       <div className='row'>
-        <div className={"col-12 grid-margin"}>
+        <div className={'col-12 grid-margin'}>
           <div className='card'>
             <div className='card-body'>
               <div className='table-responsive'>
@@ -424,16 +421,30 @@ const Pension = () => {
                             <td>
                               {contribAddOpen ? (
                                 <>
-                                  <i
-                                    className='cursor-pointer mdi mdi-cancel text-danger mr-2'
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-danger mr-2'
+                                    aria-label='Cancel adding contribution'
                                     onClick={() => setContribAddOpen(false)}
-                                  />
-                                  <i
-                                    className='cursor-pointer mdi mdi-check text-success mr-2'
+                                  >
+                                    <i
+                                      className='mdi mdi-cancel'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-success mr-2'
+                                    aria-label='Save contribution'
                                     onClick={(e) =>
                                       onSubmitContrib(e, pensionOpen.id)
                                     }
-                                  />
+                                  >
+                                    <i
+                                      className='mdi mdi-check'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
                                 </>
                               ) : null}
                             </td>
@@ -516,16 +527,30 @@ const Pension = () => {
                             <td>
                               {contribToEdit === c.id ? (
                                 <>
-                                  <i
-                                    className='cursor-pointer mdi mdi-cancel text-danger mr-2'
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-danger mr-2'
+                                    aria-label='Cancel editing contribution'
                                     onClick={() => setContribToEdit(null)}
-                                  />
-                                  <i
-                                    className='cursor-pointer mdi mdi-check text-success mr-2'
+                                  >
+                                    <i
+                                      className='mdi mdi-cancel'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-success mr-2'
+                                    aria-label='Save contribution changes'
                                     onClick={() =>
                                       onUpdateContribution(pensionOpen.id, c.id)
                                     }
-                                  />
+                                  >
+                                    <i
+                                      className='mdi mdi-check'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
                                 </>
                               ) : contribToDelete === c.id ? (
                                 <>
@@ -533,12 +558,30 @@ const Pension = () => {
                                     Delete?
                                   </div>
                                   <div>
-                                    <i
-                                      className='cursor-pointer mdi mdi-cancel text-danger mr-2'
-                                      onClick={() => setContribToDelete(null)}
-                                    />
-                                    <i
-                                      className='cursor-pointer mdi mdi-check text-success mr-2'
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-danger mr-2'
+                                      aria-label='Cancel deleting contribution'
+                                      onClick={() => {
+                                        const contributionId = contribToDelete;
+                                        setContribToDelete(null);
+                                        requestAnimationFrame(() =>
+                                          deleteButtonRefs.current[
+                                            contributionId
+                                          ]?.focus()
+                                        );
+                                      }}
+                                    >
+                                      <i
+                                        className='mdi mdi-cancel'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-success mr-2'
+                                      aria-label='Confirm delete contribution'
+                                      ref={confirmDeleteRef}
                                       onClick={() =>
                                         dispatch(
                                           api.deleteContribution(
@@ -553,19 +596,41 @@ const Pension = () => {
                                           )
                                         )
                                       }
-                                    />
+                                    >
+                                      <i
+                                        className='mdi mdi-check'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
                                   </div>
                                 </>
                               ) : (
                                 <>
-                                  <i
-                                    className='cursor-pointer mdi mdi-pencil text-warning mr-2'
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-warning mr-2'
+                                    aria-label='Edit contribution'
                                     onClick={() => onEditContribution(c)}
-                                  />
-                                  <i
-                                    className='cursor-pointer mdi mdi-delete text-danger'
+                                  >
+                                    <i
+                                      className='mdi mdi-pencil'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-danger'
+                                    aria-label='Delete contribution'
+                                    ref={(element) => {
+                                      deleteButtonRefs.current[c.id] = element;
+                                    }}
                                     onClick={() => setContribToDelete(c.id)}
-                                  />
+                                  >
+                                    <i
+                                      className='mdi mdi-delete'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
                                 </>
                               )}
                             </td>

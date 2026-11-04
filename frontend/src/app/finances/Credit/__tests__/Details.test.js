@@ -13,18 +13,18 @@ jest.mock('react-chartjs-2', () => ({
 jest.mock('react-fast-marquee', () => (p) => <div>{p.children}</div>);
 jest.mock('src/api/finance', () => ({
   FinanceApi: { getCredit: jest.fn() },
-  TimetableApi: class {
-    getList = jest.fn;
+  TimetableApi: function TimetableApiMock() {
+    return { getList: jest.fn() };
   },
 }));
 jest.mock('src/api/finance/payments', () => ({
-  PaymentsApi: class {
-    getList = jest.fn;
+  PaymentsApi: function PaymentsApiMock() {
+    return { getList: jest.fn() };
   },
 }));
 
 describe('Details component', () => {
-  it('renders without crashing', async () => {
+  it('renders without crashing', () => {
     const now = new Date().toISOString().split('T')[0];
     const initialState = {
       auth: { token: null },
@@ -46,24 +46,27 @@ describe('Details component', () => {
 
     const div = document.createElement('div');
     const root = createRoot(div);
-    await act(async () => {
+    act(() => {
       root.render(
         <Provider store={store}>
           <Details />
         </Provider>
       );
-      await new Promise((r) => {
-        setTimeout(r, 0);
-      });
     });
 
     expect(div.innerHTML).toContain('Credit');
 
-    await act(async () => {
+    const excludePrepayments = div.querySelector('#exclude-prepayments');
+    const excludePrepaymentsLabel = div.querySelector(
+      'label[for="exclude-prepayments"]'
+    );
+    expect(excludePrepaymentsLabel.control).toBe(excludePrepayments);
+    expect(excludePrepayments.checked).toBe(false);
+    act(() => excludePrepayments.click());
+    expect(excludePrepayments.checked).toBe(true);
+
+    act(() => {
       root.unmount();
-      await new Promise((r) => {
-        setTimeout(r, 0);
-      });
     });
   });
 });

@@ -20,7 +20,7 @@ import { formatDate, formatTime } from '../../earthquakes/Earthquakes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const diffMonths = (date1, date2) => {
   const d1 = new Date(date1);
@@ -38,10 +38,9 @@ const getGrossInterest = (amount, interest, date, maturity) => {
 
 const Deposits = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
 
-  const state = useSelector((state) => state.deposits);
-  const token = useSelector((state) => state.auth.token);
+  const state = useSelector((store) => store.deposits);
+  const token = useSelector((store) => store.auth.token);
 
   const api = new DepositsApi(token);
 
@@ -136,12 +135,7 @@ const Deposits = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Deposits
@@ -162,9 +156,9 @@ const Deposits = () => {
           <div>Count: {state.count}</div>
           Active:
           <ul className={'list-arrow'}>
-            {state.currencies?.map((currency) => (
-              <li className={'pt-0'} key={currency}>
-                {state.aggregations[currency]} {currency}
+            {state.currencies?.map((currencyCode) => (
+              <li className={'pt-0'} key={currencyCode}>
+                {state.aggregations[currencyCode]} {currencyCode}
               </li>
             ))}
           </ul>
@@ -491,7 +485,7 @@ const Deposits = () => {
                     className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd MMM yyyy'}
                     isClearable={false}
-                    onChange={(date) => setDate(date)}
+                    onChange={(newDate) => setDate(newDate)}
                     readOnly={state.loading}
                     scrollableYearDropdown
                     selected={date}
@@ -507,7 +501,7 @@ const Deposits = () => {
                     className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd MMM yyyy'}
                     isClearable={false}
-                    onChange={(maturity) => setMaturity(maturity)}
+                    onChange={(newMaturity) => setMaturity(newMaturity)}
                     readOnly={state.loading}
                     scrollableYearDropdown
                     selected={maturity}

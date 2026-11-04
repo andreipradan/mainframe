@@ -236,7 +236,7 @@ const Crons = () => {
                       state.results?.length ? (
                         state.results.map((cron, i) =>
                           !state.loadingItems?.includes(cron.id) ? (
-                            <tr key={i}>
+                            <tr key={cron.id}>
                               <td>{i + 1}</td>
                               <td
                                 onClick={() => dispatch(select(cron.id))}
@@ -273,13 +273,20 @@ const Crons = () => {
                                   : '-'}
                               </td>
                               <td>
-                                <i
+                                <button
+                                  type='button'
+                                  className='btn btn-link p-0'
+                                  aria-label={`Duplicate cron ${cron.name}`}
                                   onClick={() => {
                                     duplicate(cron);
                                     dispatch(setModalOpen(true));
                                   }}
-                                  className='cursor-pointer mdi mdi-content-copy'
-                                />
+                                >
+                                  <i
+                                    className='mdi mdi-content-copy'
+                                    aria-hidden='true'
+                                  />
+                                </button>
                                 <div
                                   className='btn-group btn-group-sm'
                                   role='group'
@@ -308,7 +315,7 @@ const Crons = () => {
                               </td>
                             </tr>
                           ) : (
-                            <tr key={i}>
+                            <tr key={cron.id}>
                               <td colSpan={6}>
                                 <ColorRing
                                   width='100%'

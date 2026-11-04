@@ -81,8 +81,8 @@ const TransactionsBulkUpdateModal = (props) => {
         </p>
         <p>with the descriptions below as follows:</p>
         <ul>
-          {props.checkedCategories?.map((c, i) => (
-            <li key={i}>
+          {props.checkedCategories?.map((c) => (
+            <li key={`${c.description}-${c.category}`}>
               {c.description}
               <span className='text-warning'>{' ->'}&nbsp;</span>
               <span className='text-success'>

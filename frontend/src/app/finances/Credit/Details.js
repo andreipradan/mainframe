@@ -34,6 +34,7 @@ Chart.register(
   TooltipJS
 );
 
+// skipcq: JS-R1005 - Dashboard component aggregates several credit views in one layout.
 const Details = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -751,8 +752,8 @@ const Details = () => {
                 <Circles />
               ) : credit ? (
                 <ProgressBar
-                  now={paidPrincipal | 0}
-                  max={summaryCredit | 0}
+                  now={paidPrincipal || 0}
+                  max={summaryCredit || 0}
                   label={`${paidPrincipal} / ${summaryCredit}`}
                 />
               ) : (
@@ -898,9 +899,13 @@ const Details = () => {
                   )}
                 </div>
               </h6>
-              <div className='form-check' onClick={onExcludePrepaymentsChange}>
-                <label htmlFor='' className='form-check-label'>
+              <div className='form-check'>
+                <label
+                  htmlFor='exclude-prepayments'
+                  className='form-check-label'
+                >
                   <input
+                    id='exclude-prepayments'
                     className='checkbox'
                     type='checkbox'
                     checked={excludePrepayments}

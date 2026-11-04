@@ -92,7 +92,7 @@ const Dashboard = () => {
   }, [lights.results]);
 
   useEffect(() => {
-    let intervalId;
+    let intervalId = null;
     if (isPolling) {
       intervalId = setInterval(async () => {
         dispatch(activityApi.getList());
@@ -277,22 +277,33 @@ const Dashboard = () => {
                                       />
                                     </p>
                                   </div>
-                                  <div
-                                    className='preview-item-content d-sm-flex flex-grow'
-                                    onClick={() =>
-                                      toggleLightExpanded(light.ip)
-                                    }
-                                    style={{ cursor: 'pointer' }}
-                                  >
-                                    <div className='flex-grow'>
-                                      <h6 className='preview-subject'>
+                                  <div className='preview-item-content d-sm-flex flex-grow'>
+                                    <button
+                                      type='button'
+                                      className='flex-grow text-left p-0 border-0 bg-transparent'
+                                      aria-expanded={Boolean(
+                                        getExpanded(light.ip)
+                                      )}
+                                      aria-controls={`slider-${i}`}
+                                      onClick={() =>
+                                        toggleLightExpanded(light.ip)
+                                      }
+                                      style={{
+                                        color: 'inherit',
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      <span className='preview-subject d-block'>
                                         {light.capabilities.name}{' '}
-                                        <i className='mdi mdi-menu-down' />
-                                      </h6>
-                                      <p className='text-muted mb-0'>
+                                        <i
+                                          className='mdi mdi-menu-down'
+                                          aria-hidden='true'
+                                        />
+                                      </span>
+                                      <span className='text-muted mb-0 d-block'>
                                         {light.ip}
-                                      </p>
-                                    </div>
+                                      </span>
+                                    </button>
                                     <div className='mr-auto text-sm-right pt-2 pt-sm-0'>
                                       <Form.Check
                                         checked={
