@@ -53,10 +53,15 @@ const FavoritesManager = () => {
   /** Saves the trimmed inline edit without changing the external id. */
   function saveEdit(item) {
     const name = (editName || '').trim();
-    if (!name && !editExternalId) return setEditing(null);
+    if (!name && !editExternalId) {
+      setEditing(null);
+      return;
+    }
 
-    if (item.name === name && item.external_id === editExternalId)
-      return setEditing(null);
+    if (item.name === name && item.external_id === editExternalId) {
+      setEditing(null);
+      return;
+    }
     dispatch(api.update(item.id, { name, external_id: editExternalId }));
     setEditing(null);
   }

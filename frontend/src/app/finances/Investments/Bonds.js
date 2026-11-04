@@ -20,8 +20,8 @@ import { BondsApi } from '../../../api/finance';
 
 const Bonds = () => {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state.bonds);
-  const token = useSelector((state) => state.auth.token);
+  const state = useSelector((store) => store.bonds);
+  const token = useSelector((store) => store.auth.token);
 
   const api = new BondsApi(token);
 
@@ -183,10 +183,12 @@ const Bonds = () => {
                     className='mr-3'
                   />
                   {state.aggregations
-                    ? state.currencies?.map((currency) => (
-                        <div key={currency}>
+                    ? state.currencies?.map((currencyCode) => (
+                        <div key={currencyCode}>
                           {Object.keys(state.aggregations)
-                            .filter((item) => item.split('_')[1] === currency)
+                            .filter(
+                              (item) => item.split('_')[1] === currencyCode
+                            )
                             .filter((item) => !!state.aggregations[item])
                             .sort((left, right) => left.localeCompare(right))
                             .map((k) => k.split('_')[0])
@@ -198,13 +200,13 @@ const Bonds = () => {
                                     ? 'Profit / Loss'
                                     : item[0].toUpperCase() + item.slice(1)
                                 }
-                                value={`${state.aggregations[`${item}_${currency}`]} ${currency}`}
+                                value={`${state.aggregations[`${item}_${currencyCode}`]} ${currencyCode}`}
                                 textType={
                                   item === 'dividend'
                                     ? 'success'
                                     : item === 'pnl'
                                       ? state.aggregations[
-                                          `${item}_${currency}`
+                                          `${item}_${currencyCode}`
                                         ] > 0
                                         ? 'success'
                                         : 'danger'
@@ -582,7 +584,7 @@ const Bonds = () => {
                     className='btn btn-outline-secondary rounded btn-sm'
                     dateFormat={'dd MMM yyyy HH:mm'}
                     isClearable={false}
-                    onChange={(date) => setDate(date)}
+                    onChange={(selectedDate) => setDate(selectedDate)}
                     readOnly={state.loading}
                     scrollableYearDropdown
                     selected={date}
@@ -598,7 +600,7 @@ const Bonds = () => {
                 <Form.Label>Maturity</Form.Label>
                 <div>
                   {interestDates?.map((interestDate, index) => (
-                    <div key={`maturity-${index}`}>
+                    <div key={interestDate.toISOString()}>
                       <DatePicker
                         className='btn btn-outline-secondary rounded btn-sm'
                         dateFormat={'dd MMM yyyy'}

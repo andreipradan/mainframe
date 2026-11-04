@@ -27,17 +27,16 @@ const TodoListHeader = () => (
 /** Displays the shopping-list card. */
 const TodoListCard = () => (
   <div className='row'>
-    <div className='col-lg-12'>
-      <div className='card px-3'>
-        <div className='card-body'>
-          <h4 className='card-title'>Shopping List</h4>
-          <TodoListComponent />
-        </div>
+    <div className='col-lg-12 card px-3'>
+      <div className='card-body'>
+        <h4 className='card-title'>Shopping List</h4>
+        <TodoListComponent />
       </div>
     </div>
   </div>
 );
 
+/** Renders the todo list page. */
 export const TodoList = () => {
   return (
     <div>
