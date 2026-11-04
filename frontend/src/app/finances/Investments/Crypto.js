@@ -461,7 +461,7 @@ const Crypto = () => {
                             {' '}
                             {transaction.ticker}
                           </td>
-                          <td> {parseFloat(transaction.quantity)} </td>
+                          <td> {Number.parseFloat(transaction.quantity)} </td>
                           <td>
                             {' '}
                             {transaction.currency === 'USD' ? '$' : '€'}
@@ -713,7 +713,7 @@ const Crypto = () => {
                             {' '}
                             {transaction.type}{' '}
                           </td>
-                          <td> {parseFloat(transaction.quantity)} </td>
+                          <td> {Number.parseFloat(transaction.quantity)} </td>
                           <td
                             style={{ cursor: 'pointer' }}
                             onClick={() =>

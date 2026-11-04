@@ -15,7 +15,8 @@ import { Link } from 'react-router-dom';
 
 export const getEvaluation = (p, justValue = false) => {
   const evaluation =
-    parseFloat(p.latest_unit_value || 0) * parseFloat(p.total_units || 0);
+    Number.parseFloat(p.latest_unit_value || 0) *
+    Number.parseFloat(p.total_units || 0);
   if (justValue) return evaluation;
   return (
     <span>
@@ -25,11 +26,12 @@ export const getEvaluation = (p, justValue = false) => {
 };
 export const getPnl = (p, justValue = false) => {
   const pnl =
-    parseFloat(p.latest_unit_value || 0) * (p.total_units || 0) -
+    Number.parseFloat(p.latest_unit_value || 0) * (p.total_units || 0) -
     p.contributions
       ?.map((c) => c.amount)
       .reduce(
-        (accumulator, currentValue) => accumulator + parseFloat(currentValue),
+        (accumulator, currentValue) =>
+          accumulator + Number.parseFloat(currentValue),
         0
       );
   if (justValue) return pnl;
@@ -209,7 +211,7 @@ const Pension = () => {
             ?.map((p) => getEvaluation(p, true))
             .reduce(
               (accumulator, currentValue) =>
-                accumulator + parseFloat(currentValue),
+                accumulator + Number.parseFloat(currentValue),
               0
             )
             .toFixed(2)}{' '}
@@ -219,7 +221,7 @@ const Pension = () => {
           PnL:{' '}
           {pension.results
             ?.map((p) => getPnl(p, true))
-            .reduce((acc, val) => acc + parseFloat(val), 0)
+            .reduce((acc, val) => acc + Number.parseFloat(val), 0)
             .toFixed(2)}{' '}
           {pension.results?.[0].contributions?.[0]?.currency}
         </div>
@@ -351,7 +353,8 @@ const Pension = () => {
                                 ?.map((c) => c.amount)
                                 .reduce(
                                   (accumulator, currentValue) =>
-                                    accumulator + parseFloat(currentValue),
+                                    accumulator +
+                                    Number.parseFloat(currentValue),
                                   0
                                 )
                                 .toFixed(3)}
@@ -366,7 +369,8 @@ const Pension = () => {
                                 ?.map((c) => c.units)
                                 .reduce(
                                   (accumulator, currentValue) =>
-                                    accumulator + parseFloat(currentValue),
+                                    accumulator +
+                                    Number.parseFloat(currentValue),
                                   0
                                 )
                                 .toFixed(3)}

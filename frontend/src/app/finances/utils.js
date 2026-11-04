@@ -1,10 +1,10 @@
 export const calculateSum = (list, field, condition = null, decimals = 2) =>
   list
-    ? parseFloat(
+    ? Number.parseFloat(
         list
           ?.reduce((partialSum, p) => {
             if (condition && !p[condition]) return partialSum;
-            return partialSum + parseFloat(p[field]);
+            return partialSum + Number.parseFloat(p[field]);
           }, 0)
           .toFixed(decimals)
       )

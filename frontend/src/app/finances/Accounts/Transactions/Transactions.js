@@ -125,15 +125,15 @@ const Transactions = () => {
           const item = tooltipItem[0];
           const all = data.datasets
             .map((d) => d.data[item.index])
-            .reduce((partialSum, p) => partialSum + parseFloat(p), 0);
+            .reduce((partialSum, p) => partialSum + Number.parseFloat(p), 0);
           const moneyIn = data.datasets
-            .filter((d) => parseFloat(d.data[item.index]) > 0)
+            .filter((d) => Number.parseFloat(d.data[item.index]) > 0)
             .map((d) => d.data[item.index])
-            .reduce((partialSum, p) => partialSum + parseFloat(p), 0);
+            .reduce((partialSum, p) => partialSum + Number.parseFloat(p), 0);
           const moneyOut = data.datasets
-            .filter((d) => parseFloat(d.data[item.index]) < 0)
+            .filter((d) => Number.parseFloat(d.data[item.index]) < 0)
             .map((d) => d.data[item.index])
-            .reduce((partialSum, p) => partialSum + parseFloat(p), 0);
+            .reduce((partialSum, p) => partialSum + Number.parseFloat(p), 0);
           let result = `Total: ${all.toFixed(2)}`;
           if (moneyIn.toFixed(2) > 0)
             result += `\n(${moneyIn.toFixed(2)}${moneyOut.toFixed(2)})`;
@@ -453,7 +453,7 @@ const Transactions = () => {
                     label={'Amount'}
                     value={transactions.results[0].amount}
                     textType={
-                      parseFloat(transactions.results[0]) < 0
+                      Number.parseFloat(transactions.results[0]) < 0
                         ? 'success'
                         : 'warning'
                     }
@@ -463,7 +463,9 @@ const Transactions = () => {
                     label={'Fee'}
                     value={transactions.results[0].fee}
                     textType={
-                      parseFloat(transactions.results[0]) > 0 ? 'danger' : ''
+                      Number.parseFloat(transactions.results[0]) > 0
+                        ? 'danger'
+                        : ''
                     }
                     className='mr-3'
                   />
@@ -863,7 +865,7 @@ const Transactions = () => {
                           </td>
                           <td>
                             {transaction.amount}{' '}
-                            {parseFloat(transaction.fee)
+                            {Number.parseFloat(transaction.fee)
                               ? `(Fee: ${transaction.fee})`
                               : ''}
                           </td>
@@ -1115,7 +1117,7 @@ const Transactions = () => {
               </li>
               <li>
                 Amount: {transactionToRemove?.amount}{' '}
-                {parseFloat(transactionToRemove?.fee)
+                {Number.parseFloat(transactionToRemove?.fee)
                   ? `(Fee: ${transactionToRemove?.fee})`
                   : ''}
               </li>

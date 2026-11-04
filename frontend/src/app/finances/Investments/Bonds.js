@@ -466,8 +466,13 @@ const Bonds = () => {
                             {state.types?.find((t) => t[0] === bond.type)[1]}
                           </td>
                           <td> {bond.ticker} </td>
-                          <td> {parseFloat(bond.quantity)} </td>
-                          <td> {bond.price ? parseFloat(bond.price) : '-'} </td>
+                          <td> {Number.parseFloat(bond.quantity)} </td>
+                          <td>
+                            {' '}
+                            {bond.price
+                              ? Number.parseFloat(bond.price)
+                              : '-'}{' '}
+                          </td>
                           <td
                             className={`text-${
                               bond.net > 0
@@ -479,7 +484,7 @@ const Bonds = () => {
                                   : 'danger'
                             }`}
                           >
-                            {parseFloat(bond.net)}
+                            {Number.parseFloat(bond.net)}
                           </td>
                           <td>
                             {bond.interest ? (
@@ -489,7 +494,7 @@ const Bonds = () => {
                                     bond.interest ? 'text-success' : ''
                                   }
                                 >
-                                  {parseFloat(
+                                  {Number.parseFloat(
                                     (bond.interest / 100) * -bond.net
                                   ).toFixed(2)}
                                   &nbsp;
@@ -506,7 +511,7 @@ const Bonds = () => {
                           <td
                             className={`text-${bond.pnl ? (bond.pnl < 0 ? 'danger' : 'success') : 'muted'}`}
                           >
-                            {bond.pnl ? parseFloat(bond.pnl) : '-'}
+                            {bond.pnl ? Number.parseFloat(bond.pnl) : '-'}
                           </td>
                           <td>
                             {bond.interest_dates?.map((r) => (

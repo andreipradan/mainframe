@@ -148,7 +148,7 @@ const Car = () => {
                               ? p.service_entries
                                   .map((p) => p.price)
                                   .reduce(
-                                    (acc, val) => acc + parseFloat(val),
+                                    (acc, val) => acc + Number.parseFloat(val),
                                     0
                                   )
                                   .toFixed(2)
@@ -222,7 +222,7 @@ const Car = () => {
                               ? p.service_entries
                                   .map((p) => p.price)
                                   .reduce(
-                                    (acc, val) => acc + parseFloat(val),
+                                    (acc, val) => acc + Number.parseFloat(val),
                                     0
                                   )
                                   .toFixed(2)

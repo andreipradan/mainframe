@@ -364,7 +364,8 @@ const Deposits = () => {
                           <td>{formatDate(deposit.date)}</td>
                           <td className={'text-warning'}>
                             {' '}
-                            {parseFloat(deposit.amount)} {deposit.currency}
+                            {Number.parseFloat(deposit.amount)}{' '}
+                            {deposit.currency}
                           </td>
                           <td>
                             <span className={'text-success'}>

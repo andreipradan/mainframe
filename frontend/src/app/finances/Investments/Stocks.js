@@ -484,7 +484,7 @@ const Stocks = () => {
                             {transaction.security_name}
                             <sup>[{transaction.country}]</sup>{' '}
                           </td>
-                          <td> {parseFloat(transaction.quantity)} </td>
+                          <td> {Number.parseFloat(transaction.quantity)} </td>
                           <td>
                             {' '}
                             {transaction.currency === 'USD' ? '$' : '€'}
