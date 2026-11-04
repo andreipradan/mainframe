@@ -751,8 +751,8 @@ const Details = () => {
                 <Circles />
               ) : credit ? (
                 <ProgressBar
-                  now={paidPrincipal | 0}
-                  max={summaryCredit | 0}
+                  now={paidPrincipal || 0}
+                  max={summaryCredit || 0}
                   label={`${paidPrincipal} / ${summaryCredit}`}
                 />
               ) : (
@@ -898,9 +898,13 @@ const Details = () => {
                   )}
                 </div>
               </h6>
-              <div className='form-check' onClick={onExcludePrepaymentsChange}>
-                <label htmlFor='' className='form-check-label'>
+              <div className='form-check'>
+                <label
+                  htmlFor='exclude-prepayments'
+                  className='form-check-label'
+                >
                   <input
+                    id='exclude-prepayments'
                     className='checkbox'
                     type='checkbox'
                     checked={excludePrepayments}

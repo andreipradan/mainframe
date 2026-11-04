@@ -14,7 +14,7 @@ import { capitalize } from '../../utils';
 import { setKwargs } from '../../../redux/cryptoSlice';
 import { setKwargs as setPnlKwargs } from '../../../redux/cryptoPnlSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 const Crypto = () => {
   const dispatch = useDispatch();
@@ -103,12 +103,7 @@ const Crypto = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Crypto

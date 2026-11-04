@@ -273,13 +273,20 @@ const Crons = () => {
                                   : '-'}
                               </td>
                               <td>
-                                <i
+                                <button
+                                  type='button'
+                                  className='btn btn-link p-0'
+                                  aria-label={`Duplicate cron ${cron.name}`}
                                   onClick={() => {
                                     duplicate(cron);
                                     dispatch(setModalOpen(true));
                                   }}
-                                  className='cursor-pointer mdi mdi-content-copy'
-                                />
+                                >
+                                  <i
+                                    className='mdi mdi-content-copy'
+                                    aria-hidden='true'
+                                  />
+                                </button>
                                 <div
                                   className='btn-group btn-group-sm'
                                   role='group'

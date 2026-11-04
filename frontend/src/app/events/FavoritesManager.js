@@ -143,10 +143,10 @@ const FavoritesManager = () => {
                           onChange={(e) => setEditName(e.target.value)}
                         />
                       ) : (
-                        <span
-                          className={'cursor-pointer text-primary'}
+                        <button
+                          type='button'
+                          className='btn btn-link p-0'
                           onClick={(e) => {
-                            e.preventDefault();
                             dispatch(
                               setKwargs({ favorites: [item.name], page: 1 })
                             );
@@ -155,7 +155,7 @@ const FavoritesManager = () => {
                           }}
                         >
                           {item.name}
-                        </span>
+                        </button>
                       )}
                     </td>
                     <td>

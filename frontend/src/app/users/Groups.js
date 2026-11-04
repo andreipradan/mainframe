@@ -138,14 +138,20 @@ const Groups = () => {
                                         (Inactive)
                                       </small>
                                     ) : null}
-                                    <i
-                                      className='pl-1 mdi mdi-window-close text-danger'
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 pl-1 text-danger'
+                                      aria-label={`Remove ${user.username} from ${t.name}`}
                                       onClick={() => {
                                         dispatch(selectItem(t.id));
                                         setUserToRemove(user);
                                       }}
-                                      style={{ cursor: 'pointer' }}
-                                    />
+                                    >
+                                      <i
+                                        className='mdi mdi-window-close'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
                                   </li>
                                 ))}
                               </ul>
@@ -164,16 +170,28 @@ const Groups = () => {
                             </td>
                           )}
                           <td style={{ textAlign: 'center' }}>
-                            <i
-                              className='text-primary mdi mdi-account-plus pr-1'
+                            <button
+                              type='button'
+                              className='btn btn-link p-0 pr-1 text-primary'
+                              aria-label={`Manage emails for ${t.name}`}
                               onClick={() => toggleEmailOpen(t.id)}
-                              style={{ cursor: 'pointer' }}
-                            />
-                            <i
-                              style={{ cursor: 'pointer' }}
-                              className='mdi mdi-trash-can-outline text-danger'
+                            >
+                              <i
+                                className='mdi mdi-account-plus'
+                                aria-hidden='true'
+                              />
+                            </button>
+                            <button
+                              type='button'
+                              className='btn btn-link p-0 text-danger'
+                              aria-label={`Delete group ${t.name}`}
                               onClick={() => setGroupToRemove(t)}
-                            />
+                            >
+                              <i
+                                className='mdi mdi-trash-can-outline'
+                                aria-hidden='true'
+                              />
+                            </button>
                           </td>
                         </tr>
                       ))

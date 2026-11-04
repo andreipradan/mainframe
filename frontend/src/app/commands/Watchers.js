@@ -263,22 +263,36 @@ const Watchers = () => {
                                   : '-'}
                               </td>
                               <td>
-                                <i
+                                <button
+                                  type='button'
+                                  className='btn btn-link p-0'
+                                  aria-label={`Duplicate watcher ${watcher.name}`}
                                   onClick={() => {
                                     duplicate(watcher);
                                     dispatch(setModalOpen(true));
                                   }}
-                                  className='cursor-pointer mdi mdi-content-copy'
-                                />
-                                {ngrokToken ? (
+                                >
                                   <i
+                                    className='mdi mdi-content-copy'
+                                    aria-hidden='true'
+                                  />
+                                </button>
+                                {ngrokToken ? (
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 ml-1 text-primary'
+                                    aria-label={`Run watcher ${watcher.name}`}
                                     onClick={() =>
                                       dispatch(
                                         WatchersApi.run(ngrokToken, watcher?.id)
                                       )
                                     }
-                                    className='ml-1 cursor-pointer mdi mdi-play text-primary'
-                                  />
+                                  >
+                                    <i
+                                      className='mdi mdi-play'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
                                 ) : null}
                               </td>
                             </tr>
@@ -349,8 +363,15 @@ const Watchers = () => {
                           <li key={i}>
                             {
                               <div>
-                                <div
-                                  style={{ cursor: 'pointer' }}
+                                <button
+                                  type='button'
+                                  className='btn btn-link p-0 text-muted'
+                                  aria-expanded={
+                                    k === 'history'
+                                      ? taskHistoryOpen
+                                      : taskErrorsOpen
+                                  }
+                                  aria-controls={`watcher-${selectedItem.id}-${k}`}
                                   onClick={() =>
                                     k === 'history'
                                       ? setTaskHistoryOpen(!taskHistoryOpen)
@@ -362,7 +383,7 @@ const Watchers = () => {
                                   />
                                   {capitalize(k)} (
                                   {selectedItem?.redis[k]?.length})
-                                </div>
+                                </button>
                                 <Collapse
                                   in={
                                     k === 'history'
@@ -370,7 +391,10 @@ const Watchers = () => {
                                       : taskErrorsOpen
                                   }
                                 >
-                                  <ul className='list-unstyled'>
+                                  <ul
+                                    id={`watcher-${selectedItem.id}-${k}`}
+                                    className='list-unstyled'
+                                  >
                                     {selectedItem?.redis[k].map((h, i) => (
                                       <li key={i} className='pl-4 mt-1'>
                                         <i className='text-secondary mdi mdi-arrow-right mr-1' />

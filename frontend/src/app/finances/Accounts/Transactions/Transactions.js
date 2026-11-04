@@ -327,14 +327,22 @@ const Transactions = () => {
                 </Dropdown.Menu>
               </Dropdown>
               <div className='btn'>
-                <i
-                  className='mdi mdi-pencil cursor-pointer'
+                <button
+                  type='button'
+                  className='btn btn-link p-0'
+                  aria-label='Edit account'
                   onClick={() => dispatch(setModalOpen(true))}
-                />
-                <i
-                  className='mdi mdi-plus cursor-pointer'
+                >
+                  <i className='mdi mdi-pencil' aria-hidden='true' />
+                </button>
+                <button
+                  type='button'
+                  className='btn btn-link p-0'
+                  aria-label='Add account'
                   onClick={() => dispatch(setModalOpen('new'))}
-                />
+                >
+                  <i className='mdi mdi-plus' aria-hidden='true' />
+                </button>
               </div>
             </>
           )}
@@ -923,16 +931,28 @@ const Transactions = () => {
                             )}
                           </td>
                           <td className={'text-center'}>
-                            <i
-                              className='mdi mdi-pencil-outline text-warning ml-1'
+                            <button
+                              type='button'
+                              className='btn btn-link p-0 text-warning ml-1'
+                              aria-label={`Edit transaction ${t.id}`}
                               onClick={() => dispatch(selectTransaction(t.id))}
-                              style={{ cursor: 'pointer' }}
-                            />
-                            <i
-                              className='mdi mdi-trash-can-outline text-danger ml-1'
+                            >
+                              <i
+                                className='mdi mdi-pencil-outline'
+                                aria-hidden='true'
+                              />
+                            </button>
+                            <button
+                              type='button'
+                              className='btn btn-link p-0 text-danger ml-1'
+                              aria-label={`Delete transaction ${t.id}`}
                               onClick={() => setTransactionToRemove(t)}
-                              style={{ cursor: 'pointer' }}
-                            />
+                            >
+                              <i
+                                className='mdi mdi-trash-can-outline'
+                                aria-hidden='true'
+                              />
+                            </button>
                           </td>
                         </tr>
                       ))

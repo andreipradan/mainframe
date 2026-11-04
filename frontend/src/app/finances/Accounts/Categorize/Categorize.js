@@ -785,14 +785,20 @@ const Categorize = () => {
                               : t.state}{' '}
                           </td>
                           <td>
-                            <i
-                              className='mdi mdi-pencil text-primary'
+                            <button
+                              type='button'
+                              className='btn btn-link p-0 text-primary'
+                              aria-label={`Edit transaction ${t.id}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 dispatch(selectTransaction(t.id));
                               }}
-                              style={{ cursor: 'pointer' }}
-                            />
+                            >
+                              <i
+                                className='mdi mdi-pencil'
+                                aria-hidden='true'
+                              />
+                            </button>
                           </td>
                         </tr>
                       ))

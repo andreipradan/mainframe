@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import BottomPagination from '../../shared/BottomPagination';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
@@ -148,12 +148,7 @@ const Bonds = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Bonds

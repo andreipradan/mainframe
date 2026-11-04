@@ -360,10 +360,21 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                aria-expanded={appsMenuOpen}
+                aria-controls='sidebar-apps-menu'
                 onClick={() => setAppsMenuOpen(!appsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-apps' />
@@ -372,9 +383,9 @@ const Sidebar = () => {
                   <Trans>Apps</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={appsMenuOpen}>
-                <div>
+                <div id='sidebar-apps-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -426,20 +437,31 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={authMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+                aria-expanded={authMenuOpen}
+                aria-controls='sidebar-auth-menu'
                 onClick={() => setAuthMenuOpen(!authMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-account-multiple' />
                 </span>
                 <span className='menu-title'>Auth</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
 
               <Collapse in={authMenuOpen}>
-                <div>
+                <div id='sidebar-auth-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -490,21 +512,32 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   commandsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={commandsMenuOpen}
+                aria-controls='sidebar-commands-menu'
                 onClick={() => setCommandsMenuOpen(!commandsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-console' />
                 </span>
                 <span className='menu-title'>Commands</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={commandsMenuOpen}>
-                <div>
+                <div id='sidebar-commands-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -615,19 +648,32 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
-                className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
+              <button
+                type='button'
+                className={
+                  accountsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
+                }
+                aria-expanded={accountsMenuOpen}
+                aria-controls='sidebar-accounts-menu'
                 onClick={() => setAccountsMenuOpen(!accountsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-credit-card-outline' />
                 </span>
                 <span className='menu-title'>Accounts</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={accountsMenuOpen}>
-                <div>
+                <div id='sidebar-accounts-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -665,21 +711,32 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   creditMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={creditMenuOpen}
+                aria-controls='sidebar-credit-menu'
                 onClick={() => setCreditMenuOpen(!creditMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-cash-multiple' />
                 </span>
                 <span className='menu-title'>Credit</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={creditMenuOpen}>
-                <div>
+                <div id='sidebar-credit-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -741,21 +798,32 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   expensesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={expensesMenuOpen}
+                aria-controls='sidebar-expenses-menu'
                 onClick={() => setExpensesMenuOpen(!expensesMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-account-cash-outline' />
                 </span>
                 <span className='menu-title'>Expenses</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={expensesMenuOpen}>
-                <div>
+                <div id='sidebar-expenses-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -796,21 +864,32 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   investmentsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={investmentsMenuOpen}
+                aria-controls='sidebar-investments-menu'
                 onClick={() => setInvestmentsMenuOpen(!investmentsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-cash-multiple' />
                 </span>
                 <span className='menu-title'>Investments</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={investmentsMenuOpen}>
-                <div>
+                <div id='sidebar-investments-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -903,21 +982,32 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   travelMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={travelMenuOpen}
+                aria-controls='sidebar-travel-menu'
                 onClick={() => setTravelMenuOpen(!travelMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-earth' />
                 </span>
                 <span className='menu-title'>Travel</span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={travelMenuOpen}>
-                <div>
+                <div id='sidebar-travel-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1002,21 +1092,32 @@ const Sidebar = () => {
               : 'nav-item menu-items'
           }
         >
-          <div
+          <button
+            type='button'
             className={
               documentationMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
             }
+            aria-expanded={documentationMenuOpen}
+            aria-controls='sidebar-documentation-menu'
             onClick={() => setDocumentationMenuOpen(!documentationMenuOpen)}
             data-toggle='collapse'
+            style={{
+              background: 'none',
+              border: 0,
+              cursor: 'pointer',
+              font: 'inherit',
+              textAlign: 'left',
+              width: '100%',
+            }}
           >
             <span className='menu-icon'>
               <i className='mdi mdi-file-document' />
             </span>
             <span className='menu-title'>Docs</span>
             <i className='menu-arrow' />
-          </div>
+          </button>
           <Collapse in={documentationMenuOpen}>
-            <div>
+            <div id='sidebar-documentation-menu'>
               <ul className='nav flex-column sub-menu'>
                 <li className='nav-item'>
                   <Link
@@ -1046,12 +1147,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   basicUiMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={basicUiMenuOpen}
+                aria-controls='sidebar-basic-ui-menu'
                 onClick={() => setBasicUiMenuOpen(!basicUiMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-laptop' />
@@ -1060,9 +1172,9 @@ const Sidebar = () => {
                   <Trans>Basic UI Elements</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={basicUiMenuOpen}>
-                <div>
+                <div id='sidebar-basic-ui-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1111,12 +1223,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   formElementsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={formElementsMenuOpen}
+                aria-controls='sidebar-form-elements-menu'
                 onClick={() => setFormElementsMenuOpen(!formElementsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-playlist-play' />
@@ -1125,9 +1248,9 @@ const Sidebar = () => {
                   <Trans>Form Elements</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={formElementsMenuOpen}>
-                <div>
+                <div id='sidebar-form-elements-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1152,12 +1275,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   tablesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={tablesMenuOpen}
+                aria-controls='sidebar-tables-menu'
                 onClick={() => setTablesMenuOpen(!tablesMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-table-large' />
@@ -1166,9 +1300,9 @@ const Sidebar = () => {
                   <Trans>Tables</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={tablesMenuOpen}>
-                <div>
+                <div id='sidebar-tables-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1193,12 +1327,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   chartsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={chartsMenuOpen}
+                aria-controls='sidebar-charts-menu'
                 onClick={() => setChartsMenuOpen(!chartsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-chart-bar' />
@@ -1207,9 +1352,9 @@ const Sidebar = () => {
                   <Trans>Charts</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={chartsMenuOpen}>
-                <div>
+                <div id='sidebar-charts-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1234,12 +1379,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   iconsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={iconsMenuOpen}
+                aria-controls='sidebar-icons-menu'
                 onClick={() => setIconsMenuOpen(!iconsMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-contacts' />
@@ -1248,9 +1404,9 @@ const Sidebar = () => {
                   <Trans>Icons</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={iconsMenuOpen}>
-                <div>
+                <div id='sidebar-icons-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1275,12 +1431,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   userPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={userPagesMenuOpen}
+                aria-controls='sidebar-user-pages-menu'
                 onClick={() => setUserPagesMenuOpen(!userPagesMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-security' />
@@ -1289,9 +1456,9 @@ const Sidebar = () => {
                   <Trans>User Pages</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={userPagesMenuOpen}>
-                <div>
+                <div id='sidebar-user-pages-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link
@@ -1328,12 +1495,23 @@ const Sidebar = () => {
                   : 'nav-item menu-items'
               }
             >
-              <div
+              <button
+                type='button'
                 className={
                   errorPagesMenuOpen ? 'nav-link menu-expanded' : 'nav-link'
                 }
+                aria-expanded={errorPagesMenuOpen}
+                aria-controls='sidebar-error-pages-menu'
                 onClick={() => setErrorPagesMenuOpen(!errorPagesMenuOpen)}
                 data-toggle='collapse'
+                style={{
+                  background: 'none',
+                  border: 0,
+                  cursor: 'pointer',
+                  font: 'inherit',
+                  textAlign: 'left',
+                  width: '100%',
+                }}
               >
                 <span className='menu-icon'>
                   <i className='mdi mdi-lock' />
@@ -1342,9 +1520,9 @@ const Sidebar = () => {
                   <Trans>Error Pages</Trans>
                 </span>
                 <i className='menu-arrow' />
-              </div>
+              </button>
               <Collapse in={errorPagesMenuOpen}>
-                <div>
+                <div id='sidebar-error-pages-menu'>
                   <ul className='nav flex-column sub-menu'>
                     <li className='nav-item'>
                       <Link

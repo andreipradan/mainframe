@@ -59,6 +59,15 @@ describe('Details component', () => {
 
     expect(div.innerHTML).toContain('Credit');
 
+    const excludePrepayments = div.querySelector('#exclude-prepayments');
+    const excludePrepaymentsLabel = div.querySelector(
+      'label[for="exclude-prepayments"]'
+    );
+    expect(excludePrepaymentsLabel.control).toBe(excludePrepayments);
+    expect(excludePrepayments.checked).toBe(false);
+    act(() => excludePrepayments.click());
+    expect(excludePrepayments.checked).toBe(true);
+
     await act(async () => {
       root.unmount();
       await new Promise((r) => {

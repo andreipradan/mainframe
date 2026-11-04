@@ -15,7 +15,7 @@ import { setKwargs as setPnlKwargs } from '../../../redux/pnlSlice';
 import { setKwargs } from '../../../redux/stocksSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { StocksApi, StocksPnlApi } from '../../../api/finance';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 const Stocks = () => {
   const dispatch = useDispatch();
@@ -118,12 +118,7 @@ const Stocks = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Stocks

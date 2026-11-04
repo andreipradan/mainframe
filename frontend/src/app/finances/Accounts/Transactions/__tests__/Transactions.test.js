@@ -167,7 +167,8 @@ jest.mock('react-bootstrap/Form', () => {
 });
 jest.mock('react-bootstrap/Modal', () => {
   const React = require('react');
-  const Modal = ({ children }) => React.createElement('div', null, children);
+  const Modal = ({ children, show }) =>
+    show ? React.createElement('div', { role: 'dialog' }, children) : null;
   Modal.Body = ({ children }) => React.createElement('div', null, children);
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -192,7 +193,7 @@ function renderWithState(initialState) {
   const store = {
     getState: () => initialState,
     subscribe: () => () => {},
-    dispatch: () => {},
+    dispatch: jest.fn(),
   };
   // Use React 18 createRoot to avoid ReactDOM.render deprecation warnings
   const rootInstance = createRoot(div);
@@ -215,6 +216,7 @@ function renderWithState(initialState) {
   return {
     root,
     container: div,
+    store,
     cleanup: () => root.unmount(),
   };
 }
@@ -238,8 +240,22 @@ describe('Transactions component (basic)', () => {
         count: 0,
       },
     };
-    const { root, container } = renderWithState(initialState);
+    const { root, container, store } = renderWithState(initialState);
     expect(container.textContent).toContain('TestBank (Checking)');
+    const editButton = container.querySelector(
+      'button[aria-label="Edit account"]'
+    );
+    const addButton = container.querySelector(
+      'button[aria-label="Add account"]'
+    );
+    expect(editButton).not.toBeNull();
+    expect(addButton).not.toBeNull();
+    act(() => editButton.click());
+    act(() => addButton.click());
+    const modalActions = store.dispatch.mock.calls
+      .slice(-2)
+      .map(([action]) => action.payload);
+    expect(modalActions).toEqual([true, 'new']);
     root.unmount();
   });
 
@@ -296,8 +312,19 @@ describe('Transactions component (basic)', () => {
         count: 1,
       },
     };
-    const { root, container } = renderWithState(initialState);
+    const { root, container, store } = renderWithState(initialState);
     expect(container.textContent).toContain('Lunch at cafe');
+    const editButton = container.querySelector(
+      'button[aria-label="Edit transaction 11"]'
+    );
+    expect(editButton).not.toBeNull();
+    act(() => editButton.click());
+    expect(store.dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'transactions/selectItem',
+        payload: 11,
+      })
+    );
     root.unmount();
   });
 
@@ -333,12 +360,15 @@ describe('Transactions component (basic)', () => {
       },
     };
     const { root, container } = renderWithState(initialState);
-    // click the trash icon to open the delete modal
-    const trash = container.querySelector('.mdi-trash-can-outline');
-    expect(trash).toBeTruthy();
-    act(() => {
-      trash.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
+    const deleteButton = container.querySelector(
+      'button[aria-label="Delete transaction 22"]'
+    );
+    expect(deleteButton).not.toBeNull();
+    expect(deleteButton.type).toBe('button');
+    act(() => deleteButton.click());
+    expect(container.querySelector('[role="dialog"]').textContent).toContain(
+      'Delete transaction?'
+    );
     // Errors mock renders errors as text when provided
     expect(container.textContent).toContain('Delete blocked');
     root.unmount();

@@ -20,7 +20,7 @@ import { formatDate, formatTime } from '../../earthquakes/Earthquakes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 const diffMonths = (date1, date2) => {
   const d1 = new Date(date1);
@@ -136,12 +136,7 @@ const Deposits = () => {
         <nav aria-label='breadcrumb'>
           <ol className='breadcrumb'>
             <li className='breadcrumb-item'>
-              <span
-                className={'cursor-pointer text-primary'}
-                onClick={() => history.push('/investments/summary')}
-              >
-                Investments
-              </span>
+              <Link to='/investments/summary'>Investments</Link>
             </li>
             <li className='breadcrumb-item active' aria-current='page'>
               Deposits
