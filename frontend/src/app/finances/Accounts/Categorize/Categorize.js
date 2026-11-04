@@ -283,7 +283,9 @@ const Categorize = () => {
                                 <span>
                                   Accuracy:&nbsp;
                                   {(
-                                    parseFloat(prediction.train.accuracy) * 100
+                                    Number.parseFloat(
+                                      prediction.train.accuracy
+                                    ) * 100
                                   ).toFixed(1)}
                                   %
                                 </span>
@@ -719,7 +721,9 @@ const Categorize = () => {
                           <td>
                             {' '}
                             {t.amount}{' '}
-                            {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ''}{' '}
+                            {Number.parseFloat(t.fee)
+                              ? `(Fee: ${t.fee})`
+                              : ''}{' '}
                           </td>
                           <td> {t.description} </td>
                           <td> {getTypeLabel(t.type)} </td>
@@ -763,8 +767,8 @@ const Categorize = () => {
                                   );
                                   e.preventDefault();
                                   setCheckedCategories(
-                                    transactions.results.map((t) => ({
-                                      description: t.description,
+                                    transactions.results.map((result) => ({
+                                      description: result.description,
                                       category: currentCategory,
                                     }))
                                   );

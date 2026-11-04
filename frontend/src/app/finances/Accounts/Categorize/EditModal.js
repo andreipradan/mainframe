@@ -1,208 +1,260 @@
-import React, {useEffect, useState} from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-import 'ace-builds'
-import 'ace-builds/webpack-resolver'
-import "ace-builds/src-noconflict/mode-json";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/ext-language_tools";
+import 'ace-builds';
+import 'ace-builds/webpack-resolver';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/ext-language_tools';
 
-import AceEditor from "react-ace";
-import Button from "react-bootstrap/Button";
+import AceEditor from 'react-ace';
+import Button from 'react-bootstrap/Button';
 import CreatableSelect from 'react-select/creatable';
-import Form from "react-bootstrap/Form";
-import Modal from "react-bootstrap/Modal";
+import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
 
-import ListItem from "../../../shared/ListItem";
-import { capitalize } from "../../../utils";
-import { create as createCategory } from "../../../../redux/categoriesSlice"
-import { selectItem as selectTransaction } from "../../../../redux/transactionsSlice";
-import Errors from "../../../shared/Errors";
+import ListItem from '../../../shared/ListItem';
+import { capitalize } from '../../../utils';
+import { create as createCategory } from '../../../../redux/categoriesSlice';
+import { selectItem as selectTransaction } from '../../../../redux/transactionsSlice';
+import Errors from '../../../shared/Errors';
 import { CategoriesApi } from '../../../../api/finance/categories';
 import { TransactionsApi } from '../../../../api/finance/transactions';
 
-export const createOption = label => ({label: getTypeLabel(label), value: label})
+/** Formats a transaction type for display. */
+export const getTypeLabel = (type) =>
+  type ? (type === 'ATM' ? type : `${capitalize(type).replace('_', ' ')}`) : '';
 
-export const getTypeLabel = type =>
-  type
-    ? type === "ATM"
-      ? type
-      : `${capitalize(type).replace("_", " ")}`
-    : ""
+/** Converts a category id to a select option. */
+export const createOption = (label) => ({
+  label: getTypeLabel(label),
+  value: label,
+});
 
 export const selectStyles = {
   control: (defaultStyles) => ({
     ...defaultStyles,
-    borderColor: "#212529",
-    backgroundColor: "transparent",
+    borderColor: '#212529',
+    backgroundColor: 'transparent',
   }),
   option: (defaultStyles, state) => ({
     ...defaultStyles,
-    backgroundColor: state.isSelected ? "#2f84d3" : state.isFocused ? "#829fbb": "#212529",
+    backgroundColor: state.isSelected
+      ? '#2f84d3'
+      : state.isFocused
+        ? '#829fbb'
+        : '#212529',
   }),
-  singleValue: (styles) => ({ ...styles, color:"#ccc"}),
-}
+  singleValue: (styles) => ({ ...styles, color: '#ccc' }),
+};
+
+/** Displays the selected transaction summary in the modal header. */
+const TransactionDetailsTitle = ({ transaction, confirmedByChoices }) => (
+  <Modal.Title>
+    <div className='mb-1'>Transaction details</div>
+    <p className='text-muted mb-0'>{transaction.description}</p>
+    <ListItem
+      label={'Amount'}
+      value={`${transaction.amount} ${transaction.currency}${Number.parseFloat(transaction.fee) ? ` (Fee: ${transaction.fee})` : ''}`}
+      textType='danger'
+    />
+    <ListItem label={'Type'} value={getTypeLabel(transaction.type)} />
+    <ListItem label={'Product'} value={transaction.product} />
+    <ListItem label={'Started'} value={transaction.started_at} datetime />
+    {transaction.state === 'COMPLETED' ? (
+      <ListItem label={'Completed'} value={transaction.completed_at} datetime />
+    ) : (
+      <ListItem label={'State'} value={transaction.state} />
+    )}
+    <ListItem
+      label={'Confirmed by'}
+      value={
+        confirmedByChoices?.find(
+          (choice) => choice[0] === transaction.confirmed_by
+        )?.[1]
+      }
+      textType={
+        transaction.confirmed_by === 1
+          ? 'warning'
+          : transaction.confirmed_by === 2
+            ? 'success'
+            : 'muted'
+      }
+    />
+    <ListItem
+      label={'Suggestion'}
+      value={transaction.category_suggestion || '-'}
+      textType={'warning'}
+    />
+  </Modal.Title>
+);
 
 const EditModal = () => {
-  const token = useSelector((state) => state.auth.token)
+  const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
-  const categories = useSelector(state => state.categories)
-  const kwargs = useSelector(state => state.transactions.kwargs) || {}
-  const transactions = useSelector(state => state.transactions)
-  const transaction = transactions.selectedItem
+  const categories = useSelector((state) => state.categories);
+  const kwargs = useSelector((state) => state.transactions.kwargs) || {};
+  const transactions = useSelector((state) => state.transactions);
+  const transaction = transactions.selectedItem;
 
-  const closeModal = () => dispatch(selectTransaction())
-  const [category, setCategory] = useState("")
-  const [showSaveAllModal, setShowSaveAllModal] = useState(false)
-  const [type, setType] = useState("")
+  const closeModal = () => dispatch(selectTransaction());
+  const [category, setCategory] = useState('');
+  const [showSaveAllModal, setShowSaveAllModal] = useState(false);
+  const [type, setType] = useState('');
 
-  useEffect(() => {!categories.results && dispatch(CategoriesApi.getList(token))}, [])
   useEffect(() => {
-    setCategory(transaction?.category)
-    setType(transaction?.type)
-    },
-    [transaction]
-  )
+    !categories.results && dispatch(CategoriesApi.getList(token));
+  }, []);
+  useEffect(() => {
+    setCategory(transaction?.category);
+    setType(transaction?.type);
+  }, [transaction]);
 
-  return transaction ? <Modal centered show={Boolean(transaction)} onHide={closeModal}>
-    <Modal.Header closeButton>
-      <Modal.Title>
-        <div className="row">
-          <div className="col-lg-12 grid-margin stretch-card mb-1">Transaction details</div>
-        </div>
-        <p className="text-muted mb-0">{transaction.description}</p>
-
-        <ListItem
-          label={"Amount"}
-          value={`${transaction.amount} ${transaction.currency}${parseFloat(transaction.fee) ? ` (Fee: ${transaction.fee})` : ''}`}
-          textType="danger"
-        />
-        <ListItem label={"Type"} value={getTypeLabel(transaction.type)} />
-        <ListItem label={"Product"} value={transaction.product} />
-        <ListItem label={"Started"} value={transaction.started_at} datetime/>
-        {
-          transaction.state === "COMPLETED"
-            ? <ListItem label={"Completed"} value={transaction.completed_at} datetime />
-            : <ListItem label={"State"} value={transaction.state} />
-        }
-        <ListItem
-          label={"Confirmed by"}
-          value={transactions.confirmedByChoices?.find(c => c[0] === transaction.confirmed_by)?.[1]}
-          textType={
-            transaction.confirmed_by === 1
-              ? "warning"
-              : transaction.confirmed_by === 2 ? "success" : "muted"
-          }
-        />
-        <ListItem
-          label={"Suggestion"}
-          value={transaction.category_suggestion || "-"}
-          textType={"warning"}
-        />
-      </Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      <Errors errors={transactions.errors}/>
-
-      <Form onSubmit={e => {
-        e.preventDefault()
-        dispatch(TransactionsApi.update(
-          token, transaction.id, {type, category}
-        ))
-      }}>
-
-        <Form.Group>
-          <Form.Label>Category</Form.Label>&nbsp;
-          <CreatableSelect
-            isClearable
-            isDisabled={categories.loading || transactions.loading}
-            isLoading={categories.loading}
-            options={categories.results?.map(c => createOption(c.id))}
-            onChange={newValue => setCategory(newValue?.value ? newValue.value : "Unidentified")}
-            onCreateOption={id => {
-              dispatch(TransactionsApi.update(token, transaction.id, {category: id}))
-              dispatch(createCategory({id, value: capitalize(id).replace("-", " ")}))
-            }}
-            styles={selectStyles}
-            value={createOption(category)}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Additional data</Form.Label>
-          {
-            transaction.additional_data
-              ? <AceEditor
-                  placeholder="Additional Data"
-                  mode="python"
-                  theme="monokai"
-                  readOnly
-                  fontSize={12}
-                  showGutter={false}
-                  value={JSON.stringify(transaction.additional_data, null, "\t")}
-                  width="100%"
-                  height="150px"
-                />
-              : "-"
-          }
-        </Form.Group>
-      </Form>
-    </Modal.Body>
-    <Modal.Footer>
-      <Button variant="secondary" onClick={closeModal}>Close</Button>
-      <Button
-        disabled={category === transaction.category}
-        variant="danger"
-        onClick={() => {setShowSaveAllModal(true)}}
-      >
-        Save all
-      </Button>
-      <Button
-        disabled={
-          type === transaction.type &&
-          category === transaction.category
-      }
-        variant="primary"
-        onClick={() => {
-          dispatch(TransactionsApi.update(token, transaction.id, {category}))
-          dispatch(selectTransaction())
-        }}
-      >
-        Save Changes
-      </Button>
-    </Modal.Footer>
-    <Modal centered show={showSaveAllModal} onHide={() => setShowSaveAllModal(false)}>
+  return transaction ? (
+    <Modal centered show={Boolean(transaction)} onHide={closeModal}>
       <Modal.Header closeButton>
-        <Modal.Title>
-          <div className="row">
-            <div className="col-lg-12 grid-margin stretch-card mb-1">
-              Update all transactions?
-            </div>
-          </div>
-          <p className="text-muted mb-0">Update all transactions with this description</p>
-        </Modal.Title>
+        <TransactionDetailsTitle
+          transaction={transaction}
+          confirmedByChoices={transactions.confirmedByChoices}
+        />
       </Modal.Header>
       <Modal.Body>
-        This will update <span className="text-danger mb-0">all the existing transactions</span> that have
-        <ListItem label={"Description"} value={transaction.description} />
-        to the new
-        <ListItem label={"Category"} value={category} textType="warning" />
-        Are you sure?
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="success" onClick={() => setShowSaveAllModal(false)}>No, go back</Button>
-        <Button
-          variant="danger"
-          onClick={() => {
-            dispatch(TransactionsApi.updateAll(token, {category, description: transaction.description}, kwargs))
-            dispatch(selectTransaction())
-            setShowSaveAllModal(false)
+        <Errors errors={transactions.errors} />
+
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            dispatch(
+              TransactionsApi.update(token, transaction.id, { type, category })
+            );
           }}
         >
-          Yes, update ALL!
+          <Form.Group>
+            <Form.Label>Category</Form.Label>&nbsp;
+            <CreatableSelect
+              isClearable
+              isDisabled={categories.loading || transactions.loading}
+              isLoading={categories.loading}
+              options={categories.results?.map((c) => createOption(c.id))}
+              onChange={(newValue) =>
+                setCategory(newValue?.value ? newValue.value : 'Unidentified')
+              }
+              onCreateOption={(id) => {
+                dispatch(
+                  TransactionsApi.update(token, transaction.id, {
+                    category: id,
+                  })
+                );
+                dispatch(
+                  createCategory({
+                    id,
+                    value: capitalize(id).replace('-', ' '),
+                  })
+                );
+              }}
+              styles={selectStyles}
+              value={createOption(category)}
+            />
+          </Form.Group>
+          <Form.Group className='mb-3'>
+            <Form.Label>Additional data</Form.Label>
+            {transaction.additional_data ? (
+              <AceEditor
+                placeholder='Additional Data'
+                mode='python'
+                theme='monokai'
+                readOnly
+                fontSize={12}
+                showGutter={false}
+                value={JSON.stringify(transaction.additional_data, null, '\t')}
+                width='100%'
+                height='150px'
+              />
+            ) : (
+              '-'
+            )}
+          </Form.Group>
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant='secondary' onClick={closeModal}>
+          Close
+        </Button>
+        <Button
+          disabled={category === transaction.category}
+          variant='danger'
+          onClick={() => {
+            setShowSaveAllModal(true);
+          }}
+        >
+          Save all
+        </Button>
+        <Button
+          disabled={
+            type === transaction.type && category === transaction.category
+          }
+          variant='primary'
+          onClick={() => {
+            dispatch(
+              TransactionsApi.update(token, transaction.id, { category })
+            );
+            dispatch(selectTransaction());
+          }}
+        >
+          Save Changes
         </Button>
       </Modal.Footer>
+      <Modal
+        centered
+        show={showSaveAllModal}
+        onHide={() => setShowSaveAllModal(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <div className='row'>
+              <div className='col-lg-12 grid-margin stretch-card mb-1'>
+                Update all transactions?
+              </div>
+            </div>
+            <p className='text-muted mb-0'>
+              Update all transactions with this description
+            </p>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          This will update{' '}
+          <span className='text-danger mb-0'>
+            all the existing transactions
+          </span>{' '}
+          that have
+          <ListItem label={'Description'} value={transaction.description} />
+          to the new
+          <ListItem label={'Category'} value={category} textType='warning' />
+          Are you sure?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='success' onClick={() => setShowSaveAllModal(false)}>
+            No, go back
+          </Button>
+          <Button
+            variant='danger'
+            onClick={() => {
+              dispatch(
+                TransactionsApi.updateAll(
+                  token,
+                  { category, description: transaction.description },
+                  kwargs
+                )
+              );
+              dispatch(selectTransaction());
+              setShowSaveAllModal(false);
+            }}
+          >
+            Yes, update ALL!
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Modal>
-  </Modal>
-    : null
-}
+  ) : null;
+};
 export default EditModal;

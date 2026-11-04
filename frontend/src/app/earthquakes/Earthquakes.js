@@ -483,7 +483,7 @@ const Earthquakes = () => {
                             </td>
                             <td className='font-weight-medium'>
                               {' '}
-                              {parseFloat(e.depth).toFixed(2)} km{' '}
+                              {Number.parseFloat(e.depth).toFixed(2)} km{' '}
                             </td>
                             <td className='font-weight-medium'>
                               {' '}

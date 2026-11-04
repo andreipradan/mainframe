@@ -81,7 +81,7 @@ const Details = () => {
           const meta = dataset._meta[Object.keys(dataset._meta)[0]];
           const total = meta.total;
           const currentValue = dataset.data[tooltipItem.index];
-          const percentage = parseFloat(
+          const percentage = Number.parseFloat(
             ((currentValue / total) * 100).toFixed(1)
           );
           return `${currentValue} (${percentage}%)`;
@@ -114,7 +114,7 @@ const Details = () => {
         ? 1
         : rates.find((r) => r.symbol === currency.value).value
       : 1;
-    return parseFloat(amount / rate).toFixed(2);
+    return Number.parseFloat(amount / rate).toFixed(2);
   };
 
   const onChangeCurrency = (newValue) => {
@@ -125,8 +125,8 @@ const Details = () => {
         }
       : newValue;
 
-    const totalPaid = parseFloat(overview.payment_stats?.total);
-    const interestPaid = parseFloat(overview.payment_stats?.interest);
+    const totalPaid = Number.parseFloat(overview.payment_stats?.total);
+    const interestPaid = Number.parseFloat(overview.payment_stats?.interest);
 
     const principalRemaining = calculateSum(latestTimetable, 'principal');
     const interestRemaining = calculateSum(latestTimetable, 'interest');
@@ -291,10 +291,11 @@ const Details = () => {
             ];
           const currentValue =
             data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-          const percentage = parseFloat(
+          const percentage = Number.parseFloat(
             (
               (currentValue /
-                (parseFloat(currentValue) + parseFloat(otherValue))) *
+                (Number.parseFloat(currentValue) +
+                  Number.parseFloat(otherValue))) *
               100
             ).toFixed(1)
           );
@@ -302,10 +303,10 @@ const Details = () => {
         },
         title: (tooltipItem, data) => {
           const item = tooltipItem[0];
-          const otherValue = parseFloat(
+          const otherValue = Number.parseFloat(
             data.datasets[item.datasetIndex === 0 ? 1 : 0].data[item.index]
           );
-          const currentValue = parseFloat(
+          const currentValue = Number.parseFloat(
             data.datasets[item.datasetIndex].data[item.index]
           );
           return `Total: ${(currentValue + otherValue).toFixed(2)}`;

@@ -57,27 +57,24 @@ const Summary = () => {
                     {state.totals[currency]?.active ? (
                       <ListItem
                         label={'Active'}
-                        value={
-                          parseFloat(state.totals[currency].active).toFixed(2) +
-                          ` ${currency}`
-                        }
+                        value={`${Number.parseFloat(state.totals[currency].active).toFixed(2)} ${currency}`}
                         textType={'primary'}
                       />
                     ) : null}
                     {state.totals[currency]?.pnl &&
-                    parseFloat(state.totals[currency].pnl) ? (
+                    Number.parseFloat(state.totals[currency].pnl) ? (
                       <ListItem
                         label={'Profit / Loss'}
-                        value={`${parseFloat(state.totals[currency].pnl).toFixed(2)} ${currency}`}
+                        value={`${Number.parseFloat(state.totals[currency].pnl).toFixed(2)} ${currency}`}
                         textType={'warning'}
                       />
                     ) : null}
                     {state.totals[currency]?.dividend ? (
                       <ListItem
                         label={'Dividends'}
-                        value={`${parseFloat(state.totals[currency].dividend).toFixed(2)} ${currency}`}
+                        value={`${Number.parseFloat(state.totals[currency].dividend).toFixed(2)} ${currency}`}
                         textType={
-                          parseFloat(state.totals[currency].dividend) < 0
+                          Number.parseFloat(state.totals[currency].dividend) < 0
                             ? 'danger'
                             : 'success'
                         }
@@ -88,12 +85,12 @@ const Summary = () => {
                       <ListItem
                         label={'Profit'}
                         value={
-                          parseFloat(state.totals[currency]?.dividend)
-                            ? `${(parseFloat(state.totals[currency].pnl) + parseFloat(state.totals[currency].dividend)).toFixed(2)} ${currency}`
-                            : `${parseFloat(state.totals[currency].pnl).toFixed(2)} ${currency}`
+                          Number.parseFloat(state.totals[currency]?.dividend)
+                            ? `${(Number.parseFloat(state.totals[currency].pnl) + Number.parseFloat(state.totals[currency].dividend)).toFixed(2)} ${currency}`
+                            : `${Number.parseFloat(state.totals[currency].pnl).toFixed(2)} ${currency}`
                         }
                         textType={
-                          parseFloat(state.totals[currency].dividend) < 0
+                          Number.parseFloat(state.totals[currency].dividend) < 0
                             ? 'danger'
                             : 'success'
                         }
@@ -120,7 +117,7 @@ const Summary = () => {
                           <ListItem
                             label={'Active'}
                             value={
-                              parseFloat(
+                              Number.parseFloat(
                                 state[entry][`active_${currency}`]
                               ).toFixed(2) + ` ${currency}`
                             }
@@ -173,7 +170,7 @@ const Summary = () => {
                             value={
                               state[entry][`pnl_${currency}`]
                                 ? state[entry]?.[`dividend_${currency}`]
-                                  ? `${parseFloat(state[entry][`pnl_${currency}`]) + parseFloat(state[entry][`dividend_${currency}`])} ${currency}`
+                                  ? `${Number.parseFloat(state[entry][`pnl_${currency}`]) + Number.parseFloat(state[entry][`dividend_${currency}`])} ${currency}`
                                   : `${state[entry]?.[`pnl_${currency}`]} ${currency}`
                                 : '-'
                             }
@@ -214,7 +211,7 @@ const Summary = () => {
                         ?.map((p) => getEvaluation(p, true))
                         .reduce(
                           (accumulator, currentValue) =>
-                            accumulator + parseFloat(currentValue),
+                            accumulator + Number.parseFloat(currentValue),
                           0
                         )
                         .toFixed(2)}
@@ -224,7 +221,7 @@ const Summary = () => {
                       label={'Profit / Loss'}
                       value={pension.results
                         ?.map((p) => getPnl(p, true))
-                        .reduce((acc, val) => acc + parseFloat(val), 0)
+                        .reduce((acc, val) => acc + Number.parseFloat(val), 0)
                         .toFixed(2)}
                       textType={'warning'}
                     />
@@ -274,7 +271,7 @@ const Summary = () => {
                   />
                   <ListItem
                     label={'Interest'}
-                    value={`${parseFloat(
+                    value={`${Number.parseFloat(
                       (((state.bonds.next_interest.interest / 100) *
                         -state.bonds.next_interest.net) /
                         12) *
@@ -326,7 +323,7 @@ const Summary = () => {
                   />
                   <ListItem
                     label={'Interest'}
-                    value={`${parseFloat(
+                    value={`${Number.parseFloat(
                       (((state.deposits.next_maturity.interest / 100) *
                         state.deposits.next_maturity.amount) /
                         12) *
