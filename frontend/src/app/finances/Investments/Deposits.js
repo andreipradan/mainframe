@@ -40,7 +40,7 @@ const Deposits = () => {
   const dispatch = useDispatch();
 
   const state = useSelector((store) => store.deposits);
-  const token = useSelector((state) => state.auth.token);
+  const token = useSelector((store) => store.auth.token);
 
   const api = new DepositsApi(token);
 
