@@ -21,9 +21,11 @@ import Errors from '../../../shared/Errors';
 import { CategoriesApi } from '../../../../api/finance/categories';
 import { TransactionsApi } from '../../../../api/finance/transactions';
 
+/** Formats a transaction type for display. */
 export const getTypeLabel = (type) =>
   type ? (type === 'ATM' ? type : `${capitalize(type).replace('_', ' ')}`) : '';
 
+/** Converts a category id to a select option. */
 export const createOption = (label) => ({
   label: getTypeLabel(label),
   value: label,
@@ -71,11 +73,7 @@ const EditModal = () => {
     <Modal centered show={Boolean(transaction)} onHide={closeModal}>
       <Modal.Header closeButton>
         <Modal.Title>
-          <div className='row'>
-            <div className='col-lg-12 grid-margin stretch-card mb-1'>
-              Transaction details
-            </div>
-          </div>
+          <div className='mb-1'>Transaction details</div>
           <p className='text-muted mb-0'>{transaction.description}</p>
 
           <ListItem

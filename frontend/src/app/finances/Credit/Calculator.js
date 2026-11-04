@@ -18,6 +18,7 @@ const PMT = (ir, np, pv, fv = 0, type = 0) => {
   return pmt;
 };
 
+/** Collects inputs used to calculate the reduced loan duration. */
 const DurationForm = ({
   disabled,
   durationAmount,
@@ -58,6 +59,7 @@ const DurationForm = ({
   </form>
 );
 
+/** Shows alternative amounts for the selected loan duration. */
 const DurationSuggestions = ({ amounts, durationMonths }) =>
   amounts ? (
     <div className='text-muted small'>
@@ -77,6 +79,7 @@ const DurationSuggestions = ({ amounts, durationMonths }) =>
     </div>
   ) : null;
 
+/** Collects the target monthly payment and shows its totals. */
 const MonthlyPaymentControls = ({
   disabled,
   minimumAmount,
@@ -118,6 +121,7 @@ const MonthlyPaymentControls = ({
   </div>
 );
 
+/** Renders the calculated monthly payment summary columns. */
 const MonthlySuggestionsHeader = ({
   totalRate,
   totalInterest,
@@ -141,6 +145,7 @@ const MonthlySuggestionsHeader = ({
   </thead>
 );
 
+/** Lists the monthly payment schedule alternatives. */
 const MonthlySuggestionsTable = ({
   amounts,
   totalRate,
@@ -171,6 +176,7 @@ const MonthlySuggestionsTable = ({
     </div>
   ) : null;
 
+/** Groups the controls and suggestions for reducing loan duration. */
 const DurationCard = ({
   disabled,
   durationAmount,
@@ -201,6 +207,7 @@ const DurationCard = ({
   </div>
 );
 
+/** Groups the controls and results for reducing monthly payments. */
 const MonthlyPaymentCard = ({
   disabled,
   minimumAmount,
@@ -314,6 +321,7 @@ const Calculator = () => {
     setDurationSaved(saved);
   };
 
+  /** Recalculates the duration and suggestions for a target amount. */
   function updateDurationAmount(value) {
     setDurationAmount(value);
     if (!latestTimetable) return;
@@ -330,6 +338,7 @@ const Calculator = () => {
     setDurationMonths(index);
     setDurationSuggestions(index);
   }
+  /** Recalculates the target amount and suggestions for a month count. */
   const updateDurationMonths = (value) => {
     setDurationMonths(value);
     if (!latestTimetable) return;
@@ -370,7 +379,7 @@ const Calculator = () => {
   };
 
   return (
-    <div>
+    <>
       <div className='page-header mb-0'>
         <h3 className='page-title'>
           Prepayment calculator
@@ -487,7 +496,7 @@ const Calculator = () => {
           totalRate={totalRate}
         />
       </div>
-    </div>
+    </>
   );
 };
 

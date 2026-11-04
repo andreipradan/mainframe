@@ -72,19 +72,16 @@ const TransactionEditModal = () => {
     <Modal centered show={Boolean(selectedItem)} onHide={closeModal}>
       <Modal.Header closeButton>
         <Modal.Title>
-          <div className='mb-1'>
-            Transaction details
-            <button
-              type='button'
-              className='btn btn-outline-success btn-sm border-0 bg-transparent'
-              onClick={() => {
-                dispatch(CategoriesApi.getList(token));
-                dispatch(api.get(selectedItem?.id));
-              }}
-            >
-              <i className='mdi mdi-refresh' />
-            </button>
-          </div>
+          <span className='d-block mb-1'>Transaction details</span>
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent mdi mdi-refresh'
+            aria-label='Refresh transaction details'
+            onClick={() => {
+              dispatch(CategoriesApi.getList(token));
+              dispatch(api.get(selectedItem?.id));
+            }}
+          />
           <p className='text-muted mb-0'>
             Started at: {new Date(selectedItem?.started_at).toLocaleString()}
             <br />
