@@ -101,7 +101,7 @@ describe('Car service-entry actions', () => {
     act(() => root.render(<Car />));
 
     const deleteButton = container.querySelector(
-      'button[aria-label="Delete service entry: Oil change"]'
+      'button[aria-label*="Oil change"]'
     );
     expect(deleteButton).not.toBeNull();
     expect(deleteButton.type).toBe('button');

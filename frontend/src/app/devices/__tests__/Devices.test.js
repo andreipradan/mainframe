@@ -85,7 +85,7 @@ describe('Devices sorting', () => {
   test('cycles a column through ascending, descending, and original order', () => {
     const { container, unmount } = renderDevices();
     const sortButton = container.querySelector(
-      'button[aria-label="Sort by ip"]'
+      'button[aria-label^="Sort by IP"]'
     );
 
     expect(sortButton).not.toBeNull();
