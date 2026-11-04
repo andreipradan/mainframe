@@ -317,14 +317,14 @@ const Categorize = () => {
                               </a>
                               <Collapse in={trainHistoryOpen}>
                                 <ul>
-                                  {prediction.train.history.map((h, i) => (
-                                    <li key={i}>
+                                  {prediction.train.history.map((h) => (
+                                    <li key={h.timestamp}>
                                       {new Date(h.timestamp).toLocaleString()}
                                       <ul>
                                         {Object.keys(h)
                                           .filter((k) => k !== 'timestamp')
-                                          .map((k, i) => (
-                                            <li key={i}>
+                                          .map((k) => (
+                                            <li key={k}>
                                               {k}: {h[k]}
                                             </li>
                                           ))}
@@ -423,14 +423,14 @@ const Categorize = () => {
                               </a>
                               <Collapse in={predictHistoryOpen}>
                                 <ul>
-                                  {prediction.predict.history.map((h, i) => (
-                                    <li key={i}>
+                                  {prediction.predict.history.map((h) => (
+                                    <li key={h.timestamp}>
                                       {new Date(h.timestamp).toLocaleString()}
                                       <ul>
                                         {Object.keys(h)
                                           .filter((k) => k !== 'timestamp')
-                                          .map((k, i) => (
-                                            <li key={i}>
+                                          .map((k) => (
+                                            <li key={k}>
                                               {k}: {h[k]}
                                             </li>
                                           ))}
@@ -657,12 +657,12 @@ const Categorize = () => {
                   </thead>
                   <tbody>
                     {transactions.results?.length ? (
-                      transactions.results.map((t, i) => (
+                      transactions.results.map((t) => (
                         <tr
                           style={{
                             cursor: `${t.category_suggestion ? 'default' : 'not-allowed'}`,
                           }}
-                          key={i}
+                          key={t.id}
                           className={
                             getSpecificCategory(t.description)
                               ? 'text-warning'
@@ -975,8 +975,8 @@ const Categorize = () => {
           <p className='mb-0'>This will update all the transactions</p>
           <p>with the descriptions below as follows:</p>
           <ul>
-            {checkedCategories?.map((c, i) => (
-              <li key={i}>
+            {checkedCategories?.map((c) => (
+              <li key={`${c.description}-${c.category}`}>
                 {c.description}
                 <span className='text-warning'>
                   {' -> New category ->'}&nbsp;

@@ -6,7 +6,7 @@ import Tasks from '../Tasks';
 import Watchers from '../Watchers';
 import WatchersApi from '../../../api/watchers';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -58,7 +58,6 @@ jest.mock('react-ace', () => ({
   default: ({ value, onChange, placeholder }) =>
     require('react').createElement('textarea', {
       value: value ?? '',
-      onChange: onChange || (() => {}),
       placeholder,
     }),
 }));
@@ -74,10 +73,10 @@ jest.mock('react-select', () => ({
 jest.mock('../../shared/Errors', () => () => null);
 jest.mock('../../shared/BottomPagination', () => () => null);
 
-const render = async (component) => {
+const render = (component) => {
   const container = document.createElement('div');
   const root = createRoot(container);
-  await act(async () => root.render(component));
+  act(() => root.render(component));
   return {
     container,
     unmount: () => act(() => root.unmount()),
@@ -89,7 +88,7 @@ beforeEach(() => {
 });
 
 describe('command-related accessible controls', () => {
-  test('expands an app and opens the selected command', async () => {
+  test('expands an app and opens the selected command', () => {
     mockState = {
       auth: { token: 'token' },
       commands: {
@@ -100,7 +99,7 @@ describe('command-related accessible controls', () => {
         loading: false,
       },
     };
-    const { container, unmount } = await render(<Commands />);
+    const { container, unmount } = render(<Commands />);
     const appButton = container.querySelector(
       'button[aria-controls="commands-0"]'
     );
@@ -119,7 +118,7 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
-  test('duplicates a cron into the add form with its name and expression', async () => {
+  test('duplicates a cron into the add form with its name and expression', () => {
     const cron = {
       id: 11,
       name: 'Morning sync',
@@ -149,7 +148,7 @@ describe('command-related accessible controls', () => {
         loading: false,
       },
     };
-    const { container, unmount } = await render(<Crons />);
+    const { container, unmount } = render(<Crons />);
     const duplicateButton = container.querySelector(
       'button[aria-label="Duplicate cron Morning sync"]'
     );
@@ -166,7 +165,7 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
-  test('expands selected task history and keeps its disclosure state in sync', async () => {
+  test('expands selected task history and keeps its disclosure state in sync', () => {
     const history = [{ timestamp: '2025-01-02T12:00:00Z', status: 'complete' }];
     mockState = {
       auth: { token: 'token' },
@@ -188,7 +187,7 @@ describe('command-related accessible controls', () => {
         },
       },
     };
-    const { container, unmount } = await render(<Tasks />);
+    const { container, unmount } = render(<Tasks />);
     const historyButton = container.querySelector(
       'button[aria-controls="task-7-history"]'
     );
@@ -212,7 +211,7 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
-  test('duplicates a watcher and runs the selected record', async () => {
+  test('duplicates a watcher and runs the selected record', () => {
     const watcher = {
       id: 21,
       name: 'Daily prices',
@@ -243,7 +242,7 @@ describe('command-related accessible controls', () => {
       },
     };
     const runSpy = jest.spyOn(WatchersApi, 'run');
-    const { container, unmount } = await render(<Watchers />);
+    const { container, unmount } = render(<Watchers />);
 
     act(() =>
       container
@@ -266,7 +265,7 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
-  test('opens watcher history and error disclosures for the selected watcher', async () => {
+  test('opens watcher history and error disclosures for the selected watcher', () => {
     const watcher = {
       id: 21,
       name: 'Daily prices',
@@ -301,7 +300,7 @@ describe('command-related accessible controls', () => {
         types: [['html', 'HTML']],
       },
     };
-    const { container, unmount } = await render(<Watchers />);
+    const { container, unmount } = render(<Watchers />);
 
     const historyButton = container.querySelector(
       'button[aria-controls="watcher-21-history"]'

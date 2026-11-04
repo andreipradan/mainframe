@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { TodoListComponent } from '../TodoList';
 
 describe('TodoListComponent', () => {
-  let container;
-  let root;
+  let container = null;
+  let root = null;
 
   beforeEach(() => {
     container = document.createElement('div');

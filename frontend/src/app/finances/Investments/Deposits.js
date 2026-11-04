@@ -20,7 +20,7 @@ import { formatDate, formatTime } from '../../earthquakes/Earthquakes';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const diffMonths = (date1, date2) => {
   const d1 = new Date(date1);
@@ -38,7 +38,6 @@ const getGrossInterest = (amount, interest, date, maturity) => {
 
 const Deposits = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
 
   const state = useSelector((state) => state.deposits);
   const token = useSelector((state) => state.auth.token);

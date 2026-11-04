@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
 
+const TodoListHeader = () => (
+  <div className='page-header'>
+    <h3 className='page-title'>To do List</h3>
+    <nav aria-label='breadcrumb'>
+      <ol className='breadcrumb'>
+        <li className='breadcrumb-item'>
+          <a href='!#' onClick={(evt) => evt.preventDefault()}>
+            Apps
+          </a>
+        </li>
+        <li className='breadcrumb-item active' aria-current='page'>
+          To do List
+        </li>
+      </ol>
+    </nav>
+  </div>
+);
+
 export const TodoList = () => {
   return (
     <div>
-      <div className='page-header'>
-        <h3 className='page-title'>To do List</h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <a href='!#' onClick={(evt) => evt.preventDefault()}>
-                Apps
-              </a>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              To do List
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <TodoListHeader />
       <div className='row'>
         <div className='col-lg-12'>
           <div className='card px-3'>
@@ -36,7 +40,7 @@ export const TodoListComponent = () => {
   const [todos, setTodos] = useState(null);
   const [inputValue, setInputValue] = useState('');
 
-  const statusChangedHandler = (event, id) => {
+  function statusChangedHandler(event, id) {
     if (!todos?.length) return;
 
     const todo = { ...todos[id] };
@@ -46,9 +50,9 @@ export const TodoListComponent = () => {
     newTodos[id] = todo;
 
     setTodos(newTodos);
-  };
+  }
 
-  const addTodo = (event) => {
+  function addTodo(event) {
     event.preventDefault();
     const todo = {
       id: todos?.length ? todos.length + 1 : 1,
@@ -60,14 +64,14 @@ export const TodoListComponent = () => {
 
     setTodos(newTodos);
     setInputValue('');
-  };
+  }
 
-  const removeTodo = (index) => {
+  function removeTodo(index) {
     if (!todos?.length) return;
     const newTodos = [...todos];
     newTodos.splice(index, 1);
     setTodos(newTodos);
-  };
+  }
 
   return (
     <>

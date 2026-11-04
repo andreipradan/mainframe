@@ -82,7 +82,7 @@ const Tasks = () => {
                       results?.length ? (
                         results.map((task, i) => (
                           <tr
-                            key={i}
+                            key={task.id}
                             onClick={() => dispatch(selectItem(task.id))}
                             className='cursor-pointer'
                           >
@@ -206,25 +206,27 @@ const Tasks = () => {
                       {selectedItem
                         ? Object.keys(selectedItem)
                             .filter(
-                              (k) =>
-                                !['timestamp', 'name', 'app', 'id'].includes(k)
+                              (itemKey) =>
+                                !['timestamp', 'name', 'app', 'id'].includes(
+                                  itemKey
+                                )
                             )
-                            .map((k, i) =>
-                              ['errors', 'history'].includes(k) ? (
-                                <li key={i}>
+                            .map((itemKey) =>
+                              ['errors', 'history'].includes(itemKey) ? (
+                                <li key={itemKey}>
                                   {
                                     <div>
                                       <button
                                         type='button'
                                         className='btn btn-link p-0'
                                         aria-expanded={
-                                          k === 'history'
+                                          itemKey === 'history'
                                             ? taskHistoryOpen
                                             : taskErrorsOpen
                                         }
-                                        aria-controls={`task-${selectedItem.id}-${k}`}
+                                        aria-controls={`task-${selectedItem.id}-${itemKey}`}
                                         onClick={() =>
-                                          k === 'history'
+                                          itemKey === 'history'
                                             ? setTaskHistoryOpen(
                                                 !taskHistoryOpen
                                               )
@@ -232,54 +234,66 @@ const Tasks = () => {
                                         }
                                       >
                                         <i
-                                          className={`mdi mdi-chevron-${(k === 'history' ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}
+                                          className={`mdi mdi-chevron-${(itemKey === 'history' ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}
                                         />
-                                        {capitalize(k)} (
-                                        {selectedItem[k]?.length})
+                                        {capitalize(itemKey)} (
+                                        {selectedItem[itemKey]?.length})
                                       </button>
                                       <Collapse
                                         in={
-                                          k === 'history'
+                                          itemKey === 'history'
                                             ? taskHistoryOpen
                                             : taskErrorsOpen
                                         }
                                       >
                                         <ul
-                                          id={`task-${selectedItem.id}-${k}`}
+                                          id={`task-${selectedItem.id}-${itemKey}`}
                                           className='list-unstyled'
                                         >
-                                          {selectedItem[k].map((h, i) => (
-                                            <li key={i} className='pl-4 mt-1'>
-                                              <i className='text-secondary mdi mdi-arrow-right mr-1' />
-                                              {new Date(
-                                                h.timestamp
-                                              ).toLocaleString()}
-                                              <ul className='list-unstyled'>
-                                                {Object.keys(h)
-                                                  .filter(
-                                                    (k) => k !== 'timestamp'
-                                                  )
-                                                  .map((hkey) => (
-                                                    <li
-                                                      key={hkey}
-                                                      className='pl-3 mt-1'
-                                                    >
-                                                      {capitalize(hkey)}:{' '}
-                                                      {hkey === 'status'
-                                                        ? parseStatus(h.status)
-                                                        : h[hkey]}
-                                                    </li>
-                                                  ))}
-                                              </ul>
-                                            </li>
-                                          ))}
+                                          {selectedItem[itemKey].map(
+                                            (historyItem) => (
+                                              <li
+                                                key={
+                                                  historyItem.timestamp ||
+                                                  JSON.stringify(historyItem)
+                                                }
+                                                className='pl-4 mt-1'
+                                              >
+                                                <i className='text-secondary mdi mdi-arrow-right mr-1' />
+                                                {new Date(
+                                                  historyItem.timestamp
+                                                ).toLocaleString()}
+                                                <ul className='list-unstyled'>
+                                                  {Object.keys(historyItem)
+                                                    .filter(
+                                                      (historyKey) =>
+                                                        historyKey !==
+                                                        'timestamp'
+                                                    )
+                                                    .map((hkey) => (
+                                                      <li
+                                                        key={hkey}
+                                                        className='pl-3 mt-1'
+                                                      >
+                                                        {capitalize(hkey)}:{' '}
+                                                        {hkey === 'status'
+                                                          ? parseStatus(
+                                                              historyItem.status
+                                                            )
+                                                          : historyItem[hkey]}
+                                                      </li>
+                                                    ))}
+                                                </ul>
+                                              </li>
+                                            )
+                                          )}
                                         </ul>
                                       </Collapse>
                                     </div>
                                   }
                                 </li>
-                              ) : k === 'is_periodic' ? (
-                                <li key={i}>
+                              ) : itemKey === 'is_periodic' ? (
+                                <li key={itemKey}>
                                   Is periodic:{' '}
                                   {selectedItem.is_periodic ? (
                                     <i className='mdi mdi-check text-success' />
@@ -287,8 +301,8 @@ const Tasks = () => {
                                     <i className='mdi mdi-close text-danger' />
                                   )}
                                 </li>
-                              ) : k === 'is_revoked' ? (
-                                <li key={i}>
+                              ) : itemKey === 'is_revoked' ? (
+                                <li key={itemKey}>
                                   Is revoked:{' '}
                                   {selectedItem.is_revoked ? (
                                     <i className='mdi mdi-check text-danger' />
@@ -296,13 +310,13 @@ const Tasks = () => {
                                     <i className='mdi mdi-close text-success' />
                                   )}
                                 </li>
-                              ) : k === 'status' ? (
-                                <li key={i}>
-                                  Status: {parseStatus(selectedItem[k])}
+                              ) : itemKey === 'status' ? (
+                                <li key={itemKey}>
+                                  Status: {parseStatus(selectedItem[itemKey])}
                                 </li>
                               ) : (
-                                <li key={i}>
-                                  {capitalize(k)}: {selectedItem[k]}
+                                <li key={itemKey}>
+                                  {capitalize(itemKey)}: {selectedItem[itemKey]}
                                 </li>
                               )
                             )

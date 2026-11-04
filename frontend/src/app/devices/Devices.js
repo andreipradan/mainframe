@@ -21,15 +21,15 @@ const Devices = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState(null);
 
-  const search = () => {
+  function search() {
     return results.filter((d) =>
       ['ip', 'mac', 'name'].some((key) =>
         d[key]?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
-  };
+  }
 
-  const getSortingComponent = (column) => {
+  function getSortingComponent(column) {
     const sortingClass = `cursor-pointer mdi mdi-sort-alphabetical${
       sorting?.includes(`${column}-asc`)
         ? '-ascending'
@@ -67,7 +67,7 @@ const Devices = () => {
         )}
       </>
     );
-  };
+  }
 
   useEffect(() => {
     !devices && dispatch(api.getList());
@@ -186,18 +186,22 @@ const Devices = () => {
                   <tbody>
                     {!loading ? (
                       devices?.length ? (
-                        devices.map((device, i) => (
+                        devices.map((device) => (
                           <tr
-                            key={i}
+                            key={device.id}
                             onClick={() => dispatch(selectItem(device.id))}
                             className={'cursor-pointer'}
                           >
-                            <td>{i + 1}</td>
+                            <td>
+                              {devices.findIndex(
+                                (row) => row.id === device.id
+                              ) + 1}
+                            </td>
                             <td className='row'>
                               {device.display_name || '-'}
                               {loadingItems?.includes(device.id) ? (
                                 <Circles
-                                  visible={true}
+                                  visible
                                   height='15'
                                   width='100%'
                                   wrapperClass='pl-2'

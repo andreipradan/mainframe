@@ -11,7 +11,7 @@ import Errors from '../../shared/Errors';
 import ListItem from '../../shared/ListItem';
 import { selectItem, setModalOpen } from '../../../redux/pensionSlice';
 import { PensionApi } from '../../../api/finance';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export const getEvaluation = (p, justValue = false) => {
   const evaluation =
@@ -44,7 +44,6 @@ export const getPnl = (p, justValue = false) => {
 
 const Pension = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
 
   const pension = useSelector((state) => state.pension);
   const token = useSelector((state) => state.auth.token);

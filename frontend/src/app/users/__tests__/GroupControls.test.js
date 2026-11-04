@@ -3,24 +3,30 @@ import { createRoot } from 'react-dom/client';
 import Groups from '../Groups';
 import ExpenseGroups from '../../expenses/ExpenseGroups';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
 jest.mock('src/api/expenses', () => ({
-  GroupsApi: class {
-    getList = jest.fn(() => ({ type: 'groups/getList' }));
-    delete = jest.fn((id, name) => ({
-      type: 'groups/delete',
-      payload: { id, name },
-    }));
-    static removeUserFromGroup = (token, groupId, userId) => ({
-      type: 'groups/removeUser',
-      payload: { token, groupId, userId },
-    });
-  },
+  GroupsApi: Object.assign(
+    function GroupsApiMock() {
+      return {
+        getList: () => ({ type: 'groups/getList' }),
+        delete: (id, name) => ({
+          type: 'groups/delete',
+          payload: { id, name },
+        }),
+      };
+    },
+    {
+      removeUserFromGroup: (token, groupId, userId) => ({
+        type: 'groups/removeUser',
+        payload: { token, groupId, userId },
+      }),
+    }
+  ),
 }));
 jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
 jest.mock('react-bootstrap', () => {
@@ -79,7 +85,7 @@ const groupRecord = {
   ],
 };
 
-const renderGroups = async (Component, isExpenseGroups = false) => {
+const renderGroups = (Component, isExpenseGroups = false) => {
   mockState = {
     auth: {
       token: 'token',
@@ -95,7 +101,7 @@ const renderGroups = async (Component, isExpenseGroups = false) => {
   };
   const container = document.createElement('div');
   const root = createRoot(container);
-  await act(async () => root.render(<Component />));
+  act(() => root.render(<Component />));
   return {
     container,
     unmount: () => act(() => root.unmount()),
@@ -108,11 +114,8 @@ describe.each([
 ])('%s controls', (_name, Component, isExpenseGroups) => {
   beforeEach(() => mockDispatch.mockReset());
 
-  test('email and member controls expose their action and confirmation', async () => {
-    const { container, unmount } = await renderGroups(
-      Component,
-      isExpenseGroups
-    );
+  test('email and member controls expose their action and confirmation', () => {
+    const { container, unmount } = renderGroups(Component, isExpenseGroups);
     const manageEmails = container.querySelector(
       'button[aria-label="Manage emails for Trip"]'
     );
@@ -137,11 +140,8 @@ describe.each([
     unmount();
   });
 
-  test('delete control opens a confirmation for the selected group', async () => {
-    const { container, unmount } = await renderGroups(
-      Component,
-      isExpenseGroups
-    );
+  test('delete control opens a confirmation for the selected group', () => {
+    const { container, unmount } = renderGroups(Component, isExpenseGroups);
     const deleteButton = container.querySelector(
       'button[aria-label="Delete group Trip"]'
     );
@@ -156,11 +156,8 @@ describe.each([
     unmount();
   });
 
-  test('member removal dispatches only after confirmation', async () => {
-    const { container, unmount } = await renderGroups(
-      Component,
-      isExpenseGroups
-    );
+  test('member removal dispatches only after confirmation', () => {
+    const { container, unmount } = renderGroups(Component, isExpenseGroups);
     act(() =>
       container
         .querySelector('button[aria-label="Remove ana from Trip"]')

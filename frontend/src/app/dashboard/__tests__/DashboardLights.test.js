@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Dashboard from '../Dashboard';
 
-let mockState;
+let mockState = null;
 jest.mock('react-redux', () => ({
   useDispatch: () => jest.fn(),
   useSelector: (selector) => selector(mockState),
@@ -10,25 +10,50 @@ jest.mock('react-redux', () => ({
 jest.mock('src/api/bots', () => ({
   __esModule: true,
   default: class {
-    getList = () => ({ type: 'bots/getList' });
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList() {
+      return { type: 'bots/getList', token: this.token };
+    }
   },
 }));
 jest.mock('src/api/devices', () => ({
   __esModule: true,
   default: class {
-    getList = () => ({ type: 'devices/getList' });
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList() {
+      return { type: 'devices/getList', token: this.token };
+    }
   },
 }));
 jest.mock('src/api/activity', () => ({
   __esModule: true,
   default: class {
-    getList = () => ({ type: 'activity/getList' });
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList() {
+      return { type: 'activity/getList', token: this.token };
+    }
   },
 }));
 jest.mock('src/api/lights', () => ({
   __esModule: true,
   default: class {
-    getList = () => ({ type: 'lights/getList' });
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList() {
+      return { type: 'lights/getList', token: this.token };
+    }
+
     static turn_on = jest.fn();
     static turn_off = jest.fn();
     static turn_all = jest.fn();
@@ -86,7 +111,7 @@ jest.mock('react-bootstrap/Modal', () => {
 jest.mock('../../shared/Errors', () => () => null);
 
 describe('Dashboard light disclosures', () => {
-  test('expands a light using its accessible disclosure button', async () => {
+  test('expands a light using its accessible disclosure button', () => {
     mockState = {
       auth: { token: 'auth-token' },
       rpi: { token: 'rpi-token' },
@@ -108,14 +133,14 @@ describe('Dashboard light disclosures', () => {
     };
     const container = document.createElement('div');
     const root = createRoot(container);
-    await act(async () => root.render(<Dashboard />));
+    act(() => root.render(<Dashboard />));
 
     const lightButton = container.querySelector(
       'button[aria-controls="slider-0"]'
     );
     expect(lightButton).not.toBeNull();
     expect(lightButton.getAttribute('aria-expanded')).toBe('false');
-    await act(async () => lightButton.click());
+    act(() => lightButton.click());
     expect(lightButton.getAttribute('aria-expanded')).toBe('true');
 
     act(() => root.unmount());

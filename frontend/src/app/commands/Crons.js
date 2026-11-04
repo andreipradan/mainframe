@@ -236,7 +236,7 @@ const Crons = () => {
                       state.results?.length ? (
                         state.results.map((cron, i) =>
                           !state.loadingItems?.includes(cron.id) ? (
-                            <tr key={i}>
+                            <tr key={cron.id}>
                               <td>{i + 1}</td>
                               <td
                                 onClick={() => dispatch(select(cron.id))}
@@ -315,7 +315,7 @@ const Crons = () => {
                               </td>
                             </tr>
                           ) : (
-                            <tr key={i}>
+                            <tr key={cron.id}>
                               <td colSpan={6}>
                                 <ColorRing
                                   width='100%'

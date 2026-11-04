@@ -92,7 +92,7 @@ const Dashboard = () => {
   }, [lights.results]);
 
   useEffect(() => {
-    let intervalId;
+    let intervalId = null;
     if (isPolling) {
       intervalId = setInterval(async () => {
         dispatch(activityApi.getList());

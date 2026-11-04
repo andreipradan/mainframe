@@ -194,7 +194,7 @@ const Watchers = () => {
                       results?.length ? (
                         results.map((watcher, i) =>
                           !loadingItems?.includes(watcher.id) ? (
-                            <tr key={i}>
+                            <tr key={watcher.id}>
                               <td
                                 className='cursor-pointer'
                                 onClick={() => dispatch(selectItem(watcher.id))}
@@ -297,7 +297,7 @@ const Watchers = () => {
                               </td>
                             </tr>
                           ) : (
-                            <tr key={i}>
+                            <tr key={watcher.id}>
                               <td colSpan={8}>
                                 <ColorRing
                                   width='100%'
@@ -358,9 +358,9 @@ const Watchers = () => {
                 <p className='text-muted mb-0'>Previous runs</p>
                 <ul className='mb-0 list-unstyled text-muted'>
                   {selectedItem?.redis
-                    ? Object.keys(selectedItem?.redis).map((k, i) =>
+                    ? Object.keys(selectedItem?.redis).map((k) =>
                         ['errors', 'history'].includes(k) ? (
-                          <li key={i}>
+                          <li key={k}>
                             {
                               <div>
                                 <button
@@ -395,33 +395,45 @@ const Watchers = () => {
                                     id={`watcher-${selectedItem.id}-${k}`}
                                     className='list-unstyled'
                                   >
-                                    {selectedItem?.redis[k].map((h, i) => (
-                                      <li key={i} className='pl-4 mt-1'>
-                                        <i className='text-secondary mdi mdi-arrow-right mr-1' />
-                                        {new Date(h.timestamp).toLocaleString()}
-                                        <ul className='list-unstyled'>
-                                          {Object.keys(h)
-                                            .filter((k) => k !== 'timestamp')
-                                            .map((hkey, hi) => (
-                                              <li key={hi} className='pl-3'>
-                                                {capitalize(hkey)}:{' '}
-                                                {hkey === 'status'
-                                                  ? parseStatus(h.status)
-                                                  : h[hkey]}
-                                              </li>
-                                            ))}
-                                        </ul>
-                                      </li>
-                                    ))}
+                                    {selectedItem?.redis[k].map(
+                                      (historyItem) => (
+                                        <li
+                                          key={
+                                            historyItem.timestamp ||
+                                            JSON.stringify(historyItem)
+                                          }
+                                          className='pl-4 mt-1'
+                                        >
+                                          <i className='text-secondary mdi mdi-arrow-right mr-1' />
+                                          {new Date(
+                                            historyItem.timestamp
+                                          ).toLocaleString()}
+                                          <ul className='list-unstyled'>
+                                            {Object.keys(historyItem)
+                                              .filter((k) => k !== 'timestamp')
+                                              .map((hkey) => (
+                                                <li key={hkey} className='pl-3'>
+                                                  {capitalize(hkey)}:{' '}
+                                                  {hkey === 'status'
+                                                    ? parseStatus(
+                                                        historyItem.status
+                                                      )
+                                                    : historyItem[hkey]}
+                                                </li>
+                                              ))}
+                                          </ul>
+                                        </li>
+                                      )
+                                    )}
                                   </ul>
                                 </Collapse>
                               </div>
                             }
                           </li>
                         ) : k === 'status' ? (
-                          <li key={i}>Last status: {selectedItem?.redis[k]}</li>
+                          <li key={k}>Last status: {selectedItem?.redis[k]}</li>
                         ) : (
-                          <li key={i}>
+                          <li key={k}>
                             {capitalize(k)}: {selectedItem?.redis[k]}
                           </li>
                         )

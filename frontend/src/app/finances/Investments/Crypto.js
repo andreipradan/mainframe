@@ -14,11 +14,10 @@ import { capitalize } from '../../utils';
 import { setKwargs } from '../../../redux/cryptoSlice';
 import { setKwargs as setPnlKwargs } from '../../../redux/cryptoPnlSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Crypto = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
 
   const crypto = useSelector((state) => state.crypto);
   const pnl = useSelector((state) => state.cryptoPnl);
@@ -72,7 +71,7 @@ const Crypto = () => {
 
   const onChange = (what, newValue, store) => {
     const newTypes = newValue.map((v) => v.value);
-    let setKwargsMethod;
+    let setKwargsMethod = null;
     if (store === crypto) setKwargsMethod = setKwargs;
     else if (store === pnl) setKwargsMethod = setPnlKwargs;
     else throw Error('Invalid store');

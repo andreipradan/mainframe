@@ -50,7 +50,7 @@ const Commands = () => {
     },
     [annotations]
   );
-  const onSubmit = (e) => {
+  function onSubmit(e) {
     e.preventDefault();
     const data = {};
     if (commandArguments) data.args = commandArguments.split(' ');
@@ -58,7 +58,7 @@ const Commands = () => {
 
     dispatch(api.run(selectedCommand.name, data));
     clearForm();
-  };
+  }
 
   useEffect(() => {
     !results && dispatch(api.getList());
@@ -125,7 +125,7 @@ const Commands = () => {
                 {!loading ? (
                   results?.length ? (
                     results.map((result, i) => (
-                      <li key={i} className='mt-2'>
+                      <li key={result.app} className='mt-2'>
                         <button
                           type='button'
                           className='btn btn-link p-0'
@@ -146,8 +146,11 @@ const Commands = () => {
                         <Collapse in={appOpen === result.app}>
                           <ul id={`commands-${i}`} className='list-unstyled'>
                             {result.commands.length
-                              ? result.commands.map((command, i) => (
-                                  <li key={i} className='pl-3 mt-1'>
+                              ? result.commands.map((command) => (
+                                  <li
+                                    key={`${result.app}-${command.name}`}
+                                    className='pl-3 mt-1'
+                                  >
                                     <button
                                       type='button'
                                       className='btn btn-link p-0'

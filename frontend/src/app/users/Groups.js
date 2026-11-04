@@ -253,8 +253,8 @@ const Groups = () => {
                 onChange={(e) => setGroupName(e.target.value)}
               />
               <ul className='text-danger'>
-                {groups.errors?.name?.map((err, i) => (
-                  <li key={i}>{err}</li>
+                {groups.errors?.name?.map((err) => (
+                  <li key={err}>{err}</li>
                 ))}
               </ul>
             </Form.Group>
