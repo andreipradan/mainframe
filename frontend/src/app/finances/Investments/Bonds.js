@@ -601,8 +601,8 @@ const Bonds = () => {
                     <div
                       key={
                         interestDate instanceof Date
-                          ? interestDate.toISOString()
-                          : String(interestDate ?? index)
+                          ? `maturity-${interestDate.toISOString()}`
+                          : `maturity-${String(interestDate ?? index)}`
                       }
                     >
                       <DatePicker

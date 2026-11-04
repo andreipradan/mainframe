@@ -953,9 +953,10 @@ const Transactions = () => {
                               type='button'
                               className='btn btn-link p-0 text-warning ml-1'
                               aria-label={`Edit transaction ${transaction.id}`}
-                              onClick={() =>
-                                dispatch(selectTransaction(transaction.id))
-                              }
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                dispatch(selectTransaction(transaction.id));
+                              }}
                             >
                               <i
                                 className='mdi mdi-pencil-outline'
@@ -966,9 +967,10 @@ const Transactions = () => {
                               type='button'
                               className='btn btn-link p-0 text-danger ml-1'
                               aria-label={`Delete transaction ${transaction.id}`}
-                              onClick={() =>
-                                setTransactionToRemove(transaction)
-                              }
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setTransactionToRemove(transaction);
+                              }}
                             >
                               <i
                                 className='mdi mdi-trash-can-outline'

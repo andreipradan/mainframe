@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 /** Displays the breadcrumb navigation for the todo list page. */
 const TodoListBreadcrumb = () => (
@@ -50,6 +50,7 @@ export const TodoList = () => {
 export const TodoListComponent = () => {
   const [todos, setTodos] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef();
 
   /** Updates the completion state of a todo item. */
   function statusChangedHandler(event, id) {
@@ -85,12 +86,22 @@ export const TodoListComponent = () => {
     const newTodos = [...todos];
     newTodos.splice(index, 1);
     setTodos(newTodos);
+    const nextIndex = Math.min(index, newTodos.length - 1);
+    requestAnimationFrame(() => {
+      const nextButton = newTodos.length
+        ? document.querySelector(
+            `.todo-list .remove[data-todo-index="${nextIndex}"]`
+          )
+        : null;
+      (nextButton || inputRef.current)?.focus();
+    });
   }
 
   return (
     <>
       <form className='add-items d-flex' onSubmit={addTodo}>
         <input
+          ref={inputRef}
           type='text'
           className='form-control h-auto'
           placeholder='What do you need to do today?'
@@ -111,6 +122,7 @@ export const TodoListComponent = () => {
                 changed={(event) => statusChangedHandler(event, index)}
                 key={todo.id}
                 remove={() => removeTodo(index)}
+                index={index}
               >
                 {todo.task}
               </ListItem>
@@ -139,6 +151,7 @@ const ListItem = (props) => {
       <button
         type='button'
         className='remove btn btn-link p-0'
+        data-todo-index={props.index}
         aria-label={`Remove task ${props.children}`}
         onClick={props.remove}
       >

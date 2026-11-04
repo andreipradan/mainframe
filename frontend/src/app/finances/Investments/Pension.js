@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
@@ -44,6 +44,8 @@ export const getPnl = (p, justValue = false) => {
 
 const Pension = () => {
   const dispatch = useDispatch();
+  const confirmDeleteRef = useRef();
+  const deleteButtonRefs = useRef({});
 
   const pension = useSelector((state) => state.pension);
   const token = useSelector((state) => state.auth.token);
@@ -127,6 +129,7 @@ const Pension = () => {
     if (contribToDelete) {
       setContribAddOpen(false);
       setContribToEdit(null);
+      requestAnimationFrame(() => confirmDeleteRef.current?.focus());
     }
   }, [contribToDelete]);
   useEffect(() => {
@@ -559,7 +562,15 @@ const Pension = () => {
                                       type='button'
                                       className='btn btn-link p-0 text-danger mr-2'
                                       aria-label='Cancel deleting contribution'
-                                      onClick={() => setContribToDelete(null)}
+                                      onClick={() => {
+                                        const contributionId = contribToDelete;
+                                        setContribToDelete(null);
+                                        requestAnimationFrame(() =>
+                                          deleteButtonRefs.current[
+                                            contributionId
+                                          ]?.focus()
+                                        );
+                                      }}
                                     >
                                       <i
                                         className='mdi mdi-cancel'
@@ -570,6 +581,7 @@ const Pension = () => {
                                       type='button'
                                       className='btn btn-link p-0 text-success mr-2'
                                       aria-label='Confirm delete contribution'
+                                      ref={confirmDeleteRef}
                                       onClick={() =>
                                         dispatch(
                                           api.deleteContribution(
@@ -609,6 +621,9 @@ const Pension = () => {
                                     type='button'
                                     className='btn btn-link p-0 text-danger'
                                     aria-label='Delete contribution'
+                                    ref={(element) => {
+                                      deleteButtonRefs.current[c.id] = element;
+                                    }}
                                     onClick={() => setContribToDelete(c.id)}
                                   >
                                     <i

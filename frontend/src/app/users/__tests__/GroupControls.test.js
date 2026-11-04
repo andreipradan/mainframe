@@ -146,7 +146,7 @@ describe.each([
       'button[aria-label="Delete group Trip"]'
     );
 
-    if (!isExpenseGroups) expect(deleteButton).not.toBeNull();
+    expect(deleteButton).not.toBeNull();
     if (deleteButton) {
       act(() => deleteButton.click());
       expect(container.querySelector('[role="dialog"]').textContent).toContain(
