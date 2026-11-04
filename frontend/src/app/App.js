@@ -26,11 +26,6 @@ const App = () => {
   const pathname = location.pathname.replace(/\/+$/, '') || '/';
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  useEffect(() => onRouteChanged(), []);
-  useEffect(() => {
-    onRouteChanged();
-  }, [location, token]);
-
   const onRouteChanged = () => {
     if (!token && !publicRoutes.includes(pathname)) {
       history.push('/login');
@@ -52,6 +47,11 @@ const App = () => {
       }
     }
   };
+
+  useEffect(() => onRouteChanged(), []);
+  useEffect(() => {
+    onRouteChanged();
+  }, [location, token]);
 
   const navbarComponent = !isFullPageLayout && !isPublicRoute ? <Navbar /> : '';
   const sidebarComponent =

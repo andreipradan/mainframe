@@ -1,6 +1,51 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 
+const InfoList = ({ items }) => (
+  <ul>
+    {items.map((item) => (
+      <li key={item}>{item}</li>
+    ))}
+  </ul>
+);
+
+const TermsSection = ({ title, children, as = 'p' }) => (
+  <Card.Text as={as}>
+    <strong>{title}:</strong> {children}
+  </Card.Text>
+);
+
+const AccountSection = () => (
+  <TermsSection title='Account Information' as='div'>
+    We collect and store the information needed to create and manage your
+    account, including your email address, username, password hash, account
+    status, profile changes, login sessions, and account activity dates. Your
+    password is stored as a secure hash rather than in plain text.
+    <InfoList
+      items={[
+        'Email: used for authentication and account administration.',
+        'Username: used to identify your account within the application.',
+      ]}
+    />
+  </TermsSection>
+);
+
+const ApplicationSection = () => (
+  <TermsSection title='Application Data' as='div'>
+    Depending on the features you use, Mainframe may store:
+    <InfoList
+      items={[
+        'Expense amounts, currencies, dates, descriptions, groups, and debts.',
+        'Financial account and transaction details, credit schedules, investments, deposits, bonds, and pension information.',
+        'Meal plans, ingredients, nutrition values, and related dates.',
+        'Device names, network addresses, presence settings, and smart-device configuration.',
+        'Bots, Telegram chat and message information, saved messages, commands, scheduled tasks, watchers, and automation settings.',
+        'Earthquake, transit, event, source, and monitoring information used by the application.',
+      ]}
+    />
+  </TermsSection>
+);
+
 const TermsAndConditions = () => (
   <Container>
     <Row>
@@ -12,51 +57,8 @@ const TermsAndConditions = () => (
               By creating an account or using Mainframe, you agree to these
               terms and conditions.
             </Card.Text>
-            <Card.Text as='div'>
-              <strong>Account Information:</strong> We collect and store the
-              information needed to create and manage your account, including
-              your email address, username, password hash, account status,
-              profile changes, login sessions, and account activity dates. Your
-              password is stored as a secure hash rather than in plain text.
-              <ul>
-                <li>
-                  Email: used for authentication and account administration.
-                </li>
-                <li>
-                  Username: used to identify your account within the
-                  application.
-                </li>
-              </ul>
-            </Card.Text>
-            <Card.Text as='div'>
-              <strong>Application Data:</strong> Depending on the features you
-              use, Mainframe may store:
-              <ul>
-                <li>
-                  Expense amounts, currencies, dates, descriptions, groups, and
-                  debts.
-                </li>
-                <li>
-                  Financial account and transaction details, credit schedules,
-                  investments, deposits, bonds, and pension information.
-                </li>
-                <li>
-                  Meal plans, ingredients, nutrition values, and related dates.
-                </li>
-                <li>
-                  Device names, network addresses, presence settings, and
-                  smart-device configuration.
-                </li>
-                <li>
-                  Bots, Telegram chat and message information, saved messages,
-                  commands, scheduled tasks, watchers, and automation settings.
-                </li>
-                <li>
-                  Earthquake, transit, event, source, and monitoring information
-                  used by the application.
-                </li>
-              </ul>
-            </Card.Text>
+            <AccountSection />
+            <ApplicationSection />
             <Card.Text>
               <strong>User-Provided Content:</strong> Financial, expense, and
               related personal records are not automatically collected from you.

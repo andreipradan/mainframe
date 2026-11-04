@@ -81,7 +81,7 @@ it('renders terms and conditions without authentication', async () => {
   expect(div.textContent).toContain('Account Information');
   expect(div.textContent).toContain('Cookies and Browser Storage');
 
-  await act(async () => {
+  act(() => {
     root.unmount();
   });
   pageBody.remove();
