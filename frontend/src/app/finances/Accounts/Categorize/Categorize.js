@@ -767,8 +767,8 @@ const Categorize = () => {
                                   );
                                   e.preventDefault();
                                   setCheckedCategories(
-                                    transactions.results.map((t) => ({
-                                      description: t.description,
+                                    transactions.results.map((result) => ({
+                                      description: result.description,
                                       category: currentCategory,
                                     }))
                                   );

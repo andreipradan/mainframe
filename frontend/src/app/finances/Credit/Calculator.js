@@ -10,15 +10,231 @@ import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { TimetableApi } from '../../../api/finance';
 import Errors from '../../shared/Errors';
 
-const PMT = (ir, np, pv, fv, type) => {
-  fv || (fv = 0);
-  type || (type = 0);
+const PMT = (ir, np, pv, fv = 0, type = 0) => {
   if (ir === 0) return -(pv + fv) / np;
   const pvif = Math.pow(1 + ir, np);
   let pmt = (-ir * (pv * pvif + fv)) / (pvif - 1);
   if (type === 1) pmt /= 1 + ir;
   return pmt;
 };
+
+const DurationForm = ({
+  disabled,
+  durationAmount,
+  durationMonths,
+  durationSaved,
+  onDurationAmountChange,
+  onDurationMonthsChange,
+}) => (
+  <form
+    className='nav-link mt-2 mt-md-0 search'
+    onSubmit={(event) => event.preventDefault()}
+  >
+    <div className='row'>
+      <div className='col-md-4'>
+        <input
+          disabled={disabled}
+          type='search'
+          className='form-control bg-transparent'
+          placeholder='Amount'
+          value={durationAmount}
+          onChange={onDurationAmountChange}
+        />
+      </div>
+      <div className='col-md-3'>
+        <input
+          disabled={disabled}
+          type='number'
+          className='form-control bg-transparent'
+          placeholder='# of months'
+          value={durationMonths}
+          onChange={onDurationMonthsChange}
+        />
+      </div>
+      <div className='col-md-5 pt-2' style={{ textAlign: 'center' }}>
+        Saved: RON {durationSaved}
+      </div>
+    </div>
+  </form>
+);
+
+const DurationSuggestions = ({ amounts, durationMonths }) =>
+  amounts ? (
+    <div className='text-muted small'>
+      Other Amounts:
+      <ul>
+        {Object.keys(amounts).map((month) => (
+          <li
+            key={month}
+            className={
+              parseInt(month) === durationMonths ? 'text-success' : 'text-muted'
+            }
+          >
+            {month} month(s): {amounts[month].toFixed(2)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
+
+const MonthlyPaymentControls = ({
+  disabled,
+  minimumAmount,
+  monthlyAmount,
+  monthlyError,
+  monthlyOtherAmounts,
+  onMonthlyAmountChange,
+  totalRate,
+}) => (
+  <div className='nav-link mt-2 mt-md-0 search'>
+    <div className='row'>
+      <div className='col-md-4'>
+        <input
+          className={`form-control bg-transparent ${monthlyError ? 'is-invalid' : ''}`}
+          disabled={disabled}
+          min={minimumAmount}
+          onChange={onMonthlyAmountChange}
+          placeholder='Amount'
+          step={500}
+          type='number'
+          value={monthlyAmount}
+        />
+        <small>{monthlyError}</small>
+      </div>
+      <div className='col-md-4 pt-2' style={{ textAlign: 'center' }}>
+        Maturity in: {Object.keys(monthlyOtherAmounts || {}).length} months
+        <br />
+        <sub className='text-muted'>
+          ({Object.values(monthlyOtherAmounts || {}).length} * {monthlyAmount} ={' '}
+          {Object.values(monthlyOtherAmounts || {}).length * monthlyAmount})
+        </sub>
+      </div>
+      <div className='col-md-4 pt-2 text-warning'>
+        Total:{' '}
+        {Object.values(monthlyOtherAmounts || {}).length * monthlyAmount +
+          totalRate}
+      </div>
+    </div>
+  </div>
+);
+
+const MonthlySuggestionsHeader = ({
+  totalRate,
+  totalInterest,
+  totalPrincipal,
+}) => (
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>
+        Rate <sup className='text-warning'>{totalRate}</sup>
+      </th>
+      <th>
+        Interest <sup className='text-warning'>{totalInterest}</sup>
+      </th>
+      <th>
+        Principal <sup className='text-warning'>{totalPrincipal}</sup>
+      </th>
+      <th>Remaining</th>
+      <th>Maturity</th>
+    </tr>
+  </thead>
+);
+
+const MonthlySuggestionsTable = ({
+  amounts,
+  totalRate,
+  totalInterest,
+  totalPrincipal,
+}) =>
+  amounts ? (
+    <div className='table-responsive'>
+      <table className='table'>
+        <MonthlySuggestionsHeader
+          totalRate={totalRate}
+          totalInterest={totalInterest}
+          totalPrincipal={totalPrincipal}
+        />
+        <tbody>
+          {Object.keys(amounts).map((month) => (
+            <tr key={month}>
+              <td>{month}</td>
+              <td>{amounts[month].rate}</td>
+              <td>{amounts[month].interest}</td>
+              <td>{amounts[month].principal}</td>
+              <td>{amounts[month].remaining}</td>
+              <td>{amounts[month].months}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : null;
+
+const DurationCard = ({
+  disabled,
+  durationAmount,
+  durationMonths,
+  durationOtherAmounts,
+  durationSaved,
+  onDurationAmountChange,
+  onDurationMonthsChange,
+}) => (
+  <div className='col-sm-6 grid-margin'>
+    <div className='card'>
+      <div className='card-body'>
+        <h6>Reduce duration</h6>
+        <DurationForm
+          disabled={disabled}
+          durationAmount={durationAmount}
+          durationMonths={durationMonths}
+          durationSaved={durationSaved}
+          onDurationAmountChange={onDurationAmountChange}
+          onDurationMonthsChange={onDurationMonthsChange}
+        />
+        <DurationSuggestions
+          amounts={durationOtherAmounts}
+          durationMonths={durationMonths}
+        />
+      </div>
+    </div>
+  </div>
+);
+
+const MonthlyPaymentCard = ({
+  disabled,
+  minimumAmount,
+  monthlyAmount,
+  monthlyError,
+  monthlyOtherAmounts,
+  onMonthlyAmountChange,
+  totalInterest,
+  totalPrincipal,
+  totalRate,
+}) => (
+  <div className='col-sm-6 grid-margin'>
+    <div className='card'>
+      <div className='card-body'>
+        <h6>Reduce monthly payment</h6>
+        <MonthlyPaymentControls
+          disabled={disabled}
+          minimumAmount={minimumAmount}
+          monthlyAmount={monthlyAmount}
+          monthlyError={monthlyError}
+          monthlyOtherAmounts={monthlyOtherAmounts}
+          onMonthlyAmountChange={onMonthlyAmountChange}
+          totalRate={totalRate}
+        />
+        <MonthlySuggestionsTable
+          amounts={monthlyOtherAmounts}
+          totalRate={totalRate}
+          totalInterest={totalInterest}
+          totalPrincipal={totalPrincipal}
+        />
+      </div>
+    </div>
+  </div>
+);
 
 const Calculator = () => {
   const history = useHistory();
@@ -98,7 +314,7 @@ const Calculator = () => {
     setDurationSaved(saved);
   };
 
-  const updateDurationAmount = (value) => {
+  function updateDurationAmount(value) {
     setDurationAmount(value);
     if (!latestTimetable) return;
     let amount = 0;
@@ -113,7 +329,7 @@ const Calculator = () => {
     }
     setDurationMonths(index);
     setDurationSuggestions(index);
-  };
+  }
   const updateDurationMonths = (value) => {
     setDurationMonths(value);
     if (!latestTimetable) return;
@@ -240,166 +456,36 @@ const Calculator = () => {
       </div>
       <Errors errors={timetable.errors} />
       <div className='row'>
-        <div className='col-sm-6 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h6>
-                Reduce duration
-                <form
-                  className='nav-link mt-2 mt-md-0 search'
-                  onSubmit={(e) => e.preventDefault()}
-                >
-                  <div className='row'>
-                    <div className='col-md-4'>
-                      <input
-                        disabled={!latestTimetable || timetable.loading}
-                        type='search'
-                        className='form-control bg-transparent'
-                        placeholder='Amount'
-                        value={durationAmount}
-                        onChange={(e) =>
-                          updateDurationAmount(
-                            Number.parseFloat(e.target.value) || 0
-                          )
-                        }
-                      />
-                    </div>
-                    <div className='col-md-3'>
-                      <input
-                        disabled={!latestTimetable || timetable.loading}
-                        type='number'
-                        className='form-control bg-transparent'
-                        placeholder='# of months'
-                        value={durationMonths}
-                        onChange={(e) =>
-                          updateDurationMonths(parseInt(e.target.value) || 0)
-                        }
-                      />
-                    </div>
-                    <div
-                      className='col-md-5 pt-2'
-                      style={{ textAlign: 'center' }}
-                    >
-                      Saved: RON {durationSaved}
-                    </div>
-                  </div>
-                </form>
-                {durationOtherAmounts && (
-                  <div className='text-muted small'>
-                    Other Amounts:
-                    <ul>
-                      {Object.keys(durationOtherAmounts).map((i) => (
-                        <li
-                          key={i}
-                          className={
-                            parseInt(i) === durationMonths
-                              ? 'text-success'
-                              : 'text-muted'
-                          }
-                        >
-                          {i} month(s): {durationOtherAmounts[i].toFixed(2)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </h6>
-            </div>
-          </div>
-        </div>
-        <div className='col-sm-6 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h6>
-                Reduce monthly payment
-                <div className='nav-link mt-2 mt-md-0 search'>
-                  <div className='row'>
-                    <div className='col-md-4'>
-                      <input
-                        className={`form-control bg-transparent ${monthlyError ? 'is-invalid' : ''}`}
-                        disabled={!latestTimetable || timetable.loading}
-                        min={
-                          Math.round(
-                            (Number.parseFloat(latestTimetable?.[0].total) +
-                              2500) /
-                              500
-                          ) * 500
-                        }
-                        onChange={(e) =>
-                          setMonthlyAmount(
-                            Number.parseFloat(e.target.value) || 0
-                          )
-                        }
-                        placeholder='Amount'
-                        step={500}
-                        type='number'
-                        value={monthlyAmount}
-                      />
-                      <small>{monthlyError}</small>
-                    </div>
-                    <div
-                      className='col-md-4 pt-2'
-                      style={{ textAlign: 'center' }}
-                    >
-                      Maturity in:{' '}
-                      {Object.keys(monthlyOtherAmounts || {}).length} months
-                      <br />
-                      <sub className={'text-muted'}>
-                        ({Object.values(monthlyOtherAmounts || {}).length} *{' '}
-                        {monthlyAmount} ={' '}
-                        {Object.values(monthlyOtherAmounts || {}).length *
-                          monthlyAmount}
-                        )
-                      </sub>
-                    </div>
-                    <div className='col-md-4 pt-2 text-warning'>
-                      Total:{' '}
-                      {Object.values(monthlyOtherAmounts || {}).length *
-                        monthlyAmount +
-                        totalRate}
-                    </div>
-                  </div>
-                </div>
-                {monthlyOtherAmounts && (
-                  <div className='table-responsive'>
-                    <table className='table'>
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>
-                            Rate <sup className='text-warning'>{totalRate}</sup>
-                          </th>
-                          <th>
-                            Interest{' '}
-                            <sup className='text-warning'>{totalInterest}</sup>
-                          </th>
-                          <th>
-                            Principal{' '}
-                            <sup className='text-warning'>{totalPrincipal}</sup>
-                          </th>
-                          <th>Remaining</th>
-                          <th>Maturity</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(monthlyOtherAmounts).map((i) => (
-                          <tr key={i}>
-                            <td>{i}</td>
-                            <td>{monthlyOtherAmounts[i].rate}</td>
-                            <td>{monthlyOtherAmounts[i].interest}</td>
-                            <td>{monthlyOtherAmounts[i].principal}</td>
-                            <td>{monthlyOtherAmounts[i].remaining}</td>
-                            <td>{monthlyOtherAmounts[i].months}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </h6>
-            </div>
-          </div>
-        </div>
+        <DurationCard
+          disabled={!latestTimetable || timetable.loading}
+          durationAmount={durationAmount}
+          durationMonths={durationMonths}
+          durationOtherAmounts={durationOtherAmounts}
+          durationSaved={durationSaved}
+          onDurationAmountChange={(event) =>
+            updateDurationAmount(Number.parseFloat(event.target.value) || 0)
+          }
+          onDurationMonthsChange={(event) =>
+            updateDurationMonths(parseInt(event.target.value) || 0)
+          }
+        />
+        <MonthlyPaymentCard
+          disabled={!latestTimetable || timetable.loading}
+          minimumAmount={
+            Math.round(
+              (Number.parseFloat(latestTimetable?.[0].total) + 2500) / 500
+            ) * 500
+          }
+          monthlyAmount={monthlyAmount}
+          monthlyError={monthlyError}
+          monthlyOtherAmounts={monthlyOtherAmounts}
+          onMonthlyAmountChange={(event) =>
+            setMonthlyAmount(Number.parseFloat(event.target.value) || 0)
+          }
+          totalInterest={totalInterest}
+          totalPrincipal={totalPrincipal}
+          totalRate={totalRate}
+        />
       </div>
     </div>
   );

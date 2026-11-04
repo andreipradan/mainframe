@@ -21,13 +21,13 @@ import Errors from '../../../shared/Errors';
 import { CategoriesApi } from '../../../../api/finance/categories';
 import { TransactionsApi } from '../../../../api/finance/transactions';
 
+export const getTypeLabel = (type) =>
+  type ? (type === 'ATM' ? type : `${capitalize(type).replace('_', ' ')}`) : '';
+
 export const createOption = (label) => ({
   label: getTypeLabel(label),
   value: label,
 });
-
-export const getTypeLabel = (type) =>
-  type ? (type === 'ATM' ? type : `${capitalize(type).replace('_', ' ')}`) : '';
 
 export const selectStyles = {
   control: (defaultStyles) => ({

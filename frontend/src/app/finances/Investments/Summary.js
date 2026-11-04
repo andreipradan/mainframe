@@ -57,11 +57,7 @@ const Summary = () => {
                     {state.totals[currency]?.active ? (
                       <ListItem
                         label={'Active'}
-                        value={
-                          Number.parseFloat(
-                            state.totals[currency].active
-                          ).toFixed(2) + ` ${currency}`
-                        }
+                        value={`${Number.parseFloat(state.totals[currency].active).toFixed(2)} ${currency}`}
                         textType={'primary'}
                       />
                     ) : null}
