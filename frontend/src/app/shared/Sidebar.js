@@ -67,6 +67,16 @@ const Sidebar = () => {
           el.classList.remove('hover-open');
         }
       });
+      el.addEventListener('focusin', function () {
+        if (body.classList.contains('sidebar-icon-only')) {
+          el.classList.add('hover-open');
+        }
+      });
+      el.addEventListener('focusout', function () {
+        if (body.classList.contains('sidebar-icon-only')) {
+          el.classList.remove('hover-open');
+        }
+      });
     });
   }, []);
 
@@ -365,6 +375,8 @@ const Sidebar = () => {
                 className={appsMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                 aria-expanded={appsMenuOpen}
                 aria-controls='sidebar-apps-menu'
+                aria-label='Apps menu'
+                title='Apps menu'
                 onClick={() => setAppsMenuOpen(!appsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -442,6 +454,8 @@ const Sidebar = () => {
                 className={authMenuOpen ? 'nav-link menu-expanded' : 'nav-link'}
                 aria-expanded={authMenuOpen}
                 aria-controls='sidebar-auth-menu'
+                aria-label='Auth menu'
+                title='Auth menu'
                 onClick={() => setAuthMenuOpen(!authMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -519,6 +533,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={commandsMenuOpen}
                 aria-controls='sidebar-commands-menu'
+                aria-label='Commands menu'
+                title='Commands menu'
                 onClick={() => setCommandsMenuOpen(!commandsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -655,6 +671,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={accountsMenuOpen}
                 aria-controls='sidebar-accounts-menu'
+                aria-label='Accounts menu'
+                title='Accounts menu'
                 onClick={() => setAccountsMenuOpen(!accountsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -718,6 +736,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={creditMenuOpen}
                 aria-controls='sidebar-credit-menu'
+                aria-label='Credit menu'
+                title='Credit menu'
                 onClick={() => setCreditMenuOpen(!creditMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -805,6 +825,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={expensesMenuOpen}
                 aria-controls='sidebar-expenses-menu'
+                aria-label='Expenses menu'
+                title='Expenses menu'
                 onClick={() => setExpensesMenuOpen(!expensesMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -871,6 +893,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={investmentsMenuOpen}
                 aria-controls='sidebar-investments-menu'
+                aria-label='Investments menu'
+                title='Investments menu'
                 onClick={() => setInvestmentsMenuOpen(!investmentsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -989,6 +1013,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={travelMenuOpen}
                 aria-controls='sidebar-travel-menu'
+                aria-label='Travel menu'
+                title='Travel menu'
                 onClick={() => setTravelMenuOpen(!travelMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1099,6 +1125,8 @@ const Sidebar = () => {
             }
             aria-expanded={documentationMenuOpen}
             aria-controls='sidebar-documentation-menu'
+            aria-label='Documentation menu'
+            title='Documentation menu'
             onClick={() => setDocumentationMenuOpen(!documentationMenuOpen)}
             data-toggle='collapse'
             style={{
@@ -1154,6 +1182,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={basicUiMenuOpen}
                 aria-controls='sidebar-basic-ui-menu'
+                aria-label='Basic UI menu'
+                title='Basic UI menu'
                 onClick={() => setBasicUiMenuOpen(!basicUiMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1230,6 +1260,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={formElementsMenuOpen}
                 aria-controls='sidebar-form-elements-menu'
+                aria-label='Form elements menu'
+                title='Form elements menu'
                 onClick={() => setFormElementsMenuOpen(!formElementsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1282,6 +1314,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={tablesMenuOpen}
                 aria-controls='sidebar-tables-menu'
+                aria-label='Tables menu'
+                title='Tables menu'
                 onClick={() => setTablesMenuOpen(!tablesMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1334,6 +1368,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={chartsMenuOpen}
                 aria-controls='sidebar-charts-menu'
+                aria-label='Charts menu'
+                title='Charts menu'
                 onClick={() => setChartsMenuOpen(!chartsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1386,6 +1422,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={iconsMenuOpen}
                 aria-controls='sidebar-icons-menu'
+                aria-label='Icons menu'
+                title='Icons menu'
                 onClick={() => setIconsMenuOpen(!iconsMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1438,6 +1476,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={userPagesMenuOpen}
                 aria-controls='sidebar-user-pages-menu'
+                aria-label='User pages menu'
+                title='User pages menu'
                 onClick={() => setUserPagesMenuOpen(!userPagesMenuOpen)}
                 data-toggle='collapse'
                 style={{
@@ -1502,6 +1542,8 @@ const Sidebar = () => {
                 }
                 aria-expanded={errorPagesMenuOpen}
                 aria-controls='sidebar-error-pages-menu'
+                aria-label='Error pages menu'
+                title='Error pages menu'
                 onClick={() => setErrorPagesMenuOpen(!errorPagesMenuOpen)}
                 data-toggle='collapse'
                 style={{

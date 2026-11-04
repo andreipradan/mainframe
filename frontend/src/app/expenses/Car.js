@@ -345,7 +345,7 @@ const Car = () => {
                               <button
                                 type='button'
                                 className='btn btn-link p-0 text-warning'
-                                aria-label={`Delete service entry: ${c.description}`}
+                                aria-label={`Delete service entry dated ${new Date(c.date).toLocaleDateString('en-US')} for ${c.description}`}
                                 onClick={() =>
                                   dispatch(api.deleteServiceEntry(p.id, c.id))
                                 }

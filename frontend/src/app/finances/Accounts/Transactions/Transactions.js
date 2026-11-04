@@ -792,26 +792,28 @@ const Transactions = () => {
                         </td>
                       </tr>
                     ) : transactions.results?.length ? (
-                      transactions.results.map((t, i) => (
+                      transactions.results.map((transaction, i) => (
                         <tr
                           className={
-                            getSpecificCategory(t.description)
+                            getSpecificCategory(transaction.description)
                               ? 'text-warning'
                               : ''
                           }
-                          key={t.id}
+                          key={transaction.id}
                           onClick={() =>
                             onCheckedCategoryChange(
                               {
-                                value: getSpecificCategory(t.description)
+                                value: getSpecificCategory(
+                                  transaction.description
+                                )
                                   ? 'Unidentified'
-                                  : t.category_suggestion,
+                                  : transaction.category_suggestion,
                               },
-                              t.description
+                              transaction.description
                             )
                           }
                           style={{
-                            cursor: `${t.category_suggestion ? 'default' : 'not-allowed'}`,
+                            cursor: `${transaction.category_suggestion ? 'default' : 'not-allowed'}`,
                           }}
                         >
                           <td>
@@ -823,22 +825,24 @@ const Transactions = () => {
                                 <input
                                   id={`checkbox-${i}`}
                                   disabled={
-                                    !t.category_suggestion ||
+                                    !transaction.category_suggestion ||
                                     transactions.loading
                                   }
                                   type='checkbox'
                                   className='form-check-input'
-                                  checked={getSpecificCategory(t.description)}
+                                  checked={getSpecificCategory(
+                                    transaction.description
+                                  )}
                                   onChange={() =>
                                     onCheckedCategoryChange(
                                       {
                                         value: getSpecificCategory(
-                                          t.description
+                                          transaction.description
                                         )
                                           ? 'Unidentified'
-                                          : t.category_suggestion,
+                                          : transaction.category_suggestion,
                                       },
-                                      t.description
+                                      transaction.description
                                     )
                                   }
                                 />
@@ -847,26 +851,37 @@ const Transactions = () => {
                             </div>
                           </td>
                           <td>
-                            {new Date(t.started_at).toLocaleDateString()}
+                            {new Date(
+                              transaction.started_at
+                            ).toLocaleDateString()}
                             <br />
                             <small>
-                              {new Date(t.started_at).toLocaleTimeString()}
+                              {new Date(
+                                transaction.started_at
+                              ).toLocaleTimeString()}
                             </small>
                           </td>
                           <td>
-                            {t.amount}{' '}
-                            {parseFloat(t.fee) ? `(Fee: ${t.fee})` : ''}
+                            {transaction.amount}{' '}
+                            {parseFloat(transaction.fee)
+                              ? `(Fee: ${transaction.fee})`
+                              : ''}
                           </td>
-                          <td>{t.description}</td>
-                          <td>{getTypeLabel(t.type)}</td>
+                          <td>{transaction.description}</td>
+                          <td>{getTypeLabel(transaction.type)}</td>
                           <td
                             onClick={(e) => e.stopPropagation()}
                             style={{ minWidth: '180px' }}
                           >
                             <Select
-                              isDisabled={t.category !== 'Unidentified'}
+                              isDisabled={
+                                transaction.category !== 'Unidentified'
+                              }
                               onChange={(newValue) =>
-                                onCheckedCategoryChange(newValue, t.description)
+                                onCheckedCategoryChange(
+                                  newValue,
+                                  transaction.description
+                                )
                               }
                               options={transactions.categories?.map((c) => ({
                                 label: getCategoryVerbose(c),
@@ -875,33 +890,34 @@ const Transactions = () => {
                               styles={selectStyles}
                               value={{
                                 label: capitalize(
-                                  getSpecificCategory(t.description) ||
-                                    t.category
+                                  getSpecificCategory(
+                                    transaction.description
+                                  ) || transaction.category
                                 ).replace('-', ' '),
                                 value:
-                                  getSpecificCategory(t.description) ||
-                                  t.category,
+                                  getSpecificCategory(
+                                    transaction.description
+                                  ) || transaction.category,
                               }}
                             />
                             <p className={'text-warning ml-2'}>
-                              {t.category_suggestion
-                                ? capitalize(t.category_suggestion).replace(
-                                    '-',
-                                    ' '
-                                  )
+                              {transaction.category_suggestion
+                                ? capitalize(
+                                    transaction.category_suggestion
+                                  ).replace('-', ' ')
                                 : null}
                             </p>
-                            {getSpecificCategory(t.description) && (
+                            {getSpecificCategory(transaction.description) && (
                               <a
                                 href={'!#'}
                                 onClick={(e) => {
                                   const currentCategory = getSpecificCategory(
-                                    t.description
+                                    transaction.description
                                   );
                                   e.preventDefault();
                                   setCheckedCategories(
-                                    transactions.results.map((t) => ({
-                                      description: t.description,
+                                    transactions.results.map((result) => ({
+                                      description: result.description,
                                       category: currentCategory,
                                     }))
                                   );
@@ -909,33 +925,38 @@ const Transactions = () => {
                               >
                                 Set{' '}
                                 {capitalize(
-                                  getSpecificCategory(t.description)
+                                  getSpecificCategory(transaction.description)
                                 ).replace('-', ' ')}{' '}
                                 to all
                               </a>
                             )}
                           </td>
                           <td>
-                            {t.completed_at ? (
+                            {transaction.completed_at ? (
                               <span>
-                                {new Date(t.completed_at).toLocaleDateString()}
+                                {new Date(
+                                  transaction.completed_at
+                                ).toLocaleDateString()}
                                 <br />
                                 <small>
                                   {new Date(
-                                    t.completed_at
+                                    transaction.completed_at
                                   ).toLocaleTimeString()}
                                 </small>
                               </span>
                             ) : (
-                              t.state
+                              transaction.state
                             )}
                           </td>
                           <td className={'text-center'}>
                             <button
                               type='button'
                               className='btn btn-link p-0 text-warning ml-1'
-                              aria-label={`Edit transaction ${t.id}`}
-                              onClick={() => dispatch(selectTransaction(t.id))}
+                              aria-label={`Edit transaction ${transaction.id}`}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                dispatch(selectTransaction(transaction.id));
+                              }}
                             >
                               <i
                                 className='mdi mdi-pencil-outline'
@@ -945,8 +966,11 @@ const Transactions = () => {
                             <button
                               type='button'
                               className='btn btn-link p-0 text-danger ml-1'
-                              aria-label={`Delete transaction ${t.id}`}
-                              onClick={() => setTransactionToRemove(t)}
+                              aria-label={`Delete transaction ${transaction.id}`}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setTransactionToRemove(transaction);
+                              }}
                             >
                               <i
                                 className='mdi mdi-trash-can-outline'

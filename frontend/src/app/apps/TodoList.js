@@ -1,20 +1,40 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
+/** Displays the breadcrumb navigation for the todo list page. */
+const TodoListBreadcrumb = () => (
+  <nav aria-label='breadcrumb'>
+    <ol className='breadcrumb'>
+      <li className='breadcrumb-item'>
+        <a href='!#' onClick={(evt) => evt.preventDefault()}>
+          Apps
+        </a>
+      </li>
+      <li className='breadcrumb-item active' aria-current='page'>
+        To do List
+      </li>
+    </ol>
+  </nav>
+);
+
+/** Displays the page title and navigation breadcrumb. */
 const TodoListHeader = () => (
   <div className='page-header'>
     <h3 className='page-title'>To do List</h3>
-    <nav aria-label='breadcrumb'>
-      <ol className='breadcrumb'>
-        <li className='breadcrumb-item'>
-          <a href='!#' onClick={(evt) => evt.preventDefault()}>
-            Apps
-          </a>
-        </li>
-        <li className='breadcrumb-item active' aria-current='page'>
-          To do List
-        </li>
-      </ol>
-    </nav>
+    <TodoListBreadcrumb />
+  </div>
+);
+
+/** Displays the shopping-list card. */
+const TodoListCard = () => (
+  <div className='row'>
+    <div className='col-lg-12'>
+      <div className='card px-3'>
+        <div className='card-body'>
+          <h4 className='card-title'>Shopping List</h4>
+          <TodoListComponent />
+        </div>
+      </div>
+    </div>
   </div>
 );
 
@@ -22,16 +42,7 @@ export const TodoList = () => {
   return (
     <div>
       <TodoListHeader />
-      <div className='row'>
-        <div className='col-lg-12'>
-          <div className='card px-3'>
-            <div className='card-body'>
-              <h4 className='card-title'>Shopping List</h4>
-              <TodoListComponent />
-            </div>
-          </div>
-        </div>
-      </div>
+      <TodoListCard />
     </div>
   );
 };
@@ -39,7 +50,9 @@ export const TodoList = () => {
 export const TodoListComponent = () => {
   const [todos, setTodos] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef();
 
+  /** Updates the completion state of a todo item. */
   function statusChangedHandler(event, id) {
     if (!todos?.length) return;
 
@@ -52,6 +65,7 @@ export const TodoListComponent = () => {
     setTodos(newTodos);
   }
 
+  /** Adds the current input as a new todo item. */
   function addTodo(event) {
     event.preventDefault();
     const todo = {
@@ -66,17 +80,28 @@ export const TodoListComponent = () => {
     setInputValue('');
   }
 
+  /** Removes a todo item by its position. */
   function removeTodo(index) {
     if (!todos?.length) return;
     const newTodos = [...todos];
     newTodos.splice(index, 1);
     setTodos(newTodos);
+    const nextIndex = Math.min(index, newTodos.length - 1);
+    requestAnimationFrame(() => {
+      const nextButton = newTodos.length
+        ? document.querySelector(
+            `.todo-list .remove[data-todo-index="${nextIndex}"]`
+          )
+        : null;
+      (nextButton || inputRef.current)?.focus();
+    });
   }
 
   return (
     <>
       <form className='add-items d-flex' onSubmit={addTodo}>
         <input
+          ref={inputRef}
           type='text'
           className='form-control h-auto'
           placeholder='What do you need to do today?'
@@ -97,6 +122,7 @@ export const TodoListComponent = () => {
                 changed={(event) => statusChangedHandler(event, index)}
                 key={todo.id}
                 remove={() => removeTodo(index)}
+                index={index}
               >
                 {todo.task}
               </ListItem>
@@ -125,6 +151,7 @@ const ListItem = (props) => {
       <button
         type='button'
         className='remove btn btn-link p-0'
+        data-todo-index={props.index}
         aria-label={`Remove task ${props.children}`}
         onClick={props.remove}
       >

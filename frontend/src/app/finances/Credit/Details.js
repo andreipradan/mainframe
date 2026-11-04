@@ -34,6 +34,7 @@ Chart.register(
   TooltipJS
 );
 
+// skipcq: JS-R1005 - Dashboard component aggregates several credit views in one layout.
 const Details = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);

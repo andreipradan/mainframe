@@ -172,6 +172,8 @@ const ExpenseGroups = () => {
                               type='button'
                               className='btn btn-link p-0 pr-1 text-primary'
                               aria-label={`Manage emails for ${t.name}`}
+                              aria-expanded={emailOpen === t.id}
+                              aria-controls={`group-${t.id}-email-form`}
                               onClick={() => toggleEmailOpen(t.id)}
                             >
                               <i

@@ -410,7 +410,10 @@ const Watchers = () => {
                                           ).toLocaleString()}
                                           <ul className='list-unstyled'>
                                             {Object.keys(historyItem)
-                                              .filter((k) => k !== 'timestamp')
+                                              .filter(
+                                                (historyKey) =>
+                                                  historyKey !== 'timestamp'
+                                              )
                                               .map((hkey) => (
                                                 <li key={hkey} className='pl-3'>
                                                   {capitalize(hkey)}:{' '}

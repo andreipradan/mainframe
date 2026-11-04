@@ -81,14 +81,16 @@ const Tasks = () => {
                     {!loading ? (
                       results?.length ? (
                         results.map((task, i) => (
-                          <tr
-                            key={task.id}
-                            onClick={() => dispatch(selectItem(task.id))}
-                            className='cursor-pointer'
-                          >
+                          <tr key={task.id}>
                             <td>{i + 1}</td>
                             <td>
-                              {task.app}.{task.name}
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-left'
+                                onClick={() => dispatch(selectItem(task.id))}
+                              >
+                                {task.app}.{task.name}
+                              </button>
                             </td>
                             <td className='text-center'>
                               {task.is_revoked ? (

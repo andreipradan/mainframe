@@ -28,6 +28,7 @@ const FavoritesManager = () => {
   const [input, setInput] = useState('');
   const [url, setUrl] = useState('');
 
+  /** Creates a favorite from the current form values. */
   async function onAdd(e) {
     e?.preventDefault?.();
     const name = (input || '').trim();
@@ -42,12 +43,14 @@ const FavoritesManager = () => {
     }
   }
 
+  /** Opens the inline editor for a favorite item. */
   function startEdit(item) {
     setEditing(item.id);
     setEditName(item.name);
     setEditExternalId(item.external_id);
   }
 
+  /** Saves the trimmed inline edit without changing the external id. */
   function saveEdit(item) {
     const name = (editName || '').trim();
     if (!name && !editExternalId) return setEditing(null);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import BottomPagination from '../../shared/BottomPagination';
 import Button from 'react-bootstrap/Button';
 import DatePicker from 'react-datepicker';
@@ -20,7 +20,6 @@ import { BondsApi } from '../../../api/finance';
 
 const Bonds = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
   const state = useSelector((state) => state.bonds);
   const token = useSelector((state) => state.auth.token);
 
@@ -598,10 +597,12 @@ const Bonds = () => {
               <Form.Group className='mb-3'>
                 <Form.Label>Maturity</Form.Label>
                 <div>
-                  {interestDates?.map((d, index) => (
+                  {interestDates?.map((interestDate, index) => (
                     <div
                       key={
-                        d instanceof Date ? d.toISOString() : String(d ?? index)
+                        interestDate instanceof Date
+                          ? `maturity-${interestDate.toISOString()}`
+                          : `maturity-${String(interestDate ?? index)}`
                       }
                     >
                       <DatePicker
@@ -625,7 +626,9 @@ const Bonds = () => {
                         className='btn btn-outline-primary btn-sm border-0 bg-transparent'
                         onClick={() =>
                           setInterestDates(
-                            interestDates.filter((d, id) => id !== index)
+                            interestDates.filter(
+                              (_filteredDate, dateIndex) => dateIndex !== index
+                            )
                           )
                         }
                       >

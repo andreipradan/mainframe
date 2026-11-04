@@ -21,6 +21,7 @@ const Devices = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState(null);
 
+  /** Returns devices matching the current search term. */
   function search() {
     return results.filter((d) =>
       ['ip', 'mac', 'name'].some((key) =>
@@ -29,7 +30,14 @@ const Devices = () => {
     );
   }
 
-  function getSortingComponent(column) {
+  /** Builds the sort control for a device table column. */
+  function getSortingComponent(column, heading) {
+    const currentSort = sorting?.find((s) => s.startsWith(`${column}-`));
+    const sortOrder = currentSort?.endsWith('-asc')
+      ? 'ascending'
+      : currentSort?.endsWith('-desc')
+        ? 'descending'
+        : 'unsorted';
     const sortingClass = `cursor-pointer mdi mdi-sort-alphabetical${
       sorting?.includes(`${column}-asc`)
         ? '-ascending'
@@ -42,7 +50,7 @@ const Devices = () => {
         <button
           type='button'
           className='btn btn-link p-0'
-          aria-label={`Sort by ${column}`}
+          aria-label={`Sort by ${heading}, currently ${sortOrder}`}
           onClick={() => {
             const hasSorting = sorting?.find((s) => s.startsWith(`${column}-`));
             setSorting(
@@ -78,7 +86,10 @@ const Devices = () => {
 
   useEffect(() => {
     if (!devices) return;
-    if (!sorting?.length) return setDevices(results);
+    if (!sorting?.length) {
+      setDevices(results);
+      return;
+    }
     const devicesCopy = devices.slice();
     setDevices(
       devicesCopy.sort((a, b) => {
@@ -176,11 +187,19 @@ const Devices = () => {
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>Name {getSortingComponent('displayName')}</th>
-                      <th>Is Active? {getSortingComponent('is_active')}</th>
-                      <th>IP {getSortingComponent('ip')}</th>
-                      <th>Mac Address {getSortingComponent('mac')}</th>
-                      <th>Last seen {getSortingComponent('last_seen')}</th>
+                      <th>Name {getSortingComponent('displayName', 'Name')}</th>
+                      <th>
+                        Is Active?{' '}
+                        {getSortingComponent('is_active', 'Is Active')}
+                      </th>
+                      <th>IP {getSortingComponent('ip', 'IP')}</th>
+                      <th>
+                        Mac Address {getSortingComponent('mac', 'Mac Address')}
+                      </th>
+                      <th>
+                        Last seen{' '}
+                        {getSortingComponent('last_seen', 'Last seen')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
