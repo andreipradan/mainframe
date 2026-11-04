@@ -64,7 +64,10 @@ const Sidebar = () => {
       });
       el.addEventListener('mouseout', function () {
         if (body.classList.contains('sidebar-icon-only')) {
-          el.classList.remove('hover-open');
+          const disclosure = el.querySelector('button[aria-expanded]');
+          if (disclosure?.getAttribute('aria-expanded') !== 'true') {
+            el.classList.remove('hover-open');
+          }
         }
       });
       el.addEventListener('focusin', function () {
@@ -74,7 +77,10 @@ const Sidebar = () => {
       });
       el.addEventListener('focusout', function () {
         if (body.classList.contains('sidebar-icon-only')) {
-          el.classList.remove('hover-open');
+          const disclosure = el.querySelector('button[aria-expanded]');
+          if (disclosure?.getAttribute('aria-expanded') !== 'true') {
+            el.classList.remove('hover-open');
+          }
         }
       });
     });
