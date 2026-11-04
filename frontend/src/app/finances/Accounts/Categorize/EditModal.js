@@ -48,6 +48,47 @@ export const selectStyles = {
   singleValue: (styles) => ({ ...styles, color: '#ccc' }),
 };
 
+/** Displays the selected transaction summary in the modal header. */
+const TransactionDetailsTitle = ({ transaction, confirmedByChoices }) => (
+  <Modal.Title>
+    <div className='mb-1'>Transaction details</div>
+    <p className='text-muted mb-0'>{transaction.description}</p>
+    <ListItem
+      label={'Amount'}
+      value={`${transaction.amount} ${transaction.currency}${Number.parseFloat(transaction.fee) ? ` (Fee: ${transaction.fee})` : ''}`}
+      textType='danger'
+    />
+    <ListItem label={'Type'} value={getTypeLabel(transaction.type)} />
+    <ListItem label={'Product'} value={transaction.product} />
+    <ListItem label={'Started'} value={transaction.started_at} datetime />
+    {transaction.state === 'COMPLETED' ? (
+      <ListItem label={'Completed'} value={transaction.completed_at} datetime />
+    ) : (
+      <ListItem label={'State'} value={transaction.state} />
+    )}
+    <ListItem
+      label={'Confirmed by'}
+      value={
+        confirmedByChoices?.find(
+          (choice) => choice[0] === transaction.confirmed_by
+        )?.[1]
+      }
+      textType={
+        transaction.confirmed_by === 1
+          ? 'warning'
+          : transaction.confirmed_by === 2
+            ? 'success'
+            : 'muted'
+      }
+    />
+    <ListItem
+      label={'Suggestion'}
+      value={transaction.category_suggestion || '-'}
+      textType={'warning'}
+    />
+  </Modal.Title>
+);
+
 const EditModal = () => {
   const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
@@ -72,48 +113,10 @@ const EditModal = () => {
   return transaction ? (
     <Modal centered show={Boolean(transaction)} onHide={closeModal}>
       <Modal.Header closeButton>
-        <Modal.Title>
-          <div className='mb-1'>Transaction details</div>
-          <p className='text-muted mb-0'>{transaction.description}</p>
-
-          <ListItem
-            label={'Amount'}
-            value={`${transaction.amount} ${transaction.currency}${Number.parseFloat(transaction.fee) ? ` (Fee: ${transaction.fee})` : ''}`}
-            textType='danger'
-          />
-          <ListItem label={'Type'} value={getTypeLabel(transaction.type)} />
-          <ListItem label={'Product'} value={transaction.product} />
-          <ListItem label={'Started'} value={transaction.started_at} datetime />
-          {transaction.state === 'COMPLETED' ? (
-            <ListItem
-              label={'Completed'}
-              value={transaction.completed_at}
-              datetime
-            />
-          ) : (
-            <ListItem label={'State'} value={transaction.state} />
-          )}
-          <ListItem
-            label={'Confirmed by'}
-            value={
-              transactions.confirmedByChoices?.find(
-                (c) => c[0] === transaction.confirmed_by
-              )?.[1]
-            }
-            textType={
-              transaction.confirmed_by === 1
-                ? 'warning'
-                : transaction.confirmed_by === 2
-                  ? 'success'
-                  : 'muted'
-            }
-          />
-          <ListItem
-            label={'Suggestion'}
-            value={transaction.category_suggestion || '-'}
-            textType={'warning'}
-          />
-        </Modal.Title>
+        <TransactionDetailsTitle
+          transaction={transaction}
+          confirmedByChoices={transactions.confirmedByChoices}
+        />
       </Modal.Header>
       <Modal.Body>
         <Errors errors={transactions.errors} />

@@ -243,6 +243,48 @@ const MonthlyPaymentCard = ({
   </div>
 );
 
+/** Renders the calculator title, refresh control, and breadcrumb links. */
+const CalculatorPageHeader = ({ loading, onRefresh, onNavigateToCredit }) => (
+  <div className='page-header mb-0'>
+    <h3 className='page-title'>
+      Prepayment calculator
+      {loading ? (
+        <Circles
+          height={20}
+          width={20}
+          wrapperStyle={{ display: 'default' }}
+          wrapperClass='btn'
+        />
+      ) : (
+        <button
+          type='button'
+          className='btn btn-outline-success btn-sm border-0 bg-transparent'
+          onClick={onRefresh}
+        >
+          <i className='mdi mdi-refresh' />
+        </button>
+      )}
+    </h3>
+    <nav aria-label='breadcrumb'>
+      <ol className='breadcrumb'>
+        <li className='breadcrumb-item'>
+          <a href='!#' onClick={(event) => event.preventDefault()}>
+            Finance
+          </a>
+        </li>
+        <li className='breadcrumb-item'>
+          <a href='/finances/credit/details' onClick={onNavigateToCredit}>
+            Credit
+          </a>
+        </li>
+        <li className='breadcrumb-item active' aria-current='page'>
+          Calculator
+        </li>
+      </ol>
+    </nav>
+  </div>
+);
+
 const Calculator = () => {
   const history = useHistory();
   const dispatch = useDispatch();
@@ -380,50 +422,14 @@ const Calculator = () => {
 
   return (
     <>
-      <div className='page-header mb-0'>
-        <h3 className='page-title'>
-          Prepayment calculator
-          {timetable.loading ? (
-            <Circles
-              height={20}
-              width={20}
-              wrapperStyle={{ display: 'default' }}
-              wrapperClass='btn'
-            />
-          ) : (
-            <button
-              type='button'
-              className='btn btn-outline-success btn-sm border-0 bg-transparent'
-              onClick={() => dispatch(timetableApi.getList())}
-            >
-              <i className='mdi mdi-refresh' />
-            </button>
-          )}
-        </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <a href='!#' onClick={(event) => event.preventDefault()}>
-                Finance
-              </a>
-            </li>
-            <li className='breadcrumb-item'>
-              <a
-                href='/finances/credit/details'
-                onClick={(event) => {
-                  event.preventDefault();
-                  history.push('/finances/credit/details');
-                }}
-              >
-                Credit
-              </a>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Calculator
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <CalculatorPageHeader
+        loading={timetable.loading}
+        onRefresh={() => dispatch(timetableApi.getList())}
+        onNavigateToCredit={(event) => {
+          event.preventDefault();
+          history.push('/finances/credit/details');
+        }}
+      />
       <div className={'page-header'}>
         <h6 className={'page-title'}>
           {timetable.selectedItem ? (

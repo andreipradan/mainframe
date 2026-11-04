@@ -22,6 +22,35 @@ import { createOption, selectStyles } from '../../Categorize/EditModal';
 import { selectItem as selectCategory } from '../../../../../redux/categoriesSlice';
 import { selectItem as selectTransaction } from '../../../../../redux/transactionsSlice';
 
+/** Displays the selected transaction summary and refresh control. */
+const TransactionSummaryTitle = ({ selectedItem, onRefresh }) => (
+  <Modal.Title>
+    <span className='d-block mb-1'>Transaction details</span>
+    <button
+      type='button'
+      className='btn btn-outline-success btn-sm border-0 bg-transparent mdi mdi-refresh'
+      aria-label='Refresh transaction details'
+      onClick={onRefresh}
+    />
+    <div className='text-muted mb-0'>
+      Started at: {new Date(selectedItem?.started_at).toLocaleString()}
+      <br />
+      Completed at: {new Date(selectedItem?.completed_at).toLocaleString()}
+      <div className='mt-1'>
+        Amount: {selectedItem?.amount} {selectedItem?.currency}
+      </div>
+      {Number.parseFloat(selectedItem?.fee)
+        ? `Fee: ${selectedItem?.fee}`
+        : null}
+      {['state', 'product', 'type'].map((item) => (
+        <div key={item}>
+          {capitalize(item)}: {capitalize(selectedItem?.[item] || ' ')}
+        </div>
+      ))}
+    </div>
+  </Modal.Title>
+);
+
 const TransactionEditModal = () => {
   const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
@@ -71,35 +100,13 @@ const TransactionEditModal = () => {
   return (
     <Modal centered show={Boolean(selectedItem)} onHide={closeModal}>
       <Modal.Header closeButton>
-        <Modal.Title>
-          <span className='d-block mb-1'>Transaction details</span>
-          <button
-            type='button'
-            className='btn btn-outline-success btn-sm border-0 bg-transparent mdi mdi-refresh'
-            aria-label='Refresh transaction details'
-            onClick={() => {
-              dispatch(CategoriesApi.getList(token));
-              dispatch(api.get(selectedItem?.id));
-            }}
-          />
-          <p className='text-muted mb-0'>
-            Started at: {new Date(selectedItem?.started_at).toLocaleString()}
-            <br />
-            Completed at:{' '}
-            {new Date(selectedItem?.completed_at).toLocaleString()}
-            <div className='mt-1'>
-              Amount: {selectedItem?.amount} {selectedItem?.currency}{' '}
-            </div>
-            {Number.parseFloat(selectedItem?.fee)
-              ? `Fee: ${selectedItem?.fee}`
-              : null}
-            {['state', 'product', 'type'].map((item) => (
-              <div key={item}>
-                {capitalize(item)}: {capitalize(selectedItem?.[item] || ' ')}
-              </div>
-            ))}
-          </p>
-        </Modal.Title>
+        <TransactionSummaryTitle
+          selectedItem={selectedItem}
+          onRefresh={() => {
+            dispatch(CategoriesApi.getList(token));
+            dispatch(api.get(selectedItem?.id));
+          }}
+        />
       </Modal.Header>
       <Modal.Body>
         <Errors errors={errors} />
