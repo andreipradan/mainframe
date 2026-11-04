@@ -48,3 +48,41 @@ it('renders without crashing', async () => {
   sidebarDiv.remove();
   pageBody.remove();
 });
+
+it('renders terms and conditions without authentication', async () => {
+  const div = document.createElement('div');
+  const pageBody = document.createElement('div');
+  pageBody.className = 'page-body-wrapper';
+  document.body.appendChild(pageBody);
+  window.scrollTo = jest.fn();
+
+  const initialState = {
+    auth: {
+      token: null,
+      user: null,
+    },
+    rpi: { errors: null, loading: false, message: null },
+  };
+  const store = configureStore({ reducer: (state = initialState) => state });
+  const root = createRoot(div);
+
+  await act(async () => {
+    root.render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/terms-and-conditions']}>
+          <App />
+        </MemoryRouter>
+      </Provider>
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+  expect(div.textContent).toContain('Terms and Conditions');
+  expect(div.textContent).toContain('Account Information');
+  expect(div.textContent).toContain('Cookies and Browser Storage');
+
+  act(() => {
+    root.unmount();
+  });
+  pageBody.remove();
+});

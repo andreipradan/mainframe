@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: send telegram message
-        uses: appleboy/telegram-action@master
+        uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3
         with:
           disable_notification: true
           disable_web_page_preview: true
