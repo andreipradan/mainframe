@@ -155,6 +155,7 @@ describe('FavoritesManager interactions', () => {
         .dispatchEvent(
           new Event('submit', { bubbles: true, cancelable: true })
         );
+      await Promise.resolve();
     });
 
     expect(mockDispatch).toHaveBeenCalledWith({

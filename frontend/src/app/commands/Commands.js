@@ -50,6 +50,7 @@ const Commands = () => {
     },
     [annotations]
   );
+  /** Runs the selected command with the entered arguments and kwargs. */
   function onSubmit(e) {
     e.preventDefault();
     const data = {};
