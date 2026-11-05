@@ -73,6 +73,7 @@ class RedisClient:
                 return ast.literal_eval(value.decode())
         except redis.exceptions.ConnectionError:
             self.logger.exception("Error connecting to Redis", key=key)
+        return None
 
     def ping(self):
         return self.client.ping()

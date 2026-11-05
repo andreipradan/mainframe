@@ -7,14 +7,14 @@ from huey.signals import SIGNAL_ERROR
 from mainframe.core.tasks import log_status
 from mainframe.finance.models import Category, Transaction
 
-logger = structlog.get_logger(__name__)
+module_logger = structlog.get_logger(__name__)
 
 
 def backup_finance_model(model):
     if settings.ENV != "local":
         backup_finance(model)
         return
-    logger.warning("Attempted to backup in local env", model=model)
+    module_logger.warning("Attempted to backup in local env", model=model)
 
 
 @db_task(expires=30)

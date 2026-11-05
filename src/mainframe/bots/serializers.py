@@ -1,3 +1,5 @@
+import asyncio
+
 import structlog
 import telegram
 from rest_framework import serializers
@@ -19,16 +21,20 @@ class BotSerializer(serializers.ModelSerializer):
         model = Bot
         fields = "__all__"
 
-    def _set_webhook(self, bot, webhook):
+    @staticmethod
+    async def _set_webhook(bot, webhook):
         try:
-            result = bot.set_webhook(webhook)
+            async with bot:
+                result = await bot.set_webhook(webhook)
         except telegram.error.TelegramError as e:
             raise serializers.ValidationError({"Telegram Error": e.message}) from e
         logger.info("Set new webhook", webhook=webhook, result=str(result))
 
-    def _delete_webhook(self, bot):
+    @staticmethod
+    async def _delete_webhook(bot):
         try:
-            result = bot.delete_webhook()
+            async with bot:
+                result = await bot.delete_webhook()
         except telegram.error.TelegramError as e:
             raise serializers.ValidationError({"Telegram Error": e.message}) from e
         logger.info("Deleted webhook", result=str(result))
@@ -39,9 +45,9 @@ class BotSerializer(serializers.ModelSerializer):
             webhook = attrs.get("webhook")
             if webhook != self.instance.webhook:
                 if webhook:
-                    self._set_webhook(bot, webhook)
+                    asyncio.run(self._set_webhook(bot, webhook))
                 else:
-                    self._delete_webhook(bot)
+                    asyncio.run(self._delete_webhook(bot))
         return attrs
 
 

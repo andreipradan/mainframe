@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 import structlog
@@ -54,17 +53,15 @@ def schedule_deploy():
 
     prefix = "[Deploy]"
     if not (output := run_cmd("git pull origin main").strip()):
-        asyncio.run(send_telegram_message(text=f"{prefix} Could not git pull"))
+        send_telegram_message(text=f"{prefix} Could not git pull")
         return False
 
     if output == "Already up to date.":
-        asyncio.run(send_telegram_message(text=f"[{prefix}] {output}"))
+        send_telegram_message(text=f"[{prefix}] {output}")
         return False
 
     if output.startswith("CONFLICT"):
-        asyncio.run(
-            send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
-        )
+        send_telegram_message(text=f"[{prefix}] Could not git pull - conflict")
         return False
 
     cmd_params = []

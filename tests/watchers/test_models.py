@@ -355,7 +355,7 @@ class TestWatcherHelpers:
 
         called = {"args": None}
 
-        async def fake_send_telegram(msg, **kwargs):
+        def fake_send_telegram(msg, **kwargs):
             called["args"] = (msg, kwargs)
 
         with mock.patch(

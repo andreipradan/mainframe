@@ -1,4 +1,3 @@
-import asyncio
 import hashlib
 import hmac
 import json
@@ -7,7 +6,7 @@ from ipaddress import ip_address, ip_network
 import environ
 import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseForbidden
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -22,11 +21,9 @@ PREFIX = "[[GitHub]]"
 
 def _validate_response(response, ip):
     if response.status_code != status.HTTP_200_OK:
-        asyncio.run(
-            send_telegram_message(
-                f"{PREFIX} Warning, {ip} tried "
-                f"to call mainframe github webhook URL"
-            )
+        send_telegram_message(
+            f"{PREFIX} Warning, {ip} tried "
+            f"to call mainframe github webhook URL"
         )
         return False
 
@@ -34,11 +31,9 @@ def _validate_response(response, ip):
         if ip in ip_network(valid_ip):
             break
     else:
-        asyncio.run(
-            send_telegram_message(
+        send_telegram_message(
                 f"{PREFIX} Warning, {ip} tried "
                 f"to call mainframe github webhook URL"
-            )
         )
         return False
     return True
@@ -47,12 +42,12 @@ def _validate_response(response, ip):
 def _verify_signature(request):
     header_signature = request.META.get("HTTP_X_HUB_SIGNATURE")
     if header_signature is None:
-        asyncio.run(send_telegram_message(text=f"{PREFIX} No signature"))
+        send_telegram_message(text=f"{PREFIX} No signature")
         return False
 
     sha_name, signature = header_signature.split("=")
     if sha_name != "sha1":
-        asyncio.run(send_telegram_message(text=f"{PREFIX} operation not supported"))
+        send_telegram_message(text=f"{PREFIX} operation not supported")
         return False
 
     mac = hmac.new(
@@ -61,7 +56,7 @@ def _verify_signature(request):
         digestmod=hashlib.sha1,
     )
     if not hmac.compare_digest(force_bytes(mac.hexdigest()), force_bytes(signature)):
-        asyncio.run(send_telegram_message(text=f"{PREFIX} Invalid signature"))
+        send_telegram_message(text=f"{PREFIX} Invalid signature")
         return False
 
     return True
@@ -102,12 +97,10 @@ def mainframe(request):  # noqa: C901, PLR0911
         branch_message = f"on the <b>{branch}</b> branch" if branch else ""
 
         pusher = payload.get("pusher", {}).get("name", "")
-        asyncio.run(
-            send_telegram_message(
-                text=f"<b>{pusher}</b> {event}ed {new_changes_link} "
-                f"{branch_message}",
-                parse_mode=ParseMode.HTML,
-            )
+        send_telegram_message(
+            text=f"<b>{pusher}</b> {event}ed {new_changes_link} "
+            f"{branch_message}",
+            parse_mode=ParseMode.HTML,
         )
         return HttpResponse("pong")
 
@@ -129,5 +122,5 @@ def mainframe(request):  # noqa: C901, PLR0911
     if result := task.get():
         message += f"\n{result}"
 
-    asyncio.run(send_telegram_message(text=message, parse_mode=ParseMode.HTML))
+    send_telegram_message(text=message, parse_mode=ParseMode.HTML)
     return HttpResponse(status=204)

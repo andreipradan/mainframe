@@ -1,5 +1,3 @@
-import asyncio
-
 from django.core.management import BaseCommand
 
 from mainframe.clients.chat import send_telegram_message
@@ -19,4 +17,4 @@ def set_tasks():
 class Command(BaseCommand):
     def handle(self, *_, **options):
         set_tasks()
-        asyncio.run(send_telegram_message(text="[[huey]] up"))
+        send_telegram_message(text="[[huey]] up")

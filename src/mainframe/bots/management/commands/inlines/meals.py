@@ -149,15 +149,24 @@ class MealsInline(BaseInlines):
             try:
                 return Meal.objects.get(pk=_id)
             except Meal.DoesNotExist:
-                pass
+                return None
 
         item = await fetch_item()
+
+        if item is None:
+            return await edit_message(
+                bot=update.callback_query._bot,
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                text="Not found",
+                reply_markup=await cls.get_markup(page=page),
+            )
 
         return await edit_message(
             bot=update.callback_query._bot,
             chat_id=message.chat.id,
             message_id=message.message_id,
-            text=parse_meal(item) if item else "Not found",
+            text=parse_meal(item),
             reply_markup=await cls.get_meals_markup(
                 day=item.date.strftime("%Y-%m-%d"), page=page, bottom_level=True
             ),

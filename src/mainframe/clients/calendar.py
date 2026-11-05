@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timedelta, timezone
 
 import environ
@@ -122,15 +121,13 @@ class CalendarClient:
     def handle_notification(self, response, event, is_update=False):
         self.redis.set(f"calendar:{event.id}", response["etag"])
         locations = "\n".join(event.addresses)
-        asyncio.run(
-            send_telegram_message(
-                f"*{'Updated ' if is_update else ''}{event.type} outage*\n"
-                f"Start: {response['start']['dateTime']}\n"
-                f"End: {response['end']['dateTime']}\n"
-                f"Duration: {event.duration}\n\n"
-                f"Locations:\n{locations}\n\n"
-                f"[details here]({response['htmlLink']}).",
-            )
+        send_telegram_message(
+            f"*{'Updated ' if is_update else ''}{event.type} outage*\n"
+            f"Start: {response['start']['dateTime']}\n"
+            f"End: {response['end']['dateTime']}\n"
+            f"Duration: {event.duration}\n\n"
+            f"Locations:\n{locations}\n\n"
+            f"[details here]({response['htmlLink']}).",
         )
 
     def update(self, event_id):

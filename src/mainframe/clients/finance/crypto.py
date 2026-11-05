@@ -61,7 +61,7 @@ class CryptoPnLImporter:
             return key
 
         reader = csv.reader(self.file)
-        if (header := next(reader)) != self.header:
+        if (header := next(reader, None)) != self.header:
             raise CryptoImportError(f"Unexpected sells header: {header}")
 
         pnl = [dict(zip(self.header, line, strict=False)) for line in reader]
