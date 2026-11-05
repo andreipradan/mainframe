@@ -1,4 +1,3 @@
-import asyncio
 from typing import TypedDict
 from urllib.parse import urljoin
 
@@ -258,7 +257,7 @@ class Watcher(TimeStampedModel):
         header = f"📣 <b>{self.name}</b> 📣\n"
         footer = f"\nMore articles: <a href='{url}'>here</a>"
 
-        asyncio.run(send_telegram_message(f"{header}{text}{footer}", **kwargs))
+        send_telegram_message(f"{header}{text}{footer}", **kwargs)
 
 
 def run_scheduled_watcher(watcher_id: int) -> Watcher | None:

@@ -1,4 +1,3 @@
-import asyncio
 from operator import attrgetter
 
 import structlog
@@ -43,6 +42,4 @@ class Command(BaseCommand):
             )
 
         if msg:
-            asyncio.run(
-                send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)
-            )
+            send_telegram_message(msg, logger=logger, parse_mode=ParseMode.HTML)

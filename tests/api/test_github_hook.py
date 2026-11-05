@@ -26,11 +26,10 @@ def github_patches():
             "mainframe.api.hooks.github.requests.get", return_value=response
         ) as get,
         mock.patch("mainframe.api.hooks.github.environ.Env") as env_class,
-        mock.patch("mainframe.api.hooks.github.asyncio.run") as run,
         mock.patch("mainframe.api.hooks.github.send_telegram_message") as send,
     ):
         env_class.return_value.return_value = "token"
-        yield response, get, run, send
+        yield response, get, send
 
 
 def make_request(payload, event="push", signature=True, method="POST"):
@@ -51,7 +50,6 @@ def make_request(payload, event="push", signature=True, method="POST"):
 def test_validate_response_rejects_non_success_status():
     response = mock.MagicMock(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     with (
-        mock.patch("mainframe.api.hooks.github.asyncio.run"),
         mock.patch("mainframe.api.hooks.github.send_telegram_message") as send,
     ):
         assert not _validate_response(response, "192.0.2.10")
@@ -63,7 +61,7 @@ def test_validate_response_rejects_non_success_status():
 def test_validate_response_rejects_unlisted_ip():
     response = mock.MagicMock(status_code=status.HTTP_200_OK)
     response.json.return_value = {"hooks": ["198.51.100.0/24"]}
-    with mock.patch("mainframe.api.hooks.github.asyncio.run"):
+    with mock.patch("mainframe.api.hooks.github.send_telegram_message"):
         assert not _validate_response(response, ip_address("192.0.2.10"))
 
 
@@ -83,7 +81,7 @@ def test_verify_signature_rejects_invalid_signatures(signature, expected):
     request.META = {}
     if signature:
         request.META["HTTP_X_HUB_SIGNATURE"] = signature
-    with mock.patch("mainframe.api.hooks.github.asyncio.run"):
+    with mock.patch("mainframe.api.hooks.github.send_telegram_message"):
         assert _verify_signature(request) is expected
 
 
@@ -104,13 +102,13 @@ def test_mainframe_rejects_non_post_request(github_patches):
     with pytest.raises(MethodNotAllowed):
         mainframe(request)
 
-    _, get, _, _ = github_patches
+    _, get, _ = github_patches
     get.assert_not_called()
 
 
 def test_mainframe_rejects_non_github_ip(github_patches):
-    response, _, _, _ = github_patches
-    response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    response, _, _ = github_patches
+    response.json.return_value = {"hooks": ["198.51.100.0/24"]}
     request = make_request({})
 
     result = mainframe(request)
@@ -129,7 +127,7 @@ def test_mainframe_rejects_missing_signature(github_patches):
 
 
 def test_mainframe_sends_push_notification(github_patches):
-    _, _, run, send = github_patches
+    _, _, send = github_patches
     request = make_request(
         {
             "pusher": {"name": "Alice"},
@@ -148,7 +146,6 @@ def test_mainframe_sends_push_notification(github_patches):
         "on the <b>main</b> branch",
         parse_mode="HTML",
     )
-    run.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -162,7 +159,7 @@ def test_mainframe_sends_push_notification(github_patches):
 def test_mainframe_ignores_non_deploy_workflow_events(
     github_patches, head_branch, action, conclusion
 ):
-    _, _, _, send = github_patches
+    _, _, send = github_patches
     request = make_request(
         {
             "action": action,
@@ -185,7 +182,7 @@ def test_mainframe_ignores_non_deploy_workflow_events(
 
 
 def test_mainframe_schedules_successful_deploy(github_patches):
-    _, _, run, send = github_patches
+    _, _, send = github_patches
     request = make_request(
         {
             "action": "completed",
@@ -210,4 +207,3 @@ def test_mainframe_schedules_successful_deploy(github_patches):
     deploy.assert_called_once_with()
     send.assert_called_once()
     assert "Deployment queued" in send.call_args.kwargs["text"]
-    run.assert_called_once()

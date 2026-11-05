@@ -6,6 +6,16 @@ import telegram
 from mainframe.clients import chat as chat_mod
 
 
+def make_bot(*, return_value=None, side_effect=None):
+    bot = mock.MagicMock()
+    bot.__aenter__ = mock.AsyncMock(return_value=bot)
+    bot.__aexit__ = mock.AsyncMock(return_value=None)
+    bot.send_message = mock.AsyncMock(
+        return_value=return_value, side_effect=side_effect
+    )
+    return bot
+
+
 @pytest.mark.django_db
 class TestSendTelegramMessage:
     @mock.patch("mainframe.clients.chat.logger")
@@ -31,27 +41,30 @@ class TestSendTelegramMessage:
     def test_send_telegram_message_success(self, mock_dotenv, mock_bot_class):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
 
-        mock_bot_instance = mock.MagicMock()
-        mock_bot_instance.send_message.return_value = {"text": "hello", "kwargs": {}}
+        mock_bot_instance = make_bot(return_value={"text": "hello", "kwargs": {}})
         mock_bot_class.return_value = mock_bot_instance
 
         res = chat_mod.send_telegram_message("hello")
         assert isinstance(res, dict)
         assert res["text"] == "hello"
+        mock_bot_instance.send_message.assert_awaited_once()
+        mock_bot_instance.__aenter__.assert_awaited_once()
+        mock_bot_instance.__aexit__.assert_awaited_once()
 
-    @mock.patch("mainframe.clients.chat.time.sleep")
+    @mock.patch("mainframe.clients.chat.asyncio.sleep", new_callable=mock.AsyncMock)
     @mock.patch("mainframe.clients.chat.telegram.Bot")
     @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
     def test_send_telegram_message_network_retry(self, mock_dotenv, mock_bot_class, _):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
 
-        mock_bot_instance = mock.MagicMock()
-        mock_bot_instance.send_message.side_effect = [
-            telegram.error.NetworkError(
-                "[Errno -3] Temporary failure in name resolution"
-            ),
-            {"ok": True},
-        ]
+        mock_bot_instance = make_bot(
+            side_effect=[
+                telegram.error.NetworkError(
+                    "[Errno -3] Temporary failure in name resolution"
+                ),
+                {"ok": True},
+            ]
+        )
         mock_bot_class.return_value = mock_bot_instance
 
         res = chat_mod.send_telegram_message("retry test")
@@ -64,10 +77,9 @@ class TestSendTelegramMessage:
     ):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
 
-        mock_bot_instance = mock.MagicMock()
         err = telegram.error.BadRequest("can't find end of the entity 2")
         err.message = "can't find end of the entity 2"
-        mock_bot_instance.send_message.side_effect = [err, {"ok": True}]
+        mock_bot_instance = make_bot(side_effect=[err, {"ok": True}])
         mock_bot_class.return_value = mock_bot_instance
 
         # Should not raise and should return success after retry
@@ -80,8 +92,8 @@ class TestSendTelegramMessage:
         self, mock_dotenv, mock_bot_class
     ):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
-        mock_bot_class.return_value.send_message.side_effect = (
-            telegram.error.NetworkError("connection reset")
+        mock_bot_class.return_value = make_bot(
+            side_effect=telegram.error.NetworkError("connection reset")
         )
 
         with pytest.raises(telegram.error.NetworkError, match="connection reset"):
@@ -93,14 +105,13 @@ class TestSendTelegramMessage:
         self, mock_dotenv, mock_bot_class
     ):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
-        bot = mock_bot_class.return_value
-        bot.send_message.side_effect = [
-            telegram.error.BadRequest("invalid formatting"),
-            "ok",
-        ]
+        bot = make_bot(
+            side_effect=[telegram.error.BadRequest("invalid formatting"), "ok"]
+        )
+        mock_bot_class.return_value = bot
 
         assert chat_mod.send_telegram_message("hello") == "ok"
-        assert bot.send_message.call_args_list[-1] == mock.call(
+        assert bot.send_message.await_args_list[-1] == mock.call(
             text="hello",
             chat_id="1",
             disable_notification=True,
@@ -115,11 +126,13 @@ class TestSendTelegramMessage:
         self, mock_dotenv, mock_bot_class, logger_mock
     ):
         mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
-        bot = mock_bot_class.return_value
-        bot.send_message.side_effect = [
-            telegram.error.BadRequest("invalid formatting"),
-            telegram.error.BadRequest("still invalid"),
-        ]
+        bot = make_bot(
+            side_effect=[
+                telegram.error.BadRequest("invalid formatting"),
+                telegram.error.BadRequest("still invalid"),
+            ]
+        )
+        mock_bot_class.return_value = bot
 
         assert chat_mod.send_telegram_message("hello") is None
         logger_mock.exception.assert_called_once()

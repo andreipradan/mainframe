@@ -1,5 +1,3 @@
-import asyncio
-
 import environ
 import github
 import requests
@@ -54,7 +52,7 @@ class Command(BaseCommand):
             raise CommandError("Tunnel 'mainframe' not found")
 
         set_github_hook(ngrok_url)
-        asyncio.run(send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}"))
+        send_telegram_message(text=f"[[ngrok]] up: {ngrok_url}")
         logger.info(
             "GitHub hook set successfully and ngrok is up!", ngrok_url=ngrok_url
         )

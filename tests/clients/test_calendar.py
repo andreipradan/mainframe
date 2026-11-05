@@ -54,9 +54,6 @@ def patch_env_and_clients(monkeypatch):
         calendar, "BatchHttpRequest", lambda *args, **kwargs: batch_mock
     )
 
-    # Prevent asyncio.run from requiring a coroutine
-    monkeypatch.setattr(calendar.asyncio, "run", lambda coro: coro)
-
     return {
         "redis": redis_mock,
         "service": service_mock,

@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -92,11 +91,9 @@ class BaseEarthquakeCommand:
                 count=len(events),
                 min_magnitude=min_magnitude,
             )
-            asyncio.run(
-                send_telegram_message(
-                    text="\n\n".join(parse_event(event) for event in events),
-                    parse_mode=ParseMode.HTML,
-                )
+            send_telegram_message(
+                text="\n\n".join(parse_event(event) for event in events),
+                parse_mode=ParseMode.HTML,
             )
 
         self.set_last_check(instance)
