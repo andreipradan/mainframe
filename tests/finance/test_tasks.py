@@ -59,7 +59,7 @@ def test_predict_updates_transactions_and_reports_progress():
     logger = mock.MagicMock()
     sklearn = SimpleNamespace(predict=mock.MagicMock(return_value=predictions))
     modules = {
-        "pandas": SimpleNamespace(DataFrame=lambda rows: list(rows)),
+        "pandas": SimpleNamespace(DataFrame=list),
         "mainframe.clients.prediction": SimpleNamespace(SKLearn=sklearn),
     }
     with (
@@ -86,7 +86,7 @@ def test_train_rejects_empty_dataset():
     queryset = QuerySetStub()
     logger = mock.MagicMock()
     modules = {
-        "pandas": SimpleNamespace(DataFrame=lambda rows: list(rows)),
+        "pandas": SimpleNamespace(DataFrame=list),
         "mainframe.clients.prediction": SimpleNamespace(
             SKLearn=SimpleNamespace(train=mock.MagicMock())
         ),
@@ -114,7 +114,7 @@ def test_train_runs_model_training():
     logger = mock.MagicMock()
     sklearn = SimpleNamespace(train=mock.MagicMock(return_value="trained"))
     modules = {
-        "pandas": SimpleNamespace(DataFrame=lambda rows: list(rows)),
+        "pandas": SimpleNamespace(DataFrame=list),
         "mainframe.clients.prediction": SimpleNamespace(SKLearn=sklearn),
     }
     with (
