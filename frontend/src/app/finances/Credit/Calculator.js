@@ -318,7 +318,6 @@ const Calculator = () => {
   const [totalRate, setTotalRate] = useState(0);
   const [totalInterest, setTotalInterest] = useState(0);
   const [totalPrincipal, setTotalPrincipal] = useState(0);
-  const [totalPrepayment, setTotalPrepayment] = useState(0);
 
   useEffect(() => {
     if (latestTimetable?.length) {
@@ -417,7 +416,6 @@ const Calculator = () => {
     setTotalPrincipal(
       calculateSum(Object.values(suggestedAmounts), 'principal')
     );
-    setTotalPrepayment(Object.values(suggestedAmounts).length * monthlyAmount);
   };
 
   return (
