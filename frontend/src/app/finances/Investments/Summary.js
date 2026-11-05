@@ -110,75 +110,73 @@ const Summary = () => {
                 {state.loading ? (
                   <Circles />
                 ) : (
-                  <>
-                    {state[entry]?.currencies?.map((currency) => (
-                      <div key={`${entry}-${currency}`}>
-                        {state[entry]?.[`active_${currency}`] ? (
-                          <ListItem
-                            label={'Active'}
-                            value={`${Number.parseFloat(
-                              state[entry][`active_${currency}`]
-                            ).toFixed(2)} ${currency}`}
-                            textType={'info'}
-                          />
-                        ) : null}
-                        {state[entry]?.[`deposit_${currency}`] ? (
-                          <ListItem
-                            label={'Deposits'}
-                            value={`${state[entry][`deposit_${currency}`]} ${currency}`}
-                            textType={'warning'}
-                          />
-                        ) : null}
-                        {state[entry]?.[`buy_${currency}`] ? (
-                          <ListItem
-                            label={'Bought'}
-                            value={`${state[entry][`buy_${currency}`]} ${currency}`}
-                            textType={'muted'}
-                          />
-                        ) : null}
-                        {state[entry]?.[`sell_${currency}`] ? (
-                          <ListItem
-                            label={'Sold'}
-                            value={`${state[entry][`sell_${currency}`]} ${currency}`}
-                            textType={'muted'}
-                          />
-                        ) : null}
-                        {state[entry]?.[`pnl_${currency}`] ? (
-                          <ListItem
-                            label={'Profit / Loss'}
-                            value={`${state[entry][`pnl_${currency}`]} ${currency}`}
-                            textType={'warning'}
-                          />
-                        ) : null}
-                        {state[entry]?.[`dividend_${currency}`] ? (
-                          <ListItem
-                            label={'Dividends'}
-                            value={`${state[entry][`dividend_${currency}`]} ${currency}`}
-                            textType={
-                              state[entry]?.[`dividend_${currency}`] > 0
-                                ? 'success'
-                                : 'danger'
-                            }
-                          />
-                        ) : null}
-                        {state[entry]?.[`pnl_${currency}`] &&
-                        state[entry]?.[`dividend_${currency}`] ? (
-                          <ListItem
-                            label={'Profit'}
-                            value={
-                              state[entry][`pnl_${currency}`]
-                                ? state[entry]?.[`dividend_${currency}`]
-                                  ? `${Number.parseFloat(state[entry][`pnl_${currency}`]) + Number.parseFloat(state[entry][`dividend_${currency}`])} ${currency}`
-                                  : `${state[entry]?.[`pnl_${currency}`]} ${currency}`
-                                : '-'
-                            }
-                            textType={'success'}
-                          />
-                        ) : null}
-                        <hr className='mt-0 mb-0' />
-                      </div>
-                    ))}
-                  </>
+                  state[entry]?.currencies?.map((currency) => (
+                    <div key={`${entry}-${currency}`}>
+                      {state[entry]?.[`active_${currency}`] ? (
+                        <ListItem
+                          label={'Active'}
+                          value={`${Number.parseFloat(
+                            state[entry][`active_${currency}`]
+                          ).toFixed(2)} ${currency}`}
+                          textType={'info'}
+                        />
+                      ) : null}
+                      {state[entry]?.[`deposit_${currency}`] ? (
+                        <ListItem
+                          label={'Deposits'}
+                          value={`${state[entry][`deposit_${currency}`]} ${currency}`}
+                          textType={'warning'}
+                        />
+                      ) : null}
+                      {state[entry]?.[`buy_${currency}`] ? (
+                        <ListItem
+                          label={'Bought'}
+                          value={`${state[entry][`buy_${currency}`]} ${currency}`}
+                          textType={'muted'}
+                        />
+                      ) : null}
+                      {state[entry]?.[`sell_${currency}`] ? (
+                        <ListItem
+                          label={'Sold'}
+                          value={`${state[entry][`sell_${currency}`]} ${currency}`}
+                          textType={'muted'}
+                        />
+                      ) : null}
+                      {state[entry]?.[`pnl_${currency}`] ? (
+                        <ListItem
+                          label={'Profit / Loss'}
+                          value={`${state[entry][`pnl_${currency}`]} ${currency}`}
+                          textType={'warning'}
+                        />
+                      ) : null}
+                      {state[entry]?.[`dividend_${currency}`] ? (
+                        <ListItem
+                          label={'Dividends'}
+                          value={`${state[entry][`dividend_${currency}`]} ${currency}`}
+                          textType={
+                            state[entry]?.[`dividend_${currency}`] > 0
+                              ? 'success'
+                              : 'danger'
+                          }
+                        />
+                      ) : null}
+                      {state[entry]?.[`pnl_${currency}`] &&
+                      state[entry]?.[`dividend_${currency}`] ? (
+                        <ListItem
+                          label={'Profit'}
+                          value={
+                            state[entry][`pnl_${currency}`]
+                              ? state[entry]?.[`dividend_${currency}`]
+                                ? `${Number.parseFloat(state[entry][`pnl_${currency}`]) + Number.parseFloat(state[entry][`dividend_${currency}`])} ${currency}`
+                                : `${state[entry]?.[`pnl_${currency}`]} ${currency}`
+                              : '-'
+                          }
+                          textType={'success'}
+                        />
+                      ) : null}
+                      <hr className='mt-0 mb-0' />
+                    </div>
+                  ))
                 )}
               </div>
             </div>

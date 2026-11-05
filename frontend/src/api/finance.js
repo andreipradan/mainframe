@@ -88,6 +88,8 @@ import {
 import { toast } from 'react-toastify';
 import { toastParams } from './auth';
 
+const base = 'finance';
+
 export class BondsApi extends mix(
   CreateApi,
   DetailApi,
@@ -344,5 +346,3 @@ export class TimetableApi extends mix(
     update: updateTimetable,
   };
 }
-
-const base = 'finance';
