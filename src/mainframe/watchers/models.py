@@ -311,14 +311,14 @@ def pre_save(sender, instance, update_fields=None, **kwargs):
 
 
 @receiver(signals.post_delete, sender=Watcher)
-def post_delete(sender, instance, **kwargs):
+def post_delete(instance, **kwargs):
     if settings.ENV != "local":
         instance.cron = ""
         schedule_task(instance, previous_name=instance.name)
 
 
 @receiver(signals.post_save, sender=Watcher)
-def post_save(sender, instance, **kwargs):
+def post_save(instance, **kwargs):
     if settings.ENV != "local" and getattr(instance, "_schedule_task_changed", True):
         previous_name = getattr(instance, "_previous_task_name", None)
         if previous_name and previous_name != instance.name:

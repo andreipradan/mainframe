@@ -19,14 +19,16 @@ class BotSerializer(serializers.ModelSerializer):
         model = Bot
         fields = "__all__"
 
-    def _set_webhook(self, bot, webhook):
+    @staticmethod
+    def _set_webhook(bot, webhook):
         try:
             result = bot.set_webhook(webhook)
         except telegram.error.TelegramError as e:
             raise serializers.ValidationError({"Telegram Error": e.message}) from e
         logger.info("Set new webhook", webhook=webhook, result=str(result))
 
-    def _delete_webhook(self, bot):
+    @staticmethod
+    def _delete_webhook(bot):
         try:
             result = bot.delete_webhook()
         except telegram.error.TelegramError as e:

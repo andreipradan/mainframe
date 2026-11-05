@@ -21,9 +21,17 @@ def fetch_definition(word=None):
     if not word:
         min_len = 5
         data_path = settings.BASE_DIR / "bots" / "management" / "commands" / "data"
-        with open(data_path / "ro-words.txt", "r") as file:
-            while len(word := random.choice(file.readlines())) < min_len:  # noqa: S311
-                ...
+        words = []
+        with open(data_path / "ro-words.txt", "r", encoding="utf-8") as file:
+            for line in file:
+                candidate = line.strip()
+                if len(candidate) >= min_len:
+                    words.append(candidate)
+
+        if not words:
+            raise DexOnlineError("No words with sufficient length found")
+
+        word = random.choice(words)  # noqa: S311
 
     response, error = fetch(dex_url.format(word.strip()), 1, False)
     if error:

@@ -7,9 +7,12 @@ from bs4 import BeautifulSoup
 from mainframe.events.tasks import (
     FetchBandError,
     clean_date,
+    clean_url,
     extract_api_concerts,
     extract_embedded_concerts,
+    extract_html_concerts,
     get_band_concerts,
+    validate_selectors,
 )
 from tests.factories.source import SourceFactory
 
@@ -29,6 +32,97 @@ class TestCleanDate:
         date = clean_date("FEB 04-10, 2027", self.config)
 
         assert (date.year, date.month, date.day) == (2027, 2, 4)
+
+
+class TestEventTaskHelpers:
+    def test_clean_url_keeps_affiliate_key_and_drops_other_query_data(self):
+        assert (
+            clean_url(
+                "https://tickets.example/event?afflky=partner&utm_source=test#details"
+            )
+            == "https://tickets.example/event?afflky=partner"
+        )
+
+    def test_validate_selectors_requires_selector_mapping(self):
+        band = SourceFactory.build(name="Test Artist")
+
+        with pytest.raises(FetchBandError, match="Selectors not set"):
+            validate_selectors(band, {})
+
+    def test_validate_selectors_requires_all_mandatory_fields(self):
+        band = SourceFactory.build(name="Test Artist")
+
+        with pytest.raises(FetchBandError, match="Mandatory selectors"):
+            validate_selectors(band, {"list": ".event"})
+
+    def test_extracts_html_events_and_cleans_ticket_url(self):
+        band = SourceFactory.build(
+            name="Test Artist",
+            config={
+                "date_format": "%Y-%m-%d",
+                "selectors": {
+                    "list": ".event",
+                    "location": ".location",
+                    "start_date": ".date",
+                    "url": "a.ticket",
+                },
+            },
+            url="https://tickets.example/",
+        )
+        response = BeautifulSoup(
+            """
+            <div class="event">
+              <span class="location">Hall A</span>
+              <span class="date">2026-11-20</span>
+              <a class="ticket" href="https://tickets.example/event?afflky=partner&amp;utm_source=test#top"></a>
+            </div>
+            """,
+            "html.parser",
+        )
+
+        events = extract_html_concerts(band, response)
+
+        assert len(events) == 1
+        assert events[0].title == "Test Artist @ Hall A"
+        assert events[0].url == "https://tickets.example/event?afflky=partner"
+        assert events[0].description == ""
+        assert events[0].end_date is None
+
+    @mock.patch("mainframe.events.tasks.store_concerts")
+    @mock.patch("mainframe.events.tasks.fetch")
+    def test_get_band_concerts_uses_html_parser(self, fetch, store_concerts):
+        band = SourceFactory.build(
+            name="Test Artist",
+            config={
+                "parser": "html",
+                "date_format": "%Y-%m-%d",
+                "selectors": {
+                    "list": ".event",
+                    "location": ".location",
+                    "start_date": ".date",
+                    "url": "a.ticket",
+                },
+            },
+            url="https://tickets.example/",
+        )
+        response = BeautifulSoup(
+            """
+            <div class="event">
+              <span class="location">Hall A</span>
+              <span class="date">2026-11-20</span>
+              <a class="ticket" href="https://tickets.example/event"></a>
+            </div>
+            """,
+            "html.parser",
+        )
+        fetch.return_value = (response, None)
+
+        get_band_concerts.call_local(band)
+
+        fetch.assert_called_once_with(band.url)
+        store_concerts.assert_called_once()
+        assert store_concerts.call_args.args[0] == band.name
+        assert len(store_concerts.call_args.args[1]) == 1
 
 
 class TestExtractEmbeddedConcerts:

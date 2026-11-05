@@ -10,17 +10,17 @@ from mainframe.clients import calendar
 class DummyEvent:
     def __init__(
         self,
-        id,
+        event_id,
         addresses=None,
         duration="1h",
-        type="Accidental",
+        event_type="Accidental",
     ):
-        self.id = id
+        self.id = event_id
         self.location = "loc"
         self.start = "2026-01-01T00:00:00"
         self.addresses = addresses or ["A", "B"]
         self.duration = duration
-        self.type = type
+        self.type = event_type
 
     def to_calendar_event(self):
         return {"id": self.id, "location": self.location}
@@ -98,7 +98,7 @@ def test_clear_events_deletes_items(patch_env_and_clients):
 
 def test_create_events_uses_batch(patch_env_and_clients):
     client = calendar.CalendarClient()
-    event = DummyEvent(id="e1")
+    event = DummyEvent(event_id="e1")
 
     client.create_events([event])
 
@@ -114,7 +114,7 @@ def test_event_callback_success_triggers_notification(
     monkeypatch, patch_env_and_clients
 ):
     client = calendar.CalendarClient()
-    event = DummyEvent(id="abc")
+    event = DummyEvent(event_id="abc")
     client.events = {"abc": event}
 
     called = {}
@@ -137,7 +137,7 @@ def test_event_callback_success_triggers_notification(
 
 def test_event_callback_conflict_calls_update(monkeypatch, patch_env_and_clients):
     client = calendar.CalendarClient()
-    client.events = {"abc": DummyEvent(id="abc")}
+    client.events = {"abc": DummyEvent(event_id="abc")}
 
     called = {}
 
@@ -160,7 +160,7 @@ def test_event_callback_conflict_calls_update(monkeypatch, patch_env_and_clients
 def test_event_callback_other_error_logs(monkeypatch, patch_env_and_clients):
     log = mock.MagicMock()
     client = calendar.CalendarClient(logger=log)
-    client.events = {"abc": DummyEvent(id="abc")}
+    client.events = {"abc": DummyEvent(event_id="abc")}
 
     client.event_callback("abc", {}, ValueError("err"))
 
@@ -179,7 +179,7 @@ def test_event_callback_other_error_logs(monkeypatch, patch_env_and_clients):
 def test_handle_notification_sets_redis_and_sends_message(patch_env_and_clients):
     client = calendar.CalendarClient()
     event = DummyEvent(
-        id="evt", addresses=["A", "B"], duration="10m", type="Accidental"
+        event_id="evt", addresses=["A", "B"], duration="10m", event_type="Accidental"
     )
 
     response = {
@@ -215,7 +215,7 @@ def test_update_triggers_notification_when_etag_changes(
     patch_env_and_clients, monkeypatch
 ):
     client = calendar.CalendarClient()
-    event = DummyEvent(id="evt")
+    event = DummyEvent(event_id="evt")
     client.events = {"evt": event}
 
     response = {"etag": "new"}
@@ -237,7 +237,7 @@ def test_update_triggers_notification_when_etag_changes(
 
 def test_update_does_not_notify_when_etag_same(patch_env_and_clients, monkeypatch):
     client = calendar.CalendarClient()
-    event = DummyEvent(id="evt")
+    event = DummyEvent(event_id="evt")
     client.events = {"evt": event}
 
     response = {"etag": "same"}
@@ -258,7 +258,7 @@ def test_update_does_not_notify_when_etag_same(patch_env_and_clients, monkeypatc
 
 def test_update_recreates_on_404(patch_env_and_clients):
     client = calendar.CalendarClient()
-    event = DummyEvent(id="evt")
+    event = DummyEvent(event_id="evt")
     client.events = {"evt": event}
 
     class DummyResp:
@@ -280,7 +280,7 @@ def test_update_recreates_on_404(patch_env_and_clients):
 def test_update_logs_other_http_errors(patch_env_and_clients):
     log = mock.MagicMock()
     client = calendar.CalendarClient(logger=log)
-    event = DummyEvent(id="evt")
+    event = DummyEvent(event_id="evt")
     client.events = {"evt": event}
 
     class DummyResp:

@@ -18,6 +18,14 @@ class TestSendTelegramMessage:
             mock.call("TELEGRAM_CHAT_ID not set on env"),
         ]
 
+    @mock.patch("mainframe.clients.chat.logger")
+    @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
+    def test_send_telegram_message_missing_token(self, mock_dotenv, logger_mock):
+        mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1"}
+
+        assert chat_mod.send_telegram_message("hi") is None
+        logger_mock.error.assert_called_once_with("TELEGRAM_TOKEN not set on env")
+
     @mock.patch("mainframe.clients.chat.telegram.Bot")
     @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
     def test_send_telegram_message_success(self, mock_dotenv, mock_bot_class):
@@ -65,3 +73,76 @@ class TestSendTelegramMessage:
         # Should not raise and should return success after retry
         res = chat_mod.send_telegram_message("01234")
         assert res == {"ok": True}
+
+    @mock.patch("mainframe.clients.chat.telegram.Bot")
+    @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
+    def test_send_telegram_message_raises_unexpected_network_error(
+        self, mock_dotenv, mock_bot_class
+    ):
+        mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
+        mock_bot_class.return_value.send_message.side_effect = (
+            telegram.error.NetworkError("connection reset")
+        )
+
+        with pytest.raises(telegram.error.NetworkError, match="connection reset"):
+            chat_mod.send_telegram_message("hello")
+
+    @mock.patch("mainframe.clients.chat.telegram.Bot")
+    @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
+    def test_send_telegram_message_retries_without_formatting(
+        self, mock_dotenv, mock_bot_class
+    ):
+        mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
+        bot = mock_bot_class.return_value
+        bot.send_message.side_effect = [
+            telegram.error.BadRequest("invalid formatting"),
+            "ok",
+        ]
+
+        assert chat_mod.send_telegram_message("hello") == "ok"
+        assert bot.send_message.call_args_list[-1] == mock.call(
+            text="hello",
+            chat_id="1",
+            disable_notification=True,
+            disable_web_page_preview=True,
+            parse_mode=None,
+        )
+
+    @mock.patch("mainframe.clients.chat.logger")
+    @mock.patch("mainframe.clients.chat.telegram.Bot")
+    @mock.patch("mainframe.clients.chat.dotenv.dotenv_values")
+    def test_send_telegram_message_returns_none_if_unformatted_send_fails(
+        self, mock_dotenv, mock_bot_class, logger_mock
+    ):
+        mock_dotenv.return_value = {"TELEGRAM_CHAT_ID": "1", "TELEGRAM_TOKEN": "t"}
+        bot = mock_bot_class.return_value
+        bot.send_message.side_effect = [
+            telegram.error.BadRequest("invalid formatting"),
+            telegram.error.BadRequest("still invalid"),
+        ]
+
+        assert chat_mod.send_telegram_message("hello") is None
+        logger_mock.exception.assert_called_once()
+
+
+class TestEditMessage:
+    @pytest.mark.asyncio
+    async def test_edit_message_returns_bot_result(self):
+        bot = mock.MagicMock()
+        bot.edit_message_text = mock.AsyncMock(return_value="updated")
+
+        result = await chat_mod.edit_message(bot, 1, 2, "hello")
+
+        assert result == "updated"
+        bot.edit_message_text.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_edit_message_returns_bad_request_message(self):
+        bot = mock.MagicMock()
+        bot.edit_message_text = mock.AsyncMock(
+            side_effect=telegram.error.BadRequest("message not found")
+        )
+
+        result = await chat_mod.edit_message(bot, 1, 2, "hello")
+
+        assert result == "message not found"

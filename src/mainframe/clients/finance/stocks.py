@@ -42,13 +42,13 @@ class StockPnLImporter:
             return key
 
         reader = csv.reader(self.file)
-        if (header := next(reader)) != ["Income from Sells"]:
+        if (header := next(reader, None)) != ["Income from Sells"]:
             raise StockImportError(f"Unexpected top header: {header}")
-        if (header := next(reader)) != self.header:
+        if (header := next(reader, None)) != self.header:
             raise StockImportError(f"Unexpected sells header: {header}")
 
         pnl = []
-        while line := next(reader):
+        while line := next(reader, None):
             pnl.append(dict(zip(self.header, line, strict=False)))
 
         return [PnL(**{normalize_key(k): v for (k, v) in row.items()}) for row in pnl]

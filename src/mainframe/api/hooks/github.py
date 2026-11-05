@@ -7,7 +7,7 @@ from ipaddress import ip_address, ip_network
 import environ
 import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseForbidden
 from django.utils.encoding import force_bytes
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status

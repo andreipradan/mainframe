@@ -33,11 +33,14 @@ async def edit_message(bot, chat_id, message_id, text, reply_markup=None):
 def send_telegram_message(text, retries_on_network_error=3, **kwargs):
     msg_logger = kwargs.pop("logger", logger)
     config = dotenv.dotenv_values()
-    if not (chat_id := config.get("TELEGRAM_CHAT_ID")):
-        msg_logger.error("TELEGRAM_CHAT_ID not set on env")
-        return None
-    if not (token := config.get("TELEGRAM_TOKEN")):
-        msg_logger.error("TELEGRAM_TOKEN not set on env")
+    chat_id = config.get("TELEGRAM_CHAT_ID")
+    token = config.get("TELEGRAM_TOKEN")
+    if not chat_id or not token:
+        msg_logger.error(
+            "TELEGRAM_CHAT_ID not set on env"
+            if not chat_id
+            else "TELEGRAM_TOKEN not set on env"
+        )
         return None
 
     bot_kwargs = {
@@ -87,6 +90,7 @@ def send_telegram_message(text, retries_on_network_error=3, **kwargs):
                 error=str(err),
                 text=text,
             )
+            return None
 
 
 if __name__ == "__main__":

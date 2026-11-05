@@ -205,7 +205,7 @@ def extract_html_concerts(band, response):
         if not selector_name.endswith("_date"):
             return result
 
-        if not (band.config.get("date_format")):
+        if not band.config.get("date_format"):
             raise FetchBandError(
                 f"[{band.name}] Date format not set on the Source object"
             )
