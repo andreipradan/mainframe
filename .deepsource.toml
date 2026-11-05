@@ -28,7 +28,14 @@ name = "javascript"
     "browser",
     "jquery"
   ]
-  skip_doc_coverage = ["class-expression", "method-definition"]
+  skip_doc_coverage = [
+    "arrow-function-expression",
+    "class-declaration",
+    "class-expression",
+    "function-declaration",
+    "function-expression",
+    "method-definition",
+  ]
 
 [[analyzers]]
 name = "python"

@@ -153,9 +153,7 @@ const Earthquakes = () => {
       series.zoomToDataItem(ev.target.dataItem).waitForStop();
       am5.net
         .load(
-          API_SERVER +
-            'earthquakes/map/?id=' +
-            ev.target.dataItem.dataContext.id
+          `${API_SERVER}earthquakes/map/?id=${ev.target.dataItem.dataContext.id}`
         )
         .then((result) => {
           countySeries.setAll({
@@ -165,7 +163,7 @@ const Earthquakes = () => {
           series.hide();
         })
         .catch(function (result) {
-          console.log('Error loading ' + result.xhr.responseURL);
+          console.log(`Error loading ${result.xhr.responseURL}`);
         });
     });
 
