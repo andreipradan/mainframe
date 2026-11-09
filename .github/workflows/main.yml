@@ -19,7 +19,7 @@ env:
 jobs:
   notify-telegram:
     name: Notify telegram
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ github.event_name == 'push' }}
     steps:
       - name: send telegram message
@@ -38,11 +38,11 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+        uses: actions/checkout@v7
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
           filters: |
@@ -55,25 +55,26 @@ jobs:
 
   pre-commit:
     name: pre-commit (w/o migrations check)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       - name: Installing dev dependencies for migration check
         run: uv sync --locked
-      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
+      - name: Run pre-commit checks
+        run: uv run pre-commit run --all-files
         env:
           ENV: ci
           SKIP: migrations-check
 
   safety-cli:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: changes
     if: ${{ (needs.changes.outputs.backend == 'true') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run Safety CLI to check for vulnerabilities
         uses: pyupio/safety-action@2591cf2f3e67ba68b923f4c92f0d36e281c65023
         with:
@@ -81,7 +82,7 @@ jobs:
           args: -i 59234 --detailed-output
 
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - pre-commit
       - safety-cli
@@ -101,30 +102,30 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b
       - name: Run CI
         run: uv run --locked poe ci
       - name: Upload backend coverage
         # make backend coverage.xml available to other jobs (e.g. sonar scan)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
           path: coverage.xml
 
   frontend-tests:
     name: Frontend tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: changes
     if: ${{ (needs.changes.outputs.frontend == 'true') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup Node.js (NPM)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20.x'
+          node-version: '24.x'
       - name: Use cached node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: nodeModules-${{ hashFiles('frontend/**/package-lock.json') }}
@@ -138,24 +139,24 @@ jobs:
         run: |
           CI=true npm test -- --coverage --watchAll=false --coverageReporters=lcov
       - name: Upload frontend coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: frontend/coverage/lcov.info
 
   frontend-lint:
     name: Frontend lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Setup Node.js (NPM)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20.x'
+          node-version: '24.x'
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci --no-audit --no-fund --ignore-scripts
@@ -190,25 +191,25 @@ jobs:
       && (needs.changes.outputs.backend != 'true' || needs.tests.result == 'success')  
       && (needs.changes.outputs.frontend != 'true' || needs.frontend-tests.result == 'success')
       && (needs.changes.outputs.frontend != 'true' || needs.frontend-lint.result == 'success') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - changes
       - tests
       - frontend-tests
       - frontend-lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Download backend coverage
         if: ${{ needs.changes.outputs.backend == 'true' }}  
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: backend-coverage
           path: .
       - name: Download frontend coverage
         if: ${{ needs.changes.outputs.frontend == 'true' }}  
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: frontend-coverage
           path: frontend/coverage
@@ -227,7 +228,7 @@ jobs:
   backend-deploy:
     name: BE - Deploy
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.tests.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -244,7 +245,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup GCloud Auth
         id: auth
@@ -286,7 +287,7 @@ jobs:
   frontend-deploy:
     name: FE - Build & Deploy
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.frontend-tests.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - frontend-tests
       - frontend-lint
@@ -305,15 +306,15 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Build the image
       - name: Setup Node.js (NPM)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '20.x'
+          node-version: '24.x'
       - name: Use cached node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: nodeModules-${{ hashFiles('frontend/**/package-lock.json') }}

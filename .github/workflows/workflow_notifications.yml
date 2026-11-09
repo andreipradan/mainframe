@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: send telegram message
         uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3
