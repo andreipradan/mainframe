@@ -47,7 +47,8 @@ def patch_env_and_clients(monkeypatch):
     service_mock = mock.MagicMock()
     events_mock = mock.MagicMock()
     service_mock.events.return_value = events_mock
-    monkeypatch.setattr(calendar, "build", lambda *args, **kwargs: service_mock)
+    build_mock = mock.Mock(return_value=service_mock)
+    monkeypatch.setattr(calendar, "build", build_mock)
 
     batch_mock = mock.MagicMock()
     monkeypatch.setattr(
@@ -59,7 +60,16 @@ def patch_env_and_clients(monkeypatch):
         "service": service_mock,
         "events": events_mock,
         "batch": batch_mock,
+        "build": build_mock,
     }
+
+
+def test_calendar_client_disables_discovery_cache(patch_env_and_clients):
+    calendar.CalendarClient()
+
+    patch_env_and_clients["build"].assert_called_once_with(
+        "calendar", "v3", credentials=mock.ANY, cache_discovery=False
+    )
 
 
 def test_clear_events_no_items(patch_env_and_clients):

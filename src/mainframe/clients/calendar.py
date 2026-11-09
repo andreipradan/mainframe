@@ -30,7 +30,7 @@ class CalendarClient:
         self.logger = logger or structlog.get_logger(__name__)
         self.logger = self.logger.bind(calendar_id=self.calendar_id)
         self.redis = RedisClient(self.logger)
-        self.service = build("calendar", "v3", credentials=creds)
+        self.service = build("calendar", "v3", credentials=creds, cache_discovery=False)
 
     # used manually to create calendar and set permissions for service account email
     def _setup(self, owner_email, summary, time_zone):
