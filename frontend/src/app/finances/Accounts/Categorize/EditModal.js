@@ -156,6 +156,7 @@ const EditModal = () => {
                 setCategory(newValue?.value ? newValue.value : 'Unidentified')
               }
               onCreateOption={(id) => {
+                setCategory(id);
                 dispatch(
                   TransactionsApi.update(token, transaction.id, {
                     category: id,

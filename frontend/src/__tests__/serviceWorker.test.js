@@ -15,7 +15,7 @@ describe('service worker lifecycle', () => {
     originalFetch = global.fetch;
     loadHandlers = [];
     process.env.NODE_ENV = 'production';
-    process.env.PUBLIC_URL = '/';
+    process.env.PUBLIC_URL = '';
 
     registration = {
       installing: { state: 'installed', onstatechange: null },
@@ -63,7 +63,7 @@ describe('service worker lifecycle', () => {
     await flushPromises();
     await flushPromises();
 
-    expect(global.fetch).toHaveBeenCalledWith('//service-worker.js');
+    expect(global.fetch).toHaveBeenCalledWith('/service-worker.js');
     expect(serviceWorker.register).toHaveBeenCalled();
     registration.onupdatefound();
     expect(registration.installing.onstatechange).toBeInstanceOf(Function);

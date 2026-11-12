@@ -211,7 +211,7 @@ describe('Transaction edit modal', () => {
     expect(mockDispatch).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'transactions/update',
-        data: { type: 'card_payment', category: 'food' },
+        data: { type: 'card_payment', category: 'new-category' },
       })
     );
 

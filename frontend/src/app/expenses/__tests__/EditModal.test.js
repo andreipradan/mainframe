@@ -64,7 +64,8 @@ jest.mock('react-datepicker', () => {
       readOnly,
       type: 'date',
       value: selected?.toISOString().slice(0, 10) || '',
-      onChange: (event) => onChange(new Date(`${event.target.value}T00:00:00`)),
+      onChange: (event) =>
+        onChange(new Date(`${event.target.value}T00:00:00Z`)),
     });
 });
 jest.mock('react-select', () => ({
