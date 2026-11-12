@@ -10,13 +10,209 @@ import { selectItem } from '../../redux/tasksSlice';
 import Errors from '../shared/Errors';
 import TasksApi from '../../api/tasks';
 
+const statusColors = {
+  complete: 'success',
+  executing: 'warning',
+};
+
+const getStatusColor = (status) => statusColors[status] || 'danger';
+
 export const parseStatus = (status) => (
-  <span
-    className={`text-${status === 'complete' ? 'success' : status === 'executing' ? 'warning' : 'danger'}`}
-  >
-    {capitalize(status)}
-  </span>
+  <span className={`text-${getStatusColor(status)}`}>{capitalize(status)}</span>
 );
+
+const TaskRows = ({ loading, results, onSelect }) => {
+  if (loading) {
+    return (
+      <tr>
+        <td colSpan={8}>
+          <ColorRing
+            width='100%'
+            radius='9'
+            color='green'
+            wrapperStyle={{ width: '100%' }}
+          />
+        </td>
+      </tr>
+    );
+  }
+
+  if (!results?.length) {
+    return (
+      <tr>
+        <td colSpan={7}>No tasks available</td>
+      </tr>
+    );
+  }
+
+  return results.map((task, i) => (
+    <tr key={task.id}>
+      <td>{i + 1}</td>
+      <td>
+        <button
+          type='button'
+          className='btn btn-link p-0 text-left'
+          onClick={() => onSelect(task.id)}
+        >
+          {task.app}.{task.name}
+        </button>
+      </td>
+      <td className='text-center'>
+        {task.is_revoked ? <i className='mdi mdi-check text-danger' /> : null}
+      </td>
+      <td className='text-center'>
+        {task.is_periodic ? <i className='mdi mdi-check text-success' /> : null}
+      </td>
+      {task.history?.length ? (
+        <>
+          <td className={`text-${getStatusColor(task.history[0].status)}`}>
+            {task.history[0].status ? capitalize(task.history[0].status) : '-'}
+          </td>
+          <td>{new Date(task.history?.[0]?.timestamp).toLocaleString()}</td>
+          <td>{task.history.length}</td>
+          <td>{task.errors?.length}</td>
+        </>
+      ) : (
+        <td colSpan={4} className='text-center'>
+          Didn&apos;t run
+        </td>
+      )}
+    </tr>
+  ));
+};
+
+const TaskHistoryDetails = ({
+  itemKey,
+  selectedItem,
+  isExpanded,
+  onToggle,
+}) => (
+  <li key={itemKey}>
+    <div>
+      <button
+        type='button'
+        className='btn btn-link p-0'
+        aria-expanded={isExpanded}
+        aria-controls={`task-${selectedItem.id}-${itemKey}`}
+        onClick={onToggle}
+      >
+        <i
+          className={`mdi mdi-chevron-${isExpanded ? 'down text-success' : 'right text-primary'}`}
+        />
+        {capitalize(itemKey)} ({selectedItem[itemKey]?.length})
+      </button>
+      <Collapse in={isExpanded}>
+        <ul id={`task-${selectedItem.id}-${itemKey}`} className='list-unstyled'>
+          {selectedItem[itemKey].map((historyItem) => (
+            <li
+              key={historyItem.timestamp || JSON.stringify(historyItem)}
+              className='pl-4 mt-1'
+            >
+              <i className='text-secondary mdi mdi-arrow-right mr-1' />
+              {new Date(historyItem.timestamp).toLocaleString()}
+              <ul className='list-unstyled'>
+                {Object.keys(historyItem)
+                  .filter((historyKey) => historyKey !== 'timestamp')
+                  .map((historyKey) => (
+                    <li key={historyKey} className='pl-3 mt-1'>
+                      {capitalize(historyKey)}:{' '}
+                      {historyKey === 'status'
+                        ? parseStatus(historyItem.status)
+                        : historyItem[historyKey]}
+                    </li>
+                  ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </Collapse>
+    </div>
+  </li>
+);
+
+const TaskDetailItem = ({
+  itemKey,
+  selectedItem,
+  taskHistoryOpen,
+  taskErrorsOpen,
+  setTaskHistoryOpen,
+  setTaskErrorsOpen,
+}) => {
+  if (itemKey === 'errors' || itemKey === 'history') {
+    const isHistory = itemKey === 'history';
+    const isExpanded = isHistory ? taskHistoryOpen : taskErrorsOpen;
+    const setExpanded = isHistory ? setTaskHistoryOpen : setTaskErrorsOpen;
+
+    return (
+      <TaskHistoryDetails
+        itemKey={itemKey}
+        selectedItem={selectedItem}
+        isExpanded={isExpanded}
+        onToggle={() => setExpanded(!isExpanded)}
+      />
+    );
+  }
+
+  if (itemKey === 'is_periodic') {
+    return (
+      <li key={itemKey}>
+        Is periodic:{' '}
+        {selectedItem.is_periodic ? (
+          <i className='mdi mdi-check text-success' />
+        ) : (
+          <i className='mdi mdi-close text-danger' />
+        )}
+      </li>
+    );
+  }
+
+  if (itemKey === 'is_revoked') {
+    return (
+      <li key={itemKey}>
+        Is revoked:{' '}
+        {selectedItem.is_revoked ? (
+          <i className='mdi mdi-check text-danger' />
+        ) : (
+          <i className='mdi mdi-close text-success' />
+        )}
+      </li>
+    );
+  }
+
+  if (itemKey === 'status') {
+    return <li key={itemKey}>Status: {parseStatus(selectedItem[itemKey])}</li>;
+  }
+
+  return (
+    <li key={itemKey}>
+      {capitalize(itemKey)}: {selectedItem[itemKey]}
+    </li>
+  );
+};
+
+const TaskDetails = ({
+  selectedItem,
+  taskHistoryOpen,
+  taskErrorsOpen,
+  setTaskHistoryOpen,
+  setTaskErrorsOpen,
+}) => {
+  if (!selectedItem) return null;
+
+  return Object.keys(selectedItem)
+    .filter((itemKey) => !['timestamp', 'name', 'app', 'id'].includes(itemKey))
+    .map((itemKey) => (
+      <TaskDetailItem
+        key={itemKey}
+        itemKey={itemKey}
+        selectedItem={selectedItem}
+        taskHistoryOpen={taskHistoryOpen}
+        taskErrorsOpen={taskErrorsOpen}
+        setTaskHistoryOpen={setTaskHistoryOpen}
+        setTaskErrorsOpen={setTaskErrorsOpen}
+      />
+    ));
+};
 
 const Tasks = () => {
   const dispatch = useDispatch();
@@ -78,71 +274,11 @@ const Tasks = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!loading ? (
-                      results?.length ? (
-                        results.map((task, i) => (
-                          <tr key={task.id}>
-                            <td>{i + 1}</td>
-                            <td>
-                              <button
-                                type='button'
-                                className='btn btn-link p-0 text-left'
-                                onClick={() => dispatch(selectItem(task.id))}
-                              >
-                                {task.app}.{task.name}
-                              </button>
-                            </td>
-                            <td className='text-center'>
-                              {task.is_revoked ? (
-                                <i className='mdi mdi-check text-danger' />
-                              ) : null}
-                            </td>
-                            <td className='text-center'>
-                              {task.is_periodic ? (
-                                <i className='mdi mdi-check text-success' />
-                              ) : null}
-                            </td>
-                            {task.history?.length ? (
-                              <>
-                                <td
-                                  className={`text-${task.history[0].status === 'complete' ? 'success' : task.history[0].status === 'executing' ? 'warning' : 'danger'}`}
-                                >
-                                  {task.history[0].status
-                                    ? capitalize(task.history[0].status)
-                                    : '-'}
-                                </td>
-                                <td>
-                                  {new Date(
-                                    task.history?.[0]?.timestamp
-                                  ).toLocaleString()}
-                                </td>
-                                <td>{task.history.length}</td>
-                                <td>{task.errors?.length}</td>
-                              </>
-                            ) : (
-                              <td colSpan={4} className='text-center'>
-                                Didn&apos;t run
-                              </td>
-                            )}
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={7}>No tasks available</td>
-                        </tr>
-                      )
-                    ) : (
-                      <tr>
-                        <td colSpan={8}>
-                          <ColorRing
-                            width='100%'
-                            radius='9'
-                            color='green'
-                            wrapperStyle={{ width: '100%' }}
-                          />
-                        </td>
-                      </tr>
-                    )}
+                    <TaskRows
+                      loading={loading}
+                      results={results}
+                      onSelect={(id) => dispatch(selectItem(id))}
+                    />
                   </tbody>
                 </table>
               </div>
@@ -205,124 +341,13 @@ const Tasks = () => {
                     />
                   ) : (
                     <ul className='list-unstyled'>
-                      {selectedItem
-                        ? Object.keys(selectedItem)
-                            .filter(
-                              (itemKey) =>
-                                !['timestamp', 'name', 'app', 'id'].includes(
-                                  itemKey
-                                )
-                            )
-                            .map((itemKey) =>
-                              ['errors', 'history'].includes(itemKey) ? (
-                                <li key={itemKey}>
-                                  {
-                                    <div>
-                                      <button
-                                        type='button'
-                                        className='btn btn-link p-0'
-                                        aria-expanded={
-                                          itemKey === 'history'
-                                            ? taskHistoryOpen
-                                            : taskErrorsOpen
-                                        }
-                                        aria-controls={`task-${selectedItem.id}-${itemKey}`}
-                                        onClick={() =>
-                                          itemKey === 'history'
-                                            ? setTaskHistoryOpen(
-                                                !taskHistoryOpen
-                                              )
-                                            : setTaskErrorsOpen(!taskErrorsOpen)
-                                        }
-                                      >
-                                        <i
-                                          className={`mdi mdi-chevron-${(itemKey === 'history' ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}
-                                        />
-                                        {capitalize(itemKey)} (
-                                        {selectedItem[itemKey]?.length})
-                                      </button>
-                                      <Collapse
-                                        in={
-                                          itemKey === 'history'
-                                            ? taskHistoryOpen
-                                            : taskErrorsOpen
-                                        }
-                                      >
-                                        <ul
-                                          id={`task-${selectedItem.id}-${itemKey}`}
-                                          className='list-unstyled'
-                                        >
-                                          {selectedItem[itemKey].map(
-                                            (historyItem) => (
-                                              <li
-                                                key={
-                                                  historyItem.timestamp ||
-                                                  JSON.stringify(historyItem)
-                                                }
-                                                className='pl-4 mt-1'
-                                              >
-                                                <i className='text-secondary mdi mdi-arrow-right mr-1' />
-                                                {new Date(
-                                                  historyItem.timestamp
-                                                ).toLocaleString()}
-                                                <ul className='list-unstyled'>
-                                                  {Object.keys(historyItem)
-                                                    .filter(
-                                                      (historyKey) =>
-                                                        historyKey !==
-                                                        'timestamp'
-                                                    )
-                                                    .map((hkey) => (
-                                                      <li
-                                                        key={hkey}
-                                                        className='pl-3 mt-1'
-                                                      >
-                                                        {capitalize(hkey)}:{' '}
-                                                        {hkey === 'status'
-                                                          ? parseStatus(
-                                                              historyItem.status
-                                                            )
-                                                          : historyItem[hkey]}
-                                                      </li>
-                                                    ))}
-                                                </ul>
-                                              </li>
-                                            )
-                                          )}
-                                        </ul>
-                                      </Collapse>
-                                    </div>
-                                  }
-                                </li>
-                              ) : itemKey === 'is_periodic' ? (
-                                <li key={itemKey}>
-                                  Is periodic:{' '}
-                                  {selectedItem.is_periodic ? (
-                                    <i className='mdi mdi-check text-success' />
-                                  ) : (
-                                    <i className='mdi mdi-close text-danger' />
-                                  )}
-                                </li>
-                              ) : itemKey === 'is_revoked' ? (
-                                <li key={itemKey}>
-                                  Is revoked:{' '}
-                                  {selectedItem.is_revoked ? (
-                                    <i className='mdi mdi-check text-danger' />
-                                  ) : (
-                                    <i className='mdi mdi-close text-success' />
-                                  )}
-                                </li>
-                              ) : itemKey === 'status' ? (
-                                <li key={itemKey}>
-                                  Status: {parseStatus(selectedItem[itemKey])}
-                                </li>
-                              ) : (
-                                <li key={itemKey}>
-                                  {capitalize(itemKey)}: {selectedItem[itemKey]}
-                                </li>
-                              )
-                            )
-                        : null}
+                      <TaskDetails
+                        selectedItem={selectedItem}
+                        taskHistoryOpen={taskHistoryOpen}
+                        taskErrorsOpen={taskErrorsOpen}
+                        setTaskHistoryOpen={setTaskHistoryOpen}
+                        setTaskErrorsOpen={setTaskErrorsOpen}
+                      />
                     </ul>
                   )}
                 </Modal.Body>
