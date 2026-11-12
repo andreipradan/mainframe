@@ -440,7 +440,7 @@ const Details = () => {
     <div>
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Credit
+          Credit{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -615,7 +615,7 @@ const Details = () => {
           <div className='card'>
             <div className='card-body'>
               <h5>
-                Paid
+                Paid{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -843,7 +843,7 @@ const Details = () => {
           <div className='card'>
             <div className='card-body'>
               <h6 className='card-title'>
-                Remaining
+                Remaining{' '}
                 <sup>
                   <small>
                     {selectedCurrency?.label
@@ -911,7 +911,7 @@ const Details = () => {
                     type='checkbox'
                     checked={excludePrepayments}
                     onChange={onExcludePrepaymentsChange}
-                  />
+                  />{' '}
                   Exclude prepayments <i className='input-helper' />
                 </label>
               </div>
@@ -937,7 +937,7 @@ const Details = () => {
           <div className='card'>
             <div className='card-body'>
               <h6 className='card-title'>
-                Interest rate
+                Interest rate{' '}
                 <button
                   type={'button'}
                   className={

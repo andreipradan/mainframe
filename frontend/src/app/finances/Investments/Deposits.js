@@ -123,7 +123,7 @@ const Deposits = () => {
       {/* Top title and breadcrumbs */}
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Deposits
+          Deposits{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'

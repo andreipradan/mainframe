@@ -357,7 +357,7 @@ const Transactions = () => {
           <div className='card'>
             <div className='card-body'>
               <h5>
-                Summary
+                Summary{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -500,7 +500,7 @@ const Transactions = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Expenses
+                Expenses{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -689,7 +689,7 @@ const Transactions = () => {
                           })
                         )
                       }
-                    />
+                    />{' '}
                     Expenses only
                     <i className='input-helper' />
                   </label>
@@ -708,7 +708,7 @@ const Transactions = () => {
                           })
                         )
                       }
-                    />
+                    />{' '}
                     Unique <i className='input-helper' />
                   </label>
                 </div>

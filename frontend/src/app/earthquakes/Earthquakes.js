@@ -305,7 +305,7 @@ const Earthquakes = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Earthquakes
+                Earthquakes{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -330,8 +330,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.local_events}
                     />
-                    <i className='input-helper' />
-                    Only local events
+                    <i className='input-helper' /> Only local events
                   </label>
                 </div>
                 <div className='form-check float-right ml-4'>
@@ -348,8 +347,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.magnitude_gt5}
                     />
-                    <i className='input-helper' />
-                    &gt; 5 ML
+                    <i className='input-helper' /> &gt; 5 ML
                   </label>
                 </div>
                 <div className='form-check float-right'>
@@ -366,8 +364,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.largest_events}
                     />
-                    <i className='input-helper' />
-                    Largest events
+                    <i className='input-helper' /> Largest events
                   </label>
                 </div>
               </h4>

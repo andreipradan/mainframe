@@ -135,7 +135,7 @@ const Bonds = () => {
       {/* Top title and breadcrumbs */}
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Bonds
+          Bonds{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -370,7 +370,7 @@ const Bonds = () => {
                             type='checkbox'
                             checked={activeOnlyChecked}
                             onChange={onActiveOnlyChange}
-                          />
+                          />{' '}
                           Active only <i className='input-helper' />
                         </label>
                       </div>

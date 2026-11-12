@@ -72,7 +72,7 @@ const Car = () => {
     <div>
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Car expenses
+          Car expenses{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -101,7 +101,7 @@ const Car = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>
-                Cars
+                Cars{' '}
                 <button
                   type='button'
                   className='float-right btn btn-outline-primary btn-rounded btn-icon pl-1'

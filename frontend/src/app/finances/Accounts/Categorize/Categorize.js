@@ -606,7 +606,7 @@ const Categorize = () => {
                         })
                       )
                     }
-                  />
+                  />{' '}
                   Expenses only <i className='input-helper' />
                 </label>
               </div>
@@ -623,7 +623,7 @@ const Categorize = () => {
                         })
                       )
                     }
-                  />
+                  />{' '}
                   Unique <i className='input-helper' />
                 </label>
               </div>

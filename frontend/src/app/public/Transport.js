@@ -206,7 +206,7 @@ const Transport = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title mb-1'>
-                Live Map &nbsp;
+                Live Map{' '}
                 <button
                   type='button'
                   className={`btn btn-outline-${toggleMapType ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
