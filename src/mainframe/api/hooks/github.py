@@ -40,20 +40,20 @@ def _validate_response(response, ip):
 
 
 def _verify_signature(request):
-    header_signature = request.META.get("HTTP_X_HUB_SIGNATURE")
+    header_signature = request.META.get("HTTP_X_HUB_SIGNATURE_256")
     if header_signature is None:
         send_telegram_message(text=f"{PREFIX} No signature")
         return False
 
-    sha_name, signature = header_signature.split("=")
-    if sha_name != "sha1":
+    sha_name, separator, signature = header_signature.partition("=")
+    if sha_name != "sha256" or not separator or not signature:
         send_telegram_message(text=f"{PREFIX} operation not supported")
         return False
 
     mac = hmac.new(
         force_bytes(settings.SECRET_KEY),
         msg=force_bytes(request.body),
-        digestmod=hashlib.sha1,
+        digestmod=hashlib.sha256,
     )
     if not hmac.compare_digest(force_bytes(mac.hexdigest()), force_bytes(signature)):
         send_telegram_message(text=f"{PREFIX} Invalid signature")

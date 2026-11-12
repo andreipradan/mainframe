@@ -39,9 +39,9 @@ def make_request(payload, event="push", signature=True, method="POST"):
         headers["HTTP_X_GITHUB_EVENT"] = event
     if signature:
         digest = hmac.new(
-            settings.SECRET_KEY.encode(), body, digestmod=hashlib.sha1
+            settings.SECRET_KEY.encode(), body, digestmod=hashlib.sha256
         ).hexdigest()
-        headers["HTTP_X_HUB_SIGNATURE"] = f"sha1={digest}"
+        headers["HTTP_X_HUB_SIGNATURE_256"] = f"sha256={digest}"
     return getattr(RequestFactory(), method.lower())(
         "/hooks/github/", data=body, content_type="application/json", **headers
     )
@@ -73,14 +73,20 @@ def test_validate_response_accepts_github_ip():
 
 
 @pytest.mark.parametrize(
-    ("signature", "expected"),
-    [(None, False), ("sha256=bad", False), ("sha1=bad", False)],
+    ("header", "signature", "expected"),
+    [
+        (None, None, False),
+        ("HTTP_X_HUB_SIGNATURE_256", "sha256=bad", False),
+        ("HTTP_X_HUB_SIGNATURE_256", "sha1=bad", False),
+        ("HTTP_X_HUB_SIGNATURE_256", "invalid", False),
+        ("HTTP_X_HUB_SIGNATURE", "sha1=bad", False),
+    ],
 )
-def test_verify_signature_rejects_invalid_signatures(signature, expected):
+def test_verify_signature_rejects_invalid_signatures(header, signature, expected):
     request = mock.MagicMock(body=b"payload")
     request.META = {}
-    if signature:
-        request.META["HTTP_X_HUB_SIGNATURE"] = signature
+    if header:
+        request.META[header] = signature
     with mock.patch("mainframe.api.hooks.github.send_telegram_message"):
         assert _verify_signature(request) is expected
 
@@ -88,10 +94,10 @@ def test_verify_signature_rejects_invalid_signatures(signature, expected):
 def test_verify_signature_accepts_valid_signature():
     body = b"payload"
     digest = hmac.new(
-        settings.SECRET_KEY.encode(), body, digestmod=hashlib.sha1
+        settings.SECRET_KEY.encode(), body, digestmod=hashlib.sha256
     ).hexdigest()
     request = mock.MagicMock(body=body)
-    request.META = {"HTTP_X_HUB_SIGNATURE": f"sha1={digest}"}
+    request.META = {"HTTP_X_HUB_SIGNATURE_256": f"sha256={digest}"}
 
     assert _verify_signature(request)
 
