@@ -166,7 +166,7 @@ const EditModal = () => {
                   className='btn btn-outline-secondary rounded btn-sm'
                   dateFormat={'dd-MM-yyyy'}
                   isClearable={false}
-                  onChange={(date) => setDate(date)}
+                  onChange={(selectedDate) => setDate(selectedDate)}
                   readOnly={expenses.loading}
                   scrollableYearDropdown
                   selected={date}

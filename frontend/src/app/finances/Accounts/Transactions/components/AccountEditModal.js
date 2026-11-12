@@ -14,6 +14,28 @@ import { setModalOpen } from '../../../../../redux/accountsSlice';
 import Errors from '../../../../shared/Errors';
 import Form from 'react-bootstrap/Form';
 
+const AccountModalTitle = ({ isNew, selectedItem, onRefresh }) => (
+  <Modal.Title>
+    <div className='row'>
+      <div className='col-lg-12 grid-margin stretch-card mb-1'>
+        {isNew
+          ? 'Add a new account?'
+          : `Edit account #${selectedItem?.number}?`}
+        {!isNew && (
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent'
+            onClick={onRefresh}
+          >
+            <i className='mdi mdi-refresh' />
+          </button>
+        )}
+      </div>
+    </div>
+    <p className='text-muted mb-0'>{selectedItem?.date}</p>
+  </Modal.Title>
+);
+
 const AccountEditModal = () => {
   const dispatch = useDispatch();
   const accounts = useSelector((state) => state.accounts);
@@ -27,6 +49,7 @@ const AccountEditModal = () => {
   const [number, setNumber] = useState('');
   const [type, setType] = useState('');
 
+  /** Resets all account form fields. */
   const clearModal = () => {
     setBank('');
     setClientCode('');
@@ -37,6 +60,7 @@ const AccountEditModal = () => {
     setCurrency('');
   };
 
+  /** Loads the selected account's values into the form. */
   const populateModal = () => {
     if (accounts.selectedItem) {
       setBank(accounts.selectedItem.bank || '');
@@ -77,27 +101,13 @@ const AccountEditModal = () => {
   return (
     <Modal centered show={accounts.modalOpen} onHide={closeModal}>
       <Modal.Header closeButton>
-        <Modal.Title>
-          <div className='row'>
-            <div className='col-lg-12 grid-margin stretch-card mb-1'>
-              {accounts.modalOpen === 'new'
-                ? 'Add a new account?'
-                : `Edit account #${accounts.selectedItem?.number}?`}
-              {!(accounts.modalOpen === 'new') && (
-                <button
-                  type='button'
-                  className='btn btn-outline-success btn-sm border-0 bg-transparent'
-                  onClick={() =>
-                    dispatch(AccountsApi.get(token, accounts.selectedItem?.id))
-                  }
-                >
-                  <i className='mdi mdi-refresh' />
-                </button>
-              )}
-            </div>
-          </div>
-          <p className='text-muted mb-0'>{accounts.selectedItem?.date}</p>
-        </Modal.Title>
+        <AccountModalTitle
+          isNew={accounts.modalOpen === 'new'}
+          selectedItem={accounts.selectedItem}
+          onRefresh={() =>
+            dispatch(AccountsApi.get(token, accounts.selectedItem?.id))
+          }
+        />
       </Modal.Header>
       <Modal.Body>
         <Errors errors={accounts.errors} />

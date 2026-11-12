@@ -64,6 +64,7 @@ const Sidebar = () => {
     setUserPagesMenuOpen(false);
   };
 
+  /** Checks whether the current route starts with a navigation path. */
   const isPathActive = (path) => location.pathname.startsWith(path);
   const onRouteChanged = () => {
     document.querySelector('#sidebar').classList.remove('active');
