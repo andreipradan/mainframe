@@ -6,6 +6,41 @@ import Tasks from '../Tasks';
 import Watchers from '../Watchers';
 import WatchersApi from '../../../api/watchers';
 
+jest.mock('../../../api/commands', () => ({
+  __esModule: true,
+  default: class CommandsApi {
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList() {
+      return { type: 'commands/getList', token: this.token };
+    }
+
+    run(name, data) {
+      return { type: 'commands/run', name, data };
+    }
+  },
+}));
+jest.mock('../../../api/tasks', () => ({
+  __esModule: true,
+  default: {
+    getList: (token) => ({ type: 'tasks/getList', token }),
+    getItem: (token, name, id) => ({ type: 'tasks/getItem', token, name, id }),
+    revoke: (token, name, app, method) => ({
+      type: 'tasks/revoke',
+      token,
+      name,
+      app,
+      method,
+    }),
+    deleteHistory: (token, name) => ({
+      type: 'tasks/deleteHistory',
+      token,
+      name,
+    }),
+  },
+}));
 let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
@@ -55,15 +90,18 @@ jest.mock('react-bootstrap/Modal', () => {
 });
 jest.mock('react-ace', () => ({
   __esModule: true,
-  default: ({ value, placeholder }) =>
+  default: ({ value, placeholder, onChange, className }) =>
     require('react').createElement('textarea', {
       value: value ?? '',
       placeholder,
+      className,
+      onChange: (event) =>
+        onChange(event.target.value, { end: { row: 0, column: 0 } }),
     }),
 }));
 jest.mock('react-loader-spinner', () => ({
   Audio: () => null,
-  ColorRing: () => null,
+  ColorRing: () => <div>Loading</div>,
 }));
 jest.mock('react-select', () => ({
   __esModule: true,
@@ -83,11 +121,128 @@ const render = (component) => {
   };
 };
 
+const changeValue = (element, value) => {
+  act(() => {
+    const setter = Object.getOwnPropertyDescriptor(
+      Object.getPrototypeOf(element),
+      'value'
+    ).set;
+    setter.call(element, value);
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+};
+
 beforeEach(() => {
   mockDispatch.mockClear();
 });
 
 describe('command-related accessible controls', () => {
+  test('shows loading and empty command states and fetches missing results', () => {
+    mockState = {
+      auth: { token: 'token' },
+      commands: { results: null, errors: null, loading: true },
+    };
+    const loadingView = render(<Commands />);
+    expect(loadingView.container.textContent).toContain('Loading');
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'commands/getList',
+      token: 'token',
+    });
+    loadingView.unmount();
+
+    mockState = {
+      auth: { token: 'token' },
+      commands: { results: [], errors: null, loading: false },
+    };
+    const emptyView = render(<Commands />);
+    expect(emptyView.container.textContent).toContain('No commands available');
+    emptyView.unmount();
+  });
+
+  test('shows command argument metadata, validates kwargs, and dispatches a run', () => {
+    mockState = {
+      auth: { token: 'token' },
+      commands: {
+        results: [
+          {
+            app: 'finance',
+            commands: [
+              {
+                name: 'reconcile',
+                args: [
+                  {
+                    dest: 'name',
+                    required: true,
+                    type: 'str',
+                    default: null,
+                    choices: ['one', 'two'],
+                    help: 'Account name',
+                  },
+                  {
+                    dest: 'enabled',
+                    required: true,
+                    type: 'bool',
+                    default: false,
+                  },
+                  { dest: 'count', required: true, type: 'int' },
+                  { dest: 'rate', required: true, type: 'float' },
+                  { dest: 'options', required: true, type: 'dict' },
+                  { dest: 'items', required: true, type: 'list' },
+                  {
+                    dest: 'optional',
+                    required: false,
+                    type: 'str',
+                    default: 'ignored',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        errors: null,
+        loading: false,
+      },
+    };
+    const { container, unmount } = render(<Commands />);
+    const appButton = container.querySelector(
+      'button[aria-controls="commands-0"]'
+    );
+    act(() => appButton.click());
+    const commandButton = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent.includes('reconcile')
+    );
+    act(() => commandButton.click());
+
+    expect(container.textContent).toContain('choices: one, two');
+    expect(container.textContent).toContain('description: Account name');
+
+    const argsInput = container.querySelector(
+      'input[placeholder="Command arguments"]'
+    );
+    const kwargsInput = container.querySelector(
+      'textarea[placeholder="Kwargs"]'
+    );
+    expect(kwargsInput.value).toContain('"enabled": false');
+    expect(kwargsInput.value).not.toContain('"optional"');
+    changeValue(argsInput, 'first second');
+    changeValue(kwargsInput, '{invalid');
+    expect(container.querySelector('.is-invalid')).not.toBeNull();
+
+    changeValue(kwargsInput, '{"valid": true}');
+    const runButton = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Run'
+    );
+    act(() => runButton.click());
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'commands/run',
+      name: 'reconcile',
+      data: { args: ['first', 'second'], kwargs: { valid: true } },
+    });
+    unmount();
+  });
+
   test('expands an app and opens the selected command', () => {
     mockState = {
       auth: { token: 'token' },
@@ -115,6 +270,56 @@ describe('command-related accessible controls', () => {
         .click();
     });
     expect(container.textContent).toContain('Run reconcile?');
+    unmount();
+  });
+
+  test('refreshes commands, closes app groups, and runs an argument-free command', () => {
+    mockState = {
+      auth: { token: 'token' },
+      commands: {
+        results: [
+          { app: 'finance', commands: [{ name: 'reconcile' }] },
+          { app: 'empty', commands: [] },
+        ],
+        errors: null,
+        loading: false,
+      },
+    };
+    const { container, unmount } = render(<Commands />);
+    const refresh = container.querySelector('.mdi-refresh').parentElement;
+    act(() => refresh.click());
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'commands/getList',
+      token: 'token',
+    });
+
+    const finance = container.querySelector(
+      'button[aria-controls="commands-0"]'
+    );
+    act(() => finance.click());
+    act(() => finance.click());
+    expect(finance.getAttribute('aria-expanded')).toBe('false');
+
+    const empty = container.querySelector('button[aria-controls="commands-1"]');
+    act(() => empty.click());
+    expect(container.querySelector('#commands-1').children).toHaveLength(0);
+
+    act(() => finance.click());
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.includes('reconcile'))
+        .click()
+    );
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Run')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'commands/run',
+      name: 'reconcile',
+      data: {},
+    });
     unmount();
   });
 
@@ -254,6 +459,121 @@ describe('command-related accessible controls', () => {
       'Executing'
     );
     expect(rows[1].textContent).toContain("Didn't run");
+    unmount();
+  });
+
+  test('loads tasks, renders empty and loading rows, and handles task actions', () => {
+    mockState = {
+      auth: { token: 'token' },
+      tasks: {
+        errors: null,
+        loading: true,
+        loadingItems: [],
+        results: null,
+        selectedItem: null,
+      },
+    };
+    const loadingView = render(<Tasks />);
+    expect(loadingView.container.textContent).toContain('Loading');
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'tasks/getList',
+      token: 'token',
+    });
+    loadingView.unmount();
+
+    mockState = {
+      auth: { token: 'token' },
+      tasks: {
+        errors: null,
+        loading: false,
+        loadingItems: [],
+        results: [],
+        selectedItem: null,
+      },
+    };
+    const emptyView = render(<Tasks />);
+    expect(emptyView.container.textContent).toContain('No tasks available');
+    emptyView.unmount();
+
+    const task = {
+      id: 12,
+      app: 'finance',
+      name: 'reconcile',
+      timestamp: '2025-01-02T12:00:00Z',
+      status: 'unknown',
+      detail: 'Details',
+      is_periodic: true,
+      is_revoked: true,
+      history: [],
+      errors: [],
+    };
+    mockState = {
+      auth: { token: 'token' },
+      tasks: {
+        errors: null,
+        loading: false,
+        loadingItems: [task.id],
+        results: [task],
+        selectedItem: task,
+      },
+    };
+    const loadingDetails = render(<Tasks />);
+    expect(loadingDetails.container.textContent).toContain('Loading');
+    loadingDetails.unmount();
+
+    mockState.tasks.loadingItems = [];
+    const selectedView = render(<Tasks />);
+    const { container, unmount } = selectedView;
+    expect(container.textContent).not.toContain('Loading');
+    expect(container.textContent).toContain('Unknown');
+    expect(container.textContent).toContain('Detail: Details');
+    expect(container.querySelectorAll('.mdi-check')).toHaveLength(4);
+
+    act(() => container.querySelector('tbody button').click());
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'tasks/selectItem',
+      payload: 12,
+    });
+    act(() =>
+      container.querySelectorAll('.mdi-refresh')[1].parentElement.click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'tasks/getItem',
+      token: 'token',
+      name: 'reconcile',
+      id: 12,
+    });
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Restore')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'tasks/revoke',
+      token: 'token',
+      name: 'reconcile',
+      app: 'finance',
+      method: 'restore',
+    });
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Delete history')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'tasks/deleteHistory',
+      token: 'token',
+      name: 'reconcile',
+    });
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'Close')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'tasks/selectItem',
+      payload: null,
+    });
     unmount();
   });
 
