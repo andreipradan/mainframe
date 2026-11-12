@@ -1604,7 +1604,7 @@ const Sidebar = () => {
             <li className='nav-item menu-items'>
               <a
                 className='nav-link'
-                href='http://bootstrapdash.com/demo/corona-react-free/documentation/documentation.html'
+                href='https://bootstrapdash.com/demo/corona-react-free/documentation/documentation.html'
                 rel='noopener noreferrer'
                 target='_blank'
               >
