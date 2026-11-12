@@ -37,6 +37,10 @@ name = "javascript"
     "method-definition",
   ]
 
+  [[analyzers.meta.issue_patterns]]
+  pattern = "JS-D1001"
+  skip = true
+
 [[analyzers]]
 name = "python"
 
