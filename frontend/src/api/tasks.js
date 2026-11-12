@@ -1,4 +1,4 @@
-import axios from "./index";
+import axios from './index';
 import {
   selectItem,
   set,
@@ -6,65 +6,68 @@ import {
   setItem,
   setLoading,
   setLoadingItems,
-} from "../redux/tasksSlice"
+} from '../redux/tasksSlice';
 
-import { handleErrors } from "./errors";
-import {toast} from "react-toastify";
-import {toastParams} from "./auth";
+import { handleErrors } from './errors';
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
+
+const base = 'tasks';
 
 class TasksApi {
-  static deleteHistory = (token, taskName) => dispatch => {
+  static deleteHistory = (token, taskName) => (dispatch) => {
     dispatch(setLoading(true));
     axios
-      .delete(`${base}/${taskName}/delete-history/`,{ headers: { Authorization: token } })
-      .then(response => {
-          toast.success(`"${taskName}" deleted successfully!`, toastParams)
-          dispatch(set(response.data))
-          dispatch(selectItem(null))
-        }
-      )
-      .catch(err =>
+      .delete(`${base}/${taskName}/delete-history/`, {
+        headers: { Authorization: token },
+      })
+      .then((response) => {
+        toast.success(`"${taskName}" deleted successfully!`, toastParams);
+        dispatch(set(response.data));
+        dispatch(selectItem(null));
+      })
+      .catch((err) =>
         err.status === 400
           ? toast.warning(`${taskName} details not found!`)
           : handleErrors(err, dispatch, setErrors, setLoading)
       );
   };
-  static getItem = (token, taskName, taskId) => dispatch => {
+  static getItem = (token, taskName, taskId) => (dispatch) => {
     dispatch(setLoadingItems(taskId));
     axios
       .get(`${base}/${taskName}/`, { headers: { Authorization: token } })
-      .then(response => dispatch(setItem(response.data)))
-      .catch(err => handleErrors(err, dispatch, setErrors));
+      .then((response) => dispatch(setItem(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static getList = token => dispatch => {
+  static getList = (token) => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .get(`${base}/`, { headers: { Authorization: token } })
-      .then(response => dispatch(set(response.data)))
-      .catch(err => handleErrors(err, dispatch, setErrors, setLoading));
+      .then((response) => dispatch(set(response.data)))
+      .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
-  static revoke = (token, taskName, app, method) => dispatch => {
+  static revoke = (token, taskName, app, method) => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .put(
         `${base}/${taskName}/revoke/`,
-        {app, method},
+        { app, method },
         { headers: { Authorization: token } }
       )
-      .then(response => {
-          toast[method === "revoke" ? "warning" : "success"](`"${taskName}" ${method}d!`, toastParams)
-          dispatch(set(response.data))
-          dispatch(selectItem(null))
-        }
-      )
-      .catch(err =>
+      .then((response) => {
+        toast[method === 'revoke' ? 'warning' : 'success'](
+          `"${taskName}" ${method}d!`,
+          toastParams
+        );
+        dispatch(set(response.data));
+        dispatch(selectItem(null));
+      })
+      .catch((err) =>
         err.status === 400
           ? toast.warning(`${taskName} details not found!`)
           : handleErrors(err, dispatch, setErrors, setLoading)
       );
   };
 }
-
-const base = "tasks";
 
 export default TasksApi;

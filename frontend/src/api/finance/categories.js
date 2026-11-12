@@ -10,24 +10,24 @@ import {
   setLoading,
 } from '../../redux/categoriesSlice';
 
+let base = 'finance/categories';
+
 export class CategoriesApi {
-  static create = (token, data) => dispatch => {
+  static create = (token, data) => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .post(`${base}/`, data, { headers: { Authorization: token } })
-      .then(response => {
+      .then((response) => {
         dispatch(create({ setSelected: true, ...response.data }));
-        toast.success(`Category ${data.id} created successfully!`, toastParams)
+        toast.success(`Category ${data.id} created successfully!`, toastParams);
       })
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
-  }
-  static getList = token => (dispatch) => {
+  };
+  static getList = (token) => (dispatch) => {
     dispatch(setLoading(true));
     axios
       .get(`${base}/`, { headers: { Authorization: token } })
-      .then(response => dispatch(set(response.data)))
+      .then((response) => dispatch(set(response.data)))
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
-
 }
-let base = "finance/categories";

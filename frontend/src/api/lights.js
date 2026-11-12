@@ -1,4 +1,4 @@
-import {ngrokAxios as axios} from "./index";
+import { ngrokAxios as axios } from './index';
 import {
   set,
   setBrightness,
@@ -11,76 +11,94 @@ import {
   turn_off,
   turn_on,
   unsetLoadingLight,
-} from "../redux/lightsSlice";
-import { handleErrors } from "./errors";
+} from '../redux/lightsSlice';
+import { handleErrors } from './errors';
 import { ListApi, mix, TokenMixin } from './shared';
 
+const base = 'lights';
 
 class LightsApi extends mix(ListApi, TokenMixin) {
-  static baseUrl = "lights"
-  static methods = {set, setErrors, setLoading}
-  static ngrokAxios = ["getList"]
+  static baseUrl = 'lights';
+  static methods = { set, setErrors, setLoading };
+  static ngrokAxios = ['getList'];
 
   static setBrightness = (token, lightIp, brightness) => (dispatch) => {
     dispatch(setLoadingItems(lightIp));
     axios
       .patch(
         `${base}/${lightIp}/set-brightness/`,
-        {brightness},
-        {headers: {Authorization: token}})
-      .then(() => dispatch(setBrightness({ip: lightIp, brightness})))
+        { brightness },
+        { headers: { Authorization: token } }
+      )
+      .then(() => dispatch(setBrightness({ ip: lightIp, brightness })))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setColorTemp = (token, lightIp, colorTemp) => (dispatch) => {
     dispatch(setLoadingItems(lightIp));
     axios
-      .patch(`${base}/${lightIp}/set-color-temp/`,
-        {color_temp: colorTemp},
-        {headers: {Authorization: token}})
-      .then(() => dispatch(setColorTemp({ip: lightIp, colorTemp})))
+      .patch(
+        `${base}/${lightIp}/set-color-temp/`,
+        { color_temp: colorTemp },
+        { headers: { Authorization: token } }
+      )
+      .then(() => dispatch(setColorTemp({ ip: lightIp, colorTemp })))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
-  static setName = (token, lightIp, name) => dispatch => {
+  static setName = (token, lightIp, name) => (dispatch) => {
     dispatch(setLoadingItems(lightIp));
     axios
-      .patch(`${base}/${lightIp}/set-name/`,
-        {name},
-        {headers: {Authorization: token}})
-      .then(() => dispatch(setName({ip: lightIp, name})))
+      .patch(
+        `${base}/${lightIp}/set-name/`,
+        { name },
+        { headers: { Authorization: token } }
+      )
+      .then(() => dispatch(setName({ ip: lightIp, name })))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static setRgb = (token, lightIp, rgb) => (dispatch) => {
     dispatch(setLoadingItems(lightIp));
     axios
-      .patch(`${base}/${lightIp}/set-rgb/`,
-        {rgb: rgb},
-        {headers: {Authorization: token}})
+      .patch(
+        `${base}/${lightIp}/set-rgb/`,
+        { rgb: rgb },
+        { headers: { Authorization: token } }
+      )
       .then(() => dispatch(unsetLoadingLight(lightIp)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_all = (token, state) => (dispatch) => {
     dispatch(setLoading(true));
     axios
-      .put(`${base}/turn-all-${state}/`, {}, {headers: {Authorization: token}})
+      .put(
+        `${base}/turn-all-${state}/`,
+        {},
+        { headers: { Authorization: token } }
+      )
       .then(() => dispatch(turn_all(state)))
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
   static turn_off = (token, lightId) => (dispatch) => {
     dispatch(setLoadingItems(lightId));
     axios
-      .put(`${base}/${lightId}/turn-off/`, {}, {headers: {Authorization: token}})
+      .put(
+        `${base}/${lightId}/turn-off/`,
+        {},
+        { headers: { Authorization: token } }
+      )
       .then(() => dispatch(turn_off(lightId)))
-      .catch(err => handleErrors(err, dispatch, setErrors));
+      .catch((err) => handleErrors(err, dispatch, setErrors));
   };
   static turn_on = (token, lightId) => (dispatch) => {
     dispatch(setLoadingItems(lightId));
     axios
-      .put(`${base}/${lightId}/turn-on/`, {}, {headers: {Authorization: token}})
+      .put(
+        `${base}/${lightId}/turn-on/`,
+        {},
+        { headers: { Authorization: token } }
+      )
       .then(() => dispatch(turn_on(lightId)))
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }
-
-const base = "lights";
 
 export default LightsApi;

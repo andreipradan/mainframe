@@ -319,27 +319,6 @@ const Calculator = () => {
   const [totalInterest, setTotalInterest] = useState(0);
   const [totalPrincipal, setTotalPrincipal] = useState(0);
 
-  useEffect(() => {
-    if (latestTimetable?.length) {
-      updateDurationAmount(6000);
-      setMonthlyAmount(
-        Math.round((Number.parseFloat(latestTimetable[0].total) + 2500) / 500) *
-          500
-      );
-    }
-  }, [latestTimetable]);
-
-  useEffect(() => {
-    if (latestTimetable?.length) {
-      setMonthlySuggestions();
-      setMonthlyError(
-        monthlyAmount < latestTimetable[0].total
-          ? `Amount must be >= ${latestTimetable[0].total}`
-          : ''
-      );
-    }
-  }, [monthlyAmount]);
-
   const onChangeTimetable = (newValue) => {
     dispatch(selectTimetable(newValue.value));
   };
@@ -417,6 +396,27 @@ const Calculator = () => {
       calculateSum(Object.values(suggestedAmounts), 'principal')
     );
   };
+
+  useEffect(() => {
+    if (latestTimetable?.length) {
+      updateDurationAmount(6000);
+      setMonthlyAmount(
+        Math.round((Number.parseFloat(latestTimetable[0].total) + 2500) / 500) *
+          500
+      );
+    }
+  }, [latestTimetable]);
+
+  useEffect(() => {
+    if (latestTimetable?.length) {
+      setMonthlySuggestions();
+      setMonthlyError(
+        monthlyAmount < latestTimetable[0].total
+          ? `Amount must be >= ${latestTimetable[0].total}`
+          : ''
+      );
+    }
+  }, [monthlyAmount]);
 
   return (
     <>

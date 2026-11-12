@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 
 export const toastParams = { pauseOnFocusLoss: true, theme: 'colored' };
 
+const base = 'users';
+
 class AuthApi {
   static Login = (data, history, redirectUrl) => (dispatch) => {
     dispatch(setLoading(true));
@@ -45,7 +47,5 @@ class AuthApi {
       .catch((err) => handleErrors(err, dispatch, setErrors));
   };
 }
-
-const base = 'users';
 
 export default AuthApi;
