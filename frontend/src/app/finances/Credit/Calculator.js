@@ -10,6 +10,7 @@ import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { TimetableApi } from '../../../api/finance';
 import Errors from '../../shared/Errors';
 
+/** Formats a timetable date and marks the newest entry. */
 const formatTimetableLabel = (date, isLatest) =>
   isLatest ? `${date} (latest)` : date;
 

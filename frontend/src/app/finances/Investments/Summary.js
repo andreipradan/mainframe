@@ -20,6 +20,7 @@ import { getEvaluation, getPnl } from './Pension';
 
 Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip);
 
+/** Combines profit/loss and dividends into a display value. */
 const getProfitValue = (pnl, dividend, currency) => {
   if (!pnl) return '-';
 
@@ -125,57 +126,55 @@ const Summary = () => {
                   <Circles />
                 ) : (
                   investments[entry]?.currencies?.map((currency) => {
+                    const active = investments[entry]?.[`active_${currency}`];
+                    const deposit = investments[entry]?.[`deposit_${currency}`];
+                    const buy = investments[entry]?.[`buy_${currency}`];
+                    const sell = investments[entry]?.[`sell_${currency}`];
                     const pnl = investments[entry]?.[`pnl_${currency}`];
                     const dividend =
                       investments[entry]?.[`dividend_${currency}`];
                     return (
                       <div key={`${entry}-${currency}`}>
-                        {investments[entry]?.[`active_${currency}`] ? (
+                        {active ? (
                           <ListItem
                             label={'Active'}
-                            value={`${Number.parseFloat(
-                              investments[entry][`active_${currency}`]
-                            ).toFixed(2)} ${currency}`}
+                            value={`${Number.parseFloat(active).toFixed(2)} ${currency}`}
                             textType={'info'}
                           />
                         ) : null}
-                        {investments[entry]?.[`deposit_${currency}`] ? (
+                        {deposit ? (
                           <ListItem
                             label={'Deposits'}
-                            value={`${investments[entry][`deposit_${currency}`]} ${currency}`}
+                            value={`${deposit} ${currency}`}
                             textType={'warning'}
                           />
                         ) : null}
-                        {investments[entry]?.[`buy_${currency}`] ? (
+                        {buy ? (
                           <ListItem
                             label={'Bought'}
-                            value={`${investments[entry][`buy_${currency}`]} ${currency}`}
+                            value={`${buy} ${currency}`}
                             textType={'muted'}
                           />
                         ) : null}
-                        {investments[entry]?.[`sell_${currency}`] ? (
+                        {sell ? (
                           <ListItem
                             label={'Sold'}
-                            value={`${investments[entry][`sell_${currency}`]} ${currency}`}
+                            value={`${sell} ${currency}`}
                             textType={'muted'}
                           />
                         ) : null}
-                        {investments[entry]?.[`pnl_${currency}`] ? (
+                        {pnl ? (
                           <ListItem
                             label={'Profit / Loss'}
-                            value={`${investments[entry][`pnl_${currency}`]} ${currency}`}
+                            value={`${pnl} ${currency}`}
                             textType={'warning'}
                           />
                         ) : null}
-                        {investments[entry]?.[`dividend_${currency}`] ? (
+                        {dividend ? (
                           <ListItem
                             label={'Dividends'}
-                            value={`${investments[entry][`dividend_${currency}`]} ${currency}`}
-                            textType={
-                              investments[entry]?.[`dividend_${currency}`] > 0
-                                ? 'success'
-                                : 'danger'
-                            }
+                            value={`${dividend} ${currency}`}
+                            textType={dividend > 0 ? 'success' : 'danger'}
                           />
                         ) : null}
                         {pnl && dividend ? (
