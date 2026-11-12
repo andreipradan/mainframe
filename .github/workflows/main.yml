@@ -64,7 +64,7 @@ jobs:
       - name: Installing dev dependencies for migration check
         run: uv sync --locked
       - name: Run pre-commit checks
-        run: uv run pre-commit run --all-files
+        run: uv run --locked pre-commit run --all-files
         env:
           ENV: ci
           SKIP: migrations-check
