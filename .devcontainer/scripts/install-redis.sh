@@ -6,7 +6,7 @@ REDIS_VERSION=7.0.11
 sudo apt-get install -y build-essential tcl wget curl
 
 cd /tmp
-wget https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz
+wget --https-only https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz
 tar xzf redis-${REDIS_VERSION}.tar.gz
 cd redis-${REDIS_VERSION}
 make
