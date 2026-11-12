@@ -22,14 +22,28 @@ import { CategoriesApi } from '../../../../api/finance/categories';
 import { TransactionsApi } from '../../../../api/finance/transactions';
 
 /** Formats a transaction type for display. */
-export const getTypeLabel = (type) =>
-  type ? (type === 'ATM' ? type : `${capitalize(type).replace('_', ' ')}`) : '';
+export const getTypeLabel = (type) => {
+  if (!type || type === 'ATM') {
+    return type || '';
+  }
+  return capitalize(type).replace('_', ' ');
+};
 
 /** Converts a category id to a select option. */
 export const createOption = (label) => ({
   label: getTypeLabel(label),
   value: label,
 });
+
+const getOptionBackgroundColor = (state) => {
+  if (state.isSelected) {
+    return '#2f84d3';
+  }
+  if (state.isFocused) {
+    return '#829fbb';
+  }
+  return '#212529';
+};
 
 export const selectStyles = {
   control: (defaultStyles) => ({
@@ -39,55 +53,56 @@ export const selectStyles = {
   }),
   option: (defaultStyles, state) => ({
     ...defaultStyles,
-    backgroundColor: state.isSelected
-      ? '#2f84d3'
-      : state.isFocused
-        ? '#829fbb'
-        : '#212529',
+    backgroundColor: getOptionBackgroundColor(state),
   }),
   singleValue: (styles) => ({ ...styles, color: '#ccc' }),
 };
 
 /** Displays the selected transaction summary in the modal header. */
-const TransactionDetailsTitle = ({ transaction, confirmedByChoices }) => (
-  <Modal.Title>
-    <div className='mb-1'>Transaction details</div>
-    <p className='text-muted mb-0'>{transaction.description}</p>
-    <ListItem
-      label={'Amount'}
-      value={`${transaction.amount} ${transaction.currency}${Number.parseFloat(transaction.fee) ? ` (Fee: ${transaction.fee})` : ''}`}
-      textType='danger'
-    />
-    <ListItem label={'Type'} value={getTypeLabel(transaction.type)} />
-    <ListItem label={'Product'} value={transaction.product} />
-    <ListItem label={'Started'} value={transaction.started_at} datetime />
-    {transaction.state === 'COMPLETED' ? (
-      <ListItem label={'Completed'} value={transaction.completed_at} datetime />
-    ) : (
-      <ListItem label={'State'} value={transaction.state} />
-    )}
-    <ListItem
-      label={'Confirmed by'}
-      value={
-        confirmedByChoices?.find(
-          (choice) => choice[0] === transaction.confirmed_by
-        )?.[1]
-      }
-      textType={
-        transaction.confirmed_by === 1
-          ? 'warning'
-          : transaction.confirmed_by === 2
-            ? 'success'
-            : 'muted'
-      }
-    />
-    <ListItem
-      label={'Suggestion'}
-      value={transaction.category_suggestion || '-'}
-      textType={'warning'}
-    />
-  </Modal.Title>
-);
+const TransactionDetailsTitle = ({ transaction, confirmedByChoices }) => {
+  const feeLabel = Number.parseFloat(transaction.fee)
+    ? ` (Fee: ${transaction.fee})`
+    : '';
+  const confirmationTextTypes = { 1: 'warning', 2: 'success' };
+
+  return (
+    <Modal.Title>
+      <div className='mb-1'>Transaction details</div>
+      <p className='text-muted mb-0'>{transaction.description}</p>
+      <ListItem
+        label={'Amount'}
+        value={`${transaction.amount} ${transaction.currency}${feeLabel}`}
+        textType='danger'
+      />
+      <ListItem label={'Type'} value={getTypeLabel(transaction.type)} />
+      <ListItem label={'Product'} value={transaction.product} />
+      <ListItem label={'Started'} value={transaction.started_at} datetime />
+      {transaction.state === 'COMPLETED' ? (
+        <ListItem
+          label={'Completed'}
+          value={transaction.completed_at}
+          datetime
+        />
+      ) : (
+        <ListItem label={'State'} value={transaction.state} />
+      )}
+      <ListItem
+        label={'Confirmed by'}
+        value={
+          confirmedByChoices?.find(
+            (choice) => choice[0] === transaction.confirmed_by
+          )?.[1]
+        }
+        textType={confirmationTextTypes[transaction.confirmed_by] || 'muted'}
+      />
+      <ListItem
+        label={'Suggestion'}
+        value={transaction.category_suggestion || '-'}
+        textType={'warning'}
+      />
+    </Modal.Title>
+  );
+};
 
 const EditModal = () => {
   const token = useSelector((state) => state.auth.token);

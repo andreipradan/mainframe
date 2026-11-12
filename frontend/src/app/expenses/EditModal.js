@@ -38,6 +38,22 @@ const ExpenseModalTitle = ({ selectedItem, onRefresh }) => (
   </Modal.Title>
 );
 
+const ExpenseErrors = ({ errors }) => {
+  if (errors?.detail) {
+    return <p className='text-danger'>{errors.detail}</p>;
+  }
+  if (errors?.length) {
+    return (
+      <ul className='text-danger'>
+        {errors.map((error) => (
+          <li key={error}>{error}</li>
+        ))}
+      </ul>
+    );
+  }
+  return null;
+};
+
 const EditModal = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -117,17 +133,7 @@ const EditModal = () => {
       </Modal.Header>
       <Modal.Body>
         <h6 className='font-weight-light'>
-          {expenses.errors?.length || expenses.errors?.detail ? (
-            expenses.errors?.detail ? (
-              <p className='text-danger'>{expenses.errors.detail}</p>
-            ) : expenses.errors?.length ? (
-              <ul className='text-danger'>
-                {expenses.errors.map((err) => (
-                  <li key={err}>{err}</li>
-                ))}
-              </ul>
-            ) : null
-          ) : null}
+          <ExpenseErrors errors={expenses.errors} />
         </h6>
         {expenses.loadingItems?.includes(expenses.selectedItem?.id) ? (
           <ColorRing

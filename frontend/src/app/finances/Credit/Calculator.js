@@ -10,6 +10,9 @@ import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { TimetableApi } from '../../../api/finance';
 import Errors from '../../shared/Errors';
 
+const formatTimetableLabel = (date, isLatest) =>
+  isLatest ? `${date} (latest)` : date;
+
 const PMT = (ir, np, pv, fv = 0, type = 0) => {
   if (ir === 0) return -(pv + fv) / np;
   const pvif = Math.pow(1 + ir, np);
@@ -69,7 +72,9 @@ const DurationSuggestions = ({ amounts, durationMonths }) =>
           <li
             key={month}
             className={
-              parseInt(month) === durationMonths ? 'text-success' : 'text-muted'
+              Number.parseInt(month, 10) === durationMonths
+                ? 'text-success'
+                : 'text-muted'
             }
           >
             {month} month(s): {amounts[month].toFixed(2)}
@@ -433,15 +438,15 @@ const Calculator = () => {
           {timetable.selectedItem ? (
             <small className='text-muted'>
               Timetable:{' '}
-              {timetable.selectedItem.id === timetable.results[0].id
-                ? `${timetable.selectedItem.date} (latest)`
-                : timetable.selectedItem.date}
+              {formatTimetableLabel(
+                timetable.selectedItem.date,
+                timetable.selectedItem.id === timetable.results[0].id
+              )}
               <br />
               Interest: {timetable.selectedItem.interest}%&nbsp; (ircc:{' '}
               {timetable.selectedItem.ircc}%)
               <br />
-              Remaining: {calculateSum(latestTimetable, 'principal')}{' '}
-              {currency ? currency : null}
+              Remaining: {calculateSum(latestTimetable, 'principal')} {currency}
               <br />
               Months: {latestTimetable.length}
               <br />
@@ -454,12 +459,15 @@ const Calculator = () => {
           <Select
             placeholder={'Timetable'}
             value={{
-              label: `${timetable.selectedItem.id === timetable.results[0].id ? `${timetable.selectedItem.date} (latest)` : timetable.selectedItem.date}`,
+              label: formatTimetableLabel(
+                timetable.selectedItem.date,
+                timetable.selectedItem.id === timetable.results[0].id
+              ),
               value: timetable.selectedItem.id,
             }}
             onChange={onChangeTimetable}
             options={timetable.results.map((t, i) => ({
-              label: `${i === 0 ? `${t.date} (latest)` : t.date}`,
+              label: formatTimetableLabel(t.date, i === 0),
               value: t.id,
             }))}
             styles={selectStyles}
@@ -479,7 +487,7 @@ const Calculator = () => {
             updateDurationAmount(Number.parseFloat(event.target.value) || 0)
           }
           onDurationMonthsChange={(event) =>
-            updateDurationMonths(parseInt(event.target.value) || 0)
+            updateDurationMonths(Number.parseInt(event.target.value, 10) || 0)
           }
         />
         <MonthlyPaymentCard

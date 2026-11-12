@@ -50,6 +50,76 @@ const Commands = () => {
     },
     [annotations]
   );
+
+  function getCommandRows() {
+    if (loading) {
+      return (
+        <tr>
+          <td colSpan={6}>
+            <ColorRing
+              width='100%'
+              radius='9'
+              color='green'
+              wrapperStyle={{ width: '100%' }}
+            />
+          </td>
+        </tr>
+      );
+    }
+
+    if (!results?.length) {
+      return (
+        <tr>
+          <td colSpan={6}>No commands available</td>
+        </tr>
+      );
+    }
+
+    return results.map((result, i) => (
+      <li key={result.app} className='mt-2'>
+        <button
+          type='button'
+          className='btn btn-link p-0'
+          aria-expanded={appOpen === result.app}
+          aria-controls={`commands-${i}`}
+          onClick={() =>
+            appOpen === result.app ? setAppOpen(null) : setAppOpen(result.app)
+          }
+        >
+          <i
+            className={`mdi mdi-chevron-${appOpen === result.app ? 'down text-success' : 'right text-primary'}`}
+            aria-hidden='true'
+          />
+          &nbsp;{result.app}
+        </button>
+        <Collapse in={appOpen === result.app}>
+          <ul id={`commands-${i}`} className='list-unstyled'>
+            {result.commands.length
+              ? result.commands.map((command) => (
+                  <li
+                    key={`${result.app}-${command.name}`}
+                    className='pl-3 mt-1'
+                  >
+                    <button
+                      type='button'
+                      className='btn btn-link p-0'
+                      onClick={() => setSelectedCommand(command)}
+                    >
+                      <i
+                        className='mdi mdi-play text-success'
+                        aria-hidden='true'
+                      />{' '}
+                      {command.name}
+                    </button>
+                  </li>
+                ))
+              : null}
+          </ul>
+        </Collapse>
+      </li>
+    ));
+  }
+
   /** Runs the selected command with the entered arguments and kwargs. */
   function onSubmit(e) {
     e.preventDefault();
@@ -122,74 +192,7 @@ const Commands = () => {
                 </button>
               </h4>
               <Errors errors={errors} />
-              <ul className='list-unstyled'>
-                {!loading ? (
-                  results?.length ? (
-                    results.map((result, i) => (
-                      <li key={result.app} className='mt-2'>
-                        <button
-                          type='button'
-                          className='btn btn-link p-0'
-                          aria-expanded={appOpen === result.app}
-                          aria-controls={`commands-${i}`}
-                          onClick={() =>
-                            appOpen === result.app
-                              ? setAppOpen(null)
-                              : setAppOpen(result.app)
-                          }
-                        >
-                          <i
-                            className={`mdi mdi-chevron-${appOpen === result.app ? 'down text-success' : 'right text-primary'}`}
-                            aria-hidden='true'
-                          />
-                          &nbsp;{result.app}
-                        </button>
-                        <Collapse in={appOpen === result.app}>
-                          <ul id={`commands-${i}`} className='list-unstyled'>
-                            {result.commands.length
-                              ? result.commands.map((command) => (
-                                  <li
-                                    key={`${result.app}-${command.name}`}
-                                    className='pl-3 mt-1'
-                                  >
-                                    <button
-                                      type='button'
-                                      className='btn btn-link p-0'
-                                      onClick={() =>
-                                        setSelectedCommand(command)
-                                      }
-                                    >
-                                      <i
-                                        className='mdi mdi-play text-success'
-                                        aria-hidden='true'
-                                      />{' '}
-                                      {command.name}
-                                    </button>
-                                  </li>
-                                ))
-                              : null}
-                          </ul>
-                        </Collapse>
-                      </li>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6}>No commands available</td>
-                    </tr>
-                  )
-                ) : (
-                  <tr>
-                    <td colSpan={6}>
-                      <ColorRing
-                        width='100%'
-                        radius='9'
-                        color='green'
-                        wrapperStyle={{ width: '100%' }}
-                      />
-                    </td>
-                  </tr>
-                )}
-              </ul>
+              <ul className='list-unstyled'>{getCommandRows()}</ul>
             </div>
           </div>
         </div>

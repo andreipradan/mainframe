@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const publicRoutes = ['/login', '/register', '/terms-and-conditions'];
+const publicRoutes = new Set(['/login', '/register', '/terms-and-conditions']);
 const fullPageLayoutRoutes = [
   '/login',
   '/register',
@@ -29,10 +29,10 @@ const App = () => {
     pathnameEnd -= 1;
   }
   const pathname = rawPathname.slice(0, pathnameEnd) || '/';
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute = publicRoutes.has(pathname);
 
   const onRouteChanged = () => {
-    if (!token && !publicRoutes.includes(pathname)) {
+    if (!token && !publicRoutes.has(pathname)) {
       history.push('/login');
       return;
     }
