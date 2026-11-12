@@ -23,7 +23,12 @@ const App = () => {
   const location = useLocation();
   const history = useHistory();
   const token = useSelector((state) => state.auth.token);
-  const pathname = location.pathname.replace(/\/+$/, '') || '/';
+  const rawPathname = location.pathname;
+  let pathnameEnd = rawPathname.length;
+  while (pathnameEnd > 0 && rawPathname[pathnameEnd - 1] === '/') {
+    pathnameEnd -= 1;
+  }
+  const pathname = rawPathname.slice(0, pathnameEnd) || '/';
   const isPublicRoute = publicRoutes.includes(pathname);
 
   const onRouteChanged = () => {
