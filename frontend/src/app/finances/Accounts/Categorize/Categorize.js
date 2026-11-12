@@ -634,6 +634,9 @@ const Categorize = () => {
                       <th>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>
+                              Select all transactions to categorize
+                            </span>
                             <input
                               type='checkbox'
                               className='form-check-input'
@@ -684,6 +687,9 @@ const Categorize = () => {
                           <td>
                             <div className='form-check form-check-muted m-0 bordered'>
                               <label className='form-check-label'>
+                                <span className='sr-only'>
+                                  Apply category to transaction: {t.description}
+                                </span>
                                 <input
                                   disabled={
                                     !t.category_suggestion ||
