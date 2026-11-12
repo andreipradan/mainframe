@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Summary from '../Summary';
 
-let mockState;
+let mockState = {};
 const mockDispatch = jest.fn();
 
 jest.mock('react-redux', () => ({

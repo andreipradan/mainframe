@@ -32,7 +32,7 @@ const getProfitValue = (pnl, dividend, currency) => {
 const Summary = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
-  const state = useSelector((state) => state.investments);
+  const investments = useSelector((state) => state.investments);
   const pension = useSelector((s) => s.pension);
 
   const api = new InvestmentsApi(token);
@@ -47,7 +47,7 @@ const Summary = () => {
 
   return (
     <div>
-      <Errors errors={state.errors} />
+      <Errors errors={investments.errors} />
 
       {/* Top Cards - Summary, Remaining, Paid */}
       <div className='row'>
@@ -58,48 +58,54 @@ const Summary = () => {
                 Summary
                 <p className={'text-small text-muted'}>*pension not included</p>
               </h5>
-              {state.loading && <Circles />}
-              {!state.loading &&
-                state.totals &&
-                state.currencies?.map((currency) => (
+              {investments.loading && <Circles />}
+              {!investments.loading &&
+                investments.totals &&
+                investments.currencies?.map((currency) => (
                   <div key={`summary-${currency}`}>
-                    {state.totals[currency]?.active ? (
+                    {investments.totals[currency]?.active ? (
                       <ListItem
                         label={'Active'}
-                        value={`${Number.parseFloat(state.totals[currency].active).toFixed(2)} ${currency}`}
+                        value={`${Number.parseFloat(investments.totals[currency].active).toFixed(2)} ${currency}`}
                         textType={'primary'}
                       />
                     ) : null}
-                    {state.totals[currency]?.pnl &&
-                    Number.parseFloat(state.totals[currency].pnl) ? (
+                    {investments.totals[currency]?.pnl &&
+                    Number.parseFloat(investments.totals[currency].pnl) ? (
                       <ListItem
                         label={'Profit / Loss'}
-                        value={`${Number.parseFloat(state.totals[currency].pnl).toFixed(2)} ${currency}`}
+                        value={`${Number.parseFloat(investments.totals[currency].pnl).toFixed(2)} ${currency}`}
                         textType={'warning'}
                       />
                     ) : null}
-                    {state.totals[currency]?.dividend ? (
+                    {investments.totals[currency]?.dividend ? (
                       <ListItem
                         label={'Dividends'}
-                        value={`${Number.parseFloat(state.totals[currency].dividend).toFixed(2)} ${currency}`}
+                        value={`${Number.parseFloat(investments.totals[currency].dividend).toFixed(2)} ${currency}`}
                         textType={
-                          Number.parseFloat(state.totals[currency].dividend) < 0
+                          Number.parseFloat(
+                            investments.totals[currency].dividend
+                          ) < 0
                             ? 'danger'
                             : 'success'
                         }
                       />
                     ) : null}
-                    {state.totals[currency]?.pnl &&
-                    state.totals[currency]?.dividend ? (
+                    {investments.totals[currency]?.pnl &&
+                    investments.totals[currency]?.dividend ? (
                       <ListItem
                         label={'Profit'}
                         value={
-                          Number.parseFloat(state.totals[currency]?.dividend)
-                            ? `${(Number.parseFloat(state.totals[currency].pnl) + Number.parseFloat(state.totals[currency].dividend)).toFixed(2)} ${currency}`
-                            : `${Number.parseFloat(state.totals[currency].pnl).toFixed(2)} ${currency}`
+                          Number.parseFloat(
+                            investments.totals[currency]?.dividend
+                          )
+                            ? `${(Number.parseFloat(investments.totals[currency].pnl) + Number.parseFloat(investments.totals[currency].dividend)).toFixed(2)} ${currency}`
+                            : `${Number.parseFloat(investments.totals[currency].pnl).toFixed(2)} ${currency}`
                         }
                         textType={
-                          Number.parseFloat(state.totals[currency].dividend) < 0
+                          Number.parseFloat(
+                            investments.totals[currency].dividend
+                          ) < 0
                             ? 'danger'
                             : 'success'
                         }
@@ -115,57 +121,58 @@ const Summary = () => {
             <div className='card'>
               <div className='card-body'>
                 <h5>{entry[0].toUpperCase() + entry.slice(1)}</h5>
-                {state.loading ? (
+                {investments.loading ? (
                   <Circles />
                 ) : (
-                  state[entry]?.currencies?.map((currency) => {
-                    const pnl = state[entry]?.[`pnl_${currency}`];
-                    const dividend = state[entry]?.[`dividend_${currency}`];
+                  investments[entry]?.currencies?.map((currency) => {
+                    const pnl = investments[entry]?.[`pnl_${currency}`];
+                    const dividend =
+                      investments[entry]?.[`dividend_${currency}`];
                     return (
                       <div key={`${entry}-${currency}`}>
-                        {state[entry]?.[`active_${currency}`] ? (
+                        {investments[entry]?.[`active_${currency}`] ? (
                           <ListItem
                             label={'Active'}
                             value={`${Number.parseFloat(
-                              state[entry][`active_${currency}`]
+                              investments[entry][`active_${currency}`]
                             ).toFixed(2)} ${currency}`}
                             textType={'info'}
                           />
                         ) : null}
-                        {state[entry]?.[`deposit_${currency}`] ? (
+                        {investments[entry]?.[`deposit_${currency}`] ? (
                           <ListItem
                             label={'Deposits'}
-                            value={`${state[entry][`deposit_${currency}`]} ${currency}`}
+                            value={`${investments[entry][`deposit_${currency}`]} ${currency}`}
                             textType={'warning'}
                           />
                         ) : null}
-                        {state[entry]?.[`buy_${currency}`] ? (
+                        {investments[entry]?.[`buy_${currency}`] ? (
                           <ListItem
                             label={'Bought'}
-                            value={`${state[entry][`buy_${currency}`]} ${currency}`}
+                            value={`${investments[entry][`buy_${currency}`]} ${currency}`}
                             textType={'muted'}
                           />
                         ) : null}
-                        {state[entry]?.[`sell_${currency}`] ? (
+                        {investments[entry]?.[`sell_${currency}`] ? (
                           <ListItem
                             label={'Sold'}
-                            value={`${state[entry][`sell_${currency}`]} ${currency}`}
+                            value={`${investments[entry][`sell_${currency}`]} ${currency}`}
                             textType={'muted'}
                           />
                         ) : null}
-                        {state[entry]?.[`pnl_${currency}`] ? (
+                        {investments[entry]?.[`pnl_${currency}`] ? (
                           <ListItem
                             label={'Profit / Loss'}
-                            value={`${state[entry][`pnl_${currency}`]} ${currency}`}
+                            value={`${investments[entry][`pnl_${currency}`]} ${currency}`}
                             textType={'warning'}
                           />
                         ) : null}
-                        {state[entry]?.[`dividend_${currency}`] ? (
+                        {investments[entry]?.[`dividend_${currency}`] ? (
                           <ListItem
                             label={'Dividends'}
-                            value={`${state[entry][`dividend_${currency}`]} ${currency}`}
+                            value={`${investments[entry][`dividend_${currency}`]} ${currency}`}
                             textType={
-                              state[entry]?.[`dividend_${currency}`] > 0
+                              investments[entry]?.[`dividend_${currency}`] > 0
                                 ? 'success'
                                 : 'danger'
                             }
@@ -240,14 +247,14 @@ const Summary = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Next bond interest</h6>
-              {state.loading && <Circles />}
-              {!state.loading && state.bonds?.next_interest && (
+              {investments.loading && <Circles />}
+              {!investments.loading && investments.bonds?.next_interest && (
                 <Marquee pauseOnHover>
                   <ListItem
                     label={'Date'}
                     value={formatDate(
                       new Date(
-                        [...state.bonds.next_interest.interest_dates]
+                        [...investments.bonds.next_interest.interest_dates]
                           .sort(
                             (left, right) => new Date(left) - new Date(right)
                           )
@@ -259,32 +266,32 @@ const Summary = () => {
                   />
                   <ListItem
                     label={'Ticker'}
-                    value={state.bonds.next_interest.ticker}
+                    value={investments.bonds.next_interest.ticker}
                     textType={'primary'}
                     className='mr-3'
                   />
                   <ListItem
                     label={'Amount'}
-                    value={`${state.bonds.next_interest.net} ${state.bonds.next_interest.currency}`}
+                    value={`${investments.bonds.next_interest.net} ${investments.bonds.next_interest.currency}`}
                     textType={'success'}
                     className='mr-3'
                   />
                   <ListItem
                     label={'Interest'}
                     value={`${Number.parseFloat(
-                      (((state.bonds.next_interest.interest / 100) *
-                        -state.bonds.next_interest.net) /
+                      (((investments.bonds.next_interest.interest / 100) *
+                        -investments.bonds.next_interest.net) /
                         12) *
-                        state.bonds.next_interest.months
+                        investments.bonds.next_interest.months
                     ).toFixed(
                       2
-                    )} ${state.bonds.next_interest.currency} (${state.bonds.next_interest.interest}%)`}
+                    )} ${investments.bonds.next_interest.currency} (${investments.bonds.next_interest.interest}%)`}
                     textType={'success'}
                     className='mr-3'
                   />
                 </Marquee>
               )}
-              {!state.loading && !state.bonds?.next_interest && '-'}
+              {!investments.loading && !investments.bonds?.next_interest && '-'}
             </div>
           </div>
         </div>
@@ -296,45 +303,47 @@ const Summary = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Next deposit maturity</h6>
-              {state.loading && <Circles />}
-              {!state.loading && state.deposits?.next_maturity && (
+              {investments.loading && <Circles />}
+              {!investments.loading && investments.deposits?.next_maturity && (
                 <Marquee pauseOnHover>
                   <ListItem
                     label={'Date'}
                     value={formatDate(
-                      new Date(state.deposits.next_maturity.maturity)
+                      new Date(investments.deposits.next_maturity.maturity)
                     )}
                     textType={'warning'}
                     className='mr-3'
                   />
                   <ListItem
                     label={'Name'}
-                    value={state.deposits.next_maturity.name}
+                    value={investments.deposits.next_maturity.name}
                     textType={'primary'}
                     className='mr-3'
                   />
                   <ListItem
                     label={'Amount'}
-                    value={`${state.deposits.next_maturity.amount} ${state.deposits.next_maturity.currency}`}
+                    value={`${investments.deposits.next_maturity.amount} ${investments.deposits.next_maturity.currency}`}
                     textType={'warning'}
                     className='mr-3'
                   />
                   <ListItem
                     label={'Interest'}
                     value={`${Number.parseFloat(
-                      (((state.deposits.next_maturity.interest / 100) *
-                        state.deposits.next_maturity.amount) /
+                      (((investments.deposits.next_maturity.interest / 100) *
+                        investments.deposits.next_maturity.amount) /
                         12) *
-                        state.deposits.next_maturity.months
+                        investments.deposits.next_maturity.months
                     ).toFixed(
                       2
-                    )} ${state.deposits.next_maturity.currency} (${state.deposits.next_maturity.interest}%)`}
+                    )} ${investments.deposits.next_maturity.currency} (${investments.deposits.next_maturity.interest}%)`}
                     textType={'success'}
                     className='mr-3'
                   />
                 </Marquee>
               )}
-              {!state.loading && !state.deposits?.next_maturity && '-'}
+              {!investments.loading &&
+                !investments.deposits?.next_maturity &&
+                '-'}
             </div>
           </div>
         </div>
@@ -343,7 +352,7 @@ const Summary = () => {
       {/* Line charts - Bonds, Deposits, Pensions */}
       <div className='row'>
         {['bonds', 'deposits'].map((entity) =>
-          state[entity]?.currencies?.map((currency) => (
+          investments[entity]?.currencies?.map((currency) => (
             <div
               key={`${entity}-rates-${currency}`}
               className='col-sm-4 grid-margin stretch-card'
@@ -363,18 +372,18 @@ const Summary = () => {
                       <i className={'mdi mdi-refresh'} />
                     </button>
                   </h6>
-                  {state.loading ? (
+                  {investments.loading ? (
                     <Circles />
                   ) : (
                     <Line
                       data={{
-                        labels: state[entity]?.[
+                        labels: investments[entity]?.[
                           `interest_rates_${currency}`
                         ]?.map((rate) => rate.date),
                         datasets: [
                           {
                             label: entity,
-                            data: state[entity]?.[
+                            data: investments[entity]?.[
                               `interest_rates_${currency}`
                             ].map((rate) => rate.interest),
                             backgroundColor: 'rgba(255, 159, 64, 0.2)',
