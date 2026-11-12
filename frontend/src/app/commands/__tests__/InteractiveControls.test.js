@@ -17,9 +17,9 @@ jest.mock('../../../api/commands', () => ({
       return { type: 'commands/getList', token: this.token };
     }
 
-    run(name, data) {
+    run = (name, data) => {
       return { type: 'commands/run', name, data };
-    }
+    };
   },
 }));
 jest.mock('../../../api/tasks', () => ({

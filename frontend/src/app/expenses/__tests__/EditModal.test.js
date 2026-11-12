@@ -15,17 +15,17 @@ jest.mock('../../../api/expenses', () => ({
       this.token = token;
     }
 
-    getItem(id) {
+    getItem = (id) => {
       return { type: 'expenses/getItem', id };
-    }
+    };
 
-    create(data) {
+    create = (data) => {
       return { type: 'expenses/create', data };
-    }
+    };
 
-    update(id, data) {
+    update = (id, data) => {
       return { type: 'expenses/update', id, data };
-    }
+    };
   },
 }));
 jest.mock('react-bootstrap', () => {

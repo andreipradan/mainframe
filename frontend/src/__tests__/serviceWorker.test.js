@@ -1,12 +1,12 @@
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('service worker lifecycle', () => {
-  let originalNodeEnv;
-  let originalPublicUrl;
-  let originalFetch;
-  let registration;
-  let serviceWorker;
-  let loadHandlers;
+  let originalNodeEnv = process.env.NODE_ENV;
+  let originalPublicUrl = process.env.PUBLIC_URL;
+  let originalFetch = global.fetch;
+  let registration = null;
+  let serviceWorker = null;
+  let loadHandlers = [];
 
   beforeEach(() => {
     jest.resetModules();
@@ -34,8 +34,8 @@ describe('service worker lifecycle', () => {
       status: 200,
       headers: { get: () => 'application/javascript' },
     });
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
     jest
       .spyOn(window, 'addEventListener')
       .mockImplementation((event, handler) => {
