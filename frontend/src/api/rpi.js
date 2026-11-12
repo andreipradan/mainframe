@@ -10,6 +10,8 @@ import { handleErrors } from './errors';
 import { toast } from 'react-toastify';
 import { toastParams } from './auth';
 
+const base = 'rpi';
+
 class RpiApi {
   static login = (data) => (dispatch) => {
     dispatch(setLoading(true));
@@ -79,7 +81,5 @@ class RpiApi {
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 }
-
-const base = 'rpi';
 
 export default RpiApi;

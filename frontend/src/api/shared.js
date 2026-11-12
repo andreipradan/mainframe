@@ -39,12 +39,6 @@ const getResource = (baseUrl) => {
   return `${resource[0].toUpperCase()}${resource.slice(1, -1)}`;
 };
 
-export const mix = (...mixins) => {
-  if (!mixins.includes(TokenMixin))
-    throw new Error('All Api classes must inherit from TokenMixin');
-  return mixins.reduce((Base, Mixin) => Mixin(Base), Object);
-};
-
 export const TokenMixin = (Base) =>
   class extends Base {
     constructor(token) {
@@ -69,6 +63,13 @@ export const TokenMixin = (Base) =>
       });
     }
   };
+
+/** Combines API mixins after ensuring token support is included. */
+export const mix = (...mixins) => {
+  if (!mixins.includes(TokenMixin))
+    throw new Error('All Api classes must inherit from TokenMixin');
+  return mixins.reduce((Base, Mixin) => Mixin(Base), Object);
+};
 
 export const CreateApi = (Base) =>
   class extends Base {

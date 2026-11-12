@@ -1,4 +1,4 @@
-import axios from "./index";
+import axios from './index';
 import {
   create as createCars,
   deleteItem as deleteCars,
@@ -8,7 +8,7 @@ import {
   setLoading as setCarsLoading,
   setLoadingItems as setCarsLoadingItems,
   update as updateCars,
-} from "../redux/carSlice"
+} from '../redux/carSlice';
 import {
   create as createExpense,
   set as setExpenses,
@@ -17,7 +17,7 @@ import {
   setLoading as setExpensesLoading,
   setLoadingItems as setExpensesLoadingItems,
   update as updateExpense,
-} from "../redux/expensesSlice";
+} from '../redux/expensesSlice';
 import {
   create as createGroup,
   deleteItem as deleteGroup,
@@ -26,15 +26,30 @@ import {
   setErrors as setGroupsErrors,
   setLoading as setGroupsLoading,
   setLoadingItems as setGroupsLoadingItems,
-} from "../redux/groupsSlice";
-import { handleErrors } from "./errors";
-import { CreateApi, DeleteApi, DetailApi, ListApi, mix, TokenMixin, UpdateApi } from './shared';
-import { toast } from "react-toastify";
-import { toastParams } from "./auth";
+} from '../redux/groupsSlice';
+import { handleErrors } from './errors';
+import {
+  CreateApi,
+  DeleteApi,
+  DetailApi,
+  ListApi,
+  mix,
+  TokenMixin,
+  UpdateApi,
+} from './shared';
+import { toast } from 'react-toastify';
+import { toastParams } from './auth';
 
+const base = 'split';
 
-export class CarApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, UpdateApi) {
-  static baseUrl = "/expenses/cars";
+export class CarApi extends mix(
+  CreateApi,
+  DeleteApi,
+  ListApi,
+  TokenMixin,
+  UpdateApi
+) {
+  static baseUrl = '/expenses/cars';
   static methods = {
     create: createCars,
     delete: deleteCars,
@@ -44,39 +59,53 @@ export class CarApi extends mix(CreateApi, DeleteApi, ListApi, TokenMixin, Updat
     setLoading: setCarsLoading,
     setLoadingItems: setCarsLoadingItems,
     update: updateCars,
-  }
-  createServiceEntry = (parentId, data) => dispatch => {
-    dispatch(this.constructor.methods.setLoading(true))
+  };
+  createServiceEntry = (parentId, data) => (dispatch) => {
+    dispatch(this.constructor.methods.setLoading(true));
     axios
-      .post(
-        `${this.constructor.baseUrl}/${parentId}/service-entries/`,
-        data,
-        { headers: { Authorization: this.token } },
-      )
-      .then(response => {
-        dispatch(this.constructor.methods.create(response.data))
-        toast.success(`Service entry for '${response.data.name}' on '${data.date}' created successfully!`, toastParams);
+      .post(`${this.constructor.baseUrl}/${parentId}/service-entries/`, data, {
+        headers: { Authorization: this.token },
       })
-      .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
-  }
-  deleteServiceEntry = (parentId, id) => dispatch => {
-    dispatch(this.constructor.methods.setLoadingItems(parentId))
+      .then((response) => {
+        dispatch(this.constructor.methods.create(response.data));
+        toast.success(
+          `Service entry for '${response.data.name}' on '${data.date}' created successfully!`,
+          toastParams
+        );
+      })
+      .catch((err) =>
+        handleErrors(err, dispatch, this.constructor.methods.setErrors)
+      );
+  };
+  deleteServiceEntry = (parentId, id) => (dispatch) => {
+    dispatch(this.constructor.methods.setLoadingItems(parentId));
     axios
       .patch(
         `${this.constructor.baseUrl}/${parentId}/service-entries/`,
-        {service_entry_id: id},
-         {headers: { Authorization: this.token } },
+        { service_entry_id: id },
+        { headers: { Authorization: this.token } }
       )
-    .then(response => {
-      dispatch(this.constructor.methods.create(response.data))
-      toast.warning(`Service entry for ${response.data.name} deleted successfully!`, toastParams);
-    })
-    .catch(err => handleErrors(err, dispatch, this.constructor.methods.setErrors))
-  }
+      .then((response) => {
+        dispatch(this.constructor.methods.create(response.data));
+        toast.warning(
+          `Service entry for ${response.data.name} deleted successfully!`,
+          toastParams
+        );
+      })
+      .catch((err) =>
+        handleErrors(err, dispatch, this.constructor.methods.setErrors)
+      );
+  };
 }
 
-export class ExpensesApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, UpdateApi) {
-  static baseUrl = "/expenses/my"
+export class ExpensesApi extends mix(
+  CreateApi,
+  DetailApi,
+  ListApi,
+  TokenMixin,
+  UpdateApi
+) {
+  static baseUrl = '/expenses/my';
   static methods = {
     create: createExpense,
     set: setExpenses,
@@ -85,11 +114,17 @@ export class ExpensesApi extends mix(CreateApi, DetailApi, ListApi, TokenMixin, 
     setLoading: setExpensesLoading,
     setLoadingItems: setExpensesLoadingItems,
     update: updateExpense,
-  }
+  };
 }
 
-export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, TokenMixin) {
-  static baseUrl = "/expenses/groups"
+export class GroupsApi extends mix(
+  CreateApi,
+  DeleteApi,
+  DetailApi,
+  ListApi,
+  TokenMixin
+) {
+  static baseUrl = '/expenses/groups';
   static methods = {
     create: createGroup,
     delete: deleteGroup,
@@ -98,30 +133,34 @@ export class GroupsApi extends mix(CreateApi, DeleteApi, DetailApi, ListApi, Tok
     setErrors: setGroupsErrors,
     setLoading: setGroupsLoading,
     setLoadingItems: setGroupsLoadingItems,
-  }
-  static inviteUser = (token, groupId, emailOrUsername, isEmail = true) => dispatch => {
-    const data = {[isEmail ? "email" : "username"]: emailOrUsername}
-    dispatch(setGroupsLoading(true))
+  };
+  static inviteUser =
+    (token, groupId, emailOrUsername, isEmail = true) =>
+    (dispatch) => {
+      const data = { [isEmail ? 'email' : 'username']: emailOrUsername };
+      dispatch(setGroupsLoading(true));
+      axios
+        .put(`${base}/groups/${groupId}/invite/`, data, {
+          headers: { Authorization: token },
+        })
+        .then((response) => dispatch(setGroups(response.data)))
+        .catch((err) => {
+          handleErrors(err, dispatch, setGroupsErrors, setGroupsLoading);
+          toast.error(err, toastParams);
+        });
+    };
+  static removeUserFromGroup = (token, groupId, userId) => (dispatch) => {
+    dispatch(setGroupsLoading(true));
     axios
-      .put(`${base}/groups/${groupId}/invite/`, data, { headers: { Authorization: token } })
+      .put(
+        `${base}/groups/${groupId}/remove-user/`,
+        { id: userId },
+        { headers: { Authorization: token } }
+      )
       .then((response) => dispatch(setGroups(response.data)))
       .catch((err) => {
-        handleErrors(err, dispatch, setGroupsErrors, setGroupsLoading)
-        toast.error(err, toastParams)
-
+        handleErrors(err, dispatch, setGroupsErrors, setGroupsLoading);
+        toast.error(err, toastParams);
       });
-  }
-  static removeUserFromGroup = (token, groupId, userId) => dispatch => {
-    dispatch(setGroupsLoading(true))
-    axios
-      .put(`${base}/groups/${groupId}/remove-user/`, {id: userId}, { headers: { Authorization: token } })
-      .then((response) => dispatch(setGroups(response.data)))
-      .catch((err) => {
-        handleErrors(err, dispatch, setGroupsErrors, setGroupsLoading)
-        toast.error(err, toastParams)
-
-      });
-  }
+  };
 }
-
-const base = "split"

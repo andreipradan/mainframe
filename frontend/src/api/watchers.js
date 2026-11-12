@@ -23,6 +23,8 @@ import {
   UpdateApi,
 } from './shared';
 
+const base = 'watchers/';
+
 class WatchersApi extends mix(
   CreateApi,
   DeleteApi,
@@ -85,7 +87,5 @@ class WatchersApi extends mix(
       .catch((err) => handleErrors(err, dispatch, setErrors, setLoading));
   };
 }
-
-const base = 'watchers/';
 
 export default WatchersApi;

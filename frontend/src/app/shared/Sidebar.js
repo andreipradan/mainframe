@@ -46,6 +46,55 @@ const Sidebar = () => {
   const [travelMenuOpen, setTravelMenuOpen] = useState(false);
   const [userPagesMenuOpen, setUserPagesMenuOpen] = useState(false);
 
+  const closeAllMenus = () => {
+    setAccountsMenuOpen(false);
+    setAppsMenuOpen(false);
+    setAuthMenuOpen(false);
+    setBasicUiMenuOpen(false);
+    setChartsMenuOpen(false);
+    setCommandsMenuOpen(false);
+    setCreditMenuOpen(false);
+    setErrorPagesMenuOpen(false);
+    setExpensesMenuOpen(false);
+    setFormElementsMenuOpen(false);
+    setIconsMenuOpen(false);
+    setInvestmentsMenuOpen(false);
+    setTablesMenuOpen(false);
+    setTravelMenuOpen(false);
+    setUserPagesMenuOpen(false);
+  };
+
+  /** Checks whether the current route starts with a navigation path. */
+  const isPathActive = (path) => location.pathname.startsWith(path);
+  const onRouteChanged = () => {
+    document.querySelector('#sidebar').classList.remove('active');
+    closeAllMenus();
+
+    const dropdownPaths = [
+      { path: '/apps', setState: setAppsMenuOpen },
+      { path: '/auth', setState: setAuthMenuOpen },
+      { path: '/basic-ui', setState: setBasicUiMenuOpen },
+      { path: '/credit', setState: setCreditMenuOpen },
+      { path: '/commands', setState: setCommandsMenuOpen },
+      { path: '/expenses/car', setState: setExpensesMenuOpen },
+      { path: '/expenses/travel', setState: setTravelMenuOpen },
+      { path: '/finances/accounts', setState: setAccountsMenuOpen },
+      { path: '/form-elements', setState: setFormElementsMenuOpen },
+      { path: '/investments', setState: setInvestmentsMenuOpen },
+      { path: '/tables', setState: setTablesMenuOpen },
+      { path: '/icons', setState: setIconsMenuOpen },
+      { path: '/charts', setState: setChartsMenuOpen },
+      { path: '/login', setState: setUserPagesMenuOpen },
+      { path: '/register', setState: setUserPagesMenuOpen },
+      { path: '/error-pages', setState: setErrorPagesMenuOpen },
+      { path: '/terms-and-conditions', setState: setDocumentationMenuOpen },
+    ];
+
+    dropdownPaths.forEach(
+      (obj) => isPathActive(obj.path) && obj.setState(true)
+    );
+  };
+
   useEffect(() => {
     setAlertOpen(Boolean(errors));
   }, [errors]);
@@ -90,54 +139,6 @@ const Sidebar = () => {
     onRouteChanged();
   }, [location]);
 
-  const closeAllMenus = () => {
-    setAccountsMenuOpen(false);
-    setAppsMenuOpen(false);
-    setAuthMenuOpen(false);
-    setBasicUiMenuOpen(false);
-    setChartsMenuOpen(false);
-    setCommandsMenuOpen(false);
-    setCreditMenuOpen(false);
-    setErrorPagesMenuOpen(false);
-    setExpensesMenuOpen(false);
-    setFormElementsMenuOpen(false);
-    setIconsMenuOpen(false);
-    setInvestmentsMenuOpen(false);
-    setTablesMenuOpen(false);
-    setTravelMenuOpen(false);
-    setUserPagesMenuOpen(false);
-  };
-
-  const onRouteChanged = () => {
-    document.querySelector('#sidebar').classList.remove('active');
-    closeAllMenus();
-
-    const dropdownPaths = [
-      { path: '/apps', setState: setAppsMenuOpen },
-      { path: '/auth', setState: setAuthMenuOpen },
-      { path: '/basic-ui', setState: setBasicUiMenuOpen },
-      { path: '/credit', setState: setCreditMenuOpen },
-      { path: '/commands', setState: setCommandsMenuOpen },
-      { path: '/expenses/car', setState: setExpensesMenuOpen },
-      { path: '/expenses/travel', setState: setTravelMenuOpen },
-      { path: '/finances/accounts', setState: setAccountsMenuOpen },
-      { path: '/form-elements', setState: setFormElementsMenuOpen },
-      { path: '/investments', setState: setInvestmentsMenuOpen },
-      { path: '/tables', setState: setTablesMenuOpen },
-      { path: '/icons', setState: setIconsMenuOpen },
-      { path: '/charts', setState: setChartsMenuOpen },
-      { path: '/login', setState: setUserPagesMenuOpen },
-      { path: '/register', setState: setUserPagesMenuOpen },
-      { path: '/error-pages', setState: setErrorPagesMenuOpen },
-      { path: '/terms-and-conditions', setState: setDocumentationMenuOpen },
-    ];
-
-    dropdownPaths.forEach(
-      (obj) => isPathActive(obj.path) && obj.setState(true)
-    );
-  };
-
-  const isPathActive = (path) => location.pathname.startsWith(path);
   const isPathExact = (path) => location.pathname === path;
 
   const handleSetModalAction = (e) => {
