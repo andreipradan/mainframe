@@ -38,6 +38,7 @@ const ExpenseModalTitle = ({ selectedItem, onRefresh }) => (
   </Modal.Title>
 );
 
+/** Renders expense validation errors when present. */
 const ExpenseErrors = ({ errors }) => {
   if (errors?.detail) {
     return <p className='text-danger'>{errors.detail}</p>;

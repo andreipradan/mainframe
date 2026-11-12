@@ -35,6 +35,7 @@ export const createOption = (label) => ({
   value: label,
 });
 
+/** Chooses the background color for a focused or selected category option. */
 const getOptionBackgroundColor = (state) => {
   if (state.isSelected) {
     return '#2f84d3';
@@ -155,6 +156,7 @@ const EditModal = () => {
                 setCategory(newValue?.value ? newValue.value : 'Unidentified')
               }
               onCreateOption={(id) => {
+                setCategory(id);
                 dispatch(
                   TransactionsApi.update(token, transaction.id, {
                     category: id,

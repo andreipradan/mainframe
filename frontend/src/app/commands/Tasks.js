@@ -15,12 +15,14 @@ const statusColors = {
   executing: 'warning',
 };
 
+/** Returns the display color associated with a task status. */
 const getStatusColor = (status) => statusColors[status] || 'danger';
 
 export const parseStatus = (status) => (
   <span className={`text-${getStatusColor(status)}`}>{capitalize(status)}</span>
 );
 
+/** Renders the task table rows for loading, empty, and populated states. */
 const TaskRows = ({ loading, results, onSelect }) => {
   if (loading) {
     return (
@@ -81,6 +83,7 @@ const TaskRows = ({ loading, results, onSelect }) => {
   ));
 };
 
+/** Renders expandable history or error details for a task. */
 const TaskHistoryDetails = ({
   itemKey,
   selectedItem,
@@ -130,6 +133,7 @@ const TaskHistoryDetails = ({
   </li>
 );
 
+/** Renders one task detail field, including expandable nested data. */
 const TaskDetailItem = ({
   itemKey,
   selectedItem,
@@ -190,6 +194,7 @@ const TaskDetailItem = ({
   );
 };
 
+/** Renders the available detail fields for the selected task. */
 const TaskDetails = ({
   selectedItem,
   taskHistoryOpen,

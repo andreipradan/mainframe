@@ -51,6 +51,7 @@ const Commands = () => {
     [annotations]
   );
 
+  /** Renders the loading, empty, or populated command list. */
   function getCommandRows() {
     if (loading) {
       return (

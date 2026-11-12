@@ -47,6 +47,7 @@ const Devices = () => {
       sortingClass += '-descending';
     }
 
+    /** Advances this column through ascending, descending, and unsorted. */
     const updateSorting = () => {
       const hasSorting = sorting?.find((s) => s.startsWith(`${column}-`));
       if (!hasSorting) {
@@ -77,6 +78,7 @@ const Devices = () => {
     );
   }
 
+  /** Renders the loading, empty, or populated device table rows. */
   function getDeviceRows() {
     if (loading) {
       return (
