@@ -749,6 +749,9 @@ const Transactions = () => {
                             className='form-check-label'
                             htmlFor={'all-checkbox'}
                           >
+                            <span className='sr-only'>
+                              Select all transactions
+                            </span>
                             <input
                               id={'all-checkbox'}
                               type='checkbox'
@@ -814,6 +817,10 @@ const Transactions = () => {
                                 className='form-check-label'
                                 htmlFor={`checkbox-${i}`}
                               >
+                                <span className='sr-only'>
+                                  Apply category to transaction:{' '}
+                                  {transaction.description}
+                                </span>
                                 <input
                                   id={`checkbox-${i}`}
                                   disabled={

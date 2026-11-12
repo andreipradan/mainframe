@@ -574,6 +574,7 @@ const Dashboard = () => {
                       <th>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>Select all orders</span>
                             <input
                               type='checkbox'
                               className='form-check-input'
@@ -596,6 +597,9 @@ const Dashboard = () => {
                       <td>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>
+                              Select order for Henry Klein
+                            </span>
                             <input
                               type='checkbox'
                               className='form-check-input'
@@ -628,6 +632,9 @@ const Dashboard = () => {
                       <td>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>
+                              Select order for Estella Bryan
+                            </span>
                             <input
                               type='checkbox'
                               className='form-check-input'
@@ -660,6 +667,9 @@ const Dashboard = () => {
                       <td>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>
+                              Select order for Lucy Abbott
+                            </span>
                             <input
                               type='checkbox'
                               className='form-check-input'
@@ -692,6 +702,9 @@ const Dashboard = () => {
                       <td>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>
+                              Select order for Peter Gill
+                            </span>
                             <input
                               type='checkbox'
                               className='form-check-input'
@@ -724,6 +737,9 @@ const Dashboard = () => {
                       <td>
                         <div className='form-check form-check-muted m-0'>
                           <label className='form-check-label'>
+                            <span className='sr-only'>
+                              Select order for Sallie Reyes
+                            </span>
                             <input
                               type='checkbox'
                               className='form-check-input'
