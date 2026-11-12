@@ -64,6 +64,7 @@ export const TokenMixin = (Base) =>
     }
   };
 
+/** Combines API mixins after ensuring token support is included. */
 export const mix = (...mixins) => {
   if (!mixins.includes(TokenMixin))
     throw new Error('All Api classes must inherit from TokenMixin');

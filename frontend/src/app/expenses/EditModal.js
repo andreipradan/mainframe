@@ -17,6 +17,27 @@ import { selectItem, setModalOpen } from '../../redux/expensesSlice';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 import Select from 'react-select';
 
+/** Renders the expense modal title, refresh action, and selected date. */
+const ExpenseModalTitle = ({ selectedItem, onRefresh }) => (
+  <Modal.Title>
+    <div className='row'>
+      <div className='col-lg-12 grid-margin stretch-card mb-1'>
+        {selectedItem ? 'Edit expense?' : 'Add expense?'}
+        {selectedItem && (
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent'
+            onClick={onRefresh}
+          >
+            <i className='mdi mdi-refresh' />
+          </button>
+        )}
+      </div>
+    </div>
+    <p className='text-muted mb-0'>{selectedItem?.date}</p>
+  </Modal.Title>
+);
+
 const EditModal = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -31,6 +52,7 @@ const EditModal = () => {
   const [description, setDescription] = useState('');
   const [payer, setPayer] = useState('');
 
+  /** Restores the form fields to their initial values. */
   const clearModal = () => {
     setAmount(0);
     setCurrency('');
@@ -88,25 +110,10 @@ const EditModal = () => {
       onHide={closeModal}
     >
       <Modal.Header closeButton>
-        <Modal.Title>
-          <div className='row'>
-            <div className='col-lg-12 grid-margin stretch-card mb-1'>
-              {expenses.selectedItem ? 'Edit expense?' : 'Add expense?'}
-              {expenses.selectedItem && (
-                <button
-                  type='button'
-                  className='btn btn-outline-success btn-sm border-0 bg-transparent'
-                  onClick={() =>
-                    dispatch(api.getItem(expenses.selectedItem?.id))
-                  }
-                >
-                  <i className='mdi mdi-refresh' />
-                </button>
-              )}
-            </div>
-          </div>
-          <p className='text-muted mb-0'>{expenses.selectedItem?.date}</p>
-        </Modal.Title>
+        <ExpenseModalTitle
+          selectedItem={expenses.selectedItem}
+          onRefresh={() => dispatch(api.getItem(expenses.selectedItem?.id))}
+        />
       </Modal.Header>
       <Modal.Body>
         <h6 className='font-weight-light'>

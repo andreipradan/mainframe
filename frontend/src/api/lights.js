@@ -60,7 +60,7 @@ class LightsApi extends mix(ListApi, TokenMixin) {
     axios
       .patch(
         `${base}/${lightIp}/set-rgb/`,
-        { rgb: rgb },
+        { rgb },
         { headers: { Authorization: token } }
       )
       .then(() => dispatch(unsetLoadingLight(lightIp)))

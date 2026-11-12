@@ -23,8 +23,9 @@ import {
   setKwargs,
 } from '../../redux/transactionsSlice';
 
-let base = 'finance/transactions';
+const base = 'finance/transactions';
 
+/** Provides API operations for financial transactions. */
 export class TransactionsApi extends mix(
   DeleteApi,
   DetailApi,

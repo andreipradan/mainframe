@@ -127,19 +127,21 @@ const Earthquakes = () => {
   const [root, setRoot] = useState(null);
   const [chart, setChart] = useState(null);
 
-  const createZoomControl = (root, chart) => {
-    const zoomControl = am5map.ZoomControl.new(root, {});
-    chart.set('zoomControl', zoomControl);
+  /** Adds the map's zoom buttons to its chart. */
+  const createZoomControl = (mapRoot, mapChart) => {
+    const zoomControl = am5map.ZoomControl.new(mapRoot, {});
+    mapChart.set('zoomControl', zoomControl);
     zoomControl.minusButton.set('scale', 0.75);
     zoomControl.plusButton.set('scale', 0.75);
   };
 
-  const generateSeries = (root, chart) => {
+  /** Creates the map polygon series and its hover styling. */
+  const generateSeries = (mapRoot, mapChart) => {
     const settings = { geoJSON: mapGeodata };
-    const series = chart.series.push(
-      am5map.MapPolygonSeries.new(root, settings)
+    const generatedSeries = mapChart.series.push(
+      am5map.MapPolygonSeries.new(mapRoot, settings)
     );
-    const template = series.mapPolygons.template;
+    const template = generatedSeries.mapPolygons.template;
     template.setAll({
       tooltipText: '{name}',
       interactive: true,
@@ -147,7 +149,7 @@ const Earthquakes = () => {
     });
     template.states.create('hover', { fill: am5.color('#5b76b6') });
 
-    return series;
+    return generatedSeries;
   };
 
   useLayoutEffect(() => {

@@ -56,7 +56,7 @@ export class UsersApi {
     (dispatch) => {
       dispatch(setLoading(true));
       axios
-        .get(base + `/?page=${page || 1}`, {
+        .get(`${base}/?page=${page || 1}`, {
           headers: { Authorization: token },
         })
         .then((response) => dispatch(set(response.data)))

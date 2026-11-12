@@ -10,7 +10,7 @@ import {
   setLoading,
 } from '../../redux/categoriesSlice';
 
-let base = 'finance/categories';
+const base = 'finance/categories';
 
 export class CategoriesApi {
   static create = (token, data) => (dispatch) => {
