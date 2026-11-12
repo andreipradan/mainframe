@@ -303,7 +303,7 @@ const Events = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {loading ? (
+                    {loading && (
                       <tr>
                         <td colSpan={8}>
                           <Audio
@@ -314,7 +314,9 @@ const Events = () => {
                           />
                         </td>
                       </tr>
-                    ) : (results || []).length ? (
+                    )}
+                    {!loading &&
+                      (results || []).length > 0 &&
                       (results || []).map((event, index) => (
                         <tr key={event.id || index}>
                           <td>{index + 1}</td>
@@ -402,8 +404,8 @@ const Events = () => {
                             </Button>
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!loading && !(results || []).length && (
                       <tr>
                         <td colSpan={8} className='text-center'>
                           No events available

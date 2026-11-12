@@ -415,8 +415,7 @@ const Sidebar = () => {
                         }
                         to='/apps/logs'
                       >
-                        <i className='mdi mdi-file-document-outline' />
-                        &nbsp;Logs
+                        <i className='mdi mdi-file-document-outline' /> Logs
                       </Link>
                     </li>
                     <li className='nav-item'>
@@ -428,8 +427,7 @@ const Sidebar = () => {
                         }
                         to='/apps/messages'
                       >
-                        <i className='mdi mdi-message-text' />
-                        &nbsp;Messages
+                        <i className='mdi mdi-message-text' /> Messages
                       </Link>
                     </li>
                     <li className='nav-item'>
@@ -441,8 +439,7 @@ const Sidebar = () => {
                         }
                         to='/apps/todo'
                       >
-                        <i className='mdi mdi-clipboard-list' />
-                        &nbsp;To do list
+                        <i className='mdi mdi-clipboard-list' /> To do list
                       </Link>
                     </li>
                   </ul>
@@ -571,8 +568,7 @@ const Sidebar = () => {
                         }
                         to='/commands/crons'
                       >
-                        <i className='mdi mdi-timer-sand' />
-                        &nbsp;Crons
+                        <i className='mdi mdi-timer-sand' /> Crons
                       </Link>
                     </li>
                     <li className='nav-item'>
@@ -584,8 +580,7 @@ const Sidebar = () => {
                         }
                         to='/commands/management'
                       >
-                        <i className='mdi mdi-account' />
-                        &nbsp;Management
+                        <i className='mdi mdi-account' /> Management
                       </Link>
                     </li>
                     <li className='nav-item'>
@@ -597,8 +592,7 @@ const Sidebar = () => {
                         }
                         to='/commands/tasks'
                       >
-                        <i className='mdi mdi-view-list' />
-                        &nbsp;Tasks
+                        <i className='mdi mdi-view-list' /> Tasks
                       </Link>
                     </li>
                     <li className='nav-item'>
@@ -610,8 +604,7 @@ const Sidebar = () => {
                         }
                         to='/commands/watchers'
                       >
-                        <i className='mdi mdi-eye-settings-outline' />
-                        &nbsp;Watchers
+                        <i className='mdi mdi-eye-settings-outline' /> Watchers
                       </Link>
                     </li>
                   </ul>

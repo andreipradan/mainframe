@@ -16,6 +16,29 @@ import { setKwargs as setPnlKwargs } from '../../../redux/cryptoPnlSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { Link } from 'react-router-dom';
 
+const getCurrencySymbol = (currency) => {
+  if (currency === 'USD') return '$ ';
+  if (currency === 'EUR') return '€ ';
+  return '';
+};
+
+const getCurrencySuffix = (currency) => {
+  if (currency === 'USD' || currency === 'EUR') return '';
+  return ` ${currency}`;
+};
+
+const getCurrencyLabel = (currency) => {
+  if (currency === 'USD') return '$';
+  if (currency === 'EUR') return '€';
+  return currency;
+};
+
+const getPnlTextType = (value) => {
+  if (value < 0) return 'text-danger';
+  if (value > 0) return 'text-success';
+  return 'text-warning';
+};
+
 const Crypto = () => {
   const dispatch = useDispatch();
 
@@ -90,7 +113,7 @@ const Crypto = () => {
     <div>
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Crypto
+          Crypto{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -174,7 +197,7 @@ const Crypto = () => {
                         label={capitalize(item.type.replace('_', ' '))}
                         value={
                           item.value
-                            ? `${currency === 'USD' ? '$ ' : currency === 'EUR' ? '€ ' : ''}${item.value} (${crypto.aggregations?.[currency].counts[i + 1].value})${['USD', 'EUR'].includes(currency) ? '' : ` ${currency}`}`
+                            ? `${getCurrencySymbol(currency)}${item.value} (${crypto.aggregations?.[currency].counts[i + 1].value})${getCurrencySuffix(currency)}`
                             : '-'
                         }
                         textType={'warning'}
@@ -193,66 +216,66 @@ const Crypto = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Last Transaction</h6>
-              {crypto.loading ? (
-                <Circles width='100%' height='50' />
-              ) : crypto.results?.length ? (
-                <Marquee duration={10000} pauseOnHover>
-                  <ListItem
-                    label={'Date'}
-                    value={new Date(crypto.results[0].date).toLocaleString()}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Type'}
-                    value={crypto.results[0].type}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {crypto.results[0].quantity && (
+              {crypto.loading && <Circles width='100%' height='50' />}
+              {!crypto.loading &&
+                (crypto.results?.length ? (
+                  <Marquee duration={10000} pauseOnHover>
                     <ListItem
-                      label={'Quantity'}
-                      value={crypto.results[0].quantity}
+                      label={'Date'}
+                      value={new Date(crypto.results[0].date).toLocaleString()}
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  {crypto.results[0].symbol && (
                     <ListItem
-                      label={'Ticker'}
-                      value={crypto.results[0].symbol}
+                      label={'Type'}
+                      value={crypto.results[0].type}
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  {crypto.results[0].price && (
-                    <ListItem
-                      label={'Price'}
-                      value={crypto.results[0].price}
-                      textType={'warning'}
-                      className='mr-3'
-                    />
-                  )}
-                  {crypto.results[0].fees && (
-                    <ListItem
-                      label={'Price'}
-                      value={crypto.results[0].fees}
-                      textType={'warning'}
-                      className='mr-3'
-                    />
-                  )}
-                  {crypto.results[0].value && (
-                    <ListItem
-                      label={'Amount'}
-                      value={`${crypto.results[0].currency === 'USD' ? '$ ' : crypto.results[0].currency === 'EUR' ? '€ ' : ''}${crypto.results[0].value}${['USD', 'EUR'].includes(crypto.results[0].currency) ? '' : ` ${crypto.results[0].currency}`}`}
-                      textType={'success'}
-                      className='mr-3'
-                    />
-                  )}
-                </Marquee>
-              ) : (
-                '-'
-              )}
+                    {crypto.results[0].quantity && (
+                      <ListItem
+                        label={'Quantity'}
+                        value={crypto.results[0].quantity}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                    {crypto.results[0].symbol && (
+                      <ListItem
+                        label={'Ticker'}
+                        value={crypto.results[0].symbol}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                    {crypto.results[0].price && (
+                      <ListItem
+                        label={'Price'}
+                        value={crypto.results[0].price}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                    {crypto.results[0].fees && (
+                      <ListItem
+                        label={'Price'}
+                        value={crypto.results[0].fees}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                    {crypto.results[0].value && (
+                      <ListItem
+                        label={'Amount'}
+                        value={`${getCurrencySymbol(crypto.results[0].currency)}${crypto.results[0].value}${getCurrencySuffix(crypto.results[0].currency)}`}
+                        textType={'success'}
+                        className='mr-3'
+                      />
+                    )}
+                  </Marquee>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -321,7 +344,7 @@ const Crypto = () => {
                         >
                           <i className='mdi mdi-refresh' />
                         </button>
-                        {pnl.currencies?.length && pnl.total ? (
+                        {Boolean(pnl.currencies?.length && pnl.total) && (
                           <div className='mb-0 text-muted'>
                             <div className='row'>
                               <div className='col-sm-6'>
@@ -330,13 +353,7 @@ const Crypto = () => {
                                     {pnl.currencies?.map((c) => (
                                       <li
                                         key={c}
-                                        className={
-                                          pnl.total[c] < 0
-                                            ? 'text-danger'
-                                            : pnl.total[c] > 0
-                                              ? 'text-success'
-                                              : 'text-warning'
-                                        }
+                                        className={getPnlTextType(pnl.total[c])}
                                       >
                                         {pnl.total[c] < 0 ? '-' : null}{' '}
                                         {c === 'USD' ? '$' : c}
@@ -350,7 +367,7 @@ const Crypto = () => {
                               </div>
                             </div>
                           </div>
-                        ) : null}
+                        )}
                       </h6>
                     </div>
                     <div
@@ -425,7 +442,7 @@ const Crypto = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pnl.loading ? (
+                    {pnl.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -433,7 +450,9 @@ const Crypto = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : pnl.results?.length ? (
+                    )}
+                    {!pnl.loading &&
+                      pnl.results?.length > 0 &&
                       pnl.results.map((transaction) => (
                         <tr key={transaction.id}>
                           <td>
@@ -494,8 +513,8 @@ const Crypto = () => {
                             {transaction.net_pnl}{' '}
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!pnl.loading && !pnl.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No pnl data found</span>
@@ -592,7 +611,7 @@ const Crypto = () => {
                           {crypto.currencies
                             ?.map(
                               (c) =>
-                                `${c === 'USD' ? '$' : c === 'EUR' ? '€' : c} ${crypto.aggregations?.current[`total_${c}`]}`
+                                `${getCurrencyLabel(c)} ${crypto.aggregations?.current[`total_${c}`]}`
                             )
                             .filter((i) => !i.includes(' null'))
                             .join(' | ')}
@@ -683,7 +702,7 @@ const Crypto = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {crypto.loading ? (
+                    {crypto.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -691,64 +710,60 @@ const Crypto = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : crypto.results?.length ? (
-                      crypto.results.map((transaction) => (
-                        <tr key={transaction.id}>
-                          <td>
-                            {' '}
-                            {new Date(transaction.date).toLocaleString()}{' '}
-                          </td>
-                          <td
-                            style={{ cursor: 'pointer' }}
-                            onClick={() =>
-                              onChange('type', [
-                                {
-                                  value: crypto.types.find(
-                                    (t) => t[1] === transaction.type
-                                  )[0],
-                                },
-                              ])
-                            }
-                          >
-                            {' '}
-                            {transaction.type}{' '}
-                          </td>
-                          <td> {Number.parseFloat(transaction.quantity)} </td>
-                          <td
-                            style={{ cursor: 'pointer' }}
-                            onClick={() =>
-                              onChange('ticker', [
-                                { value: transaction.symbol },
-                              ])
-                            }
-                          >
-                            {' '}
-                            {transaction.symbol}{' '}
-                          </td>
-                          <td> {transaction.price} </td>
-                          <td> {transaction.fees} </td>
-                          <td>
-                            {' '}
-                            {transaction.currency === 'USD'
-                              ? '$ '
-                              : transaction.currency === 'EUR'
-                                ? '€ '
-                                : ''}
-                            {transaction.value}
-                            {['USD', 'EUR'].includes(transaction.currency)
-                              ? ''
-                              : ` ${transaction.currency}`}{' '}
-                          </td>
-                          <td> {transaction.fx_rate} </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6}>
-                          <span>No transactions found</span>
-                        </td>
-                      </tr>
                     )}
+                    {!crypto.loading &&
+                      (crypto.results?.length ? (
+                        crypto.results.map((transaction) => (
+                          <tr key={transaction.id}>
+                            <td>
+                              {' '}
+                              {new Date(transaction.date).toLocaleString()}{' '}
+                            </td>
+                            <td
+                              style={{ cursor: 'pointer' }}
+                              onClick={() =>
+                                onChange('type', [
+                                  {
+                                    value: crypto.types.find(
+                                      (t) => t[1] === transaction.type
+                                    )[0],
+                                  },
+                                ])
+                              }
+                            >
+                              {' '}
+                              {transaction.type}{' '}
+                            </td>
+                            <td> {Number.parseFloat(transaction.quantity)} </td>
+                            <td
+                              style={{ cursor: 'pointer' }}
+                              onClick={() =>
+                                onChange('ticker', [
+                                  { value: transaction.symbol },
+                                ])
+                              }
+                            >
+                              {' '}
+                              {transaction.symbol}{' '}
+                            </td>
+                            <td> {transaction.price} </td>
+                            <td> {transaction.fees} </td>
+                            <td>
+                              {' '}
+                              {getCurrencySymbol(transaction.currency)}
+                              {transaction.value}
+                              {getCurrencySuffix(transaction.currency)}{' '}
+                            </td>
+                            <td> {transaction.fx_rate} </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6}>
+                            <span>No transactions found</span>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

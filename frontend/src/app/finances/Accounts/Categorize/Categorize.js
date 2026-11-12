@@ -63,23 +63,42 @@ const Categorize = () => {
   const onCheckedCategoryChange = (newValue, description) => {
     if (!newValue.value) return;
     const newCategory = { description: description, category: newValue.value };
-    setCheckedCategories(
-      !checkedCategories?.length
-        ? newCategory.category !== 'Unidentified'
-          ? [newCategory]
-          : null
-        : checkedCategories.find((c) => c.description === description)
-          ? newCategory.category !== 'Unidentified'
-            ? checkedCategories.map((c) =>
-                c.description === description
-                  ? { ...c, category: newValue.value }
-                  : c
-              )
-            : checkedCategories.filter((c) => c.description !== description)
-          : newCategory.category !== 'Unidentified'
-            ? [...checkedCategories, newCategory]
-            : checkedCategories
-    );
+    const isIdentified = newCategory.category !== 'Unidentified';
+    let updatedCategories;
+
+    if (!checkedCategories?.length) {
+      if (isIdentified) {
+        updatedCategories = [newCategory];
+      } else {
+        updatedCategories = null;
+      }
+    } else {
+      const existingCategory = checkedCategories.find(
+        (category) => category.description === description
+      );
+      if (existingCategory) {
+        if (isIdentified) {
+          updatedCategories = checkedCategories.map((category) => {
+            if (category.description === description) {
+              return { ...category, category: newValue.value };
+            }
+            return category;
+          });
+        } else {
+          updatedCategories = checkedCategories.filter(
+            (category) => category.description !== description
+          );
+        }
+      } else {
+        if (isIdentified) {
+          updatedCategories = [...checkedCategories, newCategory];
+        } else {
+          updatedCategories = checkedCategories;
+        }
+      }
+    }
+
+    setCheckedCategories(updatedCategories);
   };
   const onTypeChange = (newValue) => {
     const newTypes = newValue.map((v) => v.value);
@@ -260,7 +279,7 @@ const Categorize = () => {
                     <tbody>
                       <tr>
                         <td>Train</td>
-                        {prediction.train ? (
+                        {prediction.train && (
                           <>
                             <td>
                               {new Date(
@@ -366,13 +385,14 @@ const Categorize = () => {
                             {/*  </ul>*/}
                             {/*</td>*/}
                           </>
-                        ) : (
+                        )}
+                        {!prediction.train && (
                           <td colSpan={4}> No training task found</td>
                         )}
                       </tr>
                       <tr>
                         <td>Predict</td>
-                        {prediction.predict ? (
+                        {prediction.predict && (
                           <>
                             <td>
                               {new Date(
@@ -467,8 +487,9 @@ const Categorize = () => {
                               )}
                             </td>
                           </>
-                        ) : (
-                          <td colSpan={4}>No prediction task found</td>
+                        )}
+                        {!prediction.predict && (
+                          <td colSpan={4}> No prediction task found</td>
                         )}
                       </tr>
                     </tbody>
@@ -606,7 +627,7 @@ const Categorize = () => {
                         })
                       )
                     }
-                  />
+                  />{' '}
                   Expenses only <i className='input-helper' />
                 </label>
               </div>
@@ -623,7 +644,7 @@ const Categorize = () => {
                         })
                       )
                     }
-                  />
+                  />{' '}
                   Unique <i className='input-helper' />
                 </label>
               </div>
@@ -661,7 +682,7 @@ const Categorize = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.results?.length ? (
+                    {transactions.results?.length > 0 &&
                       transactions.results.map((t) => (
                         <tr
                           style={{
@@ -811,8 +832,8 @@ const Categorize = () => {
                             </button>
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!transactions.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No transactions found</span>

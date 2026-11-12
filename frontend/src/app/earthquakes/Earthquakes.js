@@ -46,6 +46,19 @@ export const formatTime = (timestamp) =>
     minute: 'numeric',
   });
 
+const getMagnitudeColor = (value) => {
+  if (value < 3) return 'green';
+  if (value < 4) return 'orange';
+  if (value < 5) return 'darkorange';
+  return 'red';
+};
+
+const getMagnitudeTextType = (value) => {
+  if (value < 5) return 'text-success';
+  if (value < 6) return 'text-warning';
+  return 'text-danger';
+};
+
 Chart.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
 const Earthquakes = () => {
@@ -225,14 +238,7 @@ const Earthquakes = () => {
       container.children.push(
         am5.Circle.new(root, {
           radius: radius - 1,
-          fill:
-            value < 3
-              ? 'green'
-              : value < 4
-                ? 'orange'
-                : value < 5
-                  ? 'darkorange'
-                  : 'red',
+          fill: getMagnitudeColor(value),
           dy: -radius * 2,
         })
       );
@@ -305,7 +311,7 @@ const Earthquakes = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Earthquakes
+                Earthquakes{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -330,8 +336,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.local_events}
                     />
-                    <i className='input-helper' />
-                    Only local events
+                    <i className='input-helper' /> Only local events
                   </label>
                 </div>
                 <div className='form-check float-right ml-4'>
@@ -348,8 +353,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.magnitude_gt5}
                     />
-                    <i className='input-helper' />
-                    &gt; 5 ML
+                    <i className='input-helper' /> &gt; 5 ML
                   </label>
                 </div>
                 <div className='form-check float-right'>
@@ -366,36 +370,35 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.largest_events}
                     />
-                    <i className='input-helper' />
-                    Largest events
+                    <i className='input-helper' /> Largest events
                   </label>
                 </div>
               </h4>
-              {earthquakes.last_check
-                ? Object.keys(earthquakes.last_check).map((lc) => (
-                    <p key={lc} className='text-muted mt-0 mb-0'>
-                      Last {lc.toUpperCase()} check:&nbsp;
-                      {earthquakes.loading ? (
-                        <Circles
-                          visible={true}
-                          height='15'
-                          width='100%'
-                          ariaLabel='ball-triangle-loading'
-                          wrapperStyle={{}}
-                          wrapperClass={{}}
-                          color='orange'
-                        />
-                      ) : (
-                        <span>
-                          {' '}
-                          {earthquakes.last_check[lc]
-                            ? formatTime(earthquakes.last_check[lc])
-                            : '-'}
-                        </span>
-                      )}
-                    </p>
-                  ))
-                : null}
+              {earthquakes.last_check &&
+                Object.keys(earthquakes.last_check).map((lc) => (
+                  <p key={lc} className='text-muted mt-0 mb-0'>
+                    Last {lc.toUpperCase()} check:&nbsp;
+                    {earthquakes.loading && (
+                      <Circles
+                        visible={true}
+                        height='15'
+                        width='100%'
+                        ariaLabel='ball-triangle-loading'
+                        wrapperStyle={{}}
+                        wrapperClass={{}}
+                        color='orange'
+                      />
+                    )}
+                    {!earthquakes.loading && (
+                      <span>
+                        {' '}
+                        {earthquakes.last_check[lc]
+                          ? formatTime(earthquakes.last_check[lc])
+                          : '-'}
+                      </span>
+                    )}
+                  </p>
+                ))}
               <p className='text-muted mb-0'>
                 Total: {earthquakes.count ? earthquakes.count : '-'}
               </p>
@@ -460,15 +463,7 @@ const Earthquakes = () => {
                                 </p>
                               ) : null}
                             </td>
-                            <td
-                              className={
-                                e.magnitude < 5
-                                  ? 'text-success'
-                                  : e.magnitude < 6
-                                    ? 'text-warning'
-                                    : 'text-danger'
-                              }
-                            >
+                            <td className={getMagnitudeTextType(e.magnitude)}>
                               {e.magnitude}{' '}
                               {e.intensity ? `(${e.intensity})` : null}
                             </td>

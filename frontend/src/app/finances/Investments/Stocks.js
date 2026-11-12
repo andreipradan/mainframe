@@ -17,6 +17,17 @@ import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { StocksApi, StocksPnlApi } from '../../../api/finance';
 import { Link } from 'react-router-dom';
 
+const getCurrencySymbol = (currency) => {
+  if (currency === 'USD') return '$';
+  return '€';
+};
+
+const getPnlTextType = (value) => {
+  if (value < 0) return 'text-danger';
+  if (value > 0) return 'text-success';
+  return 'text-warning';
+};
+
 const Stocks = () => {
   const dispatch = useDispatch();
 
@@ -105,7 +116,7 @@ const Stocks = () => {
     <div>
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Stocks
+          Stocks{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -198,7 +209,7 @@ const Stocks = () => {
                         label={capitalize(item.type.replace('_', ' '))}
                         value={
                           item.value
-                            ? `${currency === 'USD' ? '$' : '€'} ${item.value} (${stocks.aggregations?.[currency].counts[i + 1].value})`
+                            ? `${getCurrencySymbol(currency)} ${item.value} (${stocks.aggregations?.[currency].counts[i + 1].value})`
                             : '-'
                         }
                         textType={'warning'}
@@ -217,9 +228,8 @@ const Stocks = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Last Transaction</h6>
-              {stocks.loading ? (
-                <Circles width='100%' height='50' />
-              ) : stocks.results?.length ? (
+              {stocks.loading && <Circles width='100%' height='50' />}
+              {!stocks.loading && stocks.results?.length > 0 && (
                 <Marquee duration={10000} pauseOnHover>
                   <ListItem
                     label={'Date'}
@@ -270,9 +280,8 @@ const Stocks = () => {
                     className='mr-3'
                   />
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!stocks.loading && !stocks.results?.length && '-'}
             </div>
           </div>
         </div>
@@ -348,13 +357,7 @@ const Stocks = () => {
                                     {pnl.currencies.map((c) => (
                                       <li
                                         key={c}
-                                        className={
-                                          pnl.total[c] < 0
-                                            ? 'text-danger'
-                                            : pnl.total[c] > 0
-                                              ? 'text-success'
-                                              : 'text-warning'
-                                        }
+                                        className={getPnlTextType(pnl.total[c])}
                                       >
                                         {pnl.total[c] < 0 ? '-' : null}{' '}
                                         {c === 'USD' ? '$' : c}
@@ -436,7 +439,7 @@ const Stocks = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pnl.loading ? (
+                    {pnl.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -444,7 +447,9 @@ const Stocks = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : pnl.results?.length ? (
+                    )}
+                    {!pnl.loading &&
+                      pnl.results?.length > 0 &&
                       pnl.results.map((transaction) => (
                         <tr key={transaction.id}>
                           <td>
@@ -502,8 +507,8 @@ const Stocks = () => {
                             {transaction.pnl}{' '}
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!pnl.loading && !pnl.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No transactions found</span>
@@ -594,7 +599,7 @@ const Stocks = () => {
                           <i className='mdi mdi-refresh' />
                         </button>
                       </h6>
-                      {Object.keys(stocks.kwargs).length ? (
+                      {Object.keys(stocks.kwargs).length > 0 && (
                         <small className='text-warning'>
                           &nbsp;(
                           {stocks.currencies
@@ -606,7 +611,7 @@ const Stocks = () => {
                             .join(' | ')}
                           )
                         </small>
-                      ) : null}
+                      )}
                     </div>
                     <div className='col-sm-6'>
                       <Form
@@ -691,7 +696,7 @@ const Stocks = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {stocks.loading ? (
+                    {stocks.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -699,7 +704,9 @@ const Stocks = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : stocks.results?.length ? (
+                    )}
+                    {!stocks.loading &&
+                      stocks.results?.length > 0 &&
                       stocks.results.map((transaction) => (
                         <tr key={transaction.id}>
                           <td>
@@ -739,8 +746,8 @@ const Stocks = () => {
                           </td>
                           <td> {transaction.fx_rate} </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!stocks.loading && !stocks.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No transactions found</span>

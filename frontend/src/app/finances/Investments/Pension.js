@@ -36,12 +36,16 @@ export const getPnl = (p, justValue = false) => {
       );
   if (justValue) return pnl;
   return (
-    <span
-      className={`text-${pnl > 0 ? 'success' : pnl === 0 ? 'muted' : 'danger'}`}
-    >
+    <span className={`text-${getPnlTextType(pnl)}`}>
       {pnl.toFixed(2)} {p.contributions?.[0]?.currency}
     </span>
   );
+};
+
+const getPnlTextType = (pnl) => {
+  if (pnl > 0) return 'success';
+  if (pnl === 0) return 'muted';
+  return 'danger';
 };
 
 const Pension = () => {
@@ -383,7 +387,7 @@ const Pension = () => {
                     <tbody>
                       <tr>
                         {/* Add contribution form */}
-                        {pensionOpen && contribAddOpen ? (
+                        {pensionOpen && contribAddOpen && (
                           <>
                             <td>
                               {'<'}new{'>'}
@@ -423,42 +427,38 @@ const Pension = () => {
                               />
                             </td>
                             <td>
-                              {contribAddOpen ? (
-                                <>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-danger mr-2'
-                                    aria-label='Cancel adding contribution'
-                                    onClick={() => setContribAddOpen(false)}
-                                  >
-                                    <i
-                                      className='mdi mdi-cancel'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-success mr-2'
-                                    aria-label='Save contribution'
-                                    onClick={(e) =>
-                                      onSubmitContrib(e, pensionOpen.id)
-                                    }
-                                  >
-                                    <i
-                                      className='mdi mdi-check'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                </>
-                              ) : null}
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-danger mr-2'
+                                aria-label='Cancel adding contribution'
+                                onClick={() => setContribAddOpen(false)}
+                              >
+                                <i
+                                  className='mdi mdi-cancel'
+                                  aria-hidden='true'
+                                />
+                              </button>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-success mr-2'
+                                aria-label='Save contribution'
+                                onClick={(e) =>
+                                  onSubmitContrib(e, pensionOpen.id)
+                                }
+                              >
+                                <i
+                                  className='mdi mdi-check'
+                                  aria-hidden='true'
+                                />
+                              </button>
                             </td>
                           </>
-                        ) : null}
+                        )}
                       </tr>
 
                       {/* Contribution rows */}
-                      {pension.loading ||
-                      pension.loadingItems?.includes(pensionOpen?.id) ? (
+                      {(pension.loading ||
+                        pension.loadingItems?.includes(pensionOpen?.id)) && (
                         <tr>
                           <td>
                             <Circles
@@ -470,7 +470,10 @@ const Pension = () => {
                             />
                           </td>
                         </tr>
-                      ) : pensionOpen ? (
+                      )}
+                      {!pension.loading &&
+                        !pension.loadingItems?.includes(pensionOpen?.id) &&
+                        pensionOpen &&
                         pensionOpen.contributions.map((c, i) => (
                           <tr key={`contrib-${c.id}`}>
                             <td>{i + 1}</td>
@@ -529,7 +532,7 @@ const Pension = () => {
                               )}
                             </td>
                             <td>
-                              {contribToEdit === c.id ? (
+                              {contribToEdit === c.id && (
                                 <>
                                   <button
                                     type='button'
@@ -556,7 +559,8 @@ const Pension = () => {
                                     />
                                   </button>
                                 </>
-                              ) : contribToDelete === c.id ? (
+                              )}
+                              {contribToDelete === c.id && (
                                 <>
                                   <div className={'text-danger mb-2'}>
                                     Delete?
@@ -608,45 +612,50 @@ const Pension = () => {
                                     </button>
                                   </div>
                                 </>
-                              ) : (
-                                <>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-warning mr-2'
-                                    aria-label='Edit contribution'
-                                    onClick={() => onEditContribution(c)}
-                                  >
-                                    <i
-                                      className='mdi mdi-pencil'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-danger'
-                                    aria-label='Delete contribution'
-                                    ref={(element) => {
-                                      deleteButtonRefs.current[c.id] = element;
-                                    }}
-                                    onClick={() => setContribToDelete(c.id)}
-                                  >
-                                    <i
-                                      className='mdi mdi-delete'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                </>
                               )}
+                              {contribToEdit !== c.id &&
+                                contribToDelete !== c.id && (
+                                  <>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-warning mr-2'
+                                      aria-label='Edit contribution'
+                                      onClick={() => onEditContribution(c)}
+                                    >
+                                      <i
+                                        className='mdi mdi-pencil'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-danger'
+                                      aria-label='Delete contribution'
+                                      ref={(element) => {
+                                        deleteButtonRefs.current[c.id] =
+                                          element;
+                                      }}
+                                      onClick={() => setContribToDelete(c.id)}
+                                    >
+                                      <i
+                                        className='mdi mdi-delete'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                  </>
+                                )}
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className={'text-center'}>
-                            Please select a pension fund
-                          </td>
-                        </tr>
-                      )}
+                        ))}
+                      {!pension.loading &&
+                        !pension.loadingItems?.includes(pensionOpen?.id) &&
+                        !pensionOpen && (
+                          <tr>
+                            <td colSpan={4} className={'text-center'}>
+                              Please select a pension fund
+                            </td>
+                          </tr>
+                        )}
                     </tbody>
                   </table>
                 </div>
