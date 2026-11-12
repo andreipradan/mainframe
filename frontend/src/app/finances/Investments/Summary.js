@@ -20,6 +20,15 @@ import { getEvaluation, getPnl } from './Pension';
 
 Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip);
 
+const getProfitValue = (pnl, dividend, currency) => {
+  if (!pnl) return '-';
+
+  const profit = dividend
+    ? Number.parseFloat(pnl) + Number.parseFloat(dividend)
+    : pnl;
+  return `${profit} ${currency}`;
+};
+
 const Summary = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -49,9 +58,9 @@ const Summary = () => {
                 Summary
                 <p className={'text-small text-muted'}>*pension not included</p>
               </h5>
-              {state.loading ? (
-                <Circles />
-              ) : state.totals ? (
+              {state.loading && <Circles />}
+              {!state.loading &&
+                state.totals &&
                 state.currencies?.map((currency) => (
                   <div key={`summary-${currency}`}>
                     {state.totals[currency]?.active ? (
@@ -97,8 +106,7 @@ const Summary = () => {
                       />
                     ) : null}
                   </div>
-                ))
-              ) : null}
+                ))}
             </div>
           </div>
         </div>
@@ -110,73 +118,70 @@ const Summary = () => {
                 {state.loading ? (
                   <Circles />
                 ) : (
-                  state[entry]?.currencies?.map((currency) => (
-                    <div key={`${entry}-${currency}`}>
-                      {state[entry]?.[`active_${currency}`] ? (
-                        <ListItem
-                          label={'Active'}
-                          value={`${Number.parseFloat(
-                            state[entry][`active_${currency}`]
-                          ).toFixed(2)} ${currency}`}
-                          textType={'info'}
-                        />
-                      ) : null}
-                      {state[entry]?.[`deposit_${currency}`] ? (
-                        <ListItem
-                          label={'Deposits'}
-                          value={`${state[entry][`deposit_${currency}`]} ${currency}`}
-                          textType={'warning'}
-                        />
-                      ) : null}
-                      {state[entry]?.[`buy_${currency}`] ? (
-                        <ListItem
-                          label={'Bought'}
-                          value={`${state[entry][`buy_${currency}`]} ${currency}`}
-                          textType={'muted'}
-                        />
-                      ) : null}
-                      {state[entry]?.[`sell_${currency}`] ? (
-                        <ListItem
-                          label={'Sold'}
-                          value={`${state[entry][`sell_${currency}`]} ${currency}`}
-                          textType={'muted'}
-                        />
-                      ) : null}
-                      {state[entry]?.[`pnl_${currency}`] ? (
-                        <ListItem
-                          label={'Profit / Loss'}
-                          value={`${state[entry][`pnl_${currency}`]} ${currency}`}
-                          textType={'warning'}
-                        />
-                      ) : null}
-                      {state[entry]?.[`dividend_${currency}`] ? (
-                        <ListItem
-                          label={'Dividends'}
-                          value={`${state[entry][`dividend_${currency}`]} ${currency}`}
-                          textType={
-                            state[entry]?.[`dividend_${currency}`] > 0
-                              ? 'success'
-                              : 'danger'
-                          }
-                        />
-                      ) : null}
-                      {state[entry]?.[`pnl_${currency}`] &&
-                      state[entry]?.[`dividend_${currency}`] ? (
-                        <ListItem
-                          label={'Profit'}
-                          value={
-                            state[entry][`pnl_${currency}`]
-                              ? state[entry]?.[`dividend_${currency}`]
-                                ? `${Number.parseFloat(state[entry][`pnl_${currency}`]) + Number.parseFloat(state[entry][`dividend_${currency}`])} ${currency}`
-                                : `${state[entry]?.[`pnl_${currency}`]} ${currency}`
-                              : '-'
-                          }
-                          textType={'success'}
-                        />
-                      ) : null}
-                      <hr className='mt-0 mb-0' />
-                    </div>
-                  ))
+                  state[entry]?.currencies?.map((currency) => {
+                    const pnl = state[entry]?.[`pnl_${currency}`];
+                    const dividend = state[entry]?.[`dividend_${currency}`];
+                    return (
+                      <div key={`${entry}-${currency}`}>
+                        {state[entry]?.[`active_${currency}`] ? (
+                          <ListItem
+                            label={'Active'}
+                            value={`${Number.parseFloat(
+                              state[entry][`active_${currency}`]
+                            ).toFixed(2)} ${currency}`}
+                            textType={'info'}
+                          />
+                        ) : null}
+                        {state[entry]?.[`deposit_${currency}`] ? (
+                          <ListItem
+                            label={'Deposits'}
+                            value={`${state[entry][`deposit_${currency}`]} ${currency}`}
+                            textType={'warning'}
+                          />
+                        ) : null}
+                        {state[entry]?.[`buy_${currency}`] ? (
+                          <ListItem
+                            label={'Bought'}
+                            value={`${state[entry][`buy_${currency}`]} ${currency}`}
+                            textType={'muted'}
+                          />
+                        ) : null}
+                        {state[entry]?.[`sell_${currency}`] ? (
+                          <ListItem
+                            label={'Sold'}
+                            value={`${state[entry][`sell_${currency}`]} ${currency}`}
+                            textType={'muted'}
+                          />
+                        ) : null}
+                        {state[entry]?.[`pnl_${currency}`] ? (
+                          <ListItem
+                            label={'Profit / Loss'}
+                            value={`${state[entry][`pnl_${currency}`]} ${currency}`}
+                            textType={'warning'}
+                          />
+                        ) : null}
+                        {state[entry]?.[`dividend_${currency}`] ? (
+                          <ListItem
+                            label={'Dividends'}
+                            value={`${state[entry][`dividend_${currency}`]} ${currency}`}
+                            textType={
+                              state[entry]?.[`dividend_${currency}`] > 0
+                                ? 'success'
+                                : 'danger'
+                            }
+                          />
+                        ) : null}
+                        {pnl && dividend ? (
+                          <ListItem
+                            label={'Profit'}
+                            value={getProfitValue(pnl, dividend, currency)}
+                            textType={'success'}
+                          />
+                        ) : null}
+                        <hr className='mt-0 mb-0' />
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -235,9 +240,8 @@ const Summary = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Next bond interest</h6>
-              {state.loading ? (
-                <Circles />
-              ) : state.bonds?.next_interest ? (
+              {state.loading && <Circles />}
+              {!state.loading && state.bonds?.next_interest && (
                 <Marquee pauseOnHover>
                   <ListItem
                     label={'Date'}
@@ -279,9 +283,8 @@ const Summary = () => {
                     className='mr-3'
                   />
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!state.loading && !state.bonds?.next_interest && '-'}
             </div>
           </div>
         </div>
@@ -293,9 +296,8 @@ const Summary = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Next deposit maturity</h6>
-              {state.loading ? (
-                <Circles />
-              ) : state.deposits?.next_maturity ? (
+              {state.loading && <Circles />}
+              {!state.loading && state.deposits?.next_maturity && (
                 <Marquee pauseOnHover>
                   <ListItem
                     label={'Date'}
@@ -331,9 +333,8 @@ const Summary = () => {
                     className='mr-3'
                   />
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!state.loading && !state.deposits?.next_maturity && '-'}
             </div>
           </div>
         </div>
