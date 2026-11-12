@@ -3,10 +3,12 @@ set -e
 
 REDIS_VERSION=7.0.11
 # Install Redis server
-sudo apt-get install -y build-essential tcl wget curl
+sudo apt-get install -y build-essential tcl curl
 
 cd /tmp
-wget --https-only https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz
+curl --proto '=https' --proto-redir '=https' -fL \
+  --output "redis-${REDIS_VERSION}.tar.gz" \
+  "https://download.redis.io/releases/redis-${REDIS_VERSION}.tar.gz"
 tar xzf redis-${REDIS_VERSION}.tar.gz
 cd redis-${REDIS_VERSION}
 make
