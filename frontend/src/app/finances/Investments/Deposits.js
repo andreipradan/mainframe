@@ -173,76 +173,76 @@ const Deposits = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Next Maturity</h6>
-              {state.loading ? (
-                <Circles width='100%' height='50' />
-              ) : state.results?.length ? (
-                <Marquee duration={10000} pauseOnHover>
-                  {state.results[0].name && (
+              {state.loading && <Circles width='100%' height='50' />}
+              {!state.loading &&
+                (state.results?.length ? (
+                  <Marquee duration={10000} pauseOnHover>
+                    {state.results[0].name && (
+                      <ListItem
+                        label={'Name'}
+                        value={state.results[0].name}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
                     <ListItem
-                      label={'Name'}
-                      value={state.results[0].name}
+                      label={'Date'}
+                      value={formatTime(state.results[0].date)}
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  <ListItem
-                    label={'Date'}
-                    value={formatTime(state.results[0].date)}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {state.results[0].amount && (
+                    {state.results[0].amount && (
+                      <ListItem
+                        label={'Quantity'}
+                        value={state.results[0].amount}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
                     <ListItem
-                      label={'Quantity'}
-                      value={state.results[0].amount}
+                      label={'Currency'}
+                      value={
+                        state.currencies?.find(
+                          (c) => c[0] === state.results[0].currency
+                        )?.[1] || state.results[0].currency
+                      }
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  <ListItem
-                    label={'Currency'}
-                    value={
-                      state.currencies?.find(
-                        (c) => c[0] === state.results[0].currency
-                      )?.[1] || state.results[0].currency
-                    }
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {state.results[0].interest && (
+                    {state.results[0].interest && (
+                      <ListItem
+                        label={'Interest'}
+                        value={state.results[0].interest}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
                     <ListItem
-                      label={'Interest'}
-                      value={state.results[0].interest}
+                      label={'Maturity'}
+                      value={formatTime(state.results[0].maturity)}
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  <ListItem
-                    label={'Maturity'}
-                    value={formatTime(state.results[0].maturity)}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {state.results[0].pnl && (
-                    <ListItem
-                      label={'Profit'}
-                      value={state.results[0].pnl}
-                      textType={'warning'}
-                      className='mr-3'
-                    />
-                  )}
-                  {state.results[0].tax && (
-                    <ListItem
-                      label={'Tax'}
-                      value={state.results[0].tax}
-                      textType={'warning'}
-                      className='mr-3'
-                    />
-                  )}
-                </Marquee>
-              ) : (
-                '-'
-              )}
+                    {state.results[0].pnl && (
+                      <ListItem
+                        label={'Profit'}
+                        value={state.results[0].pnl}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                    {state.results[0].tax && (
+                      <ListItem
+                        label={'Tax'}
+                        value={state.results[0].tax}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                  </Marquee>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ const Deposits = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {state.loading ? (
+                    {state.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -339,7 +339,9 @@ const Deposits = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : state.results?.length ? (
+                    )}
+                    {!state.loading &&
+                      state.results?.length > 0 &&
                       state.results.map((deposit) => (
                         <tr
                           key={deposit.id}
@@ -415,8 +417,8 @@ const Deposits = () => {
                           </td>
                           <td> {deposit.name} </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!state.loading && !state.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No deposits found</span>

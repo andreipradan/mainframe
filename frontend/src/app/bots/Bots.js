@@ -86,63 +86,7 @@ const Bots = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!loading ? (
-                      bots ? (
-                        bots.map((bot, i) =>
-                          !loadingBots?.includes(bot.id) ? (
-                            <tr key={i}>
-                              <td>{i + 1}</td>
-                              <td>
-                                {bot.full_name} &nbsp;
-                                <small>({bot.username})</small>
-                              </td>
-                              <td>{parseURL(bot.webhook) || '-'}</td>
-                              <td>{bot.whitelist.join(', ')}</td>
-                              <td>
-                                {bot.last_called_on
-                                  ? new Date(
-                                      bot.last_called_on
-                                    ).toLocaleDateString('ro-RO') +
-                                    ' ' +
-                                    new Date(
-                                      bot.last_called_on
-                                    ).toLocaleTimeString('ro-RO')
-                                  : '-'}
-                              </td>
-                              <td>
-                                <div
-                                  className='btn-group'
-                                  role='group'
-                                  aria-label='Basic example'
-                                >
-                                  <button
-                                    type='button'
-                                    className='btn btn-outline-secondary'
-                                    onClick={() => dispatch(select(bot.id))}
-                                  >
-                                    <i className='mdi mdi-pencil' />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ) : (
-                            <tr key={i}>
-                              <td colSpan={6}>
-                                <ColorRing
-                                  width='100%'
-                                  height='50'
-                                  wrapperStyle={{ width: '100%' }}
-                                />
-                              </td>
-                            </tr>
-                          )
-                        )
-                      ) : (
-                        <tr>
-                          <td colSpan={6}>No bots available</td>
-                        </tr>
-                      )
-                    ) : (
+                    {loading && (
                       <tr>
                         <td colSpan={6}>
                           <Audio
@@ -152,6 +96,65 @@ const Bots = () => {
                             wrapperStyle={{ width: '100%' }}
                           />
                         </td>
+                      </tr>
+                    )}
+                    {!loading &&
+                      bots &&
+                      bots.map((bot, i) => {
+                        if (loadingBots?.includes(bot.id)) {
+                          return (
+                            <tr key={i}>
+                              <td colSpan={6}>
+                                <ColorRing
+                                  width='100%'
+                                  height='50'
+                                  wrapperStyle={{ width: '100%' }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        }
+                        return (
+                          <tr key={i}>
+                            <td>{i + 1}</td>
+                            <td>
+                              {bot.full_name} &nbsp;
+                              <small>({bot.username})</small>
+                            </td>
+                            <td>{parseURL(bot.webhook) || '-'}</td>
+                            <td>{bot.whitelist.join(', ')}</td>
+                            <td>
+                              {bot.last_called_on
+                                ? new Date(
+                                    bot.last_called_on
+                                  ).toLocaleDateString('ro-RO') +
+                                  ' ' +
+                                  new Date(
+                                    bot.last_called_on
+                                  ).toLocaleTimeString('ro-RO')
+                                : '-'}
+                            </td>
+                            <td>
+                              <div
+                                className='btn-group'
+                                role='group'
+                                aria-label='Basic example'
+                              >
+                                <button
+                                  type='button'
+                                  className='btn btn-outline-secondary'
+                                  onClick={() => dispatch(select(bot.id))}
+                                >
+                                  <i className='mdi mdi-pencil' />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    {!loading && !bots && (
+                      <tr>
+                        <td colSpan={6}>No bots available</td>
                       </tr>
                     )}
                   </tbody>

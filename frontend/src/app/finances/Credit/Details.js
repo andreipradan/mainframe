@@ -109,11 +109,10 @@ const Details = () => {
 
   const getAmountInCurrency = (amount, currency = selectedCurrency) => {
     if (!rates?.length) return amount;
-    const rate = currency
-      ? currency.label === credit.currency
-        ? 1
-        : rates.find((r) => r.symbol === currency.value).value
-      : 1;
+    let rate = 1;
+    if (currency && currency.label !== credit.currency) {
+      rate = rates.find((r) => r.symbol === currency.value).value;
+    }
     return Number.parseFloat(amount / rate).toFixed(2);
   };
 
@@ -524,43 +523,43 @@ const Details = () => {
           <div className='card'>
             <div className='card-body'>
               <h5>Summary</h5>
-              {overview.loading ? (
-                <Circles />
-              ) : credit ? (
-                <>
-                  <ListItem
-                    label={'Credit'}
-                    value={summaryCredit}
-                    textType={'primary'}
-                  />
-                  <ListItem
-                    label={'Date'}
-                    value={credit.date}
-                    textType={'warning'}
-                  />
-                  <ListItem
-                    label={'Months'}
-                    value={`${credit.number_of_months} (${credit.number_of_months / 12} yrs)`}
-                  />
-                  <ListItem
-                    label={'Saved'}
-                    value={summarySaved}
-                    textType={'success'}
-                  />
-                  <ListItem
-                    label={'~Total'}
-                    value={summaryTotal}
-                    textType={'warning'}
-                  />
-                  <ListItem
-                    label={'~Interest'}
-                    value={summaryInterest}
-                    textType={'danger'}
-                  />
-                </>
-              ) : (
-                '-'
-              )}
+              {overview.loading && <Circles />}
+              {!overview.loading &&
+                (credit ? (
+                  <>
+                    <ListItem
+                      label={'Credit'}
+                      value={summaryCredit}
+                      textType={'primary'}
+                    />
+                    <ListItem
+                      label={'Date'}
+                      value={credit.date}
+                      textType={'warning'}
+                    />
+                    <ListItem
+                      label={'Months'}
+                      value={`${credit.number_of_months} (${credit.number_of_months / 12} yrs)`}
+                    />
+                    <ListItem
+                      label={'Saved'}
+                      value={summarySaved}
+                      textType={'success'}
+                    />
+                    <ListItem
+                      label={'~Total'}
+                      value={summaryTotal}
+                      textType={'warning'}
+                    />
+                    <ListItem
+                      label={'~Interest'}
+                      value={summaryInterest}
+                      textType={'danger'}
+                    />
+                  </>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -568,9 +567,8 @@ const Details = () => {
           <div className='card'>
             <div className='card-body'>
               <h5>Remaining</h5>
-              {overview.loading ? (
-                <Circles />
-              ) : overview.credit ? (
+              {overview.loading && <Circles />}
+              {!overview.loading && overview.credit && (
                 <>
                   <ListItem
                     label={'Total'}
@@ -605,9 +603,8 @@ const Details = () => {
                     textType={'danger'}
                   />
                 </>
-              ) : (
-                '-'
               )}
+              {!overview.loading && !overview.credit && '-'}
             </div>
           </div>
         </div>
@@ -624,44 +621,44 @@ const Details = () => {
                   <i className='mdi mdi-refresh' />
                 </button>
               </h5>
-              {payment.loading ? (
-                <Circles />
-              ) : payment.results?.length ? (
-                <>
-                  <ListItem
-                    label={'Total'}
-                    value={paidTotal}
-                    textType={'primary'}
-                    tooltip='paid-percentage'
-                  />
-                  <ListItem
-                    label={'Date'}
-                    value={new Date().toISOString().split('T')[0]}
-                    textType={'warning'}
-                  />
-                  <ListItem label={'Payments'} value={payment.count} />
-                  <ListItem
-                    label={'Prepaid'}
-                    value={paidPrepaid}
-                    textType={'success'}
-                    tooltip='prepaid-percentage'
-                  />
-                  <ListItem
-                    label={'Principal'}
-                    value={paidPrincipal}
-                    textType={'success'}
-                    tooltip={'principal-percentage'}
-                  />
-                  <ListItem
-                    label={'Interest'}
-                    value={paidInterest}
-                    textType={'danger'}
-                    tooltip={'interest-percentage'}
-                  />
-                </>
-              ) : (
-                '-'
-              )}
+              {payment.loading && <Circles />}
+              {!payment.loading &&
+                (payment.results?.length ? (
+                  <>
+                    <ListItem
+                      label={'Total'}
+                      value={paidTotal}
+                      textType={'primary'}
+                      tooltip='paid-percentage'
+                    />
+                    <ListItem
+                      label={'Date'}
+                      value={new Date().toISOString().split('T')[0]}
+                      textType={'warning'}
+                    />
+                    <ListItem label={'Payments'} value={payment.count} />
+                    <ListItem
+                      label={'Prepaid'}
+                      value={paidPrepaid}
+                      textType={'success'}
+                      tooltip='prepaid-percentage'
+                    />
+                    <ListItem
+                      label={'Principal'}
+                      value={paidPrincipal}
+                      textType={'success'}
+                      tooltip={'principal-percentage'}
+                    />
+                    <ListItem
+                      label={'Interest'}
+                      value={paidInterest}
+                      textType={'danger'}
+                      tooltip={'interest-percentage'}
+                    />
+                  </>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -681,57 +678,57 @@ const Details = () => {
                       : null}
                   </small>
                 </sup>
-                {overview.loading ? null : latestTimetable?.length ? (
+                {!overview.loading && latestTimetable?.length && (
                   <span className='text-warning'>
                     {' '}
                     {latestTimetable[0].date}
                   </span>
-                ) : null}
+                )}
               </h6>
-              {overview.loading ? (
-                <Circles />
-              ) : latestTimetable?.length ? (
-                <Marquee pauseOnHover>
-                  <ListItem
-                    label={'Total'}
-                    value={getAmountInCurrency(latestTimetable[0].total)}
-                    textType={'primary'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Principal'}
-                    value={getAmountInCurrency(latestTimetable[0].principal)}
-                    textType={'success'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Interest'}
-                    value={`${getAmountInCurrency(latestTimetable[0].interest)} (${overview.latest_timetable.interest}%)`}
-                    textType={'danger'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'IRCC'}
-                    value={`${overview.latest_timetable.ircc}%`}
-                    textType={'danger'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Insurance'}
-                    value={getAmountInCurrency(latestTimetable[0].insurance)}
-                    textType={'danger'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Remaining'}
-                    value={getAmountInCurrency(latestTimetable[0].remaining)}
-                    textType={'danger'}
-                    className='mr-3'
-                  />
-                </Marquee>
-              ) : (
-                '-'
-              )}
+              {overview.loading && <Circles />}
+              {!overview.loading &&
+                (latestTimetable?.length ? (
+                  <Marquee pauseOnHover>
+                    <ListItem
+                      label={'Total'}
+                      value={getAmountInCurrency(latestTimetable[0].total)}
+                      textType={'primary'}
+                      className='mr-3'
+                    />
+                    <ListItem
+                      label={'Principal'}
+                      value={getAmountInCurrency(latestTimetable[0].principal)}
+                      textType={'success'}
+                      className='mr-3'
+                    />
+                    <ListItem
+                      label={'Interest'}
+                      value={`${getAmountInCurrency(latestTimetable[0].interest)} (${overview.latest_timetable.interest}%)`}
+                      textType={'danger'}
+                      className='mr-3'
+                    />
+                    <ListItem
+                      label={'IRCC'}
+                      value={`${overview.latest_timetable.ircc}%`}
+                      textType={'danger'}
+                      className='mr-3'
+                    />
+                    <ListItem
+                      label={'Insurance'}
+                      value={getAmountInCurrency(latestTimetable[0].insurance)}
+                      textType={'danger'}
+                      className='mr-3'
+                    />
+                    <ListItem
+                      label={'Remaining'}
+                      value={getAmountInCurrency(latestTimetable[0].remaining)}
+                      textType={'danger'}
+                      className='mr-3'
+                    />
+                  </Marquee>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -749,17 +746,18 @@ const Details = () => {
                   className='mdi mdi-information-outline'
                 />
               </h5>
-              {overview.loading || payment.loading ? (
-                <Circles />
-              ) : credit ? (
-                <ProgressBar
-                  now={paidPrincipal || 0}
-                  max={summaryCredit || 0}
-                  label={`${paidPrincipal} / ${summaryCredit}`}
-                />
-              ) : (
-                '-'
-              )}
+              {(overview.loading || payment.loading) && <Circles />}
+              {!overview.loading &&
+                !payment.loading &&
+                (credit ? (
+                  <ProgressBar
+                    now={paidPrincipal || 0}
+                    max={summaryCredit || 0}
+                    label={`${paidPrincipal} / ${summaryCredit}`}
+                  />
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -780,9 +778,8 @@ const Details = () => {
                   </small>
                 </sup>
               </h6>
-              {payment.loading ? (
-                <Circles />
-              ) : payment.results?.length ? (
+              {payment.loading && <Circles />}
+              {!payment.loading && payment.results?.length > 0 && (
                 <Marquee duration={10000} pauseOnHover>
                   <ListItem
                     label={'Total'}
@@ -829,9 +826,8 @@ const Details = () => {
                     className='mr-3'
                   />
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!payment.loading && !payment.results?.length && '-'}
             </div>
           </div>
         </div>
@@ -859,11 +855,10 @@ const Details = () => {
                   <i className='mdi mdi-refresh' />
                 </button>
               </h6>
-              {payment.loading ? (
-                <Circles />
-              ) : payment.results ? (
+              {payment.loading && <Circles />}
+              {!payment.loading && payment.results && (
                 <Line data={data} options={options} />
-              ) : null}
+              )}
             </div>
           </div>
         </div>
@@ -915,17 +910,17 @@ const Details = () => {
                   Exclude prepayments <i className='input-helper' />
                 </label>
               </div>
-              {payment.loading ? (
-                <Circles />
-              ) : payment.results ? (
-                <Bar
-                  data={paymentsData}
-                  options={paymentsOptions}
-                  height={100}
-                />
-              ) : (
-                '-'
-              )}
+              {payment.loading && <Circles />}
+              {!payment.loading &&
+                (payment.results ? (
+                  <Bar
+                    data={paymentsData}
+                    options={paymentsOptions}
+                    height={100}
+                  />
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -994,13 +989,13 @@ const Details = () => {
                   <i className='mdi mdi-refresh' />
                 </button>
               </h6>
-              {payment.loading ? (
-                <Circles />
-              ) : payment.results ? (
-                <Doughnut data={paidData} options={doughnutPieOptions} />
-              ) : (
-                '-'
-              )}
+              {payment.loading && <Circles />}
+              {!payment.loading &&
+                (payment.results ? (
+                  <Doughnut data={paidData} options={doughnutPieOptions} />
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -1017,13 +1012,13 @@ const Details = () => {
                   </small>
                 </sup>
               </h6>
-              {overview.loading ? (
-                <Circles />
-              ) : overview.credit ? (
-                <Doughnut data={remainingData} options={doughnutPieOptions} />
-              ) : (
-                '-'
-              )}
+              {overview.loading && <Circles />}
+              {!overview.loading &&
+                (overview.credit ? (
+                  <Doughnut data={remainingData} options={doughnutPieOptions} />
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>

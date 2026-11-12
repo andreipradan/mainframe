@@ -91,7 +91,7 @@ const Logs = () => {
                 className='list-arrow'
                 style={{ maxHeight: '60vh', overflowY: 'scroll' }}
               >
-                {loading ? (
+                {loading && (
                   <BallTriangle
                     visible
                     width='100%'
@@ -100,7 +100,8 @@ const Logs = () => {
                     wrapperClass={{}}
                     color='#e15b64'
                   />
-                ) : (
+                )}
+                {!loading && (
                   <>
                     {path && (
                       <li
@@ -120,30 +121,28 @@ const Logs = () => {
                         ..
                       </li>
                     )}
-                    {logs?.map((log, i) => (
-                      <li
-                        key={i}
-                        style={{ cursor: 'pointer' }}
-                        onClick={() =>
-                          dispatch(
-                            log.is_file
-                              ? LogsApi.getFile(
-                                  token,
-                                  path ? `${path}/${log.name}` : log.name
-                                )
-                              : LogsApi.getList(
-                                  token,
-                                  path ? `${path}/${log.name}` : log.name
-                                )
-                          )
+                    {logs?.map((log, i) => {
+                      const logPath = path ? `${path}/${log.name}` : log.name;
+                      const onLogClick = () => {
+                        if (log.is_file) {
+                          dispatch(LogsApi.getFile(token, logPath));
+                        } else {
+                          dispatch(LogsApi.getList(token, logPath));
                         }
-                      >
-                        <i
-                          className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`}
-                        />{' '}
-                        {log.name.split('/')[log.name.split('/').length - 1]}
-                      </li>
-                    ))}
+                      };
+                      return (
+                        <li
+                          key={i}
+                          style={{ cursor: 'pointer' }}
+                          onClick={onLogClick}
+                        >
+                          <i
+                            className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`}
+                          />{' '}
+                          {log.name.split('/')[log.name.split('/').length - 1]}
+                        </li>
+                      );
+                    })}
                   </>
                 )}
               </ul>

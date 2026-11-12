@@ -370,6 +370,141 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
+  test('covers cron list loading states and status color variants', () => {
+    const makeCron = (id, status) => ({
+      id,
+      name: `Cron ${id}`,
+      command: 'sync_data',
+      expression: '0 8 * * *',
+      is_active: true,
+      cron_description: 'At 08:00',
+      redis: {
+        history: status ? [{ status, timestamp: '2025-01-02T12:00:00Z' }] : [],
+      },
+    });
+    const baseState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      crons: {
+        results: [
+          makeCron(1, 'complete'),
+          makeCron(2, 'executing'),
+          makeCron(3, 'unknown'),
+          makeCron(4, null),
+        ],
+        count: 4,
+        loading: false,
+        loadingItems: [],
+        selectedItem: null,
+        modalOpen: false,
+        errors: null,
+        kwargs: {},
+      },
+      commands: { results: [], errors: null, loading: false },
+    };
+
+    mockState = {
+      ...baseState,
+      crons: { ...baseState.crons, loading: true },
+    };
+    const loading = render(<Crons />);
+    expect(
+      loading.container.querySelector('tbody td[colspan="8"]')
+    ).not.toBeNull();
+    loading.unmount();
+
+    mockState = {
+      ...baseState,
+      crons: { ...baseState.crons, loadingItems: [1] },
+    };
+    const itemLoading = render(<Crons />);
+    expect(itemLoading.container.textContent).toContain('Loading');
+    itemLoading.unmount();
+
+    mockState = baseState;
+    const { container, unmount } = render(<Crons />);
+    expect(container.querySelector('.text-success')).not.toBeNull();
+    expect(container.querySelector('.text-warning')).not.toBeNull();
+    expect(container.querySelector('.text-danger')).not.toBeNull();
+    expect(container.textContent).toContain('Unknown');
+    expect(container.textContent).toContain('-');
+    const firstRow = container.querySelector('tbody tr');
+    act(() => firstRow.children[1].click());
+    act(() => firstRow.children[5].click());
+    expect(mockDispatch).toHaveBeenCalled();
+
+    act(() => firstRow.querySelector('.mdi-play').closest('button').click());
+    expect(container.textContent).toContain('run "sync_data"');
+    act(() =>
+      firstRow.querySelector('.mdi-skull-crossbones').closest('button').click()
+    );
+    expect(container.textContent).toContain('kill "sync_data"');
+    unmount();
+  });
+
+  test('renders selected cron command arguments and hides the form while loading', () => {
+    const cron = {
+      id: 11,
+      name: 'Morning sync',
+      command: 'sync_data',
+      expression: '0 8 * * *',
+      is_active: true,
+      kwargs: {},
+      redis: {},
+      description: 'Daily sync',
+    };
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      crons: {
+        results: [cron],
+        count: 1,
+        loading: false,
+        loadingItems: [],
+        selectedItem: cron,
+        modalOpen: false,
+        errors: null,
+        kwargs: {},
+      },
+      commands: {
+        results: [
+          {
+            app: 'jobs',
+            commands: [
+              {
+                name: 'sync_data',
+                args: [
+                  {
+                    dest: 'account',
+                    required: true,
+                    type: 'str',
+                    choices: ['checking', 'savings'],
+                    help: 'Account name',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        errors: null,
+        loading: false,
+      },
+    };
+
+    const { container, unmount } = render(<Crons />);
+    expect(container.textContent).toContain('Daily sync');
+    expect(container.textContent).toContain('Params:');
+    expect(container.textContent).toContain('choices: checking, savings');
+    expect(container.textContent).toContain('description: Account name');
+    unmount();
+
+    mockState.crons.loadingItems = [cron.id];
+    const loading = render(<Crons />);
+    expect(loading.container.textContent).toContain('Loading');
+    expect(loading.container.querySelector('textarea')).toBeNull();
+    loading.unmount();
+  });
+
   test('expands selected task history and keeps its disclosure state in sync', () => {
     const history = [{ timestamp: '2025-01-02T12:00:00Z', status: 'complete' }];
     mockState = {

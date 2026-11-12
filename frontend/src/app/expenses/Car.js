@@ -111,14 +111,16 @@ const Car = () => {
                 </button>
               </h6>
               <div className={'row'}>
-                {store.loading ? (
+                {store.loading && (
                   <Circles
                     height={20}
                     width={20}
                     wrapperStyle={{ display: 'default' }}
                     wrapperClass='btn'
                   />
-                ) : store.results?.length ? (
+                )}
+                {!store.loading &&
+                  store.results?.length > 0 &&
                   store.results.map((p) => (
                     <div className='col grid-margin' key={`car-${p.id}`}>
                       <h6>
@@ -173,8 +175,8 @@ const Car = () => {
                         />
                       </div>
                     </div>
-                  ))
-                ) : (
+                  ))}
+                {!store.loading && !store.results?.length && (
                   <small className='text-muted'>No cars added</small>
                 )}
               </div>
@@ -317,7 +319,7 @@ const Car = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {store.loading ? (
+                      {store.loading && (
                         <Circles
                           visible
                           width='100%'
@@ -325,46 +327,48 @@ const Car = () => {
                           wrapperStyle={{ float: 'right' }}
                           color='orange'
                         />
-                      ) : p.service_entries?.length ? (
-                        p.service_entries.map((c) => (
-                          <tr key={`service-entry-${p.id}-${c.id}`}>
-                            <td>
-                              {' '}
-                              {new Date(c.date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}{' '}
-                            </td>
-                            <td>
-                              {' '}
-                              {c.price} {c.currency}
-                            </td>
-                            <td>{c.description}</td>
-                            <td>
-                              <button
-                                type='button'
-                                className='btn btn-link p-0 text-warning'
-                                aria-label={`Delete service entry dated ${new Date(c.date).toLocaleDateString('en-US')} for ${c.description}`}
-                                onClick={() =>
-                                  dispatch(api.deleteServiceEntry(p.id, c.id))
-                                }
-                              >
-                                <i
-                                  className='mdi mdi-trash-can-outline'
-                                  aria-hidden='true'
-                                />
-                              </button>
+                      )}
+                      {!store.loading &&
+                        (p.service_entries?.length ? (
+                          p.service_entries.map((c) => (
+                            <tr key={`service-entry-${p.id}-${c.id}`}>
+                              <td>
+                                {' '}
+                                {new Date(c.date).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}{' '}
+                              </td>
+                              <td>
+                                {' '}
+                                {c.price} {c.currency}
+                              </td>
+                              <td>{c.description}</td>
+                              <td>
+                                <button
+                                  type='button'
+                                  className='btn btn-link p-0 text-warning'
+                                  aria-label={`Delete service entry dated ${new Date(c.date).toLocaleDateString('en-US')} for ${c.description}`}
+                                  onClick={() =>
+                                    dispatch(api.deleteServiceEntry(p.id, c.id))
+                                  }
+                                >
+                                  <i
+                                    className='mdi mdi-trash-can-outline'
+                                    aria-hidden='true'
+                                  />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6}>
+                              <span>No service entries found</span>
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={6}>
-                            <span>No service entries found</span>
-                          </td>
-                        </tr>
-                      )}
+                        ))}
                     </tbody>
                   </table>
                 </div>

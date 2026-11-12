@@ -19,6 +19,12 @@ import {
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 import BottomPagination from '../shared/BottomPagination';
 
+const getCronStatusTextType = (status) => {
+  if (status === 'complete') return 'success';
+  if (status === 'executing') return 'warning';
+  return 'danger';
+};
+
 const Crons = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -232,106 +238,7 @@ const Crons = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!state.loading ? (
-                      state.results?.length ? (
-                        state.results.map((cron, i) =>
-                          !state.loadingItems?.includes(cron.id) ? (
-                            <tr key={cron.id}>
-                              <td>{i + 1}</td>
-                              <td
-                                onClick={() => dispatch(select(cron.id))}
-                                className='cursor-pointer text-primary'
-                              >
-                                {cron.name}
-                              </td>
-                              <td>{cron.cron_description}</td>
-                              <td>
-                                <i
-                                  className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`}
-                                />
-                              </td>
-                              <td>
-                                {cron.redis?.history?.[0]?.timestamp
-                                  ? new Date(
-                                      cron.redis.history[0].timestamp
-                                    ).toUTCString()
-                                  : '-'}
-                              </td>
-                              <td
-                                className={`text-${
-                                  cron.redis.history?.[0]?.status === 'complete'
-                                    ? 'success'
-                                    : cron.redis.history?.[0]?.status ===
-                                        'executing'
-                                      ? 'warning'
-                                      : 'danger'
-                                }`}
-                                onClick={() => dispatch(select(cron.id))}
-                              >
-                                {cron.redis.history?.[0]?.status
-                                  ? capitalize(cron.redis.history[0].status)
-                                  : '-'}
-                              </td>
-                              <td>
-                                <button
-                                  type='button'
-                                  className='btn btn-link p-0'
-                                  aria-label={`Duplicate cron ${cron.name}`}
-                                  onClick={() => {
-                                    duplicate(cron);
-                                    dispatch(setModalOpen(true));
-                                  }}
-                                >
-                                  <i
-                                    className='mdi mdi-content-copy'
-                                    aria-hidden='true'
-                                  />
-                                </button>
-                                <div
-                                  className='btn-group btn-group-sm'
-                                  role='group'
-                                >
-                                  <button
-                                    type='button'
-                                    className='btn btn-outline-primary border-0'
-                                    onClick={() => {
-                                      setSelectedAction('run');
-                                      setSelectedActionCron(cron);
-                                    }}
-                                  >
-                                    <i className='mdi mdi-play' />
-                                  </button>
-                                  <button
-                                    type='button'
-                                    className='btn btn-outline-danger border-0'
-                                    onClick={() => {
-                                      setSelectedAction('kill');
-                                      setSelectedActionCron(cron);
-                                    }}
-                                  >
-                                    <i className='mdi mdi-skull-crossbones' />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ) : (
-                            <tr key={cron.id}>
-                              <td colSpan={6}>
-                                <ColorRing
-                                  width='100%'
-                                  height='50'
-                                  wrapperStyle={{ width: '100%' }}
-                                />
-                              </td>
-                            </tr>
-                          )
-                        )
-                      ) : (
-                        <tr>
-                          <td colSpan={7}>No crons available</td>
-                        </tr>
-                      )
-                    ) : (
+                    {state.loading && (
                       <tr>
                         <td colSpan={8}>
                           <Audio
@@ -341,6 +248,101 @@ const Crons = () => {
                             wrapperStyle={{ width: '100%' }}
                           />
                         </td>
+                      </tr>
+                    )}
+                    {!state.loading &&
+                      state.results?.length > 0 &&
+                      state.results.map((cron, i) => {
+                        if (state.loadingItems?.includes(cron.id)) {
+                          return (
+                            <tr key={cron.id}>
+                              <td colSpan={6}>
+                                <ColorRing
+                                  width='100%'
+                                  height='50'
+                                  wrapperStyle={{ width: '100%' }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        }
+                        return (
+                          <tr key={cron.id}>
+                            <td>{i + 1}</td>
+                            <td
+                              onClick={() => dispatch(select(cron.id))}
+                              className='cursor-pointer text-primary'
+                            >
+                              {cron.name}
+                            </td>
+                            <td>{cron.cron_description}</td>
+                            <td>
+                              <i
+                                className={`mdi mdi-${cron.is_active ? 'check text-success' : 'alert text-danger'}`}
+                              />
+                            </td>
+                            <td>
+                              {cron.redis?.history?.[0]?.timestamp
+                                ? new Date(
+                                    cron.redis.history[0].timestamp
+                                  ).toUTCString()
+                                : '-'}
+                            </td>
+                            <td
+                              className={`text-${getCronStatusTextType(cron.redis.history?.[0]?.status)}`}
+                              onClick={() => dispatch(select(cron.id))}
+                            >
+                              {cron.redis.history?.[0]?.status
+                                ? capitalize(cron.redis.history[0].status)
+                                : '-'}
+                            </td>
+                            <td>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0'
+                                aria-label={`Duplicate cron ${cron.name}`}
+                                onClick={() => {
+                                  duplicate(cron);
+                                  dispatch(setModalOpen(true));
+                                }}
+                              >
+                                <i
+                                  className='mdi mdi-content-copy'
+                                  aria-hidden='true'
+                                />
+                              </button>
+                              <div
+                                className='btn-group btn-group-sm'
+                                role='group'
+                              >
+                                <button
+                                  type='button'
+                                  className='btn btn-outline-primary border-0'
+                                  onClick={() => {
+                                    setSelectedAction('run');
+                                    setSelectedActionCron(cron);
+                                  }}
+                                >
+                                  <i className='mdi mdi-play' />
+                                </button>
+                                <button
+                                  type='button'
+                                  className='btn btn-outline-danger border-0'
+                                  onClick={() => {
+                                    setSelectedAction('kill');
+                                    setSelectedActionCron(cron);
+                                  }}
+                                >
+                                  <i className='mdi mdi-skull-crossbones' />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    {!state.loading && !state.results?.length && (
+                      <tr>
+                        <td colSpan={7}>No crons available</td>
                       </tr>
                     )}
                   </tbody>
@@ -436,9 +438,9 @@ const Crons = () => {
                 {state.selectedItem?.description}
               </p>
             )}
-            {command ? (
+            {command &&
               allCommands?.find((c) => c.value === command.value)?.args
-                ?.length ? (
+                ?.length && (
                 <p className='text-muted mb-0'>
                   Params:
                   <ul>
@@ -462,17 +464,17 @@ const Crons = () => {
                       ))}
                   </ul>
                 </p>
-              ) : null
-            ) : null}
+              )}
           </Modal.Title>
         </Modal.Header>
-        {state.loadingItems?.includes(state.selectedItem?.id) ? (
+        {state.loadingItems?.includes(state.selectedItem?.id) && (
           <ColorRing
             width='100%'
             height='50'
             wrapperStyle={{ width: '100%' }}
           />
-        ) : (
+        )}
+        {!state.loadingItems?.includes(state.selectedItem?.id) && (
           <Modal.Body>
             <Form onSubmit={onSubmit}>
               <Errors errors={state.errors} />

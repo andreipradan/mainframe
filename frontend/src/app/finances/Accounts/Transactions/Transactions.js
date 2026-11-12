@@ -256,23 +256,42 @@ const Transactions = () => {
   const onCheckedCategoryChange = (newValue, description) => {
     if (!newValue.value) return;
     const newCategory = { description, category: newValue.value };
-    setCheckedCategories(
-      !checkedCategories?.length
-        ? newCategory.category !== 'Unidentified'
-          ? [newCategory]
-          : null
-        : checkedCategories.find((c) => c.description === description)
-          ? newCategory.category !== 'Unidentified'
-            ? checkedCategories.map((c) =>
-                c.description === description
-                  ? { ...c, category: newValue.value }
-                  : c
-              )
-            : checkedCategories.filter((c) => c.description !== description)
-          : newCategory.category !== 'Unidentified'
-            ? [...checkedCategories, newCategory]
-            : checkedCategories
-    );
+    const isIdentified = newCategory.category !== 'Unidentified';
+    let updatedCategories;
+
+    if (!checkedCategories?.length) {
+      if (isIdentified) {
+        updatedCategories = [newCategory];
+      } else {
+        updatedCategories = null;
+      }
+    } else {
+      const existingCategory = checkedCategories.find(
+        (category) => category.description === description
+      );
+      if (existingCategory) {
+        if (isIdentified) {
+          updatedCategories = checkedCategories.map((category) => {
+            if (category.description === description) {
+              return { ...category, category: newValue.value };
+            }
+            return category;
+          });
+        } else {
+          updatedCategories = checkedCategories.filter(
+            (category) => category.description !== description
+          );
+        }
+      } else {
+        if (isIdentified) {
+          updatedCategories = [...checkedCategories, newCategory];
+        } else {
+          updatedCategories = checkedCategories;
+        }
+      }
+    }
+
+    setCheckedCategories(updatedCategories);
   };
   const onConfirmedByChange = (newValue) => {
     const newConfirmedBy = newValue ? newValue.value : '';
@@ -368,27 +387,27 @@ const Transactions = () => {
                   <i className='mdi mdi-refresh' />
                 </button>
               </h5>
-              {accounts.loading ? (
-                <Circles />
-              ) : accounts.selectedItem ? (
-                <>
-                  <ListItem
-                    label={'Account'}
-                    value={`${accounts.selectedItem.bank} (${accounts.selectedItem.type})`}
-                    textType={'primary'}
-                  />
-                  <ListItem
-                    label={'Number'}
-                    value={accounts.selectedItem.number}
-                  />
-                  <ListItem
-                    label={'Transactions'}
-                    value={accounts.analytics?.total}
-                  />
-                </>
-              ) : (
-                '-'
-              )}
+              {accounts.loading && <Circles />}
+              {!accounts.loading &&
+                (accounts.selectedItem ? (
+                  <>
+                    <ListItem
+                      label={'Account'}
+                      value={`${accounts.selectedItem.bank} (${accounts.selectedItem.type})`}
+                      textType={'primary'}
+                    />
+                    <ListItem
+                      label={'Number'}
+                      value={accounts.selectedItem.number}
+                    />
+                    <ListItem
+                      label={'Transactions'}
+                      value={accounts.analytics?.total}
+                    />
+                  </>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -396,26 +415,26 @@ const Transactions = () => {
           <div className='card'>
             <div className='card-body'>
               <h5>Client</h5>
-              {accounts.loading ? (
-                <Circles />
-              ) : accounts.selectedItem ? (
-                <>
-                  <ListItem
-                    label={'First Name'}
-                    value={accounts.selectedItem.first_name}
-                  />
-                  <ListItem
-                    label={'Last Name'}
-                    value={accounts.selectedItem.last_name}
-                  />
-                  <ListItem
-                    label={'Client Code'}
-                    value={accounts.selectedItem.client_code}
-                  />
-                </>
-              ) : (
-                '-'
-              )}
+              {accounts.loading && <Circles />}
+              {!accounts.loading &&
+                (accounts.selectedItem ? (
+                  <>
+                    <ListItem
+                      label={'First Name'}
+                      value={accounts.selectedItem.first_name}
+                    />
+                    <ListItem
+                      label={'Last Name'}
+                      value={accounts.selectedItem.last_name}
+                    />
+                    <ListItem
+                      label={'Client Code'}
+                      value={accounts.selectedItem.client_code}
+                    />
+                  </>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -425,9 +444,8 @@ const Transactions = () => {
           <div className='card'>
             <div className='card-body'>
               <h6>Latest Transaction</h6>
-              {transactions.loading ? (
-                <Circles />
-              ) : transactions.results?.length ? (
+              {transactions.loading && <Circles />}
+              {!transactions.loading && transactions.results?.length > 0 && (
                 <Marquee duration={10000} pauseOnHover>
                   <ListItem
                     label={'Completed'}
@@ -488,9 +506,8 @@ const Transactions = () => {
                     className='mr-3'
                   />
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!transactions.loading && !transactions.results?.length && '-'}
             </div>
           </div>
         </div>
@@ -565,18 +582,18 @@ const Transactions = () => {
                   <Circles />
                 )}
               </h4>
-              {accounts.loading ? (
-                <Circles />
-              ) : accounts.analytics ? (
-                <Bar
-                  data={paymentsData}
-                  getElementAtEvent={handleGetElementAtEvent}
-                  options={paymentsOptions}
-                  height={100}
-                />
-              ) : (
-                '-'
-              )}
+              {accounts.loading && <Circles />}
+              {!accounts.loading &&
+                (accounts.analytics ? (
+                  <Bar
+                    data={paymentsData}
+                    getElementAtEvent={handleGetElementAtEvent}
+                    options={paymentsOptions}
+                    height={100}
+                  />
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -774,7 +791,7 @@ const Transactions = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.loading ? (
+                    {transactions.loading && (
                       <tr>
                         <td colSpan={3}>
                           <Circles
@@ -786,7 +803,9 @@ const Transactions = () => {
                           />
                         </td>
                       </tr>
-                    ) : transactions.results?.length ? (
+                    )}
+                    {!transactions.loading &&
+                      transactions.results?.length > 0 &&
                       transactions.results.map((transaction, i) => (
                         <tr
                           className={
@@ -978,8 +997,8 @@ const Transactions = () => {
                             </button>
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!transactions.loading && !transactions.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No transactions found</span>

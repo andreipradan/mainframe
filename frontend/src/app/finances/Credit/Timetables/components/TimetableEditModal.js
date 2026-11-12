@@ -61,27 +61,27 @@ const TimetableEditModal = () => {
               </tr>
             </thead>
             <tbody>
-              {loadingTimetables?.includes(timetable?.id) ? (
+              {loadingTimetables?.includes(timetable?.id) && (
                 <ColorRing
                   width='100%'
                   height='50'
                   wrapperStyle={{ width: '100%' }}
                 />
-              ) : timetable?.amortization_table.length ? (
-                timetable.amortization_table.map((month, i) => (
-                  <tr key={i}>
-                    <td> {i + 1} </td>
-                    <td> {month.date} </td>
-                    <td> {month.total} </td>
-                    <td> {month.principal} </td>
-                    <td> {month.interest} </td>
-                    <td> {month.insurance} </td>
-                    <td> {month.remaining} </td>
-                  </tr>
-                ))
-              ) : (
-                'No timetables found'
               )}
+              {!loadingTimetables?.includes(timetable?.id) &&
+                (timetable?.amortization_table.length
+                  ? timetable.amortization_table.map((month, i) => (
+                      <tr key={i}>
+                        <td> {i + 1} </td>
+                        <td> {month.date} </td>
+                        <td> {month.total} </td>
+                        <td> {month.principal} </td>
+                        <td> {month.interest} </td>
+                        <td> {month.insurance} </td>
+                        <td> {month.remaining} </td>
+                      </tr>
+                    ))
+                  : 'No timetables found')}
             </tbody>
           </table>
         </div>

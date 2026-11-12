@@ -126,10 +126,35 @@ const Messages = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!messages.loading ? (
-                      messages.results?.length ? (
-                        messages.results.map((msg, i) =>
-                          !messages.loadingItems?.includes(msg.id) ? (
+                    {messages.loading && (
+                      <tr>
+                        <td colSpan={6}>
+                          <Audio
+                            width='100%'
+                            radius='9'
+                            color='green'
+                            wrapperStyle={{ width: '100%' }}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    {!messages.loading &&
+                      (messages.results?.length ? (
+                        messages.results.map((msg, i) => {
+                          if (messages.loadingItems?.includes(msg.id)) {
+                            return (
+                              <tr key={i}>
+                                <td colSpan={6}>
+                                  <ColorRing
+                                    width='100%'
+                                    height='50'
+                                    wrapperStyle={{ width: '100%' }}
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          }
+                          return (
                             <tr key={i}>
                               <td
                                 onClick={() => dispatch(selectItem(msg.id))}
@@ -156,35 +181,13 @@ const Messages = () => {
                                 {msg.author.full_name}
                               </td>
                             </tr>
-                          ) : (
-                            <tr key={i}>
-                              <td colSpan={6}>
-                                <ColorRing
-                                  width='100%'
-                                  height='50'
-                                  wrapperStyle={{ width: '100%' }}
-                                />
-                              </td>
-                            </tr>
-                          )
-                        )
+                          );
+                        })
                       ) : (
                         <tr>
                           <td colSpan={6}>No crons available</td>
                         </tr>
-                      )
-                    ) : (
-                      <tr>
-                        <td colSpan={6}>
-                          <Audio
-                            width='100%'
-                            radius='9'
-                            color='green'
-                            wrapperStyle={{ width: '100%' }}
-                          />
-                        </td>
-                      </tr>
-                    )}
+                      ))}
                   </tbody>
                 </table>
                 <BottomPagination

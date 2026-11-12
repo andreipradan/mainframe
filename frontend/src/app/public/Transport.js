@@ -28,6 +28,20 @@ import { TransitApi } from '../../api/transport';
 
 import Errors from '../shared/Errors';
 
+const getUpdateText = (timestamp, pollingEnabled) => {
+  if (!timestamp) return '-';
+  if (pollingEnabled) return timeSince(new Date(timestamp));
+  return new Date(timestamp).toLocaleString();
+};
+
+const getUpdateTextType = (timestamp, pollingEnabled = true) => {
+  if (!pollingEnabled) return 'secondary';
+  const ageInSeconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+  if (ageInSeconds >= 40) return 'danger';
+  if (ageInSeconds >= 15) return 'warning';
+  return 'success';
+};
+
 const POLLING_DURATION = 240;
 
 const Transport = () => {
@@ -217,7 +231,7 @@ const Transport = () => {
                   />
                 </button>{' '}
                 &nbsp;
-                {mode === 'buses' ? (
+                {mode === 'buses' && (
                   <>
                     <button
                       type='button'
@@ -233,7 +247,7 @@ const Transport = () => {
                       />
                     </button>{' '}
                     &nbsp;
-                    {!selectedVehicle ? (
+                    {!selectedVehicle && (
                       <>
                         <button
                           type='button'
@@ -243,10 +257,10 @@ const Transport = () => {
                           <i className='mdi mdi-bus' />
                         </button>{' '}
                       </>
-                    ) : null}
+                    )}
                   </>
-                ) : null}
-                {selectedVehicle ? (
+                )}
+                {selectedVehicle && (
                   <button
                     type='button'
                     className={`btn btn-outline-${toggleLabels ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
@@ -254,7 +268,7 @@ const Transport = () => {
                   >
                     <i className='mdi mdi-label' />
                   </button>
-                ) : null}
+                )}
                 &nbsp;
                 <button
                   type='button'
@@ -364,8 +378,10 @@ const Transport = () => {
                       />
                     </>
                   ) : null}
-                  {selectedVehicle && state.stop_times && state.stops
-                    ? state.stop_times
+                  {selectedVehicle &&
+                    state.stop_times &&
+                    state.stops &&
+                    state.stop_times
                         .filter((st) => st.trip_id === selectedVehicle.trip_id)
                         .map((st) => (
                           <Marker
@@ -387,8 +403,7 @@ const Transport = () => {
                               </Tooltip>
                             ) : null}
                           </Marker>
-                        ))
-                    : null}
+                        ))}
                   {mode === 'stops' && (
                     <MarkerClusterGroup
                       chunkedLoading
@@ -531,41 +546,24 @@ const Transport = () => {
                     >
                       <div>
                         Checked{' '}
-                        {state.vehicles_last_check
-                          ? state.pollingEnabled
-                            ? timeSince(new Date(state.vehicles_last_check))
-                            : new Date(
-                                state.vehicles_last_check
-                              ).toLocaleString()
-                          : '-'}
+                        {getUpdateText(
+                          state.vehicles_last_check,
+                          state.pollingEnabled
+                        )}
                       </div>
                       <div>
                         Updated{' '}
                         {state.vehicles_last_update ? (
                           <span
-                            className={`text-small text-${
+                            className={`text-small text-${getUpdateTextType(
+                              state.vehicles_last_update,
                               state.pollingEnabled
-                                ? Math.floor(
-                                    (new Date() -
-                                      new Date(state.vehicles_last_update)) /
-                                      1000
-                                  ) >= 15
-                                  ? Math.floor(
-                                      (new Date() -
-                                        new Date(state.vehicles_last_update)) /
-                                        1000
-                                    ) >= 40
-                                    ? 'danger'
-                                    : 'warning'
-                                  : 'success'
-                                : 'secondary'
-                            }`}
+                            )}`}
                           >
-                            {state.pollingEnabled
-                              ? timeSince(new Date(state.vehicles_last_update))
-                              : new Date(
-                                  state.vehicles_last_update
-                                ).toLocaleString()}
+                            {getUpdateText(
+                              state.vehicles_last_update,
+                              state.pollingEnabled
+                            )}
                           </span>
                         ) : (
                           '-'
@@ -655,21 +653,9 @@ const Transport = () => {
                       ))}
                     </select>
                     <div
-                      className={`mt-1 text-small text-${
-                        Math.floor(
-                          (new Date() -
-                            new Date(state[`${fetchEntity}_last_update`])) /
-                            1000
-                        ) >= 15
-                          ? Math.floor(
-                              (new Date() -
-                                new Date(state[`${fetchEntity}_last_update`])) /
-                                1000
-                            ) >= 40
-                            ? 'danger'
-                            : 'warning'
-                          : 'success'
-                      }`}
+                      className={`mt-1 text-small text-${getUpdateTextType(
+                        state[`${fetchEntity}_last_update`]
+                      )}`}
                     >
                       Last {fetchEntity} update:{' '}
                       {state[`${fetchEntity}_last_update`]
@@ -714,7 +700,7 @@ const Transport = () => {
                         }
                       />
                     ))}
-                  {toggleFields && mode === 'stops' ? (
+                  {toggleFields && mode === 'stops' && (
                     <>
                       <br />
                       <h4 className='card-title'>Stop fields</h4>
@@ -744,7 +730,7 @@ const Transport = () => {
                         />
                       ))}
                     </>
-                  ) : null}
+                  )}
                 </div>
               </div>
             </div>

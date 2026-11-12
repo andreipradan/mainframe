@@ -74,7 +74,7 @@ const Accounts = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {expenses.loading ? (
+                    {expenses.loading && (
                       <tr>
                         <td colSpan={5}>
                           <Circles
@@ -90,7 +90,9 @@ const Accounts = () => {
                           />
                         </td>
                       </tr>
-                    ) : expenses.results?.length ? (
+                    )}
+                    {!expenses.loading &&
+                      expenses.results?.length > 0 &&
                       expenses.results.map((p) => (
                         <tr
                           key={p.id}
@@ -121,8 +123,8 @@ const Accounts = () => {
                             <td>No debts</td>
                           )}
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!expenses.loading && !expenses.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No accounts found</span>

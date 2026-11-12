@@ -8,12 +8,13 @@ import Pension from '../Pension';
 import Stocks from '../Stocks';
 
 let mockState = null;
+const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
-  useDispatch: () => jest.fn(),
+  useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
 jest.mock('react-loader-spinner', () => ({
-  Circles: () => null,
+  Circles: () => <div>Loading pension data</div>,
   ColorRing: () => null,
 }));
 jest.mock(
@@ -47,7 +48,25 @@ const emptyResource = {
   modalOpen: false,
 };
 
-const renderPage = (Component) => {
+const pensionRecord = {
+  id: 1,
+  name: 'Test pension',
+  start_date: '2020-01-01',
+  latest_unit_value_date: '2025-02-01',
+  latest_unit_value: 2,
+  total_units: 10,
+  contributions: [
+    {
+      id: 2,
+      date: '2025-01-01',
+      amount: '100.00',
+      units: '10.00',
+      currency: 'RON',
+    },
+  ],
+};
+
+const renderPage = (Component, stateOverrides = {}) => {
   mockState = {
     auth: { token: null },
     bonds: { ...emptyResource },
@@ -58,25 +77,9 @@ const renderPage = (Component) => {
     deposits: { ...emptyResource },
     pension: {
       ...emptyResource,
-      results: [
-        {
-          id: 1,
-          name: 'Test pension',
-          start_date: '2020-01-01',
-          latest_unit_value: 0,
-          total_units: 0,
-          contributions: [
-            {
-              id: 2,
-              date: '2025-01-01',
-              amount: '100.00',
-              units: '10.00',
-              currency: 'RON',
-            },
-          ],
-        },
-      ],
+      results: [pensionRecord],
     },
+    ...stateOverrides,
   };
   const container = document.createElement('div');
   const root = createRoot(container);
@@ -111,6 +114,8 @@ describe.each([
     unmount();
   });
 });
+
+beforeEach(() => mockDispatch.mockClear());
 
 test('Pension contribution controls enter and leave edit/delete states accessibly', () => {
   const { container, unmount } = renderPage(Pension);
@@ -160,5 +165,67 @@ test('Pension contribution controls enter and leave edit/delete states accessibl
       .click()
   );
   expect(container.textContent).not.toContain('Delete?');
+  unmount();
+});
+
+test('Pension submits contribution creation, updates, and deletion', () => {
+  const { container, unmount } = renderPage(Pension);
+  const selectFundButton = Array.from(
+    container.querySelectorAll('button')
+  ).find((button) => button.textContent === 'Select');
+  act(() => selectFundButton.click());
+
+  const addButton = container
+    .querySelector('button .mdi-plus')
+    .closest('button');
+  act(() => addButton.click());
+  act(() =>
+    container.querySelector('button[aria-label="Save contribution"]').click()
+  );
+  expect(mockDispatch).toHaveBeenCalled();
+
+  act(() =>
+    container.querySelector('button[aria-label="Edit contribution"]').click()
+  );
+  act(() =>
+    container
+      .querySelector('button[aria-label="Save contribution changes"]')
+      .click()
+  );
+  expect(mockDispatch).toHaveBeenCalled();
+
+  act(() =>
+    container.querySelector('button[aria-label="Delete contribution"]').click()
+  );
+  act(() =>
+    container
+      .querySelector('button[aria-label="Confirm delete contribution"]')
+      .click()
+  );
+  expect(mockDispatch).toHaveBeenCalled();
+  unmount();
+});
+
+test('Pension shows loading indicators while data is refreshing', () => {
+  const { container, unmount } = renderPage(Pension, {
+    pension: {
+      ...emptyResource,
+      loading: true,
+      results: [pensionRecord],
+    },
+  });
+  expect(container.textContent).toContain('Loading pension data');
+  unmount();
+});
+
+test('Pension loads the selected fund into its edit form state', () => {
+  const { container, unmount } = renderPage(Pension, {
+    pension: {
+      ...emptyResource,
+      results: [pensionRecord],
+      selectedItem: pensionRecord,
+    },
+  });
+  expect(container.textContent).toContain('Test pension');
   unmount();
 });

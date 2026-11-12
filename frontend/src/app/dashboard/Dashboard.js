@@ -124,13 +124,14 @@ const Dashboard = () => {
           </h5>
           <div className='row'>
             <div className='col-8 col-sm-12 col-xl-8 my-auto'>
-              {props.loading ? (
+              {props.loading && (
                 <ColorRing
                   width='100%'
                   height='50'
                   wrapperStyle={{ width: '100%' }}
                 />
-              ) : (
+              )}
+              {!props.loading && (
                 <>
                   <div className='d-flex d-sm-block d-md-flex align-items-center'>
                     <h2 className='mb-0'>{props.count}</h2>
@@ -207,7 +208,7 @@ const Dashboard = () => {
                     >
                       <i className='mdi mdi-refresh' />
                     </button>
-                    {ngrokToken ? (
+                    {ngrokToken && (
                       <button
                         type='button'
                         className='btn btn-outline-danger btn-sm border-0 bg-transparent'
@@ -215,8 +216,8 @@ const Dashboard = () => {
                       >
                         Log out RPi
                       </button>
-                    ) : null}
-                    {ngrokToken ? (
+                    )}
+                    {ngrokToken && (
                       <div className='mr-auto text-sm-right pt-2 pt-sm-0'>
                         <Form.Check
                           checked={Boolean(
@@ -239,12 +240,12 @@ const Dashboard = () => {
                         />
                         <p className='text-muted mb-0'>All lights</p>
                       </div>
-                    ) : null}
+                    )}
                   </h4>
                   <div className='row'>
                     <div className='col-12'>
                       <Errors errors={lights.errors} />
-                      {!ngrokToken ? (
+                      {!ngrokToken && (
                         <div className='alert alert-warning' role='alert'>
                           <h6>Lights are on Raspberry Pi</h6>
                           <p className='mb-3'>
@@ -252,9 +253,10 @@ const Dashboard = () => {
                             lights.
                           </p>
                         </div>
-                      ) : (
+                      )}
+                      {ngrokToken && (
                         <div className='preview-list'>
-                          {lights.loading ? (
+                          {lights.loading && (
                             <InfinitySpin
                               visible
                               width='100%'
@@ -264,7 +266,9 @@ const Dashboard = () => {
                               glassColor='#c0efff'
                               color='#e15b64'
                             />
-                          ) : lights.results?.length ? (
+                          )}
+                          {!lights.loading &&
+                            lights.results?.length > 0 &&
                             lights.results.map((light, i) => (
                               <div key={light.ip}>
                                 <div className='preview-item border-bottom'>
@@ -344,7 +348,9 @@ const Dashboard = () => {
                                     </button>
                                     <br />
                                     <br />
-                                    {lights.loadingItems?.includes(light.ip) ? (
+                                    {lights.loadingItems?.includes(
+                                      light.ip
+                                    ) && (
                                       <LineWave
                                         visible
                                         width='100%'
@@ -354,7 +360,10 @@ const Dashboard = () => {
                                         glassColor='#c0efff'
                                         color='#e15b64'
                                       />
-                                    ) : (
+                                    )}
+                                    {!lights.loadingItems?.includes(
+                                      light.ip
+                                    ) && (
                                       <>
                                         <Nouislider
                                           className='brightness-slider'
@@ -438,8 +447,8 @@ const Dashboard = () => {
                                   </div>
                                 </Collapse>
                               </div>
-                            ))
-                          ) : (
+                            ))}
+                          {!lights.loading && !lights.results?.length && (
                             <div className='preview-item'>
                               <div className='preview-thumbnail' />
                               <div className='preview-item-content d-sm-flex flex-grow'>
@@ -458,7 +467,7 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-            {ngrokToken ? (
+            {ngrokToken && (
               <div className='col-md-3 col-xl-3 grid-margin stretch-card'>
                 <div className='card'>
                   <div className='card-body'>
@@ -496,7 +505,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
         <div className='col-sm-12 col-xl-3'>
@@ -537,25 +546,30 @@ const Dashboard = () => {
                   className='preview-list'
                   style={{ maxHeight: '41.2vh', overflowY: 'scroll' }}
                 >
-                  {activity.loading ? (
+                  {activity.loading && (
                     <ColorRing
                       width='100%'
                       height='50'
                       wrapperStyle={{ width: '100%' }}
                     />
-                  ) : activity.results?.length ? (
-                    activity.results.map((item) => (
-                      <div key={item.id} className='preview-item border-bottom'>
-                        <div className='preview-item-content d-flex flex-grow'>
-                          <div className='flex-grow'>
-                            <small className='text-muted'>{item.title}</small>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    'No activity'
                   )}
+                  {!activity.loading &&
+                    (activity.results?.length
+                      ? activity.results.map((item) => (
+                          <div
+                            key={item.id}
+                            className='preview-item border-bottom'
+                          >
+                            <div className='preview-item-content d-flex flex-grow'>
+                              <div className='flex-grow'>
+                                <small className='text-muted'>
+                                  {item.title}
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      : 'No activity')}
                 </div>
               </div>
             </div>

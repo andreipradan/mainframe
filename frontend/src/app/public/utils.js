@@ -69,11 +69,14 @@ export const getIconByType = (bus, route) => {
     color = '#42c41d';
   }
 
-  let label = route?.route_short_name
-    ? escapeHtml(route?.route_short_name)
-    : bus.route_id
-      ? `?R ${escapeHtml(bus.route_id)}`
-      : `?L ${escapeHtml(bus.label)}`;
+  let label;
+  if (route?.route_short_name) {
+    label = escapeHtml(route.route_short_name);
+  } else if (bus.route_id) {
+    label = `?R ${escapeHtml(bus.route_id)}`;
+  } else {
+    label = `?L ${escapeHtml(bus.label)}`;
+  }
   let labelWidth = 15 * label.length;
   if (bus.bike_accessible === 'BIKE_ACCESSIBLE') {
     label += '🚴';

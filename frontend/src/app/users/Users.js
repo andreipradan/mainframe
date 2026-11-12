@@ -79,7 +79,7 @@ const Users = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.loading ? (
+                    {users.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -87,7 +87,9 @@ const Users = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : users.results?.length ? (
+                    )}
+                    {!users.loading &&
+                      users.results?.length > 0 &&
                       users.results.map((p, i) => (
                         <tr
                           key={p.id}
@@ -128,8 +130,8 @@ const Users = () => {
                             </sub>
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!users.loading && !users.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No accounts found</span>

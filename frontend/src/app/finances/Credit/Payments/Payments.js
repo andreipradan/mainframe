@@ -148,7 +148,7 @@ const Payments = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {payment.loading ? (
+                    {payment.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -156,7 +156,9 @@ const Payments = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : payment.results?.length ? (
+                    )}
+                    {!payment.loading &&
+                      payment.results?.length > 0 &&
                       payment.results.map((p) => (
                         <tr
                           key={p.id}
@@ -180,8 +182,8 @@ const Payments = () => {
                             <i className='mr-2 mdi mdi-pencil text-secondary' />
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!payment.loading && !payment.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No payments found</span>

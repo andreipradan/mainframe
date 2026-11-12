@@ -16,6 +16,17 @@ import { selectItem, setModalOpen } from '../../redux/watchersSlice';
 import Select from 'react-select';
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 
+const getWatcherStatusTextType = (status) => {
+  if (status === 'complete') return 'success';
+  if (status === 'executing') return 'warning';
+  return 'danger';
+};
+
+const getTaskToggleIconClass = (isOpen) => {
+  if (isOpen) return 'down text-success';
+  return 'right text-primary';
+};
+
 const Watchers = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -190,130 +201,7 @@ const Watchers = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!loading ? (
-                      results?.length ? (
-                        results.map((watcher, i) =>
-                          !loadingItems?.includes(watcher.id) ? (
-                            <tr key={watcher.id}>
-                              <td
-                                className='cursor-pointer'
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {i + 1}
-                              </td>
-                              <td
-                                className='cursor-pointer'
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {watcher.name}
-                              </td>
-                              <td
-                                className='cursor-pointer'
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {watcher.cron_description}
-                              </td>
-                              <td
-                                className='cursor-pointer'
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {watcher.cron_notification_description}
-                              </td>
-                              <td
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                                className='cursor-pointer'
-                              >
-                                <i
-                                  className={`mdi mdi-${watcher.is_active ? 'check text-success' : 'alert text-danger'}`}
-                                />
-                              </td>
-                              <td>
-                                <a
-                                  href={watcher.url}
-                                  target='_blank'
-                                  rel='noopener noreferrer'
-                                >
-                                  {watcher.url}
-                                </a>
-                              </td>
-                              <td
-                                className={`text-${
-                                  watcher.redis.history?.[0]?.status ===
-                                  'complete'
-                                    ? 'success'
-                                    : watcher.redis.history?.[0]?.status ===
-                                        'executing'
-                                      ? 'warning'
-                                      : 'danger'
-                                }`}
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {watcher.redis.history?.[0]?.status
-                                  ? capitalize(watcher.redis.history[0].status)
-                                  : '-'}
-                              </td>
-                              <td
-                                className='cursor-pointer'
-                                onClick={() => dispatch(selectItem(watcher.id))}
-                              >
-                                {watcher.latest?.timestamp
-                                  ? new Date(
-                                      watcher.latest.timestamp
-                                    ).toLocaleString()
-                                  : '-'}
-                              </td>
-                              <td>
-                                <button
-                                  type='button'
-                                  className='btn btn-link p-0'
-                                  aria-label={`Duplicate watcher ${watcher.name}`}
-                                  onClick={() => {
-                                    duplicate(watcher);
-                                    dispatch(setModalOpen(true));
-                                  }}
-                                >
-                                  <i
-                                    className='mdi mdi-content-copy'
-                                    aria-hidden='true'
-                                  />
-                                </button>
-                                {ngrokToken ? (
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 ml-1 text-primary'
-                                    aria-label={`Run watcher ${watcher.name}`}
-                                    onClick={() =>
-                                      dispatch(
-                                        WatchersApi.run(ngrokToken, watcher?.id)
-                                      )
-                                    }
-                                  >
-                                    <i
-                                      className='mdi mdi-play'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                ) : null}
-                              </td>
-                            </tr>
-                          ) : (
-                            <tr key={watcher.id}>
-                              <td colSpan={8}>
-                                <ColorRing
-                                  width='100%'
-                                  height='50'
-                                  wrapperStyle={{ width: '100%' }}
-                                />
-                              </td>
-                            </tr>
-                          )
-                        )
-                      ) : (
-                        <tr>
-                          <td colSpan={8}>No watchers available</td>
-                        </tr>
-                      )
-                    ) : (
+                    {loading && (
                       <tr>
                         <td colSpan={9}>
                           <Audio
@@ -323,6 +211,124 @@ const Watchers = () => {
                             wrapperStyle={{ width: '100%' }}
                           />
                         </td>
+                      </tr>
+                    )}
+                    {!loading &&
+                      results?.length > 0 &&
+                      results.map((watcher, i) => {
+                        if (loadingItems?.includes(watcher.id)) {
+                          return (
+                            <tr key={watcher.id}>
+                              <td colSpan={8}>
+                                <ColorRing
+                                  width='100%'
+                                  height='50'
+                                  wrapperStyle={{ width: '100%' }}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        }
+                        return (
+                          <tr key={watcher.id}>
+                            <td
+                              className='cursor-pointer'
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                            >
+                              {i + 1}
+                            </td>
+                            <td
+                              className='cursor-pointer'
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                            >
+                              {watcher.name}
+                            </td>
+                            <td
+                              className='cursor-pointer'
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                            >
+                              {watcher.cron_description}
+                            </td>
+                            <td
+                              className='cursor-pointer'
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                            >
+                              {watcher.cron_notification_description}
+                            </td>
+                            <td
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                              className='cursor-pointer'
+                            >
+                              <i
+                                className={`mdi mdi-${watcher.is_active ? 'check text-success' : 'alert text-danger'}`}
+                              />
+                            </td>
+                            <td>
+                              <a
+                                href={watcher.url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                              >
+                                {watcher.url}
+                              </a>
+                            </td>
+                            <td
+                              className={`text-${getWatcherStatusTextType(watcher.redis.history?.[0]?.status)}`}
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                            >
+                              {watcher.redis.history?.[0]?.status
+                                ? capitalize(watcher.redis.history[0].status)
+                                : '-'}
+                            </td>
+                            <td
+                              className='cursor-pointer'
+                              onClick={() => dispatch(selectItem(watcher.id))}
+                            >
+                              {watcher.latest?.timestamp
+                                ? new Date(
+                                    watcher.latest.timestamp
+                                  ).toLocaleString()
+                                : '-'}
+                            </td>
+                            <td>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0'
+                                aria-label={`Duplicate watcher ${watcher.name}`}
+                                onClick={() => {
+                                  duplicate(watcher);
+                                  dispatch(setModalOpen(true));
+                                }}
+                              >
+                                <i
+                                  className='mdi mdi-content-copy'
+                                  aria-hidden='true'
+                                />
+                              </button>
+                              {ngrokToken ? (
+                                <button
+                                  type='button'
+                                  className='btn btn-link p-0 ml-1 text-primary'
+                                  aria-label={`Run watcher ${watcher.name}`}
+                                  onClick={() =>
+                                    dispatch(
+                                      WatchersApi.run(ngrokToken, watcher?.id)
+                                    )
+                                  }
+                                >
+                                  <i
+                                    className='mdi mdi-play'
+                                    aria-hidden='true'
+                                  />
+                                </button>
+                              ) : null}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    {!loading && !results?.length && (
+                      <tr>
+                        <td colSpan={8}>No watchers available</td>
                       </tr>
                     )}
                   </tbody>
@@ -353,95 +359,90 @@ const Watchers = () => {
                 ) : null}
               </div>
             </div>
-            {selectedItem && Object.keys(selectedItem.redis).length ? (
+            {selectedItem && Object.keys(selectedItem.redis).length > 0 && (
               <>
                 <p className='text-muted mb-0'>Previous runs</p>
                 <ul className='mb-0 list-unstyled text-muted'>
-                  {selectedItem?.redis
-                    ? Object.keys(selectedItem?.redis).map((k) =>
-                        ['errors', 'history'].includes(k) ? (
+                  {selectedItem?.redis &&
+                    Object.keys(selectedItem.redis).map((k) => {
+                      const isHistory = k === 'history';
+                      const isOpen = isHistory
+                        ? taskHistoryOpen
+                        : taskErrorsOpen;
+                      if (['errors', 'history'].includes(k)) {
+                        return (
                           <li key={k}>
-                            {
-                              <div>
-                                <button
-                                  type='button'
-                                  className='btn btn-link p-0 text-muted'
-                                  aria-expanded={
-                                    k === 'history'
-                                      ? taskHistoryOpen
-                                      : taskErrorsOpen
-                                  }
-                                  aria-controls={`watcher-${selectedItem.id}-${k}`}
-                                  onClick={() =>
-                                    k === 'history'
-                                      ? setTaskHistoryOpen(!taskHistoryOpen)
-                                      : setTaskErrorsOpen(!taskErrorsOpen)
-                                  }
+                            <div>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-muted'
+                                aria-expanded={isOpen}
+                                aria-controls={`watcher-${selectedItem.id}-${k}`}
+                                onClick={() =>
+                                  isHistory
+                                    ? setTaskHistoryOpen(!taskHistoryOpen)
+                                    : setTaskErrorsOpen(!taskErrorsOpen)
+                                }
+                              >
+                                <i
+                                  className={`mdi mdi-chevron-${getTaskToggleIconClass(isOpen)}`}
+                                />
+                                {capitalize(k)} (
+                                {selectedItem?.redis[k]?.length})
+                              </button>
+                              <Collapse in={isOpen}>
+                                <ul
+                                  id={`watcher-${selectedItem.id}-${k}`}
+                                  className='list-unstyled'
                                 >
-                                  <i
-                                    className={`mdi mdi-chevron-${(k === 'history' ? taskHistoryOpen : taskErrorsOpen) ? 'down text-success' : 'right text-primary'}`}
-                                  />
-                                  {capitalize(k)} (
-                                  {selectedItem?.redis[k]?.length})
-                                </button>
-                                <Collapse
-                                  in={
-                                    k === 'history'
-                                      ? taskHistoryOpen
-                                      : taskErrorsOpen
-                                  }
-                                >
-                                  <ul
-                                    id={`watcher-${selectedItem.id}-${k}`}
-                                    className='list-unstyled'
-                                  >
-                                    {selectedItem?.redis[k].map(
-                                      (historyItem) => (
-                                        <li
-                                          key={
-                                            historyItem.timestamp ||
-                                            JSON.stringify(historyItem)
-                                          }
-                                          className='pl-4 mt-1'
-                                        >
-                                          <i className='text-secondary mdi mdi-arrow-right mr-1' />
-                                          {new Date(
-                                            historyItem.timestamp
-                                          ).toLocaleString()}
-                                          <ul className='list-unstyled'>
-                                            {Object.keys(historyItem)
-                                              .filter(
-                                                (historyKey) =>
-                                                  historyKey !== 'timestamp'
-                                              )
-                                              .map((hkey) => (
-                                                <li key={hkey} className='pl-3'>
-                                                  {capitalize(hkey)}:{' '}
-                                                  {hkey === 'status'
-                                                    ? parseStatus(
-                                                        historyItem.status
-                                                      )
-                                                    : historyItem[hkey]}
-                                                </li>
-                                              ))}
-                                          </ul>
-                                        </li>
-                                      )
-                                    )}
-                                  </ul>
-                                </Collapse>
-                              </div>
-                            }
+                                  {selectedItem?.redis[k].map((historyItem) => (
+                                    <li
+                                      key={
+                                        historyItem.timestamp ||
+                                        JSON.stringify(historyItem)
+                                      }
+                                      className='pl-4 mt-1'
+                                    >
+                                      <i className='text-secondary mdi mdi-arrow-right mr-1' />
+                                      {new Date(
+                                        historyItem.timestamp
+                                      ).toLocaleString()}
+                                      <ul className='list-unstyled'>
+                                        {Object.keys(historyItem)
+                                          .filter(
+                                            (historyKey) =>
+                                              historyKey !== 'timestamp'
+                                          )
+                                          .map((hkey) => (
+                                            <li key={hkey} className='pl-3'>
+                                              {capitalize(hkey)}:{' '}
+                                              {hkey === 'status'
+                                                ? parseStatus(
+                                                    historyItem.status
+                                                  )
+                                                : historyItem[hkey]}
+                                            </li>
+                                          ))}
+                                      </ul>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </Collapse>
+                            </div>
                           </li>
-                        ) : k === 'status' ? (
-                          <li key={k}>Last status: {selectedItem?.redis[k]}</li>
-                        ) : (
-                          <li key={k}>
-                            {capitalize(k)}: {selectedItem?.redis[k]}
-                          </li>
-                        )
-                      )
-                    : null}
+                        );
+                      }
+                      if (k === 'status') {
+                        return (
+                          <li key={k}>Last status: {selectedItem.redis[k]}</li>
+                        );
+                      }
+                      return (
+                        <li key={k}>
+                          {capitalize(k)}: {selectedItem.redis[k]}
+                        </li>
+                      );
+                    })}
                   {selectedItem?.redis?.history?.[0]?.timestamp ? (
                     <li>
                       Last check:{' '}
@@ -458,16 +459,17 @@ const Watchers = () => {
                   ) : null}
                 </ul>
               </>
-            ) : null}
+            )}
           </Modal.Title>
         </Modal.Header>
-        {loadingItems?.includes(selectedItem?.id) ? (
+        {loadingItems?.includes(selectedItem?.id) && (
           <ColorRing
             width='100%'
             height='50'
             wrapperStyle={{ width: '100%' }}
           />
-        ) : (
+        )}
+        {!loadingItems?.includes(selectedItem?.id) && (
           <Modal.Body>
             <Errors errors={errors} />
 
