@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const publicRoutes = ['/login', '/register', '/terms-and-conditions'];
+const publicRoutes = new Set(['/login', '/register', '/terms-and-conditions']);
 const fullPageLayoutRoutes = [
   '/login',
   '/register',
@@ -23,11 +23,16 @@ const App = () => {
   const location = useLocation();
   const history = useHistory();
   const token = useSelector((state) => state.auth.token);
-  const pathname = location.pathname.replace(/\/+$/, '') || '/';
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const rawPathname = location.pathname;
+  let pathnameEnd = rawPathname.length;
+  while (pathnameEnd > 0 && rawPathname[pathnameEnd - 1] === '/') {
+    pathnameEnd -= 1;
+  }
+  const pathname = rawPathname.slice(0, pathnameEnd) || '/';
+  const isPublicRoute = publicRoutes.has(pathname);
 
   const onRouteChanged = () => {
-    if (!token && !publicRoutes.includes(pathname)) {
+    if (!token && !publicRoutes.has(pathname)) {
       history.push('/login');
       return;
     }

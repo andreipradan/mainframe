@@ -192,33 +192,35 @@ const Bonds = () => {
                             .filter((item) => !!state.aggregations[item])
                             .sort((left, right) => left.localeCompare(right))
                             .map((k) => k.split('_')[0])
-                            .map((item) => (
-                              <ListItem
-                                key={item}
-                                label={
-                                  item === 'pnl'
-                                    ? 'Profit / Loss'
-                                    : item[0].toUpperCase() + item.slice(1)
-                                }
-                                value={`${state.aggregations[`${item}_${currencyCode}`]} ${currencyCode}`}
-                                textType={
-                                  item === 'dividend'
-                                    ? 'success'
-                                    : item === 'pnl'
-                                      ? state.aggregations[
-                                          `${item}_${currencyCode}`
-                                        ] > 0
-                                        ? 'success'
-                                        : 'danger'
-                                      : item === 'sell'
-                                        ? 'warning'
-                                        : item === 'active'
-                                          ? 'info'
-                                          : 'primary'
-                                }
-                                className='mr-3'
-                              />
-                            ))}
+                            .map((item) => {
+                              const aggregationValue =
+                                state.aggregations[`${item}_${currencyCode}`];
+                              let textType = 'primary';
+                              if (item === 'dividend') {
+                                textType = 'success';
+                              } else if (item === 'pnl') {
+                                textType =
+                                  aggregationValue > 0 ? 'success' : 'danger';
+                              } else if (item === 'sell') {
+                                textType = 'warning';
+                              } else if (item === 'active') {
+                                textType = 'info';
+                              }
+
+                              return (
+                                <ListItem
+                                  key={item}
+                                  label={
+                                    item === 'pnl'
+                                      ? 'Profit / Loss'
+                                      : item[0].toUpperCase() + item.slice(1)
+                                  }
+                                  value={`${aggregationValue} ${currencyCode}`}
+                                  textType={textType}
+                                  className='mr-3'
+                                />
+                              );
+                            })}
                           {state.aggregations[`pnl_${currency}`] &&
                           state.aggregations[`dividend_${currency}`] ? (
                             <ListItem

@@ -121,7 +121,9 @@
             }
           }
           &.menu-arrow {
-            font: normal normal normal 24px/1 'Material Design Icons';
+            font:
+              normal normal normal 24px/1 'Material Design Icons',
+              sans-serif;
             line-height: 1;
             font-size: $sidebar-icon-font-size;
             margin-left: auto;

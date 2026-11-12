@@ -33,40 +33,40 @@ const Devices = () => {
   /** Builds the sort control for a device table column. */
   function getSortingComponent(column, heading) {
     const currentSort = sorting?.find((s) => s.startsWith(`${column}-`));
-    const sortOrder = currentSort?.endsWith('-asc')
-      ? 'ascending'
-      : currentSort?.endsWith('-desc')
-        ? 'descending'
-        : 'unsorted';
-    const sortingClass = `cursor-pointer mdi mdi-sort-alphabetical${
-      sorting?.includes(`${column}-asc`)
-        ? '-ascending'
-        : sorting?.includes(`${column}-desc`)
-          ? '-descending'
-          : ''
-    }`;
+    let sortOrder = 'unsorted';
+    if (currentSort?.endsWith('-asc')) {
+      sortOrder = 'ascending';
+    } else if (currentSort?.endsWith('-desc')) {
+      sortOrder = 'descending';
+    }
+
+    let sortingClass = 'cursor-pointer mdi mdi-sort-alphabetical';
+    if (sorting?.includes(`${column}-asc`)) {
+      sortingClass += '-ascending';
+    } else if (sorting?.includes(`${column}-desc`)) {
+      sortingClass += '-descending';
+    }
+
+    const updateSorting = () => {
+      const hasSorting = sorting?.find((s) => s.startsWith(`${column}-`));
+      if (!hasSorting) {
+        setSorting(sorting ? [...sorting, `${column}-asc`] : [`${column}-asc`]);
+      } else if (hasSorting === `${column}-asc`) {
+        setSorting(
+          sorting.map((s) => (s === `${column}-asc` ? `${column}-desc` : s))
+        );
+      } else if (hasSorting === `${column}-desc`) {
+        setSorting(sorting.filter((s) => s !== `${column}-desc`));
+      }
+    };
+
     return (
       <>
         <button
           type='button'
           className='btn btn-link p-0'
           aria-label={`Sort by ${heading}, currently ${sortOrder}`}
-          onClick={() => {
-            const hasSorting = sorting?.find((s) => s.startsWith(`${column}-`));
-            setSorting(
-              !hasSorting
-                ? !sorting
-                  ? [`${column}-asc`]
-                  : [...sorting, `${column}-asc`]
-                : hasSorting === `${column}-asc`
-                  ? sorting.map((s) =>
-                      s === `${column}-asc` ? `${column}-desc` : s
-                    )
-                  : hasSorting === `${column}-desc`
-                    ? sorting.filter((s) => s !== `${column}-desc`)
-                    : sorting
-            );
-          }}
+          onClick={updateSorting}
         >
           <i className={sortingClass} aria-hidden='true' />
         </button>
@@ -75,6 +75,78 @@ const Devices = () => {
         )}
       </>
     );
+  }
+
+  function getDeviceRows() {
+    if (loading) {
+      return (
+        <tr>
+          <td colSpan={6}>
+            <Audio
+              width='100%'
+              radius='9'
+              color='green'
+              wrapperStyle={{ width: '100%' }}
+            />
+          </td>
+        </tr>
+      );
+    }
+
+    if (!devices?.length) {
+      return (
+        <tr>
+          <td colSpan={6}>No devices available</td>
+        </tr>
+      );
+    }
+
+    return devices.map((device) => (
+      <tr
+        key={device.id}
+        onClick={() => dispatch(selectItem(device.id))}
+        className='cursor-pointer'
+      >
+        <td>{devices.findIndex((row) => row.id === device.id) + 1}</td>
+        <td className='row'>
+          {device.display_name || '-'}
+          {loadingItems?.includes(device.id) ? (
+            <Circles
+              visible
+              height='15'
+              width='100%'
+              wrapperClass='pl-2'
+              color='green'
+            />
+          ) : null}
+          {!device.should_notify_presence ? (
+            <sup className='text-gray'>
+              {' '}
+              <i className='mdi mdi-bell-off' />
+            </sup>
+          ) : null}
+        </td>
+        <td className='center-content'>
+          <i
+            className={`mdi mdi-${device.is_active ? 'check text-success' : 'alert text-danger'}`}
+          />
+        </td>
+        <td>{device.ip}</td>
+        <td
+          className={
+            devices
+              .filter((d) => d.id !== device.id)
+              .map((d) => d.mac.toLowerCase())
+              .includes(device.mac.toLowerCase())
+              ? 'text-danger'
+              : 'text-primary'
+          }
+        >
+          {device.mac}
+        </td>
+        <td>{new Date(device.last_seen).toLocaleString()}</td>
+      </tr>
+    ));
   }
 
   useEffect(() => {
@@ -130,7 +202,7 @@ const Devices = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Available devices
+                Available devices{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -202,79 +274,7 @@ const Devices = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {!loading ? (
-                      devices?.length ? (
-                        devices.map((device) => (
-                          <tr
-                            key={device.id}
-                            onClick={() => dispatch(selectItem(device.id))}
-                            className={'cursor-pointer'}
-                          >
-                            <td>
-                              {devices.findIndex(
-                                (row) => row.id === device.id
-                              ) + 1}
-                            </td>
-                            <td className='row'>
-                              {device.display_name || '-'}
-                              {loadingItems?.includes(device.id) ? (
-                                <Circles
-                                  visible
-                                  height='15'
-                                  width='100%'
-                                  wrapperClass='pl-2'
-                                  color='green'
-                                />
-                              ) : null}
-                              {!device.should_notify_presence ? (
-                                <sup className='text-gray'>
-                                  {' '}
-                                  <i className='mdi mdi-bell-off' />
-                                </sup>
-                              ) : null}
-                            </td>
-                            <td className='center-content'>
-                              <i
-                                className={`mdi mdi-${device.is_active ? 'check text-success' : 'alert text-danger'}`}
-                              />
-                            </td>
-                            <td>{device.ip}</td>
-                            <td
-                              className={
-                                devices
-                                  .filter((d) => d.id !== device.id)
-                                  .map((d) => d.mac.toLowerCase())
-                                  .includes(device.mac.toLowerCase())
-                                  ? 'text-danger'
-                                  : 'text-primary'
-                              }
-                            >
-                              {device.mac}
-                            </td>
-                            <td>
-                              {new Date(device.last_seen).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={6}>No devices available</td>
-                        </tr>
-                      )
-                    ) : (
-                      <tr>
-                        <td colSpan={6}>
-                          <Audio
-                            width='100%'
-                            radius='9'
-                            color='green'
-                            wrapperStyle={{ width: '100%' }}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
+                  <tbody>{getDeviceRows()}</tbody>
                 </table>
               </div>
             </div>

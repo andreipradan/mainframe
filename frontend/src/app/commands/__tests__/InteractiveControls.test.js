@@ -211,6 +211,52 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
+  test('renders task status and tasks that have not run', () => {
+    mockState = {
+      auth: { token: 'token' },
+      tasks: {
+        errors: null,
+        loading: false,
+        loadingItems: [],
+        results: [
+          {
+            id: 8,
+            app: 'finance',
+            name: 'reconcile',
+            history: [
+              {
+                timestamp: '2025-01-02T12:00:00Z',
+                status: 'executing',
+              },
+            ],
+            errors: [],
+            is_periodic: false,
+            is_revoked: false,
+          },
+          {
+            id: 9,
+            app: 'finance',
+            name: 'archive',
+            history: [],
+            errors: [],
+            is_periodic: false,
+            is_revoked: false,
+          },
+        ],
+        selectedItem: null,
+      },
+    };
+    const { container, unmount } = render(<Tasks />);
+    const rows = container.querySelectorAll('tbody tr');
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0].querySelector('.text-warning').textContent).toBe(
+      'Executing'
+    );
+    expect(rows[1].textContent).toContain("Didn't run");
+    unmount();
+  });
+
   test('duplicates a watcher and runs the selected record', () => {
     const watcher = {
       id: 21,

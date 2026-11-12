@@ -51,6 +51,9 @@ it('renders without crashing', async () => {
 
 it('renders terms and conditions without authentication', async () => {
   const div = document.createElement('div');
+  const sidebarDiv = document.createElement('div');
+  sidebarDiv.id = 'sidebar';
+  document.body.appendChild(sidebarDiv);
   const pageBody = document.createElement('div');
   pageBody.className = 'page-body-wrapper';
   document.body.appendChild(pageBody);
@@ -69,7 +72,7 @@ it('renders terms and conditions without authentication', async () => {
   await act(async () => {
     root.render(
       <Provider store={store}>
-        <MemoryRouter initialEntries={['/terms-and-conditions']}>
+        <MemoryRouter initialEntries={['/terms-and-conditions/']}>
           <App />
         </MemoryRouter>
       </Provider>
@@ -84,5 +87,6 @@ it('renders terms and conditions without authentication', async () => {
   act(() => {
     root.unmount();
   });
+  sidebarDiv.remove();
   pageBody.remove();
 });
