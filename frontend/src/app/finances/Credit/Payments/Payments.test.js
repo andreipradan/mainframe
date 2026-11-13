@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Payments from './Payments';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 const mockHistory = { push: jest.fn() };
 jest.mock('react-redux', () => ({
@@ -14,17 +14,11 @@ jest.mock('react-router-dom', () => ({
 }));
 jest.mock('../../../../api/finance/payments', () => ({
   PaymentsApi: class PaymentsApiMock {
-    getList() {
-      return { type: 'payments/getList' };
-    }
+    getList = () => ({ type: 'payments/getList' });
 
-    upload(payload) {
-      return { type: 'payments/upload', payload };
-    }
+    upload = (payload) => ({ type: 'payments/upload', payload });
 
-    update(id, data) {
-      return { type: 'payments/update', payload: { id, data } };
-    }
+    update = (id, data) => ({ type: 'payments/update', payload: { id, data } });
   },
 }));
 jest.mock('../../../shared/BottomPagination', () => () => null);
@@ -36,7 +30,7 @@ jest.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading payment</div>,
 }));
 jest.mock('react-bootstrap', () => ({
-  Collapse: ({ children }) => <>{children}</>,
+  Collapse: ({ children }) => children,
 }));
 jest.mock('react-bootstrap/Form', () => {
   const React = require('react');

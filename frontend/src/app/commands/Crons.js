@@ -19,6 +19,7 @@ import {
 import { selectStyles } from '../finances/Accounts/Categorize/EditModal';
 import BottomPagination from '../shared/BottomPagination';
 
+/** Returns the text style associated with a cron status. */
 const getCronStatusTextType = (status) => {
   if (status === 'complete') return 'success';
   if (status === 'executing') return 'warning';
@@ -27,10 +28,10 @@ const getCronStatusTextType = (status) => {
 
 const Crons = () => {
   const dispatch = useDispatch();
-  const token = useSelector((state) => state.auth.token);
-  const ngrokToken = useSelector((state) => state.rpi.token);
-  const state = useSelector((state) => state.crons);
-  const commands = useSelector((state) => state.commands);
+  const token = useSelector((rootState) => rootState.auth.token);
+  const ngrokToken = useSelector((rootState) => rootState.rpi.token);
+  const state = useSelector((rootState) => rootState.crons);
+  const commands = useSelector((rootState) => rootState.commands);
 
   const api = new CronsApi(token);
 
@@ -48,16 +49,16 @@ const Crons = () => {
 
   useEffect(() => {
     if (commands.results) {
-      const allCommands = [];
+      const commandsList = [];
       for (const app of commands.results) {
         for (const cmd of app.commands)
-          allCommands.push({
+          commandsList.push({
             label: `${app.app}.${cmd.name}`,
             value: cmd.name,
             args: cmd.args,
           });
       }
-      setAllCommands(allCommands);
+      setAllCommands(commandsList);
     }
   }, [commands.results]);
   useEffect(() => {
@@ -440,7 +441,7 @@ const Crons = () => {
             )}
             {command &&
               allCommands?.find((c) => c.value === command.value)?.args
-                ?.length && (
+                ?.length > 0 && (
                 <p className='text-muted mb-0'>
                   Params:
                   <ul>

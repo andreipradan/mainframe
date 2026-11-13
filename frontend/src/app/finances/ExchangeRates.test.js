@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import ExchangeRates from './ExchangeRates';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -15,9 +15,7 @@ jest.mock('../../api/exchange', () => ({
       this.token = token;
     }
 
-    getList(kwargs) {
-      return { type: 'exchange/getList', payload: kwargs };
-    }
+    getList = (kwargs) => ({ type: 'exchange/getList', payload: kwargs });
   },
 }));
 jest.mock('./Accounts/Categorize/EditModal', () => ({ selectStyles: {} }));
@@ -112,7 +110,9 @@ describe('ExchangeRates', () => {
     const { container, unmount } = renderExchangeRates();
     expect(container.textContent).toContain('Exchange Rates');
     expect(container.textContent).toContain('Exchange chart');
-    expect(container.textContent).toContain('1/1/2025');
+    expect(container.textContent).toContain(
+      new Date(mockState.exchange.results[0].date).toLocaleDateString()
+    );
 
     const gradient = {
       addColorStop: jest.fn(),

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import Timetables from './Timetables';
 import TimetableEditModal from './components/TimetableEditModal';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 const mockHistory = { push: jest.fn() };
 jest.mock('react-redux', () => ({
@@ -15,21 +15,13 @@ jest.mock('react-router-dom', () => ({
 }));
 jest.mock('../../../../api/finance', () => ({
   TimetableApi: class TimetableApiMock {
-    getList() {
-      return { type: 'timetable/getList' };
-    }
+    getList = () => ({ type: 'timetable/getList' });
 
-    getItem(id) {
-      return { type: 'timetable/getItem', payload: id };
-    }
+    getItem = (id) => ({ type: 'timetable/getItem', payload: id });
 
-    delete(id) {
-      return { type: 'timetable/delete', payload: id };
-    }
+    delete = (id) => ({ type: 'timetable/delete', payload: id });
 
-    upload(payload) {
-      return { type: 'timetable/upload', payload };
-    }
+    upload = (payload) => ({ type: 'timetable/upload', payload });
   },
 }));
 jest.mock('../../../shared/BottomPagination', () => () => null);
@@ -41,7 +33,7 @@ jest.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading timetable</div>,
 }));
 jest.mock('react-bootstrap', () => ({
-  Collapse: ({ children }) => <>{children}</>,
+  Collapse: ({ children }) => children,
 }));
 jest.mock('react-bootstrap/Form', () => {
   const React = require('react');

@@ -28,12 +28,14 @@ import { TransitApi } from '../../api/transport';
 
 import Errors from '../shared/Errors';
 
+/** Formats the last update time according to the polling state. */
 const getUpdateText = (timestamp, pollingEnabled) => {
   if (!timestamp) return '-';
   if (pollingEnabled) return timeSince(new Date(timestamp));
   return new Date(timestamp).toLocaleString();
 };
 
+/** Returns the text class for the most recent transit update. */
 const getUpdateTextType = (timestamp, pollingEnabled = true) => {
   if (!pollingEnabled) return 'secondary';
   const ageInSeconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
@@ -47,7 +49,7 @@ const POLLING_DURATION = 240;
 const Transport = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
-  const state = useSelector((state) => state.transit);
+  const state = useSelector((rootState) => rootState.transit);
 
   const api = new TransitApi(token);
 
@@ -196,30 +198,10 @@ const Transport = () => {
     };
   }, [dispatch, state.pollingEnabled]);
 
-  return (
-    <div>
-      <div className='page-header'>
-        <h3 className='page-title'>Public Transport</h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <a href='!#' onClick={(event) => event.preventDefault()}>
-                Home
-              </a>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Transport
-            </li>
-          </ol>
-        </nav>
-      </div>
-      <div className='row'>
-        <div
-          className={`col-lg-${toggleFields ? '9' : '12'} grid-margin stretch-card`}
-        >
-          <div className='card'>
-            <div className='card-body'>
-              <h4 className='card-title mb-1'>
+
+  function renderTransportControls() {
+    return (
+      <h4 className='card-title mb-1'>
                 Live Map{' '}
                 <button
                   type='button'
@@ -290,8 +272,12 @@ const Transport = () => {
                   />
                 ) : null}
               </h4>
-              <Errors errors={state.errors} />
-              <div ref={mapRef} style={{ height: '75vh', width: '100%' }}>
+    );
+  }
+
+  function renderTransportMap() {
+    return (
+      <div ref={mapRef} style={{ height: '75vh', width: '100%' }}>
                 <MapContainer
                   center={[46.77, 23.59]}
                   zoom={14}
@@ -615,19 +601,15 @@ const Transport = () => {
                   <FullscreenControl />
                 </MapContainer>
               </div>
-              <span className={'text-small text-muted'}>
-                Data source: Copyright © Romania, 2023, Tranzy AI SRL &
-                Compania de Transport Public Cluj-Napoca SA. All rights
-                reserved.
-              </span>
-            </div>
-          </div>
-        </div>
-        {toggleFields && (
-          <>
-            <div
-              className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}
-            >
+    );
+  }
+
+  function renderTransportFields() {
+    return (
+      toggleFields && (
+          <div
+            className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}
+          >
               <div className='card'>
                 <div className='card-body'>
                   <div className='mb-2'>
@@ -729,13 +711,49 @@ const Transport = () => {
                           }
                         />
                       ))}
-                    </>
+                </>
                   )}
                 </div>
               </div>
             </div>
-          </>
-        )}
+        )
+    );
+  }
+return (
+    <div>
+      <div className='page-header'>
+        <h3 className='page-title'>Public Transport</h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <a href='!#' onClick={(event) => event.preventDefault()}>
+                Home
+              </a>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Transport
+            </li>
+          </ol>
+        </nav>
+      </div>
+      <div className='row'>
+        <div
+          className={`col-lg-${toggleFields ? '9' : '12'} grid-margin stretch-card`}
+        >
+          <div className='card'>
+            <div className='card-body'>
+              {renderTransportControls()}
+              <Errors errors={state.errors} />
+              {renderTransportMap()}
+              <span className={'text-small text-muted'}>
+                Data source: Copyright © Romania, 2023, Tranzy AI SRL &
+                Compania de Transport Public Cluj-Napoca SA. All rights
+                reserved.
+              </span>
+            </div>
+          </div>
+        </div>
+        {renderTransportFields()}
       </div>
     </div>
   );

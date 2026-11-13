@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import Login from './Login';
 import Register from './Register';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 const mockHistory = { push: jest.fn() };
 jest.mock('../../api/auth', () => ({
@@ -29,7 +29,7 @@ jest.mock('react-bootstrap', () => {
   Form.Group = ({ children, ...props }) =>
     React.createElement('div', props, children);
   Form.Control = ({ isInvalid, ...props }) =>
-    React.createElement('input', props);
+    React.createElement('input', { ...props, 'aria-invalid': isInvalid });
   const Button = ({ children, ...props }) =>
     React.createElement('button', props, children);
   return { Button, Form };
@@ -129,14 +129,14 @@ describe('Login and registration pages', () => {
         .find((button) => button.textContent === 'Dismiss')
         .click()
     );
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
     act(() =>
       Array.from(feedback.container.querySelectorAll('a'))
         .find((anchor) => anchor.textContent === 'Forgot password?')
         .click()
     );
-    expect(window.alert).toHaveBeenCalledWith('Coming soon..');
-    window.alert.mockRestore();
+    expect(feedback.container.textContent).toContain(
+      'Password recovery is coming soon.'
+    );
     feedback.unmount();
   });
 

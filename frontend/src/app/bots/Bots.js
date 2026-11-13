@@ -24,14 +24,13 @@ const Bots = () => {
   }, []);
 
   const parseURL = (str) => {
-    if (!str) return;
+    if (!str) return '';
     const url = new URL(str);
-    let result = url.protocol + '//' + url.hostname;
-    result +=
+    const path =
       url.pathname !== '/'
-        ? '/(..)' + url.pathname.substring(url.pathname.length - 10)
+        ? `/(..)${url.pathname.substring(url.pathname.length - 10)}`
         : url.pathname;
-    return result;
+    return `${url.protocol}//${url.hostname}${path}`;
   };
 
   return (
@@ -103,7 +102,7 @@ const Bots = () => {
                       bots.map((bot, i) => {
                         if (loadingBots?.includes(bot.id)) {
                           return (
-                            <tr key={i}>
+                            <tr key={bot.id}>
                               <td colSpan={6}>
                                 <ColorRing
                                   width='100%'
@@ -115,7 +114,7 @@ const Bots = () => {
                           );
                         }
                         return (
-                          <tr key={i}>
+                          <tr key={bot.id}>
                             <td>{i + 1}</td>
                             <td>
                               {bot.full_name} &nbsp;
@@ -125,13 +124,11 @@ const Bots = () => {
                             <td>{bot.whitelist.join(', ')}</td>
                             <td>
                               {bot.last_called_on
-                                ? new Date(
+                                ? `${new Date(
                                     bot.last_called_on
-                                  ).toLocaleDateString('ro-RO') +
-                                  ' ' +
-                                  new Date(
+                                  ).toLocaleDateString('ro-RO')} ${new Date(
                                     bot.last_called_on
-                                  ).toLocaleTimeString('ro-RO')
+                                  ).toLocaleTimeString('ro-RO')}`
                                 : '-'}
                             </td>
                             <td>

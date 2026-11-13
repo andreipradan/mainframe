@@ -46,6 +46,7 @@ export const formatTime = (timestamp) =>
     minute: 'numeric',
   });
 
+/** Maps an earthquake magnitude to its chart color. */
 const getMagnitudeColor = (value) => {
   if (value < 3) return 'green';
   if (value < 4) return 'orange';
@@ -53,6 +54,7 @@ const getMagnitudeColor = (value) => {
   return 'red';
 };
 
+/** Maps an earthquake magnitude to its text color class. */
 const getMagnitudeTextType = (value) => {
   if (value < 5) return 'text-success';
   if (value < 6) return 'text-warning';
@@ -166,16 +168,16 @@ const Earthquakes = () => {
   };
 
   useLayoutEffect(() => {
-    const root = am5.Root.new('map');
-    setRoot(root);
-    root.setThemes([am5themes_Animated.new(root)]);
-    let chart = root.container.children.push(
-      am5map.MapChart.new(root, { projection: am5map.geoNaturalEarth1() })
+    const mapRoot = am5.Root.new('map');
+    setRoot(mapRoot);
+    mapRoot.setThemes([am5themes_Animated.new(mapRoot)]);
+    const mapChart = mapRoot.container.children.push(
+      am5map.MapChart.new(mapRoot, { projection: am5map.geoNaturalEarth1() })
     );
-    setChart(chart);
+    setChart(mapChart);
 
-    const countySeries = chart.series.push(
-      am5map.MapPolygonSeries.new(root, { visible: false })
+    const countySeries = mapChart.series.push(
+      am5map.MapPolygonSeries.new(mapRoot, { visible: false })
     );
     countySeries.mapPolygons.template.setAll({
       tooltipText: '{name}',
@@ -185,10 +187,10 @@ const Earthquakes = () => {
       fill: am5.color('#5b76b6'),
     });
 
-    const series = generateSeries(root, chart);
-    setSeries(series);
-    series.mapPolygons.template.events.on('click', (ev) => {
-      series.zoomToDataItem(ev.target.dataItem).waitForStop();
+    const mapSeries = generateSeries(mapRoot, mapChart);
+    setSeries(mapSeries);
+    mapSeries.mapPolygons.template.events.on('click', (ev) => {
+      mapSeries.zoomToDataItem(ev.target.dataItem).waitForStop();
       am5.net
         .load(
           `${API_SERVER}earthquakes/map/?id=${ev.target.dataItem.dataContext.id}`
@@ -198,19 +200,19 @@ const Earthquakes = () => {
             geoJSON: am5.JSONParser.parse(result.response),
           });
           countySeries.show();
-          series.hide();
+          mapSeries.hide();
         })
         .catch(function (result) {
           console.log(`Error loading ${result.xhr.responseURL}`);
         });
     });
 
-    createZoomControl(root, chart);
-    const homeButton = chart.children.push(
-      am5.Button.new(root, {
+    createZoomControl(mapRoot, mapChart);
+    const homeButton = mapChart.children.push(
+      am5.Button.new(mapRoot, {
         ...defaultButtonProps,
         scale: 0.75,
-        icon: am5.Graphics.new(root, {
+        icon: am5.Graphics.new(mapRoot, {
           svgPath:
             'M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8',
           fill: am5.color(0xffffff),
@@ -218,54 +220,56 @@ const Earthquakes = () => {
       })
     );
     homeButton.events.on('click', () => {
-      series.show();
-      chart.goHome();
+      mapSeries.show();
+      mapChart.goHome();
     });
     homeButton.show();
-    return () => root.dispose();
+    return () => mapRoot.dispose();
   }, []);
 
   const zoomToGeoPoint = (event) => {
     const pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}));
 
     let colorSet = am5.ColorSet.new(root, { step: 2 });
-    pointSeries.bullets.push(function (root, series, dataItem) {
-      let value = dataItem.dataContext.value;
+    pointSeries.bullets.push(
+      function (mapRootContext, mapSeriesContext, dataItem) {
+        let value = dataItem.dataContext.value;
 
-      let container = am5.Container.new(root, {});
-      let color = colorSet.next();
-      let radius = 1 + value;
-      container.children.push(
-        am5.Circle.new(root, {
-          radius: radius - 1,
-          fill: getMagnitudeColor(value),
-          dy: -radius * 2,
-        })
-      );
+        let container = am5.Container.new(mapRootContext, {});
+        let color = colorSet.next();
+        let radius = 1 + value;
+        container.children.push(
+          am5.Circle.new(mapRootContext, {
+            radius: radius - 1,
+            fill: getMagnitudeColor(value),
+            dy: -radius * 2,
+          })
+        );
 
-      container.children.push(
-        am5.Line.new(root, {
-          stroke: color,
-          height: -20,
-          strokeGradient: am5.LinearGradient.new(root, {
-            stops: [{ opacity: 1 }, { opacity: 1 }, { opacity: 0 }],
-          }),
-        })
-      );
+        container.children.push(
+          am5.Line.new(mapRootContext, {
+            stroke: color,
+            height: -20,
+            strokeGradient: am5.LinearGradient.new(mapRootContext, {
+              stops: [{ opacity: 1 }, { opacity: 1 }, { opacity: 0 }],
+            }),
+          })
+        );
 
-      container.children.push(
-        am5.Label.new(root, {
-          fontSize: radius,
-          text: value,
-          fill: am5.color(0xffffff),
-          centerX: am5.p50,
-          centerY: am5.p50,
-          dy: -radius * 2,
-        })
-      );
+        container.children.push(
+          am5.Label.new(root, {
+            fontSize: radius,
+            text: value,
+            fill: am5.color(0xffffff),
+            centerX: am5.p50,
+            centerY: am5.p50,
+            dy: -radius * 2,
+          })
+        );
 
-      return am5.Bullet.new(root, { sprite: container });
-    });
+        return am5.Bullet.new(root, { sprite: container });
+      }
+    );
 
     pointSeries.data.push({
       geometry: {
@@ -380,7 +384,7 @@ const Earthquakes = () => {
                     Last {lc.toUpperCase()} check:&nbsp;
                     {earthquakes.loading && (
                       <Circles
-                        visible={true}
+                        visible
                         height='15'
                         width='100%'
                         ariaLabel='ball-triangle-loading'
@@ -407,7 +411,7 @@ const Earthquakes = () => {
                 <div className='col-md-12'>
                   {earthquakes.loading ? (
                     <BallTriangle
-                      visible={true}
+                      visible
                       width='100%'
                       ariaLabel='ball-triangle-loading'
                       wrapperStyle={{}}

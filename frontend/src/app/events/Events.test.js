@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Events from './Events';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -15,21 +15,19 @@ jest.mock('../../api/events', () => ({
       this.token = token;
     }
 
-    getList(kwargs) {
-      return { type: 'events/getList', payload: kwargs };
-    }
+    getList = (kwargs) => ({ type: 'events/getList', payload: kwargs });
 
-    create(payload) {
-      return { type: 'events/create', payload };
-    }
+    create = (payload) => ({ type: 'events/create', payload });
 
-    update(id, payload) {
-      return { type: 'events/update', payload: { id, ...payload } };
-    }
+    update = (id, payload) => ({
+      type: 'events/update',
+      payload: { id, ...payload },
+    });
 
-    delete(id, title) {
-      return { type: 'events/delete', payload: { id, title } };
-    }
+    delete = (id, title) => ({
+      type: 'events/delete',
+      payload: { id, title },
+    });
   },
 }));
 jest.mock('../../api/favorites', () => ({
@@ -39,9 +37,7 @@ jest.mock('../../api/favorites', () => ({
       this.token = token;
     }
 
-    getList(kwargs) {
-      return { type: 'favorites/getList', payload: kwargs };
-    }
+    getList = (kwargs) => ({ type: 'favorites/getList', payload: kwargs });
   },
 }));
 jest.mock('../shared/BottomPagination', () => () => null);

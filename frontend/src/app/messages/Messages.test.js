@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Messages from './Messages';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -15,9 +15,7 @@ jest.mock('../../api/messages', () => ({
       this.token = token;
     }
 
-    getList(kwargs) {
-      return { type: 'messages/getList', payload: kwargs };
-    }
+    getList = (kwargs) => ({ type: 'messages/getList', payload: kwargs });
   },
 }));
 jest.mock('../shared/BottomPagination', () => () => null);

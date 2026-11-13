@@ -2,8 +2,8 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Earthquakes, { formatDate, formatTime } from './Earthquakes';
 
-let mockState;
-let mockBarProps;
+let mockState = null;
+let mockBarProps = null;
 const mockDispatch = jest.fn();
 const mockPolygonOn = jest.fn();
 const mockHomeOn = jest.fn();
@@ -19,9 +19,7 @@ jest.mock('../../api/earthquakes', () => ({
       this.token = token;
     }
 
-    getList(kwargs) {
-      return { type: 'earthquakes/getList', payload: kwargs };
-    }
+    getList = (kwargs) => ({ type: 'earthquakes/getList', payload: kwargs });
   },
 }));
 jest.mock('../../api/bots', () => ({
@@ -31,9 +29,7 @@ jest.mock('../../api/bots', () => ({
       this.token = token;
     }
 
-    getList() {
-      return { type: 'bots/getList' };
-    }
+    getList = () => ({ type: 'bots/getList' });
   },
 }));
 jest.mock('../../redux/earthquakesSlice', () => ({

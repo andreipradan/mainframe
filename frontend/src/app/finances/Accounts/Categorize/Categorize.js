@@ -64,7 +64,7 @@ const Categorize = () => {
     if (!newValue.value) return;
     const newCategory = { description: description, category: newValue.value };
     const isIdentified = newCategory.category !== 'Unidentified';
-    let updatedCategories;
+    let updatedCategories = null;
 
     if (!checkedCategories?.length) {
       if (isIdentified) {
@@ -190,30 +190,9 @@ const Categorize = () => {
     return () => stopPolling();
   }, [prediction.predict]);
 
-  return (
-    <div>
-      <div className='page-header'>
-        <h3 className='page-title'>
-          Categorize
-          <div className='mb-0 text-muted'>
-            <small>Train and improve the auto detection engine</small>
-          </div>
-        </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <a href='!#' onClick={(event) => event.preventDefault()}>
-                Finance
-              </a>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Categorize
-            </li>
-          </ol>
-        </nav>
-      </div>
-      <Errors errors={transactions.errors} />
-
+  /** Renders the tasks page section. */
+  function renderTasksSection() {
+    return (
       <div className='row'>
         <div className='col-md-12 grid-margin'>
           <div className='card'>
@@ -227,7 +206,7 @@ const Categorize = () => {
                 Tasks
                 {prediction.loading ? (
                   <Circles
-                    visible={true}
+                    visible
                     height={20}
                     width={20}
                     wrapperClass='btn'
@@ -500,6 +479,12 @@ const Categorize = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the transactions page section. */
+  function renderTransactionsSection() {
+    return (
       <div className='row'>
         <div className='col-md-9 grid-margin'>
           <div className='card'>
@@ -508,7 +493,7 @@ const Categorize = () => {
                 Transactions
                 {transactions.loading ? (
                   <Circles
-                    visible={true}
+                    visible
                     height={20}
                     width={20}
                     wrapperClass='btn'
@@ -945,6 +930,92 @@ const Categorize = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the predict transactions page section. */
+  function renderPredictTransactionsSection() {
+    return (
+      <Modal
+        centered
+        show={predictModalOpen}
+        onHide={() => setPredictModalOpen(false)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <div className='row'>
+              <div className='col-lg-12 grid-margin stretch-card mb-1'>
+                Predict transactions?
+              </div>
+            </div>
+            <p className='text-muted mb-0'>
+              Predict categories for {checkedCategories?.length || 'all the'}{' '}
+              transactions
+            </p>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className='mb-0'>
+            This will start predicting the categories for{' '}
+            <span className='text-danger'>
+              {' '}
+              {checkedCategories?.length || 'all the'} transactions
+            </span>
+          </p>
+          <p className='mb-0'>
+            Depending on the number it might take a while so please be patient
+          </p>
+          Proceed?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='success' onClick={() => setPredictModalOpen(false)}>
+            No, go back
+          </Button>
+          <Button
+            variant='danger'
+            onClick={() => {
+              dispatch(
+                PredictionApi.predict(
+                  token,
+                  checkedCategories?.map((t) => t.description) || [],
+                  kwargs
+                )
+              );
+              setPredictModalOpen(false);
+            }}
+          >
+            Yes, start!
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+  return (
+    <div>
+      <div className='page-header'>
+        <h3 className='page-title'>
+          Categorize
+          <div className='mb-0 text-muted'>
+            <small>Train and improve the auto detection engine</small>
+          </div>
+        </h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <a href='!#' onClick={(event) => event.preventDefault()}>
+                Finance
+              </a>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Categorize
+            </li>
+          </ol>
+        </nav>
+      </div>
+      <Errors errors={transactions.errors} />
+
+      {renderTasksSection()}
+      {renderTransactionsSection()}
       <EditModal />
       <Modal
         centered
@@ -1044,58 +1115,7 @@ const Categorize = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal
-        centered
-        show={predictModalOpen}
-        onHide={() => setPredictModalOpen(false)}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <div className='row'>
-              <div className='col-lg-12 grid-margin stretch-card mb-1'>
-                Predict transactions?
-              </div>
-            </div>
-            <p className='text-muted mb-0'>
-              Predict categories for {checkedCategories?.length || 'all the'}{' '}
-              transactions
-            </p>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p className='mb-0'>
-            This will start predicting the categories for{' '}
-            <span className='text-danger'>
-              {' '}
-              {checkedCategories?.length || 'all the'} transactions
-            </span>
-          </p>
-          <p className='mb-0'>
-            Depending on the number it might take a while so please be patient
-          </p>
-          Proceed?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant='success' onClick={() => setPredictModalOpen(false)}>
-            No, go back
-          </Button>
-          <Button
-            variant='danger'
-            onClick={() => {
-              dispatch(
-                PredictionApi.predict(
-                  token,
-                  checkedCategories?.map((t) => t.description) || [],
-                  kwargs
-                )
-              );
-              setPredictModalOpen(false);
-            }}
-          >
-            Yes, start!
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {renderPredictTransactionsSection()}
     </div>
   );
 };
