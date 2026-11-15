@@ -5,7 +5,9 @@ import Navbar from './Navbar';
 
 const mockDispatch = jest.fn();
 const mockHistory = { push: jest.fn() };
-let mockState;
+let mockState = {};
+const rpiSession = 'rpi-session';
+const authSession = 'auth-session';
 
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -53,7 +55,12 @@ jest.mock('react-bootstrap', () => {
     as: Component = 'div',
     alignRight,
     ...props
-  }) => React.createElement(Component, props, children);
+  }) =>
+    React.createElement(
+      Component,
+      { ...props, 'data-align-right': alignRight },
+      children
+    );
   const Toggle = ({ children, as: Component = 'button', ...props }) =>
     React.createElement(Component, { type: 'button', ...props }, children);
   const Menu = ({ children, ...props }) =>
@@ -137,7 +144,7 @@ beforeEach(() => {
   mockDispatch.mockClear();
   mockHistory.push.mockClear();
   mockState = {
-    auth: { token: 'auth-token', user: { email: 'user@example.com' } },
+    auth: { token: authSession, user: { email: 'user@example.com' } },
     rpi: { token: null, errors: [], loading: false },
   };
 });
@@ -196,7 +203,7 @@ test('opens the RPi login form and dispatches entered credentials', () => {
 });
 
 test('uses keyboard-operable controls for navigation and RPi logout', () => {
-  mockState.rpi.token = 'rpi-token';
+  mockState.rpi.token = rpiSession;
   mockState.auth.user.is_staff = true;
   const sidebar = document.createElement('div');
   sidebar.className = 'sidebar-offcanvas';
@@ -211,7 +218,7 @@ test('uses keyboard-operable controls for navigation and RPi logout', () => {
   act(() => statusButton.click());
   expect(mockDispatch).toHaveBeenCalledWith({
     type: 'rpi/logout',
-    token: 'rpi-token',
+    token: rpiSession,
   });
 
   const togglers = container.querySelectorAll('.navbar-toggler');
@@ -226,7 +233,7 @@ test('uses keyboard-operable controls for navigation and RPi logout', () => {
   expect(mockHistory.push).toHaveBeenCalledWith('/profile');
   expect(mockDispatch).toHaveBeenCalledWith({
     type: 'auth/logout',
-    token: 'auth-token',
+    token: authSession,
     history: mockHistory,
   });
 
