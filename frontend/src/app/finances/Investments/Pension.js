@@ -368,8 +368,7 @@ const Pension = () => {
                       )}
                       {!pension.loading &&
                         !pension.loadingItems?.includes(pensionOpen?.id) &&
-                        pensionOpen &&
-                        pensionOpen.contributions.map((c, i) => (
+                        pensionOpen?.contributions.map((c, i) => (
                           <tr key={`contrib-${c.id}`}>
                             <td>{i + 1}</td>
                             <td>

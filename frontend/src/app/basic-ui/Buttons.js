@@ -459,11 +459,8 @@ class Buttons extends Component {
                       <code>.btn-group</code>
                     </p>
                     <div className='template-demo'>
-                      <div
-                        className='btn-group'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      <fieldset className='btn-group border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button
                           type='button'
                           className='btn btn-outline-secondary'
@@ -482,12 +479,9 @@ class Buttons extends Component {
                         >
                           3
                         </button>
-                      </div>
-                      <div
-                        className='btn-group'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      </fieldset>
+                      <fieldset className='btn-group border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button
                           type='button'
                           className='btn btn-outline-secondary'
@@ -506,14 +500,11 @@ class Buttons extends Component {
                         >
                           <i className='mdi mdi-clock' />
                         </button>
-                      </div>
+                      </fieldset>
                     </div>
                     <div className='template-demo'>
-                      <div
-                        className='btn-group'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      <fieldset className='btn-group border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button type='button' className='btn btn-primary'>
                           1
                         </button>
@@ -523,12 +514,9 @@ class Buttons extends Component {
                         <button type='button' className='btn btn-primary'>
                           3
                         </button>
-                      </div>
-                      <div
-                        className='btn-group'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      </fieldset>
+                      <fieldset className='btn-group border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button type='button' className='btn btn-primary'>
                           <i className='mdi mdi-heart-outline' />
                         </button>
@@ -538,14 +526,11 @@ class Buttons extends Component {
                         <button type='button' className='btn btn-primary'>
                           <i className='mdi mdi-clock' />
                         </button>
-                      </div>
+                      </fieldset>
                     </div>
                     <div className='template-demo mt-4'>
-                      <div
-                        className='btn-group-vertical'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      <fieldset className='btn-group-vertical border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button
                           type='button'
                           className='btn btn-outline-secondary'
@@ -564,12 +549,9 @@ class Buttons extends Component {
                         >
                           <i className='mdi mdi-format-vertical-align-bottom' />
                         </button>
-                      </div>
-                      <div
-                        className='btn-group-vertical'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      </fieldset>
+                      <fieldset className='btn-group-vertical border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button
                           type='button'
                           className='btn btn-outline-secondary'
@@ -614,12 +596,9 @@ class Buttons extends Component {
                         >
                           Default
                         </button>
-                      </div>
-                      <div
-                        className='btn-group-vertical'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      </fieldset>
+                      <fieldset className='btn-group-vertical border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button
                           type='button'
                           className='btn btn-outline-secondary'
@@ -638,14 +617,11 @@ class Buttons extends Component {
                         >
                           Bottom
                         </button>
-                      </div>
+                      </fieldset>
                     </div>
                     <div className='template-demo mt-4'>
-                      <div
-                        className='btn-group'
-                        role='group'
-                        aria-label='Basic example'
-                      >
+                      <fieldset className='btn-group border-0 p-0'>
+                        <legend className='sr-only'>Basic example</legend>
                         <button
                           type='button'
                           className='btn btn-outline-secondary'
@@ -664,7 +640,7 @@ class Buttons extends Component {
                         >
                           <i className='mdi mdi-account d-block mb-1' /> Users
                         </button>
-                      </div>
+                      </fieldset>
                     </div>
                   </div>
                   <div className='col-md-6'>
@@ -919,43 +895,37 @@ class Buttons extends Component {
                     type='button'
                     className='btn btn-social-icon-text btn-facebook'
                   >
-                    <i className='mdi mdi-facebook' />
-                    Facebook
+                    <i className='mdi mdi-facebook' /> Facebook
                   </button>
                   <button
                     type='button'
                     className='btn btn-social-icon-text btn-youtube'
                   >
-                    <i className='mdi mdi-youtube' />
-                    Youtube
+                    <i className='mdi mdi-youtube' /> Youtube
                   </button>
                   <button
                     type='button'
                     className='btn btn-social-icon-text btn-twitter'
                   >
-                    <i className='mdi mdi-twitter' />
-                    Twitter
+                    <i className='mdi mdi-twitter' /> Twitter
                   </button>
                   <button
                     type='button'
                     className='btn btn-social-icon-text btn-dribbble'
                   >
-                    <i className='mdi mdi-dribbble' />
-                    Dribbble
+                    <i className='mdi mdi-dribbble' /> Dribbble
                   </button>
                   <button
                     type='button'
                     className='btn btn-social-icon-text btn-linkedin'
                   >
-                    <i className='mdi mdi-linkedin' />
-                    Linkedin
+                    <i className='mdi mdi-linkedin' /> Linkedin
                   </button>
                   <button
                     type='button'
                     className='btn btn-social-icon-text btn-google'
                   >
-                    <i className='mdi mdi-google-plus' />
-                    Google
+                    <i className='mdi mdi-google-plus' /> Google
                   </button>
                 </div>
               </div>

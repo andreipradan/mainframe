@@ -96,7 +96,7 @@ const Meals = () => {
                 }}
                 plugins={[dayGridPlugin]}
                 eventClick={(event) =>
-                  dispatch(select(parseInt(event.event.id)))
+                  dispatch(select(Number.parseInt(event.event.id)))
                 }
                 initialView='dayGridMonth'
                 weekends

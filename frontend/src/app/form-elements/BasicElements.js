@@ -89,7 +89,9 @@ export class BasicElements extends Component {
                   <button type='submit' className='btn btn-primary mr-2'>
                     Submit
                   </button>
-                  <button className='btn btn-dark'>Cancel</button>
+                  <button type='reset' className='btn btn-dark'>
+                    Cancel
+                  </button>
                 </form>
               </div>
             </div>
@@ -189,7 +191,9 @@ export class BasicElements extends Component {
                   <button type='submit' className='btn btn-primary mr-2'>
                     Submit
                   </button>
-                  <button className='btn btn-dark'>Cancel</button>
+                  <button type='reset' className='btn btn-dark'>
+                    Cancel
+                  </button>
                 </form>
               </div>
             </div>
@@ -271,7 +275,9 @@ export class BasicElements extends Component {
                   <button type='submit' className='btn btn-primary mr-2'>
                     Submit
                   </button>
-                  <button className='btn btn-dark'>Cancel</button>
+                  <button type='reset' className='btn btn-dark'>
+                    Cancel
+                  </button>
                 </form>
               </div>
             </div>
@@ -476,7 +482,7 @@ export class BasicElements extends Component {
                         >
                           Something else here
                         </a>
-                        <div role='separator' className='dropdown-divider' />
+                        <hr className='dropdown-divider' />
                         <a
                           className='dropdown-item'
                           href='!#'

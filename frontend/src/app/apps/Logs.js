@@ -64,7 +64,7 @@ const Logs = () => {
                     </li>
                     {path
                       ?.split('/')
-                      .filter((i) => Boolean(i))
+                      .filter(Boolean)
                       .map((folder, i) => {
                         const folderPath = path
                           .split('/')

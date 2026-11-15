@@ -98,8 +98,7 @@ const Bots = () => {
                       </tr>
                     )}
                     {!loading &&
-                      bots &&
-                      bots.map((bot, i) => {
+                      bots?.map((bot, i) => {
                         if (loadingBots?.includes(bot.id)) {
                           return (
                             <tr key={bot.id}>
@@ -132,11 +131,7 @@ const Bots = () => {
                                 : '-'}
                             </td>
                             <td>
-                              <div
-                                className='btn-group'
-                                role='group'
-                                aria-label='Basic example'
-                              >
+                              <div className='btn-group'>
                                 <button
                                   type='button'
                                   className='btn btn-outline-secondary'
