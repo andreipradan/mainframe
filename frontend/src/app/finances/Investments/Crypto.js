@@ -600,10 +600,11 @@ const Crypto = () => {
                         <small className='text-warning'>
                           &nbsp;(
                           {crypto.currencies
-                            ?.map(
-                              (c) =>
-                                `${getCurrencyLabel(c)} ${crypto.aggregations?.current[`total_${c}`]}`
-                            )
+                            ?.map((c) => {
+                              const total =
+                                crypto.aggregations?.current[`total_${c}`];
+                              return `${getCurrencyLabel(c)} ${total}`;
+                            })
                             .filter((i) => !i.includes(' null'))
                             .join(' | ')}
                           )

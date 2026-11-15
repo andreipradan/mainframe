@@ -21,6 +21,7 @@ import {
   setKwargs,
 } from '../../../../redux/transactionsSlice';
 import { setLoadingTask } from '../../../../redux/predictionSlice';
+import { updateCheckedCategories } from '../categoryUtils';
 
 const Categorize = () => {
   const dispatch = useDispatch();
@@ -64,41 +65,9 @@ const Categorize = () => {
     if (!newValue.value) return;
     const newCategory = { description: description, category: newValue.value };
     const isIdentified = newCategory.category !== 'Unidentified';
-    let updatedCategories = null;
-
-    if (!checkedCategories?.length) {
-      if (isIdentified) {
-        updatedCategories = [newCategory];
-      } else {
-        updatedCategories = null;
-      }
-    } else {
-      const existingCategory = checkedCategories.find(
-        (category) => category.description === description
-      );
-      if (existingCategory) {
-        if (isIdentified) {
-          updatedCategories = checkedCategories.map((category) => {
-            if (category.description === description) {
-              return { ...category, category: newValue.value };
-            }
-            return category;
-          });
-        } else {
-          updatedCategories = checkedCategories.filter(
-            (category) => category.description !== description
-          );
-        }
-      } else {
-        if (isIdentified) {
-          updatedCategories = [...checkedCategories, newCategory];
-        } else {
-          updatedCategories = checkedCategories;
-        }
-      }
-    }
-
-    setCheckedCategories(updatedCategories);
+    setCheckedCategories(
+      updateCheckedCategories(checkedCategories, newCategory, isIdentified)
+    );
   };
   const onTypeChange = (newValue) => {
     const newTypes = newValue.map((v) => v.value);

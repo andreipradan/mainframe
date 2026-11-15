@@ -44,6 +44,12 @@ const getUpdateTextType = (timestamp, pollingEnabled = true) => {
   return 'success';
 };
 
+const getRouteShortName = (stopTime, routes, trips) => {
+  const trip = trips?.find((item) => item.trip_id === stopTime.trip_id);
+  return routes?.find((route) => route.route_id === trip?.route_id)
+    ?.route_short_name;
+};
+
 const POLLING_DURATION = 240;
 
 const Transport = () => {
@@ -426,15 +432,11 @@ const Transport = () => {
                                 .map((st) => (
                                   <div key={st.trip_id}>
                                     <strong>
-                                      {
-                                        state.routes?.find(
-                                          (r) =>
-                                            r.route_id ===
-                                            state.trips?.find(
-                                              (t) => t.trip_id === st.trip_id
-                                            )?.route_id
-                                        )?.route_short_name
-                                      }
+                                      {getRouteShortName(
+                                        st,
+                                        state.routes,
+                                        state.trips
+                                      )}
                                       :
                                     </strong>
                                     &nbsp;

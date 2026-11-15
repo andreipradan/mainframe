@@ -30,6 +30,7 @@ import Errors from '../../../shared/Errors';
 import ListItem from '../../../shared/ListItem';
 import TransactionsBulkUpdateModal from './components/TransactionsBulkUpdateModal';
 import TransactionEditModal from './components/TransactionEditModal';
+import { updateCheckedCategories } from '../categoryUtils';
 
 const random_rgba = () => {
   const o = Math.round,
@@ -257,41 +258,9 @@ const Transactions = () => {
     if (!newValue.value) return;
     const newCategory = { description, category: newValue.value };
     const isIdentified = newCategory.category !== 'Unidentified';
-    let updatedCategories = null;
-
-    if (!checkedCategories?.length) {
-      if (isIdentified) {
-        updatedCategories = [newCategory];
-      } else {
-        updatedCategories = null;
-      }
-    } else {
-      const existingCategory = checkedCategories.find(
-        (category) => category.description === description
-      );
-      if (existingCategory) {
-        if (isIdentified) {
-          updatedCategories = checkedCategories.map((category) => {
-            if (category.description === description) {
-              return { ...category, category: newValue.value };
-            }
-            return category;
-          });
-        } else {
-          updatedCategories = checkedCategories.filter(
-            (category) => category.description !== description
-          );
-        }
-      } else {
-        if (isIdentified) {
-          updatedCategories = [...checkedCategories, newCategory];
-        } else {
-          updatedCategories = checkedCategories;
-        }
-      }
-    }
-
-    setCheckedCategories(updatedCategories);
+    setCheckedCategories(
+      updateCheckedCategories(checkedCategories, newCategory, isIdentified)
+    );
   };
   const onConfirmedByChange = (newValue) => {
     const newConfirmedBy = newValue ? newValue.value : '';
