@@ -89,7 +89,7 @@ export class BasicElements extends Component {
                   <button type='submit' className='btn btn-primary mr-2'>
                     Submit
                   </button>
-                  <button type='button' className='btn btn-dark'>
+                  <button type='reset' className='btn btn-dark'>
                     Cancel
                   </button>
                 </form>
@@ -191,7 +191,7 @@ export class BasicElements extends Component {
                   <button type='submit' className='btn btn-primary mr-2'>
                     Submit
                   </button>
-                  <button type='button' className='btn btn-dark'>
+                  <button type='reset' className='btn btn-dark'>
                     Cancel
                   </button>
                 </form>
@@ -275,7 +275,7 @@ export class BasicElements extends Component {
                   <button type='submit' className='btn btn-primary mr-2'>
                     Submit
                   </button>
-                  <button type='button' className='btn btn-dark'>
+                  <button type='reset' className='btn btn-dark'>
                     Cancel
                   </button>
                 </form>
