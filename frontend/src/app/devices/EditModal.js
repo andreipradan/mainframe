@@ -17,6 +17,123 @@ import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 import { Tooltip } from 'react-tooltip';
 import Errors from '../shared/Errors';
 
+function PresenceInfoIcon() {
+  return (
+    <sup>
+      <i id='should-notify-presence' className='mdi mdi-information-outline' />
+    </sup>
+  );
+}
+
+function DeviceFormFields({
+  additionalData,
+  additionalDataAnnotations,
+  alias,
+  device,
+  ip,
+  isActive,
+  mac,
+  name,
+  onAdditionalDataChange,
+  onSubmit,
+  setAlias,
+  setIp,
+  setIsActive,
+  setMac,
+  setName,
+  setShouldNotifyPresence,
+  shouldNotifyPresence,
+}) {
+  return (
+    <Form onSubmit={onSubmit}>
+      <Form.Group className='mb-3'>
+        <Form.Label>Name</Form.Label>
+        <Form.Control
+          type='text'
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </Form.Group>
+      <Form.Group className='mb-3'>
+        <Form.Label>Alias</Form.Label>
+        <Form.Control
+          type='text'
+          value={alias}
+          onChange={(e) => setAlias(e.target.value)}
+        />
+      </Form.Group>
+      <Form.Group className='mb-3'>
+        <Form.Label>Is Active?</Form.Label>
+        <Form.Check
+          checked={isActive}
+          type='switch'
+          id='checkbox'
+          label=''
+          onChange={() => setIsActive(!isActive)}
+        />
+      </Form.Group>
+      <Form.Group className='mb-3'>
+        <Form.Label>IP</Form.Label>
+        <Form.Control
+          type='text'
+          value={ip}
+          required
+          onChange={(e) => setIp(e.target.value)}
+        />
+      </Form.Group>
+      <Form.Group className='mb-3'>
+        <Form.Label>
+          Should notify presence? <PresenceInfoIcon />
+        </Form.Label>
+        <Form.Check
+          checked={shouldNotifyPresence}
+          type='switch'
+          id='notify-checkbox'
+          label=''
+          onChange={() => setShouldNotifyPresence(!shouldNotifyPresence)}
+        />
+      </Form.Group>
+      {!device && (
+        <Form.Group className='mb-3'>
+          <Form.Label>Mac</Form.Label>
+          <Form.Control
+            type='text'
+            value={mac}
+            required
+            readOnly={Boolean(device)}
+            onChange={(e) => setMac(e.target.value)}
+          />
+        </Form.Group>
+      )}
+      <Form.Group className='mb-3'>
+        <Form.Label>Additional Data</Form.Label>
+        <AceEditor
+          className={additionalDataAnnotations ? 'form-control is-invalid' : ''}
+          annotations={additionalDataAnnotations}
+          placeholder='Config'
+          mode='python'
+          theme='monokai'
+          onChange={onAdditionalDataChange}
+          fontSize={12}
+          showPrintMargin
+          showGutter
+          highlightActiveLine
+          value={additionalData}
+          setOptions={{
+            enableBasicAutocompletion: false,
+            enableLiveAutocompletion: false,
+            enableSnippets: false,
+            showLineNumbers: true,
+            tabSize: 2,
+          }}
+          width='100%'
+          height='150px'
+        />
+      </Form.Group>
+    </Form>
+  );
+}
+
 const EditModal = () => {
   const dispatch = useDispatch();
   const {
@@ -105,128 +222,45 @@ const EditModal = () => {
     <Modal centered show={Boolean(device) || modalOpen} onHide={closeModal}>
       <Modal.Header closeButton>
         <Modal.Title>
-          <div className='row'>
-            <div className='col-lg-12 grid-margin stretch-card'>
-              {device ? 'Edit' : 'Add new device'} {device?.display_name} ?
-            </div>
-          </div>
-          {device ? (
-            <p className='text-muted mb-0'>
-              {device.should_notify_presence ? null : (
-                <span>
-                  <i className='mdi mdi-bell-off' /> Telegram notifications
-                  turned off
-                  <br />
-                </span>
-              )}
-              {device?.mac}
-            </p>
-          ) : null}
-          {modalOpen ? <Errors errors={errors} /> : null}
+          {device ? 'Edit' : 'Add new device'} {device?.display_name} ?
         </Modal.Title>
+        {device ? (
+          <p className='text-muted mb-0'>
+            {!device.should_notify_presence && (
+              <i className='mdi mdi-bell-off' />
+            )}
+            {!device.should_notify_presence
+              ? ' Telegram notifications turned off'
+              : null}
+            {!device.should_notify_presence && <br />}
+            {device?.mac}
+          </p>
+        ) : null}
+        {modalOpen ? <Errors errors={errors} /> : null}
       </Modal.Header>
       {loadingDevices?.includes(device?.id) ? (
         <ColorRing width='100%' height='50' wrapperStyle={{ width: '100%' }} />
       ) : (
         <Modal.Body>
-          <Form onSubmit={onSubmit}>
-            <Form.Group className='mb-3'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type='text'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className='mb-3'>
-              <Form.Label>Alias</Form.Label>
-              <Form.Control
-                type='text'
-                value={alias}
-                onChange={(e) => setAlias(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className='mb-3'>
-              <Form.Label>Is Active?</Form.Label>
-              <Form.Check
-                checked={isActive}
-                type='switch'
-                id='checkbox'
-                label=''
-                onChange={() => {
-                  setIsActive(!isActive);
-                }}
-              />
-            </Form.Group>
-            <Form.Group className='mb-3'>
-              <Form.Label>IP</Form.Label>
-              <Form.Control
-                type='text'
-                value={ip}
-                required
-                onChange={(e) => setIp(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className='mb-3'>
-              <Form.Label>
-                Should notify presence?{' '}
-                <sup>
-                  <i
-                    id='should-notify-presence'
-                    className='mdi mdi-information-outline'
-                  />
-                </sup>
-              </Form.Label>
-              <Form.Check
-                checked={shouldNotifyPresence}
-                type='switch'
-                id='notify-checkbox'
-                label=''
-                onChange={() => {
-                  setShouldNotifyPresence(!shouldNotifyPresence);
-                }}
-              />
-            </Form.Group>
-            {!device && (
-              <Form.Group className='mb-3'>
-                <Form.Label>Mac</Form.Label>
-                <Form.Control
-                  type='text'
-                  value={mac}
-                  required
-                  readOnly={Boolean(device)}
-                  onChange={(e) => setMac(e.target.value)}
-                />
-              </Form.Group>
-            )}
-            <Form.Group className='mb-3'>
-              <Form.Label>Additional Data</Form.Label>
-              <AceEditor
-                className={
-                  additionalDataAnnotations ? 'form-control is-invalid' : ''
-                }
-                annotations={additionalDataAnnotations}
-                placeholder='Config'
-                mode='python'
-                theme='monokai'
-                onChange={onAdditionalDataChange}
-                fontSize={12}
-                showPrintMargin
-                showGutter
-                highlightActiveLine
-                value={additionalData}
-                setOptions={{
-                  enableBasicAutocompletion: false,
-                  enableLiveAutocompletion: false,
-                  enableSnippets: false,
-                  showLineNumbers: true,
-                  tabSize: 2,
-                }}
-                width='100%'
-                height='150px'
-              />
-            </Form.Group>
-          </Form>
+          <DeviceFormFields
+            additionalData={additionalData}
+            additionalDataAnnotations={additionalDataAnnotations}
+            alias={alias}
+            device={device}
+            ip={ip}
+            isActive={isActive}
+            mac={mac}
+            name={name}
+            onAdditionalDataChange={onAdditionalDataChange}
+            onSubmit={onSubmit}
+            setAlias={setAlias}
+            setIp={setIp}
+            setIsActive={setIsActive}
+            setMac={setMac}
+            setName={setName}
+            setShouldNotifyPresence={setShouldNotifyPresence}
+            shouldNotifyPresence={shouldNotifyPresence}
+          />
         </Modal.Body>
       )}
       <Modal.Footer>

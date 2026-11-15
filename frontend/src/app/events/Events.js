@@ -363,9 +363,9 @@ const Events = () => {
                             )}
                           </td>
                           <td>
-                            {event.categories?.map((c, index) => (
+                            {event.categories?.map((c) => (
                               <button
-                                key={index}
+                                key={c}
                                 disabled={events.kwargs.category?.includes(c)}
                                 className={'btn btn-sm text-secondary'}
                                 onClick={() =>

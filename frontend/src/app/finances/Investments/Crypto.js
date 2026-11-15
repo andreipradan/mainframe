@@ -16,23 +16,27 @@ import { setKwargs as setPnlKwargs } from '../../../redux/cryptoPnlSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { Link } from 'react-router-dom';
 
+/** Returns the prefix symbol for a supported currency. */
 const getCurrencySymbol = (currency) => {
   if (currency === 'USD') return '$ ';
   if (currency === 'EUR') return '€ ';
   return '';
 };
 
+/** Returns the display suffix for currencies without a prefix symbol. */
 const getCurrencySuffix = (currency) => {
   if (currency === 'USD' || currency === 'EUR') return '';
   return ` ${currency}`;
 };
 
+/** Returns the short display label for a currency. */
 const getCurrencyLabel = (currency) => {
   if (currency === 'USD') return '$';
   if (currency === 'EUR') return '€';
   return currency;
 };
 
+/** Returns the text class for a profit/loss value. */
 const getPnlTextType = (value) => {
   if (value < 0) return 'text-danger';
   if (value > 0) return 'text-success';
@@ -109,34 +113,9 @@ const Crypto = () => {
     [crypto.errors]
   );
 
-  return (
-    <div>
-      <div className='page-header mb-0'>
-        <h3 className='page-title'>
-          Crypto{' '}
-          <button
-            type='button'
-            className='btn btn-outline-success btn-sm border-0 bg-transparent'
-            onClick={() => dispatch(cryptoApi.getList())}
-          >
-            <i className='mdi mdi-refresh' />
-          </button>
-        </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <Link to='/investments/summary'>Investments</Link>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Crypto
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <Errors errors={crypto.errors} />
-
-      {/* Top cards */}
+  /** Renders the portfolio page section. */
+  function renderPortfolioSection() {
+    return (
       <div className='row'>
         <div
           className={`col-sm-${crypto.loading && !crypto.results ? 12 : 4} grid-margin`}
@@ -209,8 +188,12 @@ const Crypto = () => {
           </div>
         ))}
       </div>
+    );
+  }
 
-      {/* Last Transaction */}
+  /** Renders the last transaction page section. */
+  function renderLastTransactionSection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 grid-margin'>
           <div className='card'>
@@ -280,8 +263,12 @@ const Crypto = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/*Profit and loss*/}
+  /** Renders the upload page section. */
+  function renderUploadSection() {
+    return (
       <div className='row'>
         <div className='col-12 grid-margin'>
           <div className='card'>
@@ -534,8 +521,12 @@ const Crypto = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Transactions */}
+  /** Renders the upload page section. */
+  function renderUploadSection2() {
+    return (
       <div className='row'>
         <div className='col-12 grid-margin'>
           <div className='card'>
@@ -722,13 +713,17 @@ const Crypto = () => {
                             <td
                               style={{ cursor: 'pointer' }}
                               onClick={() =>
-                                onChange('type', [
-                                  {
-                                    value: crypto.types.find(
-                                      (t) => t[1] === transaction.type
-                                    )[0],
-                                  },
-                                ])
+                                onChange(
+                                  'type',
+                                  [
+                                    {
+                                      value: crypto.types.find(
+                                        (t) => t[1] === transaction.type
+                                      )[0],
+                                    },
+                                  ],
+                                  crypto
+                                )
                               }
                             >
                               {' '}
@@ -738,9 +733,11 @@ const Crypto = () => {
                             <td
                               style={{ cursor: 'pointer' }}
                               onClick={() =>
-                                onChange('ticker', [
-                                  { value: transaction.symbol },
-                                ])
+                                onChange(
+                                  'ticker',
+                                  [{ value: transaction.symbol }],
+                                  crypto
+                                )
                               }
                             >
                               {' '}
@@ -777,6 +774,46 @@ const Crypto = () => {
           </div>
         </div>
       </div>
+    );
+  }
+  return (
+    <div>
+      <div className='page-header mb-0'>
+        <h3 className='page-title'>
+          Crypto{' '}
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent'
+            onClick={() => dispatch(cryptoApi.getList())}
+          >
+            <i className='mdi mdi-refresh' />
+          </button>
+        </h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <Link to='/investments/summary'>Investments</Link>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Crypto
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <Errors errors={crypto.errors} />
+
+      {/* Top cards */}
+      {renderPortfolioSection()}
+
+      {/* Last Transaction */}
+      {renderLastTransactionSection()}
+
+      {/*Profit and loss*/}
+      {renderUploadSection()}
+
+      {/* Transactions */}
+      {renderUploadSection2()}
     </div>
   );
 };

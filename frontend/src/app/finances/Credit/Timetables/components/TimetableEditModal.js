@@ -12,6 +12,83 @@ import { ColorRing } from 'react-loader-spinner';
 import { TimetableApi } from '../../../../../api/finance';
 import { selectItem as selectTimetable } from '../../../../../redux/timetableSlice';
 
+function AmortizationRows({ loading, timetable }) {
+  const isLoading = loading?.includes(timetable?.id);
+
+  if (isLoading) {
+    return (
+      <tr>
+        <td colSpan={7}>
+          <ColorRing
+            width='100%'
+            height='50'
+            wrapperStyle={{ width: '100%' }}
+          />
+        </td>
+      </tr>
+    );
+  }
+
+  return timetable?.amortization_table.length ? (
+    timetable.amortization_table.map((month, index) => (
+      <tr key={month.date}>
+        <td> {index + 1} </td>
+        <td> {month.date} </td>
+        <td> {month.total} </td>
+        <td> {month.principal} </td>
+        <td> {month.interest} </td>
+        <td> {month.insurance} </td>
+        <td> {month.remaining} </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={7}>No timetables found</td>
+    </tr>
+  );
+}
+
+function AmortizationHeader() {
+  return (
+    <thead>
+      <tr>
+        <th> # </th>
+        <th> Date </th>
+        <th> Total </th>
+        <th> Principal </th>
+        <th> Interest </th>
+        <th> Insurance </th>
+        <th> Remaining </th>
+      </tr>
+    </thead>
+  );
+}
+
+function AmortizationTable({ loading, timetable }) {
+  return (
+    <div className='table-responsive'>
+      <table className='table'>
+        <AmortizationHeader />
+        <tbody>
+          <AmortizationRows loading={loading} timetable={timetable} />
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TimetableRefreshButton({ onClick }) {
+  return (
+    <button
+      type='button'
+      className='btn btn-outline-success btn-sm border-0 bg-transparent'
+      onClick={onClick}
+    >
+      <i className='mdi mdi-refresh' />
+    </button>
+  );
+}
+
 const TimetableEditModal = () => {
   const dispatch = useDispatch();
   const loadingTimetables = useSelector(
@@ -31,60 +108,15 @@ const TimetableEditModal = () => {
     >
       <Modal.Header closeButton>
         <Modal.Title>
-          <div className='row'>
-            <div className='col-lg-12 grid-margin stretch-card mb-1'>
-              Amortization Table{' '}
-              <button
-                type='button'
-                className='btn btn-outline-success btn-sm border-0 bg-transparent'
-                onClick={() => dispatch(api.getItem(timetable?.id))}
-              >
-                <i className='mdi mdi-refresh' />
-              </button>
-            </div>
-          </div>
+          Amortization Table{' '}
+          <TimetableRefreshButton
+            onClick={() => dispatch(api.getItem(timetable?.id))}
+          />
           <p className='text-muted mb-0'>{timetable?.date}</p>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className='table-responsive'>
-          <table className='table'>
-            <thead>
-              <tr>
-                <th> # </th>
-                <th> Date </th>
-                <th> Total </th>
-                <th> Principal </th>
-                <th> Interest </th>
-                <th> Insurance </th>
-                <th> Remaining </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loadingTimetables?.includes(timetable?.id) && (
-                <ColorRing
-                  width='100%'
-                  height='50'
-                  wrapperStyle={{ width: '100%' }}
-                />
-              )}
-              {!loadingTimetables?.includes(timetable?.id) &&
-                (timetable?.amortization_table.length
-                  ? timetable.amortization_table.map((month, i) => (
-                      <tr key={i}>
-                        <td> {i + 1} </td>
-                        <td> {month.date} </td>
-                        <td> {month.total} </td>
-                        <td> {month.principal} </td>
-                        <td> {month.interest} </td>
-                        <td> {month.insurance} </td>
-                        <td> {month.remaining} </td>
-                      </tr>
-                    ))
-                  : 'No timetables found')}
-            </tbody>
-          </table>
-        </div>
+        <AmortizationTable loading={loadingTimetables} timetable={timetable} />
       </Modal.Body>
       <Modal.Footer>
         <Button

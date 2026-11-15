@@ -7,6 +7,155 @@ import { ExpensesApi } from '../../api/expenses';
 import { selectItem, setModalOpen } from '../../redux/expensesSlice';
 import EditModal from './EditModal';
 
+function ExpenseDebts({ debts }) {
+  return debts?.length ? (
+    <td>
+      <ul className='list-arrow'>
+        {debts.map((debt) => (
+          <li key={debt.id}>
+            {debt.user} - {debt.amount}
+          </li>
+        ))}
+      </ul>
+    </td>
+  ) : (
+    <td>No debts</td>
+  );
+}
+
+function ExpenseRows({ expenses, onSelectExpense }) {
+  return (
+    <>
+      {expenses.loading && (
+        <tr>
+          <td colSpan={5}>
+            <Circles
+              visible
+              ariaLabel='ball-triangle-loading'
+              wrapperStyle={{
+                display: 'block',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                width: '25%',
+              }}
+              color='orange'
+            />
+          </td>
+        </tr>
+      )}
+      {!expenses.loading &&
+        expenses.results?.length > 0 &&
+        expenses.results.map((expense) => (
+          <tr
+            key={expense.id}
+            style={{ cursor: 'pointer' }}
+            onClick={() => onSelectExpense(expense.id)}
+          >
+            <td> {expense.date} </td>
+            <td>
+              {expense.payer.username}
+              <p className='text-small'>({expense.payer.email})</p>
+            </td>
+            <td> {expense.description} </td>
+            <td>
+              {' '}
+              {expense.currency} {expense.amount}{' '}
+            </td>
+            <ExpenseDebts debts={expense.debts} />
+          </tr>
+        ))}
+      {!expenses.loading && !expenses.results?.length && (
+        <tr>
+          <td colSpan={6}>
+            <span>No accounts found</span>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+function ExpenseTableHeader() {
+  return (
+    <thead>
+      <tr>
+        <th> Date </th>
+        <th> Payed by </th>
+        <th> Description </th>
+        <th> Amount </th>
+        <th> Debtors </th>
+      </tr>
+    </thead>
+  );
+}
+
+function ExpenseRefreshButton({ onClick }) {
+  return (
+    <button
+      type='button'
+      className='btn btn-outline-success btn-sm border-0 bg-transparent'
+      onClick={onClick}
+    >
+      <i className='mdi mdi-refresh' />
+    </button>
+  );
+}
+
+function AddExpenseButton({ onClick }) {
+  return (
+    <button
+      type='button'
+      className='float-right btn btn-outline-primary btn-rounded btn-icon pl-1'
+      onClick={onClick}
+    >
+      <i className='mdi mdi-plus' />
+    </button>
+  );
+}
+
+function ExpensesTable({ expenses, onSelectExpense }) {
+  return (
+    <div className='table-responsive'>
+      <table className='table table-hover'>
+        <ExpenseTableHeader />
+        <tbody>
+          <ExpenseRows expenses={expenses} onSelectExpense={onSelectExpense} />
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ExpensesCard({ expenses, onAddExpense, onSelectExpense }) {
+  return (
+    <div className='card grid-margin'>
+      <div className='card-body'>
+        <h4 className='card-title'>
+          <AddExpenseButton onClick={onAddExpense} />
+        </h4>
+        <ExpensesTable expenses={expenses} onSelectExpense={onSelectExpense} />
+      </div>
+    </div>
+  );
+}
+
+function ExpensesBreadcrumb() {
+  return (
+    <nav aria-label='breadcrumb'>
+      <ol className='breadcrumb'>
+        <li className='breadcrumb-item'>
+          <a href='!#' onClick={(event) => event.preventDefault()}>
+            Expenses
+          </a>
+        </li>
+        <li className='breadcrumb-item active' aria-current='page'>
+          My Expenses
+        </li>
+      </ol>
+    </nav>
+  );
+}
+
 const Accounts = () => {
   const dispatch = useDispatch();
 
@@ -24,120 +173,19 @@ const Accounts = () => {
       <div className='page-header'>
         <h3 className='page-title'>
           Expenses{' '}
-          <button
-            type='button'
-            className='btn btn-outline-success btn-sm border-0 bg-transparent'
-            onClick={() => dispatch(api.getList())}
-          >
-            <i className='mdi mdi-refresh' />
-          </button>
+          <ExpenseRefreshButton onClick={() => dispatch(api.getList())} />
         </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <a href='!#' onClick={(event) => event.preventDefault()}>
-                Expenses
-              </a>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              My Expenses
-            </li>
-          </ol>
-        </nav>
+        <ExpensesBreadcrumb />
       </div>
       <Errors errors={expenses.errors} />
-      <div className='row '>
-        <div className='col-12 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h4 className='card-title'>
-                <button
-                  type='button'
-                  className='float-right btn btn-outline-primary btn-rounded btn-icon pl-1'
-                  onClick={() => {
-                    dispatch(selectItem());
-                    dispatch(setModalOpen(true));
-                  }}
-                >
-                  <i className='mdi mdi-plus' />
-                </button>
-              </h4>
-              <div className='table-responsive'>
-                <table className='table table-hover'>
-                  <thead>
-                    <tr>
-                      <th> Date </th>
-                      <th> Payed by </th>
-                      <th> Description </th>
-                      <th> Amount </th>
-                      <th> Debtors </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expenses.loading && (
-                      <tr>
-                        <td colSpan={5}>
-                          <Circles
-                            visible
-                            ariaLabel='ball-triangle-loading'
-                            wrapperStyle={{
-                              display: 'block',
-                              marginLeft: 'auto',
-                              marginRight: 'auto',
-                              width: '25%',
-                            }}
-                            color='orange'
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    {!expenses.loading &&
-                      expenses.results?.length > 0 &&
-                      expenses.results.map((p) => (
-                        <tr
-                          key={p.id}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => dispatch(selectItem(p.id))}
-                        >
-                          <td> {p.date} </td>
-                          <td>
-                            {p.payer.username}
-                            <p className='text-small'>({p.payer.email})</p>
-                          </td>
-                          <td> {p.description} </td>
-                          <td>
-                            {' '}
-                            {p.currency} {p.amount}{' '}
-                          </td>
-                          {p.debts?.length ? (
-                            <td>
-                              <ul className='list-arrow'>
-                                {p.debts.map((debt) => (
-                                  <li key={debt.id}>
-                                    {debt.user} - {debt.amount}
-                                  </li>
-                                ))}
-                              </ul>
-                            </td>
-                          ) : (
-                            <td>No debts</td>
-                          )}
-                        </tr>
-                      ))}
-                    {!expenses.loading && !expenses.results?.length && (
-                      <tr>
-                        <td colSpan={6}>
-                          <span>No accounts found</span>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ExpensesCard
+        expenses={expenses}
+        onAddExpense={() => {
+          dispatch(selectItem());
+          dispatch(setModalOpen(true));
+        }}
+        onSelectExpense={(id) => dispatch(selectItem(id))}
+      />
       <EditModal />
     </div>
   );

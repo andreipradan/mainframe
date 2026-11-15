@@ -24,6 +24,13 @@ export const getEvaluation = (p, justValue = false) => {
     </span>
   );
 };
+/** Returns the color class for a pension profit/loss value. */
+const getPnlTextType = (pnl) => {
+  if (pnl > 0) return 'success';
+  if (pnl === 0) return 'muted';
+  return 'danger';
+};
+
 export const getPnl = (p, justValue = false) => {
   const pnl =
     Number.parseFloat(p.latest_unit_value || 0) * (p.total_units || 0) -
@@ -40,12 +47,6 @@ export const getPnl = (p, justValue = false) => {
       {pnl.toFixed(2)} {p.contributions?.[0]?.currency}
     </span>
   );
-};
-
-const getPnlTextType = (pnl) => {
-  if (pnl > 0) return 'success';
-  if (pnl === 0) return 'muted';
-  return 'danger';
 };
 
 const Pension = () => {
@@ -166,8 +167,9 @@ const Pension = () => {
     if (!pension.results?.length) dispatch(api.getList(pension.kwargs));
   }, []);
 
-  return (
-    <div>
+  /** Renders the pension funds page section. */
+  function renderPensionFundsSection() {
+    return (
       <div className='page-header mb-0'>
         <h3 className='page-title'>
           Pension funds
@@ -208,124 +210,17 @@ const Pension = () => {
           </ol>
         </nav>
       </div>
-      <b className={'text-small text-muted'}>
-        <div>
-          Total:{' '}
-          {pension.results
-            ?.map((p) => getEvaluation(p, true))
-            .reduce(
-              (accumulator, currentValue) =>
-                accumulator + Number.parseFloat(currentValue),
-              0
-            )
-            .toFixed(2)}{' '}
-          {pension.results?.[0].contributions?.[0]?.currency}
-        </div>
-        <div className={'mb-1'}>
-          PnL:{' '}
-          {pension.results
-            ?.map((p) => getPnl(p, true))
-            .reduce((acc, val) => acc + Number.parseFloat(val), 0)
-            .toFixed(2)}{' '}
-          {pension.results?.[0].contributions?.[0]?.currency}
-        </div>
-      </b>
+    );
+  }
 
-      {/* Top cards */}
-      <div className='row'>
-        {pension.results?.map((p) => (
-          <div
-            className='col-sm-12 col-md-6 col-xxl-3 grid-margin'
-            key={`pension-transactions-${p.id}`}
-          >
-            <div className='card'>
-              <div className='card-body'>
-                <div className='table-responsive'>
-                  <h6 className='text-secondary'>
-                    {p.name}
-                    {pension.loadingItems?.includes(p.id) ? (
-                      <Circles
-                        height={20}
-                        width={20}
-                        wrapperStyle={{ display: 'default' }}
-                        wrapperClass='btn'
-                      />
-                    ) : (
-                      <>
-                        <button
-                          type='button'
-                          className='btn btn-outline-success btn-sm border-0 bg-transparent p-1'
-                          onClick={() => dispatch(api.getItem(p.id))}
-                        >
-                          <i className='mdi mdi-refresh' />
-                        </button>
-                        <button
-                          type='button'
-                          className='btn btn-outline-warning btn-sm border-0 bg-transparent p-0'
-                          onClick={() => dispatch(selectItem(p.id))}
-                        >
-                          <i className='mdi mdi-pencil' />
-                        </button>
-                      </>
-                    )}
-                    <div className={'text-muted'}>
-                      {p.latest_unit_value_date ? (
-                        <p className={'text-muted mb-0 text-small'}>
-                          Last update:{' '}
-                          {new Date(
-                            p.latest_unit_value_date
-                          ).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                          <br />
-                        </p>
-                      ) : null}
-                      {p.latest_unit_value ? (
-                        <p className={'text-muted text-small'}>
-                          Last value: {p.latest_unit_value}
-                        </p>
-                      ) : null}
-                    </div>
+  /** Renders the content page section. */
+  function renderContentSection() {
+    return pension.modalOpen ? null : <Errors errors={pension.errors} />;
+  }
 
-                    {/* Pension fund details */}
-                    <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
-                      <ListItem
-                        label={'Started'}
-                        value={new Date(p.start_date).toLocaleDateString(
-                          'en-US',
-                          { year: 'numeric', month: 'short', day: 'numeric' }
-                        )}
-                        textType={'primary'}
-                      />
-                      <ListItem label={'Units'} value={p.total_units} />
-                      <ListItem
-                        label={'Evaluation'}
-                        value={getEvaluation(p)}
-                        textType={'success'}
-                      />
-                      <ListItem label={'Profit / Loss'} value={getPnl(p)} />
-                    </div>
-                  </h6>
-                  <button
-                    type={'button'}
-                    className={`ml-2 btn btn-sm btn-rounded btn-outline-${pensionOpen?.id === p.id ? 'info' : 'primary'}`}
-                    onClick={() =>
-                      setPensionOpen(pensionOpen?.id === p.id ? null : p)
-                    }
-                  >
-                    {pensionOpen?.id === p.id ? 'Deselect' : 'Select'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {pension.modalOpen ? null : <Errors errors={pension.errors} />}
-
-      {/* Contributions table */}
+  /** Renders the content page section. */
+  function renderContentSection2() {
+    return (
       <div className='row'>
         <div className={'col-12 grid-margin'}>
           <div className='card'>
@@ -669,8 +564,12 @@ const Pension = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Add / edit pension Modal */}
+  /** Renders the content page section. */
+  function renderContentSection3() {
+    return (
       <Modal
         centered
         show={Boolean(pension.selectedItem) || pension.modalOpen}
@@ -754,6 +653,133 @@ const Pension = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+    );
+  }
+  return (
+    <div>
+      {renderPensionFundsSection()}
+      <b className={'text-small text-muted'}>
+        <div>
+          Total:{' '}
+          {pension.results
+            ?.map((p) => getEvaluation(p, true))
+            .reduce(
+              (accumulator, currentValue) =>
+                accumulator + Number.parseFloat(currentValue),
+              0
+            )
+            .toFixed(2)}{' '}
+          {pension.results?.[0].contributions?.[0]?.currency}
+        </div>
+        <div className={'mb-1'}>
+          PnL:{' '}
+          {pension.results
+            ?.map((p) => getPnl(p, true))
+            .reduce((acc, val) => acc + Number.parseFloat(val), 0)
+            .toFixed(2)}{' '}
+          {pension.results?.[0].contributions?.[0]?.currency}
+        </div>
+      </b>
+
+      {/* Top cards */}
+      <div className='row'>
+        {pension.results?.map((p) => (
+          <div
+            className='col-sm-12 col-md-6 col-xxl-3 grid-margin'
+            key={`pension-transactions-${p.id}`}
+          >
+            <div className='card'>
+              <div className='card-body'>
+                <div className='table-responsive'>
+                  <h6 className='text-secondary'>
+                    {p.name}
+                    {pension.loadingItems?.includes(p.id) ? (
+                      <Circles
+                        height={20}
+                        width={20}
+                        wrapperStyle={{ display: 'default' }}
+                        wrapperClass='btn'
+                      />
+                    ) : (
+                      <>
+                        <button
+                          type='button'
+                          className='btn btn-outline-success btn-sm border-0 bg-transparent p-1'
+                          onClick={() => dispatch(api.getItem(p.id))}
+                        >
+                          <i className='mdi mdi-refresh' />
+                        </button>
+                        <button
+                          type='button'
+                          className='btn btn-outline-warning btn-sm border-0 bg-transparent p-0'
+                          onClick={() => dispatch(selectItem(p.id))}
+                        >
+                          <i className='mdi mdi-pencil' />
+                        </button>
+                      </>
+                    )}
+                    <div className={'text-muted'}>
+                      {p.latest_unit_value_date ? (
+                        <p className={'text-muted mb-0 text-small'}>
+                          Last update:{' '}
+                          {new Date(
+                            p.latest_unit_value_date
+                          ).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                          <br />
+                        </p>
+                      ) : null}
+                      {p.latest_unit_value ? (
+                        <p className={'text-muted text-small'}>
+                          Last value: {p.latest_unit_value}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    {/* Pension fund details */}
+                    <div style={{ maxHeight: '22vh', overflowY: 'scroll' }}>
+                      <ListItem
+                        label={'Started'}
+                        value={new Date(p.start_date).toLocaleDateString(
+                          'en-US',
+                          { year: 'numeric', month: 'short', day: 'numeric' }
+                        )}
+                        textType={'primary'}
+                      />
+                      <ListItem label={'Units'} value={p.total_units} />
+                      <ListItem
+                        label={'Evaluation'}
+                        value={getEvaluation(p)}
+                        textType={'success'}
+                      />
+                      <ListItem label={'Profit / Loss'} value={getPnl(p)} />
+                    </div>
+                  </h6>
+                  <button
+                    type={'button'}
+                    className={`ml-2 btn btn-sm btn-rounded btn-outline-${pensionOpen?.id === p.id ? 'info' : 'primary'}`}
+                    onClick={() =>
+                      setPensionOpen(pensionOpen?.id === p.id ? null : p)
+                    }
+                  >
+                    {pensionOpen?.id === p.id ? 'Deselect' : 'Select'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {renderContentSection()}
+
+      {/* Contributions table */}
+      {renderContentSection2()}
+
+      {/* Add / edit pension Modal */}
+      {renderContentSection3()}
     </div>
   );
 };

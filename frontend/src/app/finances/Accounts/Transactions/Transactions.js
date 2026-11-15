@@ -257,7 +257,7 @@ const Transactions = () => {
     if (!newValue.value) return;
     const newCategory = { description, category: newValue.value };
     const isIdentified = newCategory.category !== 'Unidentified';
-    let updatedCategories;
+    let updatedCategories = null;
 
     if (!checkedCategories?.length) {
       if (isIdentified) {
@@ -302,8 +302,9 @@ const Transactions = () => {
     dispatch(setKwargs({ type: newTypes, page: 1 }));
   };
 
-  return (
-    <div>
+  /** Renders the content page section. */
+  function renderContentSection() {
+    return (
       <div className='page-header'>
         <h3 className='page-title'>
           {!accounts.selectedItem ? (
@@ -369,8 +370,17 @@ const Transactions = () => {
           </ol>
         </nav>
       </div>
+    );
+  }
 
-      {!accounts.modalOpen && <Errors errors={accounts.errors} />}
+  /** Renders the content page section. */
+  function renderContentSection2() {
+    return !accounts.modalOpen && <Errors errors={accounts.errors} />;
+  }
+
+  /** Renders the summary page section. */
+  function renderSummarySection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 col-lg-6 grid-margin'>
           <div className='card'>
@@ -439,6 +449,12 @@ const Transactions = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the latest transaction page section. */
+  function renderLatestTransactionSection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 grid-margin'>
           <div className='card'>
@@ -512,6 +528,12 @@ const Transactions = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the expenses page section. */
+  function renderExpensesSection() {
+    return (
       <div className='row '>
         <div className='col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card'>
           <div className='card'>
@@ -598,6 +620,12 @@ const Transactions = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the transactions page section. */
+  function renderTransactionsSection() {
+    return (
       <div className='row'>
         <div className='col-9 grid-margin'>
           <div className='card'>
@@ -848,8 +876,8 @@ const Transactions = () => {
                                   }
                                   type='checkbox'
                                   className='form-check-input'
-                                  checked={getSpecificCategory(
-                                    transaction.description
+                                  checked={Boolean(
+                                    getSpecificCategory(transaction.description)
                                   )}
                                   onChange={() =>
                                     onCheckedCategoryChange(
@@ -1096,8 +1124,12 @@ const Transactions = () => {
           </div>
         </div>
       </div>
-      <AccountEditModal />
-      <TransactionEditModal year={selectedDate.getFullYear()} />
+    );
+  }
+
+  /** Renders the are you sure page section. */
+  function renderAreYouSureSection() {
+    return (
       <Modal
         centered
         show={Boolean(transactionToRemove)}
@@ -1183,6 +1215,20 @@ const Transactions = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+    );
+  }
+  return (
+    <div>
+      {renderContentSection()}
+
+      {renderContentSection2()}
+      {renderSummarySection()}
+      {renderLatestTransactionSection()}
+      {renderExpensesSection()}
+      {renderTransactionsSection()}
+      <AccountEditModal />
+      <TransactionEditModal year={selectedDate.getFullYear()} />
+      {renderAreYouSureSection()}
       <TransactionsBulkUpdateModal
         checkedCategories={checkedCategories}
         setSpecificCategoriesModalOpen={setSpecificCategoriesModalOpen}

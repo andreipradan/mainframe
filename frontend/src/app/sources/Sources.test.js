@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Sources from './Sources';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -15,21 +15,13 @@ jest.mock('../../api/sources', () => ({
       this.token = token;
     }
 
-    getList(kwargs) {
-      return { type: 'sources/getList', payload: kwargs };
-    }
+    getList = (kwargs) => ({ type: 'sources/getList', payload: kwargs });
 
-    create(data) {
-      return { type: 'sources/create', payload: data };
-    }
+    create = (data) => ({ type: 'sources/create', payload: data });
 
-    update(id, data) {
-      return { type: 'sources/update', payload: { id, data } };
-    }
+    update = (id, data) => ({ type: 'sources/update', payload: { id, data } });
 
-    delete(id, name) {
-      return { type: 'sources/delete', payload: { id, name } };
-    }
+    delete = (id, name) => ({ type: 'sources/delete', payload: { id, name } });
   },
 }));
 jest.mock('../../redux/sourcesSlice', () => ({

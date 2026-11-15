@@ -69,7 +69,7 @@ export const getIconByType = (bus, route) => {
     color = '#42c41d';
   }
 
-  let label;
+  let label = '';
   if (route?.route_short_name) {
     label = escapeHtml(route.route_short_name);
   } else if (bus.route_id) {

@@ -26,8 +26,19 @@ jest.mock('react-bootstrap', () => {
 });
 jest.mock('react-bootstrap/Modal', () => {
   const React = require('react');
-  const Modal = ({ children, show }) =>
-    show ? React.createElement('div', null, children) : null;
+  const Modal = ({ children, onHide, show }) =>
+    show
+      ? React.createElement(
+          'div',
+          null,
+          children,
+          React.createElement(
+            'button',
+            { type: 'button', 'aria-label': 'Hide modal', onClick: onHide },
+            'Hide modal'
+          )
+        )
+      : null;
   Modal.Body = ({ children }) => React.createElement('div', null, children);
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -85,6 +96,7 @@ const renderSidebar = () => {
 describe('Sidebar navigation controls', () => {
   beforeEach(() => {
     mockDispatch.mockClear();
+    document.body.classList.remove('sidebar-icon-only');
     mockState = {
       rpi: { token: null, errors: null, loading: false, message: null },
       auth: {
@@ -147,6 +159,40 @@ describe('Sidebar navigation controls', () => {
       'Are you sure you want to restart bot?'
     );
     expect(mockDispatch).toHaveBeenCalledWith(expect.any(Function));
+    unmount();
+  });
+
+  test('supports collapsed navigation hover, focus, and modal dismissal', () => {
+    mockState.rpi.token = 'rpi-token';
+    const { container, unmount } = renderSidebar();
+    document.body.classList.add('sidebar-icon-only');
+    const navItem = Array.from(container.querySelectorAll('.nav-item')).find(
+      (item) => !item.querySelector('button[aria-expanded]')
+    );
+
+    act(() =>
+      navItem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    );
+    expect(navItem.classList.contains('hover-open')).toBe(true);
+    act(() =>
+      navItem.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+    );
+    act(() =>
+      navItem.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
+    );
+    expect(navItem.classList.contains('hover-open')).toBe(false);
+    act(() =>
+      navItem.dispatchEvent(new FocusEvent('focusout', { bubbles: true }))
+    );
+
+    const restartBot = Array.from(
+      container.querySelectorAll('.preview-subject')
+    ).find((item) => item.textContent.trim() === 'Restart bot');
+    act(() => restartBot.click());
+    act(() => container.querySelector('[aria-label="Hide modal"]').click());
+    expect(container.textContent).not.toContain(
+      'Are you sure you want to restart bot?'
+    );
     unmount();
   });
 });

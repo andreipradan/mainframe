@@ -17,11 +17,13 @@ import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { StocksApi, StocksPnlApi } from '../../../api/finance';
 import { Link } from 'react-router-dom';
 
+/** Returns the symbol used for the selected stock currency. */
 const getCurrencySymbol = (currency) => {
   if (currency === 'USD') return '$';
   return '€';
 };
 
+/** Returns the text class for a profit/loss value. */
 const getPnlTextType = (value) => {
   if (value < 0) return 'text-danger';
   if (value > 0) return 'text-success';
@@ -112,34 +114,9 @@ const Stocks = () => {
   };
   useEffect(() => setUploadPnlOpen(Boolean(stocks.errors)), [stocks.errors]);
 
-  return (
-    <div>
-      <div className='page-header mb-0'>
-        <h3 className='page-title'>
-          Stocks{' '}
-          <button
-            type='button'
-            className='btn btn-outline-success btn-sm border-0 bg-transparent'
-            onClick={() => dispatch(stocksApi.getList(stocks.kwargs))}
-          >
-            <i className='mdi mdi-refresh' />
-          </button>
-        </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <Link to='/investments/summary'>Investments</Link>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Stocks
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <Errors errors={stocks.errors} />
-
-      {/* Top cards */}
+  /** Renders the portfolio page section. */
+  function renderPortfolioSection() {
+    return (
       <div className='row'>
         <div
           className={`col-sm-${stocks.loading && !stocks.results ? 12 : 4} grid-margin`}
@@ -221,8 +198,12 @@ const Stocks = () => {
           </div>
         ))}
       </div>
+    );
+  }
 
-      {/* Last Transaction */}
+  /** Renders the last transaction page section. */
+  function renderLastTransactionSection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 grid-margin'>
           <div className='card'>
@@ -286,8 +267,12 @@ const Stocks = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Profit and loss */}
+  /** Renders the upload page section. */
+  function renderUploadSection() {
+    return (
       <div className='row'>
         <div className='col-12 grid-margin'>
           <div className='card'>
@@ -528,8 +513,12 @@ const Stocks = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Transactions */}
+  /** Renders the upload page section. */
+  function renderUploadSection2() {
+    return (
       <div className='row'>
         <div className='col-12 grid-margin'>
           <div className='card'>
@@ -716,13 +705,16 @@ const Stocks = () => {
                           <td
                             style={{ cursor: 'pointer' }}
                             onClick={() =>
-                              onTypeChange([
-                                {
-                                  value: stocks.types.find(
-                                    (t) => t[1] === transaction.type
-                                  )[0],
-                                },
-                              ])
+                              onTypeChange(
+                                [
+                                  {
+                                    value: stocks.types.find(
+                                      (t) => t[1] === transaction.type
+                                    )[0],
+                                  },
+                                ],
+                                stocks
+                              )
                             }
                           >
                             {' '}
@@ -767,6 +759,46 @@ const Stocks = () => {
           </div>
         </div>
       </div>
+    );
+  }
+  return (
+    <div>
+      <div className='page-header mb-0'>
+        <h3 className='page-title'>
+          Stocks{' '}
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent'
+            onClick={() => dispatch(stocksApi.getList(stocks.kwargs))}
+          >
+            <i className='mdi mdi-refresh' />
+          </button>
+        </h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <Link to='/investments/summary'>Investments</Link>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Stocks
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <Errors errors={stocks.errors} />
+
+      {/* Top cards */}
+      {renderPortfolioSection()}
+
+      {/* Last Transaction */}
+      {renderLastTransactionSection()}
+
+      {/* Profit and loss */}
+      {renderUploadSection()}
+
+      {/* Transactions */}
+      {renderUploadSection2()}
     </div>
   );
 };

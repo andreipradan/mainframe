@@ -148,7 +148,7 @@ const Car = () => {
                           value={
                             p.service_entries?.length
                               ? p.service_entries
-                                  .map((p) => p.price)
+                                  .map((entry) => entry.price)
                                   .reduce(
                                     (acc, val) => acc + Number.parseFloat(val),
                                     0
@@ -222,7 +222,7 @@ const Car = () => {
                             Total spent:{' '}
                             {p.service_entries?.length
                               ? p.service_entries
-                                  .map((p) => p.price)
+                                  .map((entry) => entry.price)
                                   .reduce(
                                     (acc, val) => acc + Number.parseFloat(val),
                                     0

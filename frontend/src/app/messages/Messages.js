@@ -143,7 +143,7 @@ const Messages = () => {
                         messages.results.map((msg, i) => {
                           if (messages.loadingItems?.includes(msg.id)) {
                             return (
-                              <tr key={i}>
+                              <tr key={msg.id}>
                                 <td colSpan={6}>
                                   <ColorRing
                                     width='100%'
@@ -155,7 +155,7 @@ const Messages = () => {
                             );
                           }
                           return (
-                            <tr key={i}>
+                            <tr key={msg.id}>
                               <td
                                 onClick={() => dispatch(selectItem(msg.id))}
                                 className='cursor-pointer'

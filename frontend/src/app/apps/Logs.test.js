@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Logs from './Logs';
 
-let mockState;
+let mockState = null;
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
@@ -15,7 +15,9 @@ jest.mock('../../api/logs', () => ({
     getFile: (token, path) => ({ type: 'logs/getFile', token, path }),
   },
 }));
-jest.mock('../shared/Errors', () => () => null);
+jest.mock('../shared/Errors', () => ({ errors }) => (
+  <div data-testid='errors'>{errors ? JSON.stringify(errors) : null}</div>
+));
 jest.mock('react-loader-spinner', () => ({
   BallTriangle: () => <div>Loading logs</div>,
 }));
@@ -54,7 +56,10 @@ describe('Logs', () => {
     expect(container.textContent).toContain('system');
     expect(container.textContent).toContain('logs');
 
-    const entries = Array.from(container.querySelectorAll('ul.list-arrow li'));
+    const entries = Array.from(
+      container.querySelectorAll('ul.list-arrow li button')
+    );
+    expect(entries.every((entry) => entry.type === 'button')).toBe(true);
     act(() => entries[1].click());
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'logs/getFile',
@@ -88,6 +93,40 @@ describe('Logs', () => {
       token: 'token',
       path: undefined,
     });
+    unmount();
+  });
+
+  test('refreshes the root listing and handles empty and error states', () => {
+    mockState.logs.currentLog = null;
+    mockState.logs.results = [];
+    mockState.logs.errors = ['Unable to read logs'];
+    mockState.logs.path = '';
+    const { container, unmount } = renderLogs();
+
+    expect(container.textContent).toContain('Unable to read logs');
+    expect(container.querySelector('pre')).toBeNull();
+
+    const refresh = container.querySelector('.mdi-refresh').closest('button');
+    act(() => refresh.click());
+    expect(mockDispatch).toHaveBeenLastCalledWith({
+      type: 'logs/getList',
+      token: 'token',
+      path: undefined,
+    });
+
+    const home = container.querySelector('h4.card-title button.btn-link');
+    act(() => home.click());
+    expect(mockDispatch).toHaveBeenLastCalledWith({
+      type: 'logs/getList',
+      token: 'token',
+      path: undefined,
+    });
+
+    const breadcrumb = container.querySelector('a[href="!#"]');
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+    act(() => breadcrumb.dispatchEvent(click));
+    expect(click.defaultPrevented).toBe(true);
+
     unmount();
   });
 });

@@ -52,8 +52,8 @@ const Register = () => {
                   />
                 </Form.Group>
                 <ul className='text-danger'>
-                  {errors?.email?.map((err, i) => (
-                    <li key={i}>{err}</li>
+                  {errors?.email?.map((err) => (
+                    <li key={err}>{err}</li>
                   ))}
                 </ul>
 
@@ -70,8 +70,8 @@ const Register = () => {
                   />
                 </Form.Group>
                 <ul className='text-danger'>
-                  {errors?.password?.map((err, i) => (
-                    <li key={i}>{err}</li>
+                  {errors?.password?.map((err) => (
+                    <li key={err}>{err}</li>
                   ))}
                 </ul>
 

@@ -53,36 +53,37 @@ const Logs = () => {
                 </button>
                 <nav aria-label='breadcrumb'>
                   <ol className='breadcrumb'>
-                    <li
-                      style={{ cursor: 'pointer' }}
-                      className='breadcrumb-item'
-                      onClick={() => dispatch(LogsApi.getList(token))}
-                    >
-                      Home
+                    <li className='breadcrumb-item'>
+                      <button
+                        type='button'
+                        className='btn btn-link p-0'
+                        onClick={() => dispatch(LogsApi.getList(token))}
+                      >
+                        Home
+                      </button>
                     </li>
                     {path
                       ?.split('/')
                       .filter((i) => Boolean(i))
-                      .map((folder, i) => (
-                        <li
-                          style={{ cursor: 'pointer' }}
-                          key={i}
-                          className='breadcrumb-item'
-                          onClick={() =>
-                            dispatch(
-                              LogsApi.getList(
-                                token,
-                                path
-                                  .split('/')
-                                  .slice(0, i + 1)
-                                  .join('/')
-                              )
-                            )
-                          }
-                        >
-                          {folder}
-                        </li>
-                      ))}
+                      .map((folder, i) => {
+                        const folderPath = path
+                          .split('/')
+                          .slice(0, i + 1)
+                          .join('/');
+                        return (
+                          <li key={folderPath} className='breadcrumb-item'>
+                            <button
+                              type='button'
+                              className='btn btn-link p-0'
+                              onClick={() =>
+                                dispatch(LogsApi.getList(token, folderPath))
+                              }
+                            >
+                              {folder}
+                            </button>
+                          </li>
+                        );
+                      })}
                   </ol>
                 </nav>
               </h4>
@@ -104,25 +105,29 @@ const Logs = () => {
                 {!loading && (
                   <>
                     {path && (
-                      <li
-                        style={{ cursor: 'pointer' }}
-                        onClick={() =>
-                          dispatch(
-                            LogsApi.getList(
-                              token,
-                              path
-                                .split('/')
-                                .slice(0, path.split('/').length - 1)
-                                .join('/')
+                      <li>
+                        <button
+                          type='button'
+                          className='btn btn-link p-0'
+                          onClick={() =>
+                            dispatch(
+                              LogsApi.getList(
+                                token,
+                                path
+                                  .split('/')
+                                  .slice(0, path.split('/').length - 1)
+                                  .join('/')
+                              )
                             )
-                          )
-                        }
-                      >
-                        ..
+                          }
+                        >
+                          ..
+                        </button>
                       </li>
                     )}
-                    {logs?.map((log, i) => {
+                    {logs?.map((log) => {
                       const logPath = path ? `${path}/${log.name}` : log.name;
+                      /** Loads the selected log file or opens its folder. */
                       const onLogClick = () => {
                         if (log.is_file) {
                           dispatch(LogsApi.getFile(token, logPath));
@@ -131,15 +136,21 @@ const Logs = () => {
                         }
                       };
                       return (
-                        <li
-                          key={i}
-                          style={{ cursor: 'pointer' }}
-                          onClick={onLogClick}
-                        >
-                          <i
-                            className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`}
-                          />{' '}
-                          {log.name.split('/')[log.name.split('/').length - 1]}
+                        <li key={logPath}>
+                          <button
+                            type='button'
+                            className='btn btn-link p-0'
+                            onClick={onLogClick}
+                          >
+                            <i
+                              className={`mdi mdi-${log.is_file ? 'file text-default' : 'folder text-warning'}`}
+                            />{' '}
+                            {
+                              log.name.split('/')[
+                                log.name.split('/').length - 1
+                              ]
+                            }
+                          </button>
                         </li>
                       );
                     })}
