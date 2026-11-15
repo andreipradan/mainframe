@@ -118,137 +118,118 @@ const Deposits = () => {
     }
   }, [state.currencies, state.selectedItem]);
 
-  return (
-    <div>
-      {/* Top title and breadcrumbs */}
-      <div className='page-header mb-0'>
-        <h3 className='page-title'>
-          Deposits
-          <button
-            type='button'
-            className='btn btn-outline-success btn-sm border-0 bg-transparent'
-            onClick={() => dispatch(api.getList())}
-          >
-            <i className='mdi mdi-refresh' />
-          </button>
-        </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <Link to='/investments/summary'>Investments</Link>
+  /** Renders the count page section. */
+  function renderCountSection() {
+    return state.loading ? (
+      <Circles
+        height={20}
+        width={20}
+        wrapperStyle={{ display: 'default' }}
+        wrapperClass='btn'
+      />
+    ) : (
+      <b className={'text-small text-muted'}>
+        <div>Count: {state.count}</div>
+        Active:
+        <ul className={'list-arrow'}>
+          {state.currencies?.map((currencyCode) => (
+            <li className={'pt-0'} key={currencyCode}>
+              {state.aggregations[currencyCode]} {currencyCode}
             </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Deposits
-            </li>
-          </ol>
-        </nav>
-      </div>
+          ))}
+        </ul>
+      </b>
+    );
+  }
 
-      {state.loading ? (
-        <Circles
-          height={20}
-          width={20}
-          wrapperStyle={{ display: 'default' }}
-          wrapperClass='btn'
-        />
-      ) : (
-        <b className={'text-small text-muted'}>
-          <div>Count: {state.count}</div>
-          Active:
-          <ul className={'list-arrow'}>
-            {state.currencies?.map((currencyCode) => (
-              <li className={'pt-0'} key={currencyCode}>
-                {state.aggregations[currencyCode]} {currencyCode}
-              </li>
-            ))}
-          </ul>
-        </b>
-      )}
-
-      <Errors errors={state.errors} />
-
-      {/* Next maturity */}
+  /** Renders the next maturity page section. */
+  function renderNextMaturitySection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 grid-margin'>
           <div className='card'>
             <div className='card-body'>
               <h6>Next Maturity</h6>
-              {state.loading ? (
-                <Circles width='100%' height='50' />
-              ) : state.results?.length ? (
-                <Marquee duration={10000} pauseOnHover>
-                  {state.results[0].name && (
+              {state.loading && <Circles width='100%' height='50' />}
+              {!state.loading &&
+                (state.results?.length ? (
+                  <Marquee duration={10000} pauseOnHover>
+                    {state.results[0].name && (
+                      <ListItem
+                        label={'Name'}
+                        value={state.results[0].name}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
                     <ListItem
-                      label={'Name'}
-                      value={state.results[0].name}
+                      label={'Date'}
+                      value={formatTime(state.results[0].date)}
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  <ListItem
-                    label={'Date'}
-                    value={formatTime(state.results[0].date)}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {state.results[0].amount && (
+                    {state.results[0].amount && (
+                      <ListItem
+                        label={'Quantity'}
+                        value={state.results[0].amount}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
                     <ListItem
-                      label={'Quantity'}
-                      value={state.results[0].amount}
+                      label={'Currency'}
+                      value={
+                        state.currencies?.find(
+                          (c) => c[0] === state.results[0].currency
+                        )?.[1] || state.results[0].currency
+                      }
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  <ListItem
-                    label={'Currency'}
-                    value={
-                      state.currencies?.find(
-                        (c) => c[0] === state.results[0].currency
-                      )?.[1] || state.results[0].currency
-                    }
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {state.results[0].interest && (
+                    {state.results[0].interest && (
+                      <ListItem
+                        label={'Interest'}
+                        value={state.results[0].interest}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
                     <ListItem
-                      label={'Interest'}
-                      value={state.results[0].interest}
+                      label={'Maturity'}
+                      value={formatTime(state.results[0].maturity)}
                       textType={'warning'}
                       className='mr-3'
                     />
-                  )}
-                  <ListItem
-                    label={'Maturity'}
-                    value={formatTime(state.results[0].maturity)}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  {state.results[0].pnl && (
-                    <ListItem
-                      label={'Profit'}
-                      value={state.results[0].pnl}
-                      textType={'warning'}
-                      className='mr-3'
-                    />
-                  )}
-                  {state.results[0].tax && (
-                    <ListItem
-                      label={'Tax'}
-                      value={state.results[0].tax}
-                      textType={'warning'}
-                      className='mr-3'
-                    />
-                  )}
-                </Marquee>
-              ) : (
-                '-'
-              )}
+                    {state.results[0].pnl && (
+                      <ListItem
+                        label={'Profit'}
+                        value={state.results[0].pnl}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                    {state.results[0].tax && (
+                      <ListItem
+                        label={'Tax'}
+                        value={state.results[0].tax}
+                        textType={'warning'}
+                        className='mr-3'
+                      />
+                    )}
+                  </Marquee>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Deposits table */}
+  /** Renders the deposits page section. */
+  function renderDepositsSection() {
+    return (
       <div className='row'>
         <div className='col-12 grid-margin'>
           <div className='card'>
@@ -331,7 +312,7 @@ const Deposits = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {state.loading ? (
+                    {state.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -339,7 +320,9 @@ const Deposits = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : state.results?.length ? (
+                    )}
+                    {!state.loading &&
+                      state.results?.length > 0 &&
                       state.results.map((deposit) => (
                         <tr
                           key={deposit.id}
@@ -415,8 +398,8 @@ const Deposits = () => {
                           </td>
                           <td> {deposit.name} </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!state.loading && !state.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No deposits found</span>
@@ -436,8 +419,12 @@ const Deposits = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Add or Edit Modal */}
+  /** Renders the content page section. */
+  function renderContentSection() {
+    return (
       <Modal
         centered
         show={Boolean(state.selectedItem) || state.modalOpen}
@@ -604,6 +591,46 @@ const Deposits = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+    );
+  }
+  return (
+    <div>
+      {/* Top title and breadcrumbs */}
+      <div className='page-header mb-0'>
+        <h3 className='page-title'>
+          Deposits{' '}
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent'
+            onClick={() => dispatch(api.getList())}
+          >
+            <i className='mdi mdi-refresh' />
+          </button>
+        </h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <Link to='/investments/summary'>Investments</Link>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Deposits
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      {renderCountSection()}
+
+      <Errors errors={state.errors} />
+
+      {/* Next maturity */}
+      {renderNextMaturitySection()}
+
+      {/* Deposits table */}
+      {renderDepositsSection()}
+
+      {/* Add or Edit Modal */}
+      {renderContentSection()}
     </div>
   );
 };

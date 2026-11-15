@@ -162,7 +162,7 @@ const ExchangeRates = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {exchange.loading ? (
+                    {exchange.loading && (
                       <tr>
                         <td colSpan={4}>
                           <Circles
@@ -179,22 +179,24 @@ const ExchangeRates = () => {
                           />
                         </td>
                       </tr>
-                    ) : exchange.results?.length ? (
-                      exchange.results.map((t) => (
-                        <tr key={t.id}>
-                          <td> {new Date(t.date).toLocaleDateString()}</td>
-                          <td>{t.symbol}</td>
-                          <td> {t.source}</td>
-                          <td> {t.value} </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6} className='text-center'>
-                          <span>No rates found</span>
-                        </td>
-                      </tr>
                     )}
+                    {!exchange.loading &&
+                      (exchange.results?.length ? (
+                        exchange.results.map((t) => (
+                          <tr key={t.id}>
+                            <td> {new Date(t.date).toLocaleDateString()}</td>
+                            <td>{t.symbol}</td>
+                            <td> {t.source}</td>
+                            <td> {t.value} </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className='text-center'>
+                            <span>No rates found</span>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

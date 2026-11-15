@@ -18,6 +18,21 @@ import { selectItem, setKwargs, setModalOpen } from '../../../redux/bondsSlice';
 import { selectStyles } from '../Accounts/Categorize/EditModal';
 import { BondsApi } from '../../../api/finance';
 
+/** Returns the text class for a bond's net amount and transaction type. */
+const getBondNetTextType = (bond) => {
+  if (bond.net > 0 && bond.type === 'in') return 'primary';
+  if (bond.net > 0) return 'success';
+  if (bond.type === 'cump') return 'info';
+  return 'danger';
+};
+
+/** Returns the text class for a bond profit/loss value. */
+const getBondPnlTextType = (pnl) => {
+  if (!pnl) return 'muted';
+  if (pnl < 0) return 'danger';
+  return 'success';
+};
+
 const Bonds = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.bonds);
@@ -130,35 +145,9 @@ const Bonds = () => {
     }
   }, [state.types, state.selectedItem]);
 
-  return (
-    <div>
-      {/* Top title and breadcrumbs */}
-      <div className='page-header mb-0'>
-        <h3 className='page-title'>
-          Bonds
-          <button
-            type='button'
-            className='btn btn-outline-success btn-sm border-0 bg-transparent'
-            onClick={() => dispatch(api.getList())}
-          >
-            <i className='mdi mdi-refresh' />
-          </button>
-        </h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <Link to='/investments/summary'>Investments</Link>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Bonds
-            </li>
-          </ol>
-        </nav>
-      </div>
-
-      <Errors errors={state.errors} />
-
-      {/* Top cards */}
+  /** Renders the portfolio page section. */
+  function renderPortfolioSection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 col-xl-4 grid-margin'>
           <div className='card'>
@@ -174,7 +163,7 @@ const Bonds = () => {
                   />
                 ) : null}
               </h6>
-              {!state.loading ? (
+              {!state.loading && (
                 <div style={{ maxHeight: '26vh', overflowY: 'scroll' }}>
                   <ListItem
                     label={'Transactions'}
@@ -182,79 +171,81 @@ const Bonds = () => {
                     textType={'primary'}
                     className='mr-3'
                   />
-                  {state.aggregations
-                    ? state.currencies?.map((currencyCode) => (
-                        <div key={currencyCode}>
-                          {Object.keys(state.aggregations)
-                            .filter(
-                              (item) => item.split('_')[1] === currencyCode
-                            )
-                            .filter((item) => !!state.aggregations[item])
-                            .sort((left, right) => left.localeCompare(right))
-                            .map((k) => k.split('_')[0])
-                            .map((item) => {
-                              const aggregationValue =
-                                state.aggregations[`${item}_${currencyCode}`];
-                              let textType = 'primary';
-                              if (item === 'dividend') {
-                                textType = 'success';
-                              } else if (item === 'pnl') {
-                                textType =
-                                  aggregationValue > 0 ? 'success' : 'danger';
-                              } else if (item === 'sell') {
-                                textType = 'warning';
-                              } else if (item === 'active') {
-                                textType = 'info';
-                              }
+                  {state.aggregations &&
+                    state.currencies?.map((currencyCode) => (
+                      <div key={currencyCode}>
+                        {Object.keys(state.aggregations)
+                          .filter((item) => item.split('_')[1] === currencyCode)
+                          .filter((item) => Boolean(state.aggregations[item]))
+                          .sort((left, right) => left.localeCompare(right))
+                          .map((k) => k.split('_')[0])
+                          .map((item) => {
+                            const aggregationValue =
+                              state.aggregations[`${item}_${currencyCode}`];
+                            let textType = 'primary';
+                            if (item === 'dividend') {
+                              textType = 'success';
+                            } else if (item === 'pnl') {
+                              textType =
+                                aggregationValue > 0 ? 'success' : 'danger';
+                            } else if (item === 'sell') {
+                              textType = 'warning';
+                            } else if (item === 'active') {
+                              textType = 'info';
+                            }
 
-                              return (
-                                <ListItem
-                                  key={item}
-                                  label={
-                                    item === 'pnl'
-                                      ? 'Profit / Loss'
-                                      : item[0].toUpperCase() + item.slice(1)
-                                  }
-                                  value={`${aggregationValue} ${currencyCode}`}
-                                  textType={textType}
-                                  className='mr-3'
-                                />
-                              );
-                            })}
-                          {state.aggregations[`pnl_${currency}`] &&
-                          state.aggregations[`dividend_${currency}`] ? (
+                            return (
+                              <ListItem
+                                key={item}
+                                label={
+                                  item === 'pnl'
+                                    ? 'Profit / Loss'
+                                    : item[0].toUpperCase() + item.slice(1)
+                                }
+                                value={`${aggregationValue} ${currencyCode}`}
+                                textType={textType}
+                                className='mr-3'
+                              />
+                            );
+                          })}
+                        {state.aggregations[`pnl_${currencyCode}`] &&
+                          state.aggregations[`dividend_${currencyCode}`] && (
                             <ListItem
                               label={'Profit'}
-                              value={`${state.aggregations[`pnl_${currency}`] + state.aggregations[`dividend_${currency}`]} ${currency}`}
+                              value={`${state.aggregations[`pnl_${currencyCode}`] + state.aggregations[`dividend_${currencyCode}`]} ${currencyCode}`}
                               textType={
-                                state.aggregations[`pnl_${currency}`] +
-                                  state.aggregations[`dividend_${currency}`] >
+                                state.aggregations[`pnl_${currencyCode}`] +
+                                  state.aggregations[
+                                    `dividend_${currencyCode}`
+                                  ] >
                                 0
                                   ? 'success'
                                   : 'danger'
                               }
                               className='mr-3'
                             />
-                          ) : null}
-                        </div>
-                      ))
-                    : null}
+                          )}
+                      </div>
+                    ))}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Last Transaction */}
+  /** Renders the last transaction page section. */
+  function renderLastTransactionSection() {
+    return (
       <div className='row mt-2'>
         <div className='col-sm-12 grid-margin'>
           <div className='card'>
             <div className='card-body'>
               <h6>Last Transaction</h6>
-              {state.loading ? (
-                <Circles width='100%' height='50' />
-              ) : state.results?.length ? (
+              {state.loading && <Circles width='100%' height='50' />}
+              {!state.loading && state.results?.length > 0 && (
                 <Marquee duration={10000} pauseOnHover>
                   <ListItem
                     label={'Date'}
@@ -324,15 +315,18 @@ const Bonds = () => {
                   )}
                   {/*{state.results[0].maturity && <ListItem label={"Maturity"} value={new Date(state.results[0].date).toLocaleString()} textType={"warning"} className="mr-3" />}*/}
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!state.loading && !state.results?.length && '-'}
             </div>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Transactions table */}
+  /** Renders the transactions page section. */
+  function renderTransactionsSection() {
+    return (
       <div className='row'>
         <div className='col-12 grid-margin'>
           <div className='card'>
@@ -370,7 +364,7 @@ const Bonds = () => {
                             type='checkbox'
                             checked={activeOnlyChecked}
                             onChange={onActiveOnlyChange}
-                          />
+                          />{' '}
                           Active only <i className='input-helper' />
                         </label>
                       </div>
@@ -448,7 +442,7 @@ const Bonds = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {state.loading ? (
+                    {state.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -456,7 +450,9 @@ const Bonds = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : state.results?.length ? (
+                    )}
+                    {!state.loading &&
+                      state.results?.length > 0 &&
                       state.results.map((bond) => (
                         <tr
                           key={bond.id}
@@ -475,27 +471,13 @@ const Bonds = () => {
                               ? Number.parseFloat(bond.price)
                               : '-'}{' '}
                           </td>
-                          <td
-                            className={`text-${
-                              bond.net > 0
-                                ? bond.type === 'in'
-                                  ? 'primary'
-                                  : 'success'
-                                : bond.type === 'cump'
-                                  ? 'info'
-                                  : 'danger'
-                            }`}
-                          >
+                          <td className={`text-${getBondNetTextType(bond)}`}>
                             {Number.parseFloat(bond.net)}
                           </td>
                           <td>
                             {bond.interest ? (
                               <span>
-                                <span
-                                  className={
-                                    bond.interest ? 'text-success' : ''
-                                  }
-                                >
+                                <span className='text-success'>
                                   {Number.parseFloat(
                                     (bond.interest / 100) * -bond.net
                                   ).toFixed(2)}
@@ -511,7 +493,7 @@ const Bonds = () => {
                           {/*<td> {parseFloat(bond.commission)} </td>*/}
                           {/*<td> {bond.tax ? parseFloat(bond.tax): '-'} </td>*/}
                           <td
-                            className={`text-${bond.pnl ? (bond.pnl < 0 ? 'danger' : 'success') : 'muted'}`}
+                            className={`text-${getBondPnlTextType(bond.pnl)}`}
                           >
                             {bond.pnl ? Number.parseFloat(bond.pnl) : '-'}
                           </td>
@@ -522,8 +504,8 @@ const Bonds = () => {
                           </td>
                           <td> {bond.notes ? bond.notes : '-'} </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!state.loading && !state.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No transactions found</span>
@@ -543,8 +525,12 @@ const Bonds = () => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Add or Edit Modal */}
+  /** Renders the content page section. */
+  function renderContentSection() {
+    return (
       <Modal
         centered
         show={Boolean(state.selectedItem) || state.modalOpen}
@@ -575,13 +561,14 @@ const Bonds = () => {
             {state.modalOpen ? <Errors errors={state.errors} /> : null}
           </Modal.Title>
         </Modal.Header>
-        {state.loadingItems?.includes(state.selectedItem?.id) ? (
+        {state.loadingItems?.includes(state.selectedItem?.id) && (
           <ColorRing
             width='100%'
             height='50'
             wrapperStyle={{ width: '100%' }}
           />
-        ) : (
+        )}
+        {!state.loadingItems?.includes(state.selectedItem?.id) && (
           <Modal.Body>
             <Form onSubmit={onSubmit}>
               <Form.Group className='mb-3'>
@@ -767,6 +754,47 @@ const Bonds = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+    );
+  }
+  return (
+    <div>
+      {/* Top title and breadcrumbs */}
+      <div className='page-header mb-0'>
+        <h3 className='page-title'>
+          Bonds{' '}
+          <button
+            type='button'
+            className='btn btn-outline-success btn-sm border-0 bg-transparent'
+            onClick={() => dispatch(api.getList())}
+          >
+            <i className='mdi mdi-refresh' />
+          </button>
+        </h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <Link to='/investments/summary'>Investments</Link>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Bonds
+            </li>
+          </ol>
+        </nav>
+      </div>
+
+      <Errors errors={state.errors} />
+
+      {/* Top cards */}
+      {renderPortfolioSection()}
+
+      {/* Last Transaction */}
+      {renderLastTransactionSection()}
+
+      {/* Transactions table */}
+      {renderTransactionsSection()}
+
+      {/* Add or Edit Modal */}
+      {renderContentSection()}
     </div>
   );
 };

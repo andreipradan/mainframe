@@ -303,7 +303,7 @@ const Events = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {loading ? (
+                    {loading && (
                       <tr>
                         <td colSpan={8}>
                           <Audio
@@ -314,7 +314,9 @@ const Events = () => {
                           />
                         </td>
                       </tr>
-                    ) : (results || []).length ? (
+                    )}
+                    {!loading &&
+                      (results || []).length > 0 &&
                       (results || []).map((event, index) => (
                         <tr key={event.id || index}>
                           <td>{index + 1}</td>
@@ -361,9 +363,9 @@ const Events = () => {
                             )}
                           </td>
                           <td>
-                            {event.categories?.map((c, index) => (
+                            {event.categories?.map((c) => (
                               <button
-                                key={index}
+                                key={c}
                                 disabled={events.kwargs.category?.includes(c)}
                                 className={'btn btn-sm text-secondary'}
                                 onClick={() =>
@@ -402,8 +404,8 @@ const Events = () => {
                             </Button>
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!loading && !(results || []).length && (
                       <tr>
                         <td colSpan={8} className='text-center'>
                           No events available

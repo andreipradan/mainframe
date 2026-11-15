@@ -256,23 +256,42 @@ const Transactions = () => {
   const onCheckedCategoryChange = (newValue, description) => {
     if (!newValue.value) return;
     const newCategory = { description, category: newValue.value };
-    setCheckedCategories(
-      !checkedCategories?.length
-        ? newCategory.category !== 'Unidentified'
-          ? [newCategory]
-          : null
-        : checkedCategories.find((c) => c.description === description)
-          ? newCategory.category !== 'Unidentified'
-            ? checkedCategories.map((c) =>
-                c.description === description
-                  ? { ...c, category: newValue.value }
-                  : c
-              )
-            : checkedCategories.filter((c) => c.description !== description)
-          : newCategory.category !== 'Unidentified'
-            ? [...checkedCategories, newCategory]
-            : checkedCategories
-    );
+    const isIdentified = newCategory.category !== 'Unidentified';
+    let updatedCategories = null;
+
+    if (!checkedCategories?.length) {
+      if (isIdentified) {
+        updatedCategories = [newCategory];
+      } else {
+        updatedCategories = null;
+      }
+    } else {
+      const existingCategory = checkedCategories.find(
+        (category) => category.description === description
+      );
+      if (existingCategory) {
+        if (isIdentified) {
+          updatedCategories = checkedCategories.map((category) => {
+            if (category.description === description) {
+              return { ...category, category: newValue.value };
+            }
+            return category;
+          });
+        } else {
+          updatedCategories = checkedCategories.filter(
+            (category) => category.description !== description
+          );
+        }
+      } else {
+        if (isIdentified) {
+          updatedCategories = [...checkedCategories, newCategory];
+        } else {
+          updatedCategories = checkedCategories;
+        }
+      }
+    }
+
+    setCheckedCategories(updatedCategories);
   };
   const onConfirmedByChange = (newValue) => {
     const newConfirmedBy = newValue ? newValue.value : '';
@@ -283,8 +302,9 @@ const Transactions = () => {
     dispatch(setKwargs({ type: newTypes, page: 1 }));
   };
 
-  return (
-    <div>
+  /** Renders the content page section. */
+  function renderContentSection() {
+    return (
       <div className='page-header'>
         <h3 className='page-title'>
           {!accounts.selectedItem ? (
@@ -350,14 +370,23 @@ const Transactions = () => {
           </ol>
         </nav>
       </div>
+    );
+  }
 
-      {!accounts.modalOpen && <Errors errors={accounts.errors} />}
+  /** Renders the content page section. */
+  function renderContentSection2() {
+    return !accounts.modalOpen && <Errors errors={accounts.errors} />;
+  }
+
+  /** Renders the summary page section. */
+  function renderSummarySection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 col-lg-6 grid-margin'>
           <div className='card'>
             <div className='card-body'>
               <h5>
-                Summary
+                Summary{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -368,27 +397,27 @@ const Transactions = () => {
                   <i className='mdi mdi-refresh' />
                 </button>
               </h5>
-              {accounts.loading ? (
-                <Circles />
-              ) : accounts.selectedItem ? (
-                <>
-                  <ListItem
-                    label={'Account'}
-                    value={`${accounts.selectedItem.bank} (${accounts.selectedItem.type})`}
-                    textType={'primary'}
-                  />
-                  <ListItem
-                    label={'Number'}
-                    value={accounts.selectedItem.number}
-                  />
-                  <ListItem
-                    label={'Transactions'}
-                    value={accounts.analytics?.total}
-                  />
-                </>
-              ) : (
-                '-'
-              )}
+              {accounts.loading && <Circles />}
+              {!accounts.loading &&
+                (accounts.selectedItem ? (
+                  <>
+                    <ListItem
+                      label={'Account'}
+                      value={`${accounts.selectedItem.bank} (${accounts.selectedItem.type})`}
+                      textType={'primary'}
+                    />
+                    <ListItem
+                      label={'Number'}
+                      value={accounts.selectedItem.number}
+                    />
+                    <ListItem
+                      label={'Transactions'}
+                      value={accounts.analytics?.total}
+                    />
+                  </>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
@@ -396,38 +425,43 @@ const Transactions = () => {
           <div className='card'>
             <div className='card-body'>
               <h5>Client</h5>
-              {accounts.loading ? (
-                <Circles />
-              ) : accounts.selectedItem ? (
-                <>
-                  <ListItem
-                    label={'First Name'}
-                    value={accounts.selectedItem.first_name}
-                  />
-                  <ListItem
-                    label={'Last Name'}
-                    value={accounts.selectedItem.last_name}
-                  />
-                  <ListItem
-                    label={'Client Code'}
-                    value={accounts.selectedItem.client_code}
-                  />
-                </>
-              ) : (
-                '-'
-              )}
+              {accounts.loading && <Circles />}
+              {!accounts.loading &&
+                (accounts.selectedItem ? (
+                  <>
+                    <ListItem
+                      label={'First Name'}
+                      value={accounts.selectedItem.first_name}
+                    />
+                    <ListItem
+                      label={'Last Name'}
+                      value={accounts.selectedItem.last_name}
+                    />
+                    <ListItem
+                      label={'Client Code'}
+                      value={accounts.selectedItem.client_code}
+                    />
+                  </>
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the latest transaction page section. */
+  function renderLatestTransactionSection() {
+    return (
       <div className='row'>
         <div className='col-sm-12 grid-margin'>
           <div className='card'>
             <div className='card-body'>
               <h6>Latest Transaction</h6>
-              {transactions.loading ? (
-                <Circles />
-              ) : transactions.results?.length ? (
+              {transactions.loading && <Circles />}
+              {!transactions.loading && transactions.results?.length > 0 && (
                 <Marquee duration={10000} pauseOnHover>
                   <ListItem
                     label={'Completed'}
@@ -488,19 +522,24 @@ const Transactions = () => {
                     className='mr-3'
                   />
                 </Marquee>
-              ) : (
-                '-'
               )}
+              {!transactions.loading && !transactions.results?.length && '-'}
             </div>
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the expenses page section. */
+  function renderExpensesSection() {
+    return (
       <div className='row '>
         <div className='col-sm-12 col-md-12 col-lg-12 grid-margin stretch-card'>
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Expenses
+                Expenses{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -565,22 +604,28 @@ const Transactions = () => {
                   <Circles />
                 )}
               </h4>
-              {accounts.loading ? (
-                <Circles />
-              ) : accounts.analytics ? (
-                <Bar
-                  data={paymentsData}
-                  getElementAtEvent={handleGetElementAtEvent}
-                  options={paymentsOptions}
-                  height={100}
-                />
-              ) : (
-                '-'
-              )}
+              {accounts.loading && <Circles />}
+              {!accounts.loading &&
+                (accounts.analytics ? (
+                  <Bar
+                    data={paymentsData}
+                    getElementAtEvent={handleGetElementAtEvent}
+                    options={paymentsOptions}
+                    height={100}
+                  />
+                ) : (
+                  '-'
+                ))}
             </div>
           </div>
         </div>
       </div>
+    );
+  }
+
+  /** Renders the transactions page section. */
+  function renderTransactionsSection() {
+    return (
       <div className='row'>
         <div className='col-9 grid-margin'>
           <div className='card'>
@@ -689,7 +734,7 @@ const Transactions = () => {
                           })
                         )
                       }
-                    />
+                    />{' '}
                     Expenses only
                     <i className='input-helper' />
                   </label>
@@ -708,7 +753,7 @@ const Transactions = () => {
                           })
                         )
                       }
-                    />
+                    />{' '}
                     Unique <i className='input-helper' />
                   </label>
                 </div>
@@ -774,7 +819,7 @@ const Transactions = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.loading ? (
+                    {transactions.loading && (
                       <tr>
                         <td colSpan={3}>
                           <Circles
@@ -786,7 +831,9 @@ const Transactions = () => {
                           />
                         </td>
                       </tr>
-                    ) : transactions.results?.length ? (
+                    )}
+                    {!transactions.loading &&
+                      transactions.results?.length > 0 &&
                       transactions.results.map((transaction, i) => (
                         <tr
                           className={
@@ -829,8 +876,8 @@ const Transactions = () => {
                                   }
                                   type='checkbox'
                                   className='form-check-input'
-                                  checked={getSpecificCategory(
-                                    transaction.description
+                                  checked={Boolean(
+                                    getSpecificCategory(transaction.description)
                                   )}
                                   onChange={() =>
                                     onCheckedCategoryChange(
@@ -978,8 +1025,8 @@ const Transactions = () => {
                             </button>
                           </td>
                         </tr>
-                      ))
-                    ) : (
+                      ))}
+                    {!transactions.loading && !transactions.results?.length && (
                       <tr>
                         <td colSpan={6}>
                           <span>No transactions found</span>
@@ -1077,8 +1124,12 @@ const Transactions = () => {
           </div>
         </div>
       </div>
-      <AccountEditModal />
-      <TransactionEditModal year={selectedDate.getFullYear()} />
+    );
+  }
+
+  /** Renders the are you sure page section. */
+  function renderAreYouSureSection() {
+    return (
       <Modal
         centered
         show={Boolean(transactionToRemove)}
@@ -1164,6 +1215,20 @@ const Transactions = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+    );
+  }
+  return (
+    <div>
+      {renderContentSection()}
+
+      {renderContentSection2()}
+      {renderSummarySection()}
+      {renderLatestTransactionSection()}
+      {renderExpensesSection()}
+      {renderTransactionsSection()}
+      <AccountEditModal />
+      <TransactionEditModal year={selectedDate.getFullYear()} />
+      {renderAreYouSureSection()}
       <TransactionsBulkUpdateModal
         checkedCategories={checkedCategories}
         setSpecificCategoriesModalOpen={setSpecificCategoriesModalOpen}

@@ -53,7 +53,7 @@ const Timetables = () => {
     <div>
       <div className='page-header mb-0'>
         <h3 className='page-title'>
-          Timetables
+          Timetables{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -143,7 +143,7 @@ const Timetables = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {timetable.loading ? (
+                    {timetable.loading && (
                       <Circles
                         visible
                         width='100%'
@@ -151,27 +151,29 @@ const Timetables = () => {
                         wrapperStyle={{ float: 'right' }}
                         color='orange'
                       />
-                    ) : timetable.results?.length ? (
-                      timetable.results.map((t) => (
-                        <tr
-                          key={t.id}
-                          onClick={() => dispatch(selectTimetable(t.id))}
-                          className={'cursor-pointer'}
-                        >
-                          <td> {t.date} </td>
-                          <td> {t.interest}% </td>
-                          <td> {t.margin}% </td>
-                          <td> {t.ircc}% </td>
-                          <td> {t.amortization_table.length} </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6}>
-                          <span>No timetables found</span>
-                        </td>
-                      </tr>
                     )}
+                    {!timetable.loading &&
+                      (timetable.results?.length ? (
+                        timetable.results.map((t) => (
+                          <tr
+                            key={t.id}
+                            onClick={() => dispatch(selectTimetable(t.id))}
+                            className={'cursor-pointer'}
+                          >
+                            <td> {t.date} </td>
+                            <td> {t.interest}% </td>
+                            <td> {t.margin}% </td>
+                            <td> {t.ircc}% </td>
+                            <td> {t.amortization_table.length} </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6}>
+                            <span>No timetables found</span>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

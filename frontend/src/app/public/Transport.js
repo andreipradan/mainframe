@@ -28,12 +28,28 @@ import { TransitApi } from '../../api/transport';
 
 import Errors from '../shared/Errors';
 
+/** Formats the last update time according to the polling state. */
+const getUpdateText = (timestamp, pollingEnabled) => {
+  if (!timestamp) return '-';
+  if (pollingEnabled) return timeSince(new Date(timestamp));
+  return new Date(timestamp).toLocaleString();
+};
+
+/** Returns the text class for the most recent transit update. */
+const getUpdateTextType = (timestamp, pollingEnabled = true) => {
+  if (!pollingEnabled) return 'secondary';
+  const ageInSeconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+  if (ageInSeconds >= 40) return 'danger';
+  if (ageInSeconds >= 15) return 'warning';
+  return 'success';
+};
+
 const POLLING_DURATION = 240;
 
 const Transport = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
-  const state = useSelector((state) => state.transit);
+  const state = useSelector((rootState) => rootState.transit);
 
   const api = new TransitApi(token);
 
@@ -182,31 +198,11 @@ const Transport = () => {
     };
   }, [dispatch, state.pollingEnabled]);
 
-  return (
-    <div>
-      <div className='page-header'>
-        <h3 className='page-title'>Public Transport</h3>
-        <nav aria-label='breadcrumb'>
-          <ol className='breadcrumb'>
-            <li className='breadcrumb-item'>
-              <a href='!#' onClick={(event) => event.preventDefault()}>
-                Home
-              </a>
-            </li>
-            <li className='breadcrumb-item active' aria-current='page'>
-              Transport
-            </li>
-          </ol>
-        </nav>
-      </div>
-      <div className='row'>
-        <div
-          className={`col-lg-${toggleFields ? '9' : '12'} grid-margin stretch-card`}
-        >
-          <div className='card'>
-            <div className='card-body'>
-              <h4 className='card-title mb-1'>
-                Live Map &nbsp;
+
+  function renderTransportControls() {
+    return (
+      <h4 className='card-title mb-1'>
+                Live Map{' '}
                 <button
                   type='button'
                   className={`btn btn-outline-${toggleMapType ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
@@ -217,7 +213,7 @@ const Transport = () => {
                   />
                 </button>{' '}
                 &nbsp;
-                {mode === 'buses' ? (
+                {mode === 'buses' && (
                   <>
                     <button
                       type='button'
@@ -233,7 +229,7 @@ const Transport = () => {
                       />
                     </button>{' '}
                     &nbsp;
-                    {!selectedVehicle ? (
+                    {!selectedVehicle && (
                       <>
                         <button
                           type='button'
@@ -243,10 +239,10 @@ const Transport = () => {
                           <i className='mdi mdi-bus' />
                         </button>{' '}
                       </>
-                    ) : null}
+                    )}
                   </>
-                ) : null}
-                {selectedVehicle ? (
+                )}
+                {selectedVehicle && (
                   <button
                     type='button'
                     className={`btn btn-outline-${toggleLabels ? 'success' : 'danger'} btn-sm border-0 bg-transparent`}
@@ -254,7 +250,7 @@ const Transport = () => {
                   >
                     <i className='mdi mdi-label' />
                   </button>
-                ) : null}
+                )}
                 &nbsp;
                 <button
                   type='button'
@@ -276,8 +272,12 @@ const Transport = () => {
                   />
                 ) : null}
               </h4>
-              <Errors errors={state.errors} />
-              <div ref={mapRef} style={{ height: '75vh', width: '100%' }}>
+    );
+  }
+
+  function renderTransportMap() {
+    return (
+      <div ref={mapRef} style={{ height: '75vh', width: '100%' }}>
                 <MapContainer
                   center={[46.77, 23.59]}
                   zoom={14}
@@ -364,8 +364,10 @@ const Transport = () => {
                       />
                     </>
                   ) : null}
-                  {selectedVehicle && state.stop_times && state.stops
-                    ? state.stop_times
+                  {selectedVehicle &&
+                    state.stop_times &&
+                    state.stops &&
+                    state.stop_times
                         .filter((st) => st.trip_id === selectedVehicle.trip_id)
                         .map((st) => (
                           <Marker
@@ -387,8 +389,7 @@ const Transport = () => {
                               </Tooltip>
                             ) : null}
                           </Marker>
-                        ))
-                    : null}
+                        ))}
                   {mode === 'stops' && (
                     <MarkerClusterGroup
                       chunkedLoading
@@ -531,41 +532,24 @@ const Transport = () => {
                     >
                       <div>
                         Checked{' '}
-                        {state.vehicles_last_check
-                          ? state.pollingEnabled
-                            ? timeSince(new Date(state.vehicles_last_check))
-                            : new Date(
-                                state.vehicles_last_check
-                              ).toLocaleString()
-                          : '-'}
+                        {getUpdateText(
+                          state.vehicles_last_check,
+                          state.pollingEnabled
+                        )}
                       </div>
                       <div>
                         Updated{' '}
                         {state.vehicles_last_update ? (
                           <span
-                            className={`text-small text-${
+                            className={`text-small text-${getUpdateTextType(
+                              state.vehicles_last_update,
                               state.pollingEnabled
-                                ? Math.floor(
-                                    (new Date() -
-                                      new Date(state.vehicles_last_update)) /
-                                      1000
-                                  ) >= 15
-                                  ? Math.floor(
-                                      (new Date() -
-                                        new Date(state.vehicles_last_update)) /
-                                        1000
-                                    ) >= 40
-                                    ? 'danger'
-                                    : 'warning'
-                                  : 'success'
-                                : 'secondary'
-                            }`}
+                            )}`}
                           >
-                            {state.pollingEnabled
-                              ? timeSince(new Date(state.vehicles_last_update))
-                              : new Date(
-                                  state.vehicles_last_update
-                                ).toLocaleString()}
+                            {getUpdateText(
+                              state.vehicles_last_update,
+                              state.pollingEnabled
+                            )}
                           </span>
                         ) : (
                           '-'
@@ -617,19 +601,15 @@ const Transport = () => {
                   <FullscreenControl />
                 </MapContainer>
               </div>
-              <span className={'text-small text-muted'}>
-                Data source: Copyright © Romania, 2023, Tranzy AI SRL &
-                Compania de Transport Public Cluj-Napoca SA. All rights
-                reserved.
-              </span>
-            </div>
-          </div>
-        </div>
-        {toggleFields && (
-          <>
-            <div
-              className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}
-            >
+    );
+  }
+
+  function renderTransportFields() {
+    return (
+      toggleFields && (
+          <div
+            className={`col-lg-${toggleFields ? '3' : '0'} grid-margin stretch-card`}
+          >
               <div className='card'>
                 <div className='card-body'>
                   <div className='mb-2'>
@@ -655,21 +635,9 @@ const Transport = () => {
                       ))}
                     </select>
                     <div
-                      className={`mt-1 text-small text-${
-                        Math.floor(
-                          (new Date() -
-                            new Date(state[`${fetchEntity}_last_update`])) /
-                            1000
-                        ) >= 15
-                          ? Math.floor(
-                              (new Date() -
-                                new Date(state[`${fetchEntity}_last_update`])) /
-                                1000
-                            ) >= 40
-                            ? 'danger'
-                            : 'warning'
-                          : 'success'
-                      }`}
+                      className={`mt-1 text-small text-${getUpdateTextType(
+                        state[`${fetchEntity}_last_update`]
+                      )}`}
                     >
                       Last {fetchEntity} update:{' '}
                       {state[`${fetchEntity}_last_update`]
@@ -714,7 +682,7 @@ const Transport = () => {
                         }
                       />
                     ))}
-                  {toggleFields && mode === 'stops' ? (
+                  {toggleFields && mode === 'stops' && (
                     <>
                       <br />
                       <h4 className='card-title'>Stop fields</h4>
@@ -743,13 +711,49 @@ const Transport = () => {
                           }
                         />
                       ))}
-                    </>
-                  ) : null}
+                </>
+                  )}
                 </div>
               </div>
             </div>
-          </>
-        )}
+        )
+    );
+  }
+return (
+    <div>
+      <div className='page-header'>
+        <h3 className='page-title'>Public Transport</h3>
+        <nav aria-label='breadcrumb'>
+          <ol className='breadcrumb'>
+            <li className='breadcrumb-item'>
+              <a href='!#' onClick={(event) => event.preventDefault()}>
+                Home
+              </a>
+            </li>
+            <li className='breadcrumb-item active' aria-current='page'>
+              Transport
+            </li>
+          </ol>
+        </nav>
+      </div>
+      <div className='row'>
+        <div
+          className={`col-lg-${toggleFields ? '9' : '12'} grid-margin stretch-card`}
+        >
+          <div className='card'>
+            <div className='card-body'>
+              {renderTransportControls()}
+              <Errors errors={state.errors} />
+              {renderTransportMap()}
+              <span className={'text-small text-muted'}>
+                Data source: Copyright © Romania, 2023, Tranzy AI SRL &
+                Compania de Transport Public Cluj-Napoca SA. All rights
+                reserved.
+              </span>
+            </div>
+          </div>
+        </div>
+        {renderTransportFields()}
       </div>
     </div>
   );

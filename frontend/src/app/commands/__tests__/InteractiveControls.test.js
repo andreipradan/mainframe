@@ -1,10 +1,52 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Simulate } from 'react-dom/test-utils';
 import Commands from '../Commands';
 import Crons from '../Crons';
 import Tasks from '../Tasks';
 import Watchers from '../Watchers';
+import CronsApi from '../../../api/crons';
 import WatchersApi from '../../../api/watchers';
+
+jest.mock('../../../api/crons', () => {
+  class CronsApi {
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList = (kwargs) => ({
+      type: 'crons/getList',
+      token: this.token,
+      kwargs,
+    });
+    getItem = (id) => ({ type: 'crons/getItem', token: this.token, id });
+    create = (data) => ({ type: 'crons/create', data });
+    update = (id, data) => ({ type: 'crons/update', id, data });
+    delete = (id, name) => ({ type: 'crons/delete', id, name });
+
+    static run = (...args) => ({ type: 'crons/run', args });
+    static kill = (...args) => ({ type: 'crons/kill', args });
+  }
+  return { __esModule: true, default: CronsApi };
+});
+
+jest.mock('../../../api/watchers', () => {
+  class WatchersApi {
+    constructor(token) {
+      this.token = token;
+    }
+
+    getList = () => ({ type: 'watchers/getList', token: this.token });
+    getItem = (id) => ({ type: 'watchers/getItem', token: this.token, id });
+    create = (data) => ({ type: 'watchers/create', data });
+    update = (id, data) => ({ type: 'watchers/update', id, data });
+    delete = (id, name) => ({ type: 'watchers/delete', id, name });
+
+    static run = (...args) => ({ type: 'watchers/run', args });
+    static test = (...args) => ({ type: 'watchers/test', args });
+  }
+  return { __esModule: true, default: WatchersApi };
+});
 
 jest.mock('../../../api/commands', () => ({
   __esModule: true,
@@ -105,8 +147,15 @@ jest.mock('react-loader-spinner', () => ({
 }));
 jest.mock('react-select', () => ({
   __esModule: true,
-  default: ({ value }) =>
-    require('react').createElement('div', null, value?.label),
+  default: ({ value, options, onChange }) =>
+    require('react').createElement(
+      'div',
+      {
+        'data-testid': 'select-control',
+        onClick: () => options?.[0] && onChange?.(options[0]),
+      },
+      value?.label
+    ),
 }));
 jest.mock('../../shared/Errors', () => () => null);
 jest.mock('../../shared/BottomPagination', () => () => null);
@@ -367,6 +416,289 @@ describe('command-related accessible controls', () => {
     expect(
       mockDispatch.mock.calls.some(([action]) => action?.payload === true)
     ).toBe(true);
+    unmount();
+  });
+
+  test('covers cron list loading states and status color variants', () => {
+    const makeCron = (id, status) => ({
+      id,
+      name: `Cron ${id}`,
+      command: 'sync_data',
+      expression: '0 8 * * *',
+      is_active: true,
+      cron_description: 'At 08:00',
+      redis: {
+        history: status ? [{ status, timestamp: '2025-01-02T12:00:00Z' }] : [],
+      },
+    });
+    const baseState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      crons: {
+        results: [
+          makeCron(1, 'complete'),
+          makeCron(2, 'executing'),
+          makeCron(3, 'unknown'),
+          makeCron(4, null),
+        ],
+        count: 4,
+        loading: false,
+        loadingItems: [],
+        selectedItem: null,
+        modalOpen: false,
+        errors: null,
+        kwargs: {},
+      },
+      commands: { results: [], errors: null, loading: false },
+    };
+
+    mockState = {
+      ...baseState,
+      crons: { ...baseState.crons, loading: true },
+    };
+    const loading = render(<Crons />);
+    expect(
+      loading.container.querySelector('tbody td[colspan="8"]')
+    ).not.toBeNull();
+    loading.unmount();
+
+    mockState = {
+      ...baseState,
+      crons: { ...baseState.crons, loadingItems: [1] },
+    };
+    const itemLoading = render(<Crons />);
+    expect(itemLoading.container.textContent).toContain('Loading');
+    itemLoading.unmount();
+
+    mockState = baseState;
+    const { container, unmount } = render(<Crons />);
+    expect(container.querySelector('.text-success')).not.toBeNull();
+    expect(container.querySelector('.text-warning')).not.toBeNull();
+    expect(container.querySelector('.text-danger')).not.toBeNull();
+    expect(container.textContent).toContain('Unknown');
+    expect(container.textContent).toContain('-');
+    const firstRow = container.querySelector('tbody tr');
+    act(() => firstRow.children[1].click());
+    act(() => firstRow.children[5].click());
+    expect(mockDispatch).toHaveBeenCalled();
+
+    act(() => firstRow.querySelector('.mdi-play').closest('button').click());
+    expect(container.textContent).toContain('run "sync_data"');
+    act(() =>
+      firstRow.querySelector('.mdi-skull-crossbones').closest('button').click()
+    );
+    expect(container.textContent).toContain('kill "sync_data"');
+    unmount();
+  });
+
+  test('renders selected cron command arguments and hides the form while loading', () => {
+    const cron = {
+      id: 11,
+      name: 'Morning sync',
+      command: 'sync_data',
+      expression: '0 8 * * *',
+      is_active: true,
+      kwargs: {},
+      redis: {},
+      description: 'Daily sync',
+    };
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      crons: {
+        results: [cron],
+        count: 1,
+        loading: false,
+        loadingItems: [],
+        selectedItem: cron,
+        modalOpen: false,
+        errors: null,
+        kwargs: {},
+      },
+      commands: {
+        results: [
+          {
+            app: 'jobs',
+            commands: [
+              {
+                name: 'sync_data',
+                args: [
+                  {
+                    dest: 'account',
+                    required: true,
+                    type: 'str',
+                    choices: ['checking', 'savings'],
+                    help: 'Account name',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        errors: null,
+        loading: false,
+      },
+    };
+
+    const { container, unmount } = render(<Crons />);
+    expect(container.textContent).toContain('Daily sync');
+    expect(container.textContent).toContain('Params:');
+    expect(container.textContent).toContain('choices: checking, savings');
+    expect(container.textContent).toContain('description: Account name');
+    act(() =>
+      container.querySelectorAll('.mdi-refresh')[1].closest('button').click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'crons/getItem',
+      token: 'token',
+      id: cron.id,
+    });
+    unmount();
+
+    mockState.crons.loadingItems = [cron.id];
+    const loading = render(<Crons />);
+    expect(loading.container.textContent).toContain('Loading');
+    expect(loading.container.querySelector('textarea')).toBeNull();
+    loading.unmount();
+  });
+
+  test('creates a cron from a selected command and submits edited values', () => {
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      crons: {
+        results: [],
+        count: 0,
+        loading: false,
+        loadingItems: [],
+        selectedItem: null,
+        modalOpen: true,
+        errors: null,
+        kwargs: {},
+      },
+      commands: {
+        results: [
+          {
+            app: 'jobs',
+            commands: [
+              {
+                name: 'sync_data',
+                args: [
+                  {
+                    dest: 'title',
+                    required: true,
+                    type: 'str',
+                    default: null,
+                  },
+                  {
+                    dest: 'enabled',
+                    required: true,
+                    type: 'bool',
+                    default: true,
+                  },
+                  { dest: 'count', required: true, type: 'int' },
+                  { dest: 'options', required: false, type: 'dict' },
+                ],
+              },
+            ],
+          },
+        ],
+        errors: null,
+        loading: false,
+      },
+    };
+
+    const { container, unmount } = render(<Crons />);
+    act(() => container.querySelector('.mdi-plus').closest('button').click());
+    act(() =>
+      container.querySelector('[data-testid="select-control"]').click()
+    );
+    expect(container.textContent).toContain('title');
+    expect(container.textContent).toContain('required: true');
+
+    const fields = container.querySelectorAll('input[type="text"]');
+    changeValue(fields[0], 'Nightly sync');
+    changeValue(fields[1], '0 4 * * *');
+    act(() =>
+      Simulate.change(container.querySelector('input[type="switch"]'), {
+        target: { checked: true },
+      })
+    );
+    changeValue(
+      container.querySelector('textarea'),
+      '{"title":"nightly","enabled":false,"count":3}'
+    );
+
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.trim() === 'Save Changes')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'crons/create',
+      data: {
+        command: 'sync_data',
+        expression: '0 4 * * *',
+        is_active: true,
+        name: 'Nightly sync',
+        kwargs: { title: 'nightly', enabled: false, count: 3 },
+      },
+    });
+    unmount();
+  });
+
+  test('confirms cron run and kill actions with the RPi token', () => {
+    const cron = {
+      id: 21,
+      name: 'Nightly sync',
+      command: 'sync_data',
+      expression: '0 4 * * *',
+      is_active: true,
+      cron_description: 'At 04:00',
+      redis: { history: [] },
+    };
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: 'ngrok-token' },
+      crons: {
+        results: [cron],
+        count: 1,
+        loading: false,
+        loadingItems: [],
+        selectedItem: null,
+        modalOpen: false,
+        errors: null,
+        kwargs: {},
+      },
+      commands: { results: [], errors: null, loading: false },
+    };
+
+    const { container, unmount } = render(<Crons />);
+    const row = container.querySelector('tbody tr');
+
+    act(() => row.querySelector('.mdi-play').closest('button').click());
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.trim() === 'Yes, run it!')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'crons/run',
+      args: ['ngrok-token', 21, 'sync_data'],
+    });
+
+    act(() =>
+      row.querySelector('.mdi-skull-crossbones').closest('button').click()
+    );
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.trim() === 'Yes, kill it!')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'crons/kill',
+      args: ['ngrok-token', 21, 'sync_data'],
+    });
     unmount();
   });
 
@@ -685,6 +1017,98 @@ describe('command-related accessible controls', () => {
     expect(container.querySelector('#watcher-21-errors').textContent).toContain(
       'Message: Fetch failed'
     );
+    unmount();
+  });
+
+  test('creates a watcher with its schedule, selector, and JSON options', () => {
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      watchers: {
+        results: [],
+        errors: null,
+        loading: false,
+        loadingItems: [],
+        modalOpen: true,
+        selectedItem: null,
+        types: [
+          ['html', 'HTML'],
+          ['json', 'JSON'],
+        ],
+      },
+    };
+    const { container, unmount } = render(<Watchers />);
+    act(() => container.querySelector('.mdi-plus').closest('button').click());
+    act(() =>
+      container.querySelector('[data-testid="select-control"]').click()
+    );
+
+    const fields = container.querySelectorAll('input[type="text"]');
+    [
+      'Daily prices',
+      '12345',
+      '0 9 * * *',
+      '15 9 * * *',
+      'https://example.test/prices',
+      'https://api.example.test',
+      '.price',
+    ].forEach((value, index) => changeValue(fields[index], value));
+    act(() =>
+      Simulate.change(container.querySelector('input[type="switch"]'), {
+        target: { checked: true },
+      })
+    );
+    changeValue(
+      container.querySelectorAll('textarea')[0],
+      '{"timestamp":"2025-01-02T12:00:00Z"}'
+    );
+    changeValue(
+      container.querySelectorAll('textarea')[1],
+      '{"headers":{"Accept":"application/json"}}'
+    );
+
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.trim() === 'Create')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'watchers/create',
+      data: {
+        chat_id: '12345',
+        cron: '0 9 * * *',
+        cron_notification: '15 9 * * *',
+        is_active: true,
+        link_base_url: 'https://api.example.test',
+        latest: { timestamp: '2025-01-02T12:00:00Z' },
+        name: 'Daily prices',
+        request: { headers: { Accept: 'application/json' } },
+        selector: '.price',
+        type: 'html',
+        url: 'https://example.test/prices',
+      },
+    });
+
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.trim() === 'Test')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'watchers/test',
+      args: [
+        'token',
+        {
+          name: 'Daily prices',
+          link_base_url: 'https://api.example.test',
+          url: 'https://example.test/prices',
+          latest: { timestamp: '2025-01-02T12:00:00Z' },
+          request: { headers: { Accept: 'application/json' } },
+          selector: '.price',
+          type: 'html',
+        },
+      ],
+    });
     unmount();
   });
 });

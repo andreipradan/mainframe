@@ -183,7 +183,7 @@ const Commands = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Available commands
+                Available commands{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'

@@ -74,7 +74,7 @@ const FavoritesManager = () => {
     <div className='card'>
       <div className='card-body'>
         <h4 className='card-title'>
-          Manage favorite bands
+          Manage favorite bands{' '}
           <button
             type='button'
             className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -123,7 +123,7 @@ const FavoritesManager = () => {
               </tr>
             </thead>
             <tbody>
-              {favorites.loading ? (
+              {favorites.loading && (
                 <tr>
                   <td colSpan={8}>
                     <Audio
@@ -134,13 +134,16 @@ const FavoritesManager = () => {
                     />
                   </td>
                 </tr>
-              ) : (favorites.results || []).length === 0 ? (
+              )}
+              {!favorites.loading && (favorites.results || []).length === 0 && (
                 <tr>
                   <td colSpan={4} className='text-muted'>
                     No favorite bands yet
                   </td>
                 </tr>
-              ) : (
+              )}
+              {!favorites.loading &&
+                (favorites.results || []).length > 0 &&
                 (favorites.results || []).map((item) => (
                   <tr key={item.id || item.name} className='align-items-center'>
                     <td>
@@ -203,8 +206,7 @@ const FavoritesManager = () => {
                       )}
                     </td>
                   </tr>
-                ))
-              )}
+                ))}
             </tbody>
           </table>
         </div>

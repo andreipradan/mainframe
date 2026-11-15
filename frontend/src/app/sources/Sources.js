@@ -126,7 +126,7 @@ const Sources = () => {
                   <div className='row'>
                     <div className='col-sm-12'>
                       <h4 className='text-secondary'>
-                        Sources
+                        Sources{' '}
                         <button
                           type='button'
                           className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -164,32 +164,23 @@ const Sources = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {!sources.loading ? (
-                      sources.results?.length ? (
-                        sources.results.map((s, i) =>
-                          !sources.loadingItems?.includes(s.id) ? (
-                            <tr
-                              key={s.id}
-                              className='cursor-pointer'
-                              onClick={() => dispatch(selectItem(s.id))}
-                            >
-                              <td>{i + 1}</td>
-                              <td>{s.name}</td>
-                              <td>{s.url}</td>
-                              <td>
-                                {
-                                  sources.types?.find(
-                                    (t) => t[0] === s.type
-                                  )?.[1]
-                                }
-                              </td>
-                              <td>
-                                <i
-                                  className={`mdi mdi-${s.is_active ? 'check text-success' : 'alert text-danger'}`}
-                                />
-                              </td>
-                            </tr>
-                          ) : (
+                    {sources.loading && (
+                      <tr>
+                        <td colSpan={6}>
+                          <Audio
+                            width='100%'
+                            radius='9'
+                            color='green'
+                            wrapperStyle={{ width: '100%' }}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    {!sources.loading &&
+                      sources.results?.length > 0 &&
+                      sources.results.map((s, i) => {
+                        if (sources.loadingItems?.includes(s.id)) {
+                          return (
                             <tr key={i}>
                               <td colSpan={6}>
                                 <ColorRing
@@ -199,24 +190,32 @@ const Sources = () => {
                                 />
                               </td>
                             </tr>
-                          )
-                        )
-                      ) : (
-                        <tr>
-                          <td colSpan={6} className={'text-center'}>
-                            No sources available
-                          </td>
-                        </tr>
-                      )
-                    ) : (
+                          );
+                        }
+                        return (
+                          <tr
+                            key={s.id}
+                            className='cursor-pointer'
+                            onClick={() => dispatch(selectItem(s.id))}
+                          >
+                            <td>{i + 1}</td>
+                            <td>{s.name}</td>
+                            <td>{s.url}</td>
+                            <td>
+                              {sources.types?.find((t) => t[0] === s.type)?.[1]}
+                            </td>
+                            <td>
+                              <i
+                                className={`mdi mdi-${s.is_active ? 'check text-success' : 'alert text-danger'}`}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    {!sources.loading && !sources.results?.length && (
                       <tr>
-                        <td colSpan={6}>
-                          <Audio
-                            width='100%'
-                            radius='9'
-                            color='green'
-                            wrapperStyle={{ width: '100%' }}
-                          />
+                        <td colSpan={6} className={'text-center'}>
+                          No sources available
                         </td>
                       </tr>
                     )}
@@ -255,15 +254,20 @@ const Sources = () => {
             )}
           </Modal.Title>
         </Modal.Header>
-        {(sources.selectedItem &&
+        {((sources.selectedItem &&
           sources.loadingItems?.includes(sources.selectedItem?.id)) ||
-        sources.loading ? (
+          sources.loading) && (
           <ColorRing
             width='100%'
             height='50'
             wrapperStyle={{ width: '100%' }}
           />
-        ) : (
+        )}
+        {!(
+          (sources.selectedItem &&
+            sources.loadingItems?.includes(sources.selectedItem?.id)) ||
+          sources.loading
+        ) && (
           <Modal.Body>
             <Form onSubmit={onSubmit}>
               <Errors errors={sources.errors} />

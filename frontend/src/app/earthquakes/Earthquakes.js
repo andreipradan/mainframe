@@ -46,6 +46,21 @@ export const formatTime = (timestamp) =>
     minute: 'numeric',
   });
 
+/** Maps an earthquake magnitude to its chart color. */
+const getMagnitudeColor = (value) => {
+  if (value < 3) return 'green';
+  if (value < 4) return 'orange';
+  if (value < 5) return 'darkorange';
+  return 'red';
+};
+
+/** Maps an earthquake magnitude to its text color class. */
+const getMagnitudeTextType = (value) => {
+  if (value < 5) return 'text-success';
+  if (value < 6) return 'text-warning';
+  return 'text-danger';
+};
+
 Chart.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
 const Earthquakes = () => {
@@ -153,16 +168,16 @@ const Earthquakes = () => {
   };
 
   useLayoutEffect(() => {
-    const root = am5.Root.new('map');
-    setRoot(root);
-    root.setThemes([am5themes_Animated.new(root)]);
-    let chart = root.container.children.push(
-      am5map.MapChart.new(root, { projection: am5map.geoNaturalEarth1() })
+    const mapRoot = am5.Root.new('map');
+    setRoot(mapRoot);
+    mapRoot.setThemes([am5themes_Animated.new(mapRoot)]);
+    const mapChart = mapRoot.container.children.push(
+      am5map.MapChart.new(mapRoot, { projection: am5map.geoNaturalEarth1() })
     );
-    setChart(chart);
+    setChart(mapChart);
 
-    const countySeries = chart.series.push(
-      am5map.MapPolygonSeries.new(root, { visible: false })
+    const countySeries = mapChart.series.push(
+      am5map.MapPolygonSeries.new(mapRoot, { visible: false })
     );
     countySeries.mapPolygons.template.setAll({
       tooltipText: '{name}',
@@ -172,10 +187,10 @@ const Earthquakes = () => {
       fill: am5.color('#5b76b6'),
     });
 
-    const series = generateSeries(root, chart);
-    setSeries(series);
-    series.mapPolygons.template.events.on('click', (ev) => {
-      series.zoomToDataItem(ev.target.dataItem).waitForStop();
+    const mapSeries = generateSeries(mapRoot, mapChart);
+    setSeries(mapSeries);
+    mapSeries.mapPolygons.template.events.on('click', (ev) => {
+      mapSeries.zoomToDataItem(ev.target.dataItem).waitForStop();
       am5.net
         .load(
           `${API_SERVER}earthquakes/map/?id=${ev.target.dataItem.dataContext.id}`
@@ -185,19 +200,19 @@ const Earthquakes = () => {
             geoJSON: am5.JSONParser.parse(result.response),
           });
           countySeries.show();
-          series.hide();
+          mapSeries.hide();
         })
         .catch(function (result) {
           console.log(`Error loading ${result.xhr.responseURL}`);
         });
     });
 
-    createZoomControl(root, chart);
-    const homeButton = chart.children.push(
-      am5.Button.new(root, {
+    createZoomControl(mapRoot, mapChart);
+    const homeButton = mapChart.children.push(
+      am5.Button.new(mapRoot, {
         ...defaultButtonProps,
         scale: 0.75,
-        icon: am5.Graphics.new(root, {
+        icon: am5.Graphics.new(mapRoot, {
           svgPath:
             'M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8',
           fill: am5.color(0xffffff),
@@ -205,61 +220,56 @@ const Earthquakes = () => {
       })
     );
     homeButton.events.on('click', () => {
-      series.show();
-      chart.goHome();
+      mapSeries.show();
+      mapChart.goHome();
     });
     homeButton.show();
-    return () => root.dispose();
+    return () => mapRoot.dispose();
   }, []);
 
   const zoomToGeoPoint = (event) => {
     const pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {}));
 
     let colorSet = am5.ColorSet.new(root, { step: 2 });
-    pointSeries.bullets.push(function (root, series, dataItem) {
-      let value = dataItem.dataContext.value;
+    pointSeries.bullets.push(
+      function (mapRootContext, mapSeriesContext, dataItem) {
+        let value = dataItem.dataContext.value;
 
-      let container = am5.Container.new(root, {});
-      let color = colorSet.next();
-      let radius = 1 + value;
-      container.children.push(
-        am5.Circle.new(root, {
-          radius: radius - 1,
-          fill:
-            value < 3
-              ? 'green'
-              : value < 4
-                ? 'orange'
-                : value < 5
-                  ? 'darkorange'
-                  : 'red',
-          dy: -radius * 2,
-        })
-      );
+        let container = am5.Container.new(mapRootContext, {});
+        let color = colorSet.next();
+        let radius = 1 + value;
+        container.children.push(
+          am5.Circle.new(mapRootContext, {
+            radius: radius - 1,
+            fill: getMagnitudeColor(value),
+            dy: -radius * 2,
+          })
+        );
 
-      container.children.push(
-        am5.Line.new(root, {
-          stroke: color,
-          height: -20,
-          strokeGradient: am5.LinearGradient.new(root, {
-            stops: [{ opacity: 1 }, { opacity: 1 }, { opacity: 0 }],
-          }),
-        })
-      );
+        container.children.push(
+          am5.Line.new(mapRootContext, {
+            stroke: color,
+            height: -20,
+            strokeGradient: am5.LinearGradient.new(mapRootContext, {
+              stops: [{ opacity: 1 }, { opacity: 1 }, { opacity: 0 }],
+            }),
+          })
+        );
 
-      container.children.push(
-        am5.Label.new(root, {
-          fontSize: radius,
-          text: value,
-          fill: am5.color(0xffffff),
-          centerX: am5.p50,
-          centerY: am5.p50,
-          dy: -radius * 2,
-        })
-      );
+        container.children.push(
+          am5.Label.new(root, {
+            fontSize: radius,
+            text: value,
+            fill: am5.color(0xffffff),
+            centerX: am5.p50,
+            centerY: am5.p50,
+            dy: -radius * 2,
+          })
+        );
 
-      return am5.Bullet.new(root, { sprite: container });
-    });
+        return am5.Bullet.new(root, { sprite: container });
+      }
+    );
 
     pointSeries.data.push({
       geometry: {
@@ -305,7 +315,7 @@ const Earthquakes = () => {
           <div className='card'>
             <div className='card-body'>
               <h4 className='card-title'>
-                Earthquakes
+                Earthquakes{' '}
                 <button
                   type='button'
                   className='btn btn-outline-success btn-sm border-0 bg-transparent'
@@ -330,8 +340,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.local_events}
                     />
-                    <i className='input-helper' />
-                    Only local events
+                    <i className='input-helper' /> Only local events
                   </label>
                 </div>
                 <div className='form-check float-right ml-4'>
@@ -348,8 +357,7 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.magnitude_gt5}
                     />
-                    <i className='input-helper' />
-                    &gt; 5 ML
+                    <i className='input-helper' /> &gt; 5 ML
                   </label>
                 </div>
                 <div className='form-check float-right'>
@@ -366,36 +374,35 @@ const Earthquakes = () => {
                       }
                       checked={earthquakes.kwargs.largest_events}
                     />
-                    <i className='input-helper' />
-                    Largest events
+                    <i className='input-helper' /> Largest events
                   </label>
                 </div>
               </h4>
-              {earthquakes.last_check
-                ? Object.keys(earthquakes.last_check).map((lc) => (
-                    <p key={lc} className='text-muted mt-0 mb-0'>
-                      Last {lc.toUpperCase()} check:&nbsp;
-                      {earthquakes.loading ? (
-                        <Circles
-                          visible={true}
-                          height='15'
-                          width='100%'
-                          ariaLabel='ball-triangle-loading'
-                          wrapperStyle={{}}
-                          wrapperClass={{}}
-                          color='orange'
-                        />
-                      ) : (
-                        <span>
-                          {' '}
-                          {earthquakes.last_check[lc]
-                            ? formatTime(earthquakes.last_check[lc])
-                            : '-'}
-                        </span>
-                      )}
-                    </p>
-                  ))
-                : null}
+              {earthquakes.last_check &&
+                Object.keys(earthquakes.last_check).map((lc) => (
+                  <p key={lc} className='text-muted mt-0 mb-0'>
+                    Last {lc.toUpperCase()} check:&nbsp;
+                    {earthquakes.loading && (
+                      <Circles
+                        visible
+                        height='15'
+                        width='100%'
+                        ariaLabel='ball-triangle-loading'
+                        wrapperStyle={{}}
+                        wrapperClass={{}}
+                        color='orange'
+                      />
+                    )}
+                    {!earthquakes.loading && (
+                      <span>
+                        {' '}
+                        {earthquakes.last_check[lc]
+                          ? formatTime(earthquakes.last_check[lc])
+                          : '-'}
+                      </span>
+                    )}
+                  </p>
+                ))}
               <p className='text-muted mb-0'>
                 Total: {earthquakes.count ? earthquakes.count : '-'}
               </p>
@@ -404,7 +411,7 @@ const Earthquakes = () => {
                 <div className='col-md-12'>
                   {earthquakes.loading ? (
                     <BallTriangle
-                      visible={true}
+                      visible
                       width='100%'
                       ariaLabel='ball-triangle-loading'
                       wrapperStyle={{}}
@@ -460,15 +467,7 @@ const Earthquakes = () => {
                                 </p>
                               ) : null}
                             </td>
-                            <td
-                              className={
-                                e.magnitude < 5
-                                  ? 'text-success'
-                                  : e.magnitude < 6
-                                    ? 'text-warning'
-                                    : 'text-danger'
-                              }
-                            >
+                            <td className={getMagnitudeTextType(e.magnitude)}>
                               {e.magnitude}{' '}
                               {e.intensity ? `(${e.intensity})` : null}
                             </td>

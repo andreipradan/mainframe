@@ -24,6 +24,13 @@ export const getEvaluation = (p, justValue = false) => {
     </span>
   );
 };
+/** Returns the color class for a pension profit/loss value. */
+const getPnlTextType = (pnl) => {
+  if (pnl > 0) return 'success';
+  if (pnl === 0) return 'muted';
+  return 'danger';
+};
+
 export const getPnl = (p, justValue = false) => {
   const pnl =
     Number.parseFloat(p.latest_unit_value || 0) * (p.total_units || 0) -
@@ -36,9 +43,7 @@ export const getPnl = (p, justValue = false) => {
       );
   if (justValue) return pnl;
   return (
-    <span
-      className={`text-${pnl > 0 ? 'success' : pnl === 0 ? 'muted' : 'danger'}`}
-    >
+    <span className={`text-${getPnlTextType(pnl)}`}>
       {pnl.toFixed(2)} {p.contributions?.[0]?.currency}
     </span>
   );
@@ -162,8 +167,9 @@ const Pension = () => {
     if (!pension.results?.length) dispatch(api.getList(pension.kwargs));
   }, []);
 
-  return (
-    <div>
+  /** Renders the pension funds page section. */
+  function renderPensionFundsSection() {
+    return (
       <div className='page-header mb-0'>
         <h3 className='page-title'>
           Pension funds
@@ -204,6 +210,454 @@ const Pension = () => {
           </ol>
         </nav>
       </div>
+    );
+  }
+
+  /** Renders the content page section. */
+  function renderContentSection() {
+    return pension.modalOpen ? null : <Errors errors={pension.errors} />;
+  }
+
+  /** Renders the content page section. */
+  function renderContentSection2() {
+    return (
+      <div className='row'>
+        <div className={'col-12 grid-margin'}>
+          <div className='card'>
+            <div className='card-body'>
+              <div className='table-responsive'>
+                <h6 className='text-secondary'>
+                  {pensionOpen ? <span>{pensionOpen.name}</span> : null}
+                  {pensionOpen ? (
+                    <button
+                      type='button'
+                      className='btn btn-outline-primary btn-sm border-0 bg-transparent'
+                      onClick={() => setContribAddOpen(!contribAddOpen)}
+                    >
+                      <i className='mdi mdi-plus' />
+                    </button>
+                  ) : null}
+                </h6>
+                <div className={'sticky-table'}>
+                  <table className='table'>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>
+                          Amount
+                          {pensionOpen ? (
+                            <sup>
+                              {pensionOpen.contributions
+                                ?.map((c) => c.amount)
+                                .reduce(
+                                  (accumulator, currentValue) =>
+                                    accumulator +
+                                    Number.parseFloat(currentValue),
+                                  0
+                                )
+                                .toFixed(3)}
+                            </sup>
+                          ) : null}
+                        </th>
+                        <th>
+                          Units
+                          {pensionOpen ? (
+                            <sup>
+                              {pensionOpen.contributions
+                                ?.map((c) => c.units)
+                                .reduce(
+                                  (accumulator, currentValue) =>
+                                    accumulator +
+                                    Number.parseFloat(currentValue),
+                                  0
+                                )
+                                .toFixed(3)}
+                            </sup>
+                          ) : null}
+                        </th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {/* Add contribution form */}
+                        {pensionOpen && contribAddOpen && (
+                          <>
+                            <td>
+                              {'<'}new{'>'}
+                            </td>
+                            <td>
+                              <DatePicker
+                                className='btn btn-outline-secondary rounded btn-sm'
+                                dateFormat={'MMM yyyy'}
+                                isClearable={false}
+                                onChange={(date) => setContribDate(date)}
+                                readOnly={pension.loading}
+                                scrollableYearDropdown
+                                selected={contribDate}
+                                showIcon
+                                showYearDropdown
+                                showMonthYearPicker
+                              />
+                            </td>
+                            <td>
+                              <input
+                                autoFocus
+                                onChange={(e) =>
+                                  setContribAmount(e.target.value)
+                                }
+                                type='text'
+                                value={contribAmount}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                autoFocus
+                                onChange={(e) =>
+                                  setContribUnits(e.target.value)
+                                }
+                                type='text'
+                                value={contribUnits}
+                              />
+                            </td>
+                            <td>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-danger mr-2'
+                                aria-label='Cancel adding contribution'
+                                onClick={() => setContribAddOpen(false)}
+                              >
+                                <i
+                                  className='mdi mdi-cancel'
+                                  aria-hidden='true'
+                                />
+                              </button>
+                              <button
+                                type='button'
+                                className='btn btn-link p-0 text-success mr-2'
+                                aria-label='Save contribution'
+                                onClick={(e) =>
+                                  onSubmitContrib(e, pensionOpen.id)
+                                }
+                              >
+                                <i
+                                  className='mdi mdi-check'
+                                  aria-hidden='true'
+                                />
+                              </button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+
+                      {/* Contribution rows */}
+                      {(pension.loading ||
+                        pension.loadingItems?.includes(pensionOpen?.id)) && (
+                        <tr>
+                          <td>
+                            <Circles
+                              visible
+                              width='100%'
+                              ariaLabel='ball-triangle-loading'
+                              wrapperStyle={{ float: 'right' }}
+                              color='orange'
+                            />
+                          </td>
+                        </tr>
+                      )}
+                      {!pension.loading &&
+                        !pension.loadingItems?.includes(pensionOpen?.id) &&
+                        pensionOpen &&
+                        pensionOpen.contributions.map((c, i) => (
+                          <tr key={`contrib-${c.id}`}>
+                            <td>{i + 1}</td>
+                            <td>
+                              {contribToEdit === c.id ? (
+                                <div>
+                                  <DatePicker
+                                    className='btn btn-outline-secondary rounded btn-sm'
+                                    dateFormat={'MMM yyyy'}
+                                    isClearable={false}
+                                    onChange={(date) => setContribDate(date)}
+                                    readOnly={pension.loading}
+                                    scrollableYearDropdown
+                                    selected={contribDate}
+                                    showIcon
+                                    showYearDropdown
+                                    showMonthYearPicker
+                                    onClickOutside={() => setContribDate(null)}
+                                  />
+                                </div>
+                              ) : (
+                                new Date(c.date).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                })
+                              )}
+                            </td>
+                            <td>
+                              {contribToEdit === c.id ? (
+                                <input
+                                  autoFocus
+                                  onChange={(e) =>
+                                    setContribAmount(e.target.value)
+                                  }
+                                  type='text'
+                                  value={contribAmount}
+                                />
+                              ) : (
+                                <span>
+                                  {c.amount} {c.currency}
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {contribToEdit === c.id ? (
+                                <input
+                                  autoFocus
+                                  onChange={(e) =>
+                                    setContribUnits(e.target.value)
+                                  }
+                                  type='text'
+                                  value={contribUnits}
+                                />
+                              ) : (
+                                <span>{c.units}</span>
+                              )}
+                            </td>
+                            <td>
+                              {contribToEdit === c.id && (
+                                <>
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-danger mr-2'
+                                    aria-label='Cancel editing contribution'
+                                    onClick={() => setContribToEdit(null)}
+                                  >
+                                    <i
+                                      className='mdi mdi-cancel'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
+                                  <button
+                                    type='button'
+                                    className='btn btn-link p-0 text-success mr-2'
+                                    aria-label='Save contribution changes'
+                                    onClick={() =>
+                                      onUpdateContribution(pensionOpen.id, c.id)
+                                    }
+                                  >
+                                    <i
+                                      className='mdi mdi-check'
+                                      aria-hidden='true'
+                                    />
+                                  </button>
+                                </>
+                              )}
+                              {contribToDelete === c.id && (
+                                <>
+                                  <div className={'text-danger mb-2'}>
+                                    Delete?
+                                  </div>
+                                  <div>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-danger mr-2'
+                                      aria-label='Cancel deleting contribution'
+                                      onClick={() => {
+                                        const contributionId = contribToDelete;
+                                        setContribToDelete(null);
+                                        requestAnimationFrame(() =>
+                                          deleteButtonRefs.current[
+                                            contributionId
+                                          ]?.focus()
+                                        );
+                                      }}
+                                    >
+                                      <i
+                                        className='mdi mdi-cancel'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-success mr-2'
+                                      aria-label='Confirm delete contribution'
+                                      ref={confirmDeleteRef}
+                                      onClick={() =>
+                                        dispatch(
+                                          api.deleteContribution(
+                                            pensionOpen.id,
+                                            c.id,
+                                            `${pensionOpen.name} for ${new Date(
+                                              c.date
+                                            ).toLocaleDateString('en-US', {
+                                              month: 'short',
+                                              year: 'numeric',
+                                            })}`
+                                          )
+                                        )
+                                      }
+                                    >
+                                      <i
+                                        className='mdi mdi-check'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                              {contribToEdit !== c.id &&
+                                contribToDelete !== c.id && (
+                                  <>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-warning mr-2'
+                                      aria-label='Edit contribution'
+                                      onClick={() => onEditContribution(c)}
+                                    >
+                                      <i
+                                        className='mdi mdi-pencil'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                    <button
+                                      type='button'
+                                      className='btn btn-link p-0 text-danger'
+                                      aria-label='Delete contribution'
+                                      ref={(element) => {
+                                        deleteButtonRefs.current[c.id] =
+                                          element;
+                                      }}
+                                      onClick={() => setContribToDelete(c.id)}
+                                    >
+                                      <i
+                                        className='mdi mdi-delete'
+                                        aria-hidden='true'
+                                      />
+                                    </button>
+                                  </>
+                                )}
+                            </td>
+                          </tr>
+                        ))}
+                      {!pension.loading &&
+                        !pension.loadingItems?.includes(pensionOpen?.id) &&
+                        !pensionOpen && (
+                          <tr>
+                            <td colSpan={4} className={'text-center'}>
+                              Please select a pension fund
+                            </td>
+                          </tr>
+                        )}
+                    </tbody>
+                  </table>
+                </div>
+                {pensionOpen ? (
+                  <b className={'text-small text-secondary'}>
+                    Total: {pensionOpen?.contributions?.length || 0}
+                  </b>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /** Renders the content page section. */
+  function renderContentSection3() {
+    return (
+      <Modal
+        centered
+        show={Boolean(pension.selectedItem) || pension.modalOpen}
+        onHide={closeModal}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <div className='row'>
+              <div className='col-lg-12 grid-margin stretch-card'>
+                {pension.selectedItem ? 'Edit' : 'Add new pension fund'}{' '}
+                {pension.selectedItem?.name} ?
+              </div>
+            </div>
+            {pension.selectedItem ? (
+              <p className='text-muted mb-0'>{pension.selectedItem.employer}</p>
+            ) : null}
+            {pension.modalOpen ? <Errors errors={pension.errors} /> : null}
+          </Modal.Title>
+        </Modal.Header>
+        {pension.loadingItems?.includes(pension.selectedItem?.id) ? (
+          <ColorRing
+            width='100%'
+            height='50'
+            wrapperStyle={{ width: '100%' }}
+          />
+        ) : (
+          <Modal.Body>
+            <Form onSubmit={onSubmit}>
+              <Form.Group className='mb-3'>
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type='text'
+                  placeholder='Pension fund name'
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group className='mb-3'>
+                <Form.Label>Start date</Form.Label>
+                <div>
+                  <DatePicker
+                    className='btn btn-outline-secondary rounded btn-sm'
+                    dateFormat={'dd-MM-yyyy'}
+                    isClearable={false}
+                    onChange={(date) => setStartDate(date)}
+                    readOnly={pension.loading}
+                    scrollableYearDropdown
+                    selected={startDate}
+                    showIcon
+                    showYearDropdown
+                  />
+                </div>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+        )}
+        <Modal.Footer>
+          {Boolean(pension.selectedItem) && (
+            <Button
+              variant='danger'
+              className='float-left'
+              onClick={() =>
+                dispatch(
+                  api.delete(pension.selectedItem.id, pension.selectedItem.name)
+                )
+              }
+            >
+              Delete
+            </Button>
+          )}
+
+          <Button variant='secondary' onClick={closeModal}>
+            Close
+          </Button>
+          <Button
+            variant='primary'
+            onClick={onSubmit}
+            disabled={!name || !startDate}
+          >
+            {pension.selectedItem ? 'Update' : 'Add'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+  return (
+    <div>
+      {renderPensionFundsSection()}
       <b className={'text-small text-muted'}>
         <div>
           Total:{' '}
@@ -319,432 +773,13 @@ const Pension = () => {
           </div>
         ))}
       </div>
-      {pension.modalOpen ? null : <Errors errors={pension.errors} />}
+      {renderContentSection()}
 
       {/* Contributions table */}
-      <div className='row'>
-        <div className={'col-12 grid-margin'}>
-          <div className='card'>
-            <div className='card-body'>
-              <div className='table-responsive'>
-                <h6 className='text-secondary'>
-                  {pensionOpen ? <span>{pensionOpen.name}</span> : null}
-                  {pensionOpen ? (
-                    <button
-                      type='button'
-                      className='btn btn-outline-primary btn-sm border-0 bg-transparent'
-                      onClick={() => setContribAddOpen(!contribAddOpen)}
-                    >
-                      <i className='mdi mdi-plus' />
-                    </button>
-                  ) : null}
-                </h6>
-                <div className={'sticky-table'}>
-                  <table className='table'>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Date</th>
-                        <th>
-                          Amount
-                          {pensionOpen ? (
-                            <sup>
-                              {pensionOpen.contributions
-                                ?.map((c) => c.amount)
-                                .reduce(
-                                  (accumulator, currentValue) =>
-                                    accumulator +
-                                    Number.parseFloat(currentValue),
-                                  0
-                                )
-                                .toFixed(3)}
-                            </sup>
-                          ) : null}
-                        </th>
-                        <th>
-                          Units
-                          {pensionOpen ? (
-                            <sup>
-                              {pensionOpen.contributions
-                                ?.map((c) => c.units)
-                                .reduce(
-                                  (accumulator, currentValue) =>
-                                    accumulator +
-                                    Number.parseFloat(currentValue),
-                                  0
-                                )
-                                .toFixed(3)}
-                            </sup>
-                          ) : null}
-                        </th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        {/* Add contribution form */}
-                        {pensionOpen && contribAddOpen ? (
-                          <>
-                            <td>
-                              {'<'}new{'>'}
-                            </td>
-                            <td>
-                              <DatePicker
-                                className='btn btn-outline-secondary rounded btn-sm'
-                                dateFormat={'MMM yyyy'}
-                                isClearable={false}
-                                onChange={(date) => setContribDate(date)}
-                                readOnly={pension.loading}
-                                scrollableYearDropdown
-                                selected={contribDate}
-                                showIcon
-                                showYearDropdown
-                                showMonthYearPicker
-                              />
-                            </td>
-                            <td>
-                              <input
-                                autoFocus
-                                onChange={(e) =>
-                                  setContribAmount(e.target.value)
-                                }
-                                type='text'
-                                value={contribAmount}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                autoFocus
-                                onChange={(e) =>
-                                  setContribUnits(e.target.value)
-                                }
-                                type='text'
-                                value={contribUnits}
-                              />
-                            </td>
-                            <td>
-                              {contribAddOpen ? (
-                                <>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-danger mr-2'
-                                    aria-label='Cancel adding contribution'
-                                    onClick={() => setContribAddOpen(false)}
-                                  >
-                                    <i
-                                      className='mdi mdi-cancel'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-success mr-2'
-                                    aria-label='Save contribution'
-                                    onClick={(e) =>
-                                      onSubmitContrib(e, pensionOpen.id)
-                                    }
-                                  >
-                                    <i
-                                      className='mdi mdi-check'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                </>
-                              ) : null}
-                            </td>
-                          </>
-                        ) : null}
-                      </tr>
-
-                      {/* Contribution rows */}
-                      {pension.loading ||
-                      pension.loadingItems?.includes(pensionOpen?.id) ? (
-                        <tr>
-                          <td>
-                            <Circles
-                              visible
-                              width='100%'
-                              ariaLabel='ball-triangle-loading'
-                              wrapperStyle={{ float: 'right' }}
-                              color='orange'
-                            />
-                          </td>
-                        </tr>
-                      ) : pensionOpen ? (
-                        pensionOpen.contributions.map((c, i) => (
-                          <tr key={`contrib-${c.id}`}>
-                            <td>{i + 1}</td>
-                            <td>
-                              {contribToEdit === c.id ? (
-                                <div>
-                                  <DatePicker
-                                    className='btn btn-outline-secondary rounded btn-sm'
-                                    dateFormat={'MMM yyyy'}
-                                    isClearable={false}
-                                    onChange={(date) => setContribDate(date)}
-                                    readOnly={pension.loading}
-                                    scrollableYearDropdown
-                                    selected={contribDate}
-                                    showIcon
-                                    showYearDropdown
-                                    showMonthYearPicker
-                                    onClickOutside={() => setContribDate(null)}
-                                  />
-                                </div>
-                              ) : (
-                                new Date(c.date).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                })
-                              )}
-                            </td>
-                            <td>
-                              {contribToEdit === c.id ? (
-                                <input
-                                  autoFocus
-                                  onChange={(e) =>
-                                    setContribAmount(e.target.value)
-                                  }
-                                  type='text'
-                                  value={contribAmount}
-                                />
-                              ) : (
-                                <span>
-                                  {c.amount} {c.currency}
-                                </span>
-                              )}
-                            </td>
-                            <td>
-                              {contribToEdit === c.id ? (
-                                <input
-                                  autoFocus
-                                  onChange={(e) =>
-                                    setContribUnits(e.target.value)
-                                  }
-                                  type='text'
-                                  value={contribUnits}
-                                />
-                              ) : (
-                                <span>{c.units}</span>
-                              )}
-                            </td>
-                            <td>
-                              {contribToEdit === c.id ? (
-                                <>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-danger mr-2'
-                                    aria-label='Cancel editing contribution'
-                                    onClick={() => setContribToEdit(null)}
-                                  >
-                                    <i
-                                      className='mdi mdi-cancel'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-success mr-2'
-                                    aria-label='Save contribution changes'
-                                    onClick={() =>
-                                      onUpdateContribution(pensionOpen.id, c.id)
-                                    }
-                                  >
-                                    <i
-                                      className='mdi mdi-check'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                </>
-                              ) : contribToDelete === c.id ? (
-                                <>
-                                  <div className={'text-danger mb-2'}>
-                                    Delete?
-                                  </div>
-                                  <div>
-                                    <button
-                                      type='button'
-                                      className='btn btn-link p-0 text-danger mr-2'
-                                      aria-label='Cancel deleting contribution'
-                                      onClick={() => {
-                                        const contributionId = contribToDelete;
-                                        setContribToDelete(null);
-                                        requestAnimationFrame(() =>
-                                          deleteButtonRefs.current[
-                                            contributionId
-                                          ]?.focus()
-                                        );
-                                      }}
-                                    >
-                                      <i
-                                        className='mdi mdi-cancel'
-                                        aria-hidden='true'
-                                      />
-                                    </button>
-                                    <button
-                                      type='button'
-                                      className='btn btn-link p-0 text-success mr-2'
-                                      aria-label='Confirm delete contribution'
-                                      ref={confirmDeleteRef}
-                                      onClick={() =>
-                                        dispatch(
-                                          api.deleteContribution(
-                                            pensionOpen.id,
-                                            c.id,
-                                            `${pensionOpen.name} for ${new Date(
-                                              c.date
-                                            ).toLocaleDateString('en-US', {
-                                              month: 'short',
-                                              year: 'numeric',
-                                            })}`
-                                          )
-                                        )
-                                      }
-                                    >
-                                      <i
-                                        className='mdi mdi-check'
-                                        aria-hidden='true'
-                                      />
-                                    </button>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-warning mr-2'
-                                    aria-label='Edit contribution'
-                                    onClick={() => onEditContribution(c)}
-                                  >
-                                    <i
-                                      className='mdi mdi-pencil'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                  <button
-                                    type='button'
-                                    className='btn btn-link p-0 text-danger'
-                                    aria-label='Delete contribution'
-                                    ref={(element) => {
-                                      deleteButtonRefs.current[c.id] = element;
-                                    }}
-                                    onClick={() => setContribToDelete(c.id)}
-                                  >
-                                    <i
-                                      className='mdi mdi-delete'
-                                      aria-hidden='true'
-                                    />
-                                  </button>
-                                </>
-                              )}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className={'text-center'}>
-                            Please select a pension fund
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {pensionOpen ? (
-                  <b className={'text-small text-secondary'}>
-                    Total: {pensionOpen?.contributions?.length || 0}
-                  </b>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {renderContentSection2()}
 
       {/* Add / edit pension Modal */}
-      <Modal
-        centered
-        show={Boolean(pension.selectedItem) || pension.modalOpen}
-        onHide={closeModal}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <div className='row'>
-              <div className='col-lg-12 grid-margin stretch-card'>
-                {pension.selectedItem ? 'Edit' : 'Add new pension fund'}{' '}
-                {pension.selectedItem?.name} ?
-              </div>
-            </div>
-            {pension.selectedItem ? (
-              <p className='text-muted mb-0'>{pension.selectedItem.employer}</p>
-            ) : null}
-            {pension.modalOpen ? <Errors errors={pension.errors} /> : null}
-          </Modal.Title>
-        </Modal.Header>
-        {pension.loadingItems?.includes(pension.selectedItem?.id) ? (
-          <ColorRing
-            width='100%'
-            height='50'
-            wrapperStyle={{ width: '100%' }}
-          />
-        ) : (
-          <Modal.Body>
-            <Form onSubmit={onSubmit}>
-              <Form.Group className='mb-3'>
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Pension fund name'
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className='mb-3'>
-                <Form.Label>Start date</Form.Label>
-                <div>
-                  <DatePicker
-                    className='btn btn-outline-secondary rounded btn-sm'
-                    dateFormat={'dd-MM-yyyy'}
-                    isClearable={false}
-                    onChange={(date) => setStartDate(date)}
-                    readOnly={pension.loading}
-                    scrollableYearDropdown
-                    selected={startDate}
-                    showIcon
-                    showYearDropdown
-                  />
-                </div>
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-        )}
-        <Modal.Footer>
-          {Boolean(pension.selectedItem) && (
-            <Button
-              variant='danger'
-              className='float-left'
-              onClick={() =>
-                dispatch(
-                  api.delete(pension.selectedItem.id, pension.selectedItem.name)
-                )
-              }
-            >
-              Delete
-            </Button>
-          )}
-
-          <Button variant='secondary' onClick={closeModal}>
-            Close
-          </Button>
-          <Button
-            variant='primary'
-            onClick={onSubmit}
-            disabled={!name || !startDate}
-          >
-            {pension.selectedItem ? 'Update' : 'Add'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {renderContentSection3()}
     </div>
   );
 };
