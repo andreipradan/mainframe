@@ -106,6 +106,10 @@ Developer-facing instructions (setup, running services, and test guidance) have 
 
 Never bypass pre-commit hooks. Agents and contributors must not use `--no-verify` or other bypasses to skip hooks. Always run `pre-commit run --all-files` locally and fix the issues reported by hooks before committing. Automated agents should surface any hook failures and remediate them rather than bypassing checks.
 
+**Remote Pushes (Required):**
+
+Never push commits or branches to a remote unless the user explicitly asks you to push. Permission to make local commits does not imply permission to push, and prior requests to push unrelated work are not ongoing authorization.
+
 ## Adding New Features
 
 ### Adding a New App Module
@@ -281,6 +285,8 @@ uv run poe test -k "permission"
 - **Minimum**: 60% overall
 - **Target**: 80%+ overall
 - **Critical paths**: 100% (authentication, financial operations, data modifications)
+- **Pull requests**: Every modified or new executable production source file must have at least 80% unit-test line coverage across the entire file. Run the relevant tests with coverage enabled and add tests until each file meets the threshold; do not substitute changed-line coverage for file coverage.
+- Static assets such as stylesheets, generated files, test files, and configuration-only changes are not runtime-coverage targets; validate them with appropriate checks instead.
 
 ## Database & Migrations
 

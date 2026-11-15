@@ -89,7 +89,7 @@ const Stocks = () => {
       setKwargsMethod = setKwargs;
     } else if (store === pnl) {
       setKwargsMethod = setPnlKwargs;
-    } else throw Error('Invalid store');
+    } else throw new Error('Invalid store');
 
     const newTypes = newValue.map((v) => v.value);
     dispatch(

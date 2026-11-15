@@ -166,13 +166,16 @@ const Categorize = () => {
         <div className='col-md-12 grid-margin'>
           <div className='card'>
             <div className='card-body'>
-              <h4
-                className='card-title'
-                onClick={() => setPredictionTasksOpen(!predictionTasksOpen)}
-                data-toggle='collapse'
-                style={{ cursor: 'pointer' }}
-              >
-                Tasks
+              <h4 className='card-title'>
+                <button
+                  type='button'
+                  className='btn p-0 border-0 text-reset'
+                  aria-expanded={predictionTasksOpen}
+                  onClick={() => setPredictionTasksOpen(!predictionTasksOpen)}
+                  style={{ font: 'inherit', cursor: 'pointer' }}
+                >
+                  Tasks
+                </button>
                 {prediction.loading ? (
                   <Circles
                     visible
@@ -271,19 +274,19 @@ const Categorize = () => {
                                 </>
                               ) : null}
                               <br />
-                              <a
-                                href={''}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setTrainHistoryOpen(!trainHistoryOpen);
-                                }}
-                                data-toggle='collapse'
+                              <button
+                                type='button'
+                                className='btn btn-link p-0'
+                                aria-expanded={trainHistoryOpen}
+                                onClick={() =>
+                                  setTrainHistoryOpen(!trainHistoryOpen)
+                                }
                               >
                                 History{' '}
                                 <i
                                   className={`mdi mdi-chevron-${trainHistoryOpen ? 'down' : 'right'}`}
                                 />
-                              </a>
+                              </button>
                               <Collapse in={trainHistoryOpen}>
                                 <ul>
                                   {prediction.train.history.map((h) => (
@@ -378,19 +381,19 @@ const Categorize = () => {
                                 </>
                               ) : null}
                               <br />
-                              <a
-                                href={''}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setPredictHistoryOpen(!predictHistoryOpen);
-                                }}
-                                data-toggle='collapse'
+                              <button
+                                type='button'
+                                className='btn btn-link p-0'
+                                aria-expanded={predictHistoryOpen}
+                                onClick={() =>
+                                  setPredictHistoryOpen(!predictHistoryOpen)
+                                }
                               >
                                 History{' '}
                                 <i
                                   className={`mdi mdi-chevron-${predictHistoryOpen ? 'down' : 'right'}`}
                                 />
-                              </a>
+                              </button>
                               <Collapse in={predictHistoryOpen}>
                                 <ul>
                                   {prediction.predict.history.map((h) => (

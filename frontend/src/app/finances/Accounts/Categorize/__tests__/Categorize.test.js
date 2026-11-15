@@ -305,16 +305,16 @@ describe('Categorize component', () => {
         .click()
     );
     expect(div.textContent).not.toContain('Categories updated');
-    const tasksHeading = Array.from(div.querySelectorAll('h4')).find(
-      (heading) => heading.textContent.startsWith('Tasks')
+    const tasksToggle = Array.from(div.querySelectorAll('button')).find(
+      (button) => button.textContent.trim() === 'Tasks'
     );
-    act(() => tasksHeading.click());
+    act(() => tasksToggle.click());
     expect(div.textContent).toContain('Training objects count: 2');
     expect(div.textContent).toContain('Progress 75%');
-    const taskHistoryLinks = Array.from(div.querySelectorAll('a')).filter(
-      (link) => link.textContent.includes('History')
-    );
-    taskHistoryLinks.forEach((link) => act(() => link.click()));
+    const taskHistoryToggles = Array.from(
+      div.querySelectorAll('button')
+    ).filter((button) => button.textContent.includes('History'));
+    taskHistoryToggles.forEach((button) => act(() => button.click()));
     expect(div.textContent).toContain('detail: trained');
     expect(div.textContent).toContain('detail: predicted');
     div.querySelectorAll('.mdi-refresh').forEach((icon) => {

@@ -101,7 +101,7 @@ const Crypto = () => {
     let setKwargsMethod = null;
     if (store === crypto) setKwargsMethod = setKwargs;
     else if (store === pnl) setKwargsMethod = setPnlKwargs;
-    else throw Error('Invalid store');
+    else throw new Error('Invalid store');
     dispatch(
       setKwargsMethod({ ...(store.kwargs || {}), [what]: newTypes, page: 1 })
     );
