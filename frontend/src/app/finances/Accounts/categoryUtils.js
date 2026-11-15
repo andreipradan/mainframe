@@ -1,3 +1,4 @@
+/** Updates the checked categories for a new category selection. */
 export const updateCheckedCategories = (
   checkedCategories,
   newCategory,

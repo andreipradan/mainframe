@@ -44,6 +44,7 @@ const getUpdateTextType = (timestamp, pollingEnabled = true) => {
   return 'success';
 };
 
+/** Finds a stop time's route short name from the available transit data. */
 const getRouteShortName = (stopTime, routes, trips) => {
   const trip = trips?.find((item) => item.trip_id === stopTime.trip_id);
   return routes?.find((route) => route.route_id === trip?.route_id)

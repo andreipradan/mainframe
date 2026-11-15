@@ -213,8 +213,8 @@ const Bonds = () => {
                             <ListItem
                               label={'Profit'}
                               value={`${
-                                state.aggregations['pnl_' + currencyCode] +
-                                state.aggregations['dividend_' + currencyCode]
+                                state.aggregations[`pnl_${currencyCode}`] +
+                                state.aggregations[`dividend_${currencyCode}`]
                               } ${currencyCode}`}
                               textType={
                                 state.aggregations[`pnl_${currencyCode}`] +
