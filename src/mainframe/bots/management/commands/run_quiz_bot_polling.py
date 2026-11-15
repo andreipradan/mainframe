@@ -96,7 +96,7 @@ class Handler:
         }
         quiz["answers"] = {}
         quiz["correct_option"] = correct_option
-        await self.set_quiz(chat_id, quiz)
+        self.set_quiz(chat_id, quiz)
 
         await asyncio.sleep(2)
         message = await self.client.safe_send(context.bot.send_poll, **params)
@@ -126,7 +126,7 @@ class Handler:
             text=f"Quiz inceput la: {now}\nJucatori: {', '.join(quiz['players'])}",
             reply_markup=get_markup(),
         )
-        await self.set_quiz(chat_id, quiz)
+        self.set_quiz(chat_id, quiz)
         return await self.get_question(chat_id, context, quiz)
 
     async def receive_poll_answer(
@@ -179,7 +179,7 @@ class Handler:
         else:
             quiz["qi"] += 1
 
-        await self.set_quiz(chat_id, quiz)
+        self.set_quiz(chat_id, quiz)
 
         return await self.get_question(chat_id, context, quiz)
 
@@ -270,7 +270,7 @@ class Handler:
     async def reset(self, query: telegram.CallbackQuery, quiz=None):
         quiz = {"categories": DEFAULT_CATEGORIES, **(quiz or {}), "ci": 0, "qi": 0}
         quiz = await self.regenerate(query, quiz)
-        await self.set_quiz(query.message.chat.id, quiz)
+        self.set_quiz(query.message.chat.id, quiz)
         await query.edit_message_text(
             "S-a creat un quiz nou\n"
             "Apasa ca 🫡 sa te alaturi\n"
@@ -285,14 +285,14 @@ class Handler:
         quiz["ci"], quiz["qi"] = 0, 0
         for player, _ in quiz["players"].items():
             quiz["players"][player] = 0
-        await self.set_quiz(chat_id, quiz)
+        self.set_quiz(chat_id, quiz)
         await query.edit_message_text(
             f"Scorul s-a resetat la: {now}\nApasa 🔥 pentru intrebari noi",
             parse_mode=ParseMode.HTML,
             reply_markup=get_markup(),
         )
 
-    async def set_quiz(self, chat_id, quiz):
+    def set_quiz(self, chat_id, quiz):
         self.client.redis.set(f"quiz:{chat_id}", quiz)
 
 
@@ -332,7 +332,7 @@ class BotClient(BaseBotClient):
             else:
                 action = "a renuntat"
                 del quiz["players"][new_player]
-            await self.handler.set_quiz(chat_id, quiz)
+            self.handler.set_quiz(chat_id, quiz)
             players_text = (
                 f"Jucatori: {', '.join(list(quiz['players']))}"
                 if list(quiz["players"])
@@ -356,7 +356,7 @@ class BotClient(BaseBotClient):
         quiz = self.handler.get_quiz(chat_id)
         if categories := message.text.lstrip("/categories "):  # noqa: B005
             quiz["categories"] = [c.strip() for c in categories.split(",")]
-            return self.handler.set_quiz(f"quiz:{chat_id}", quiz)
+            return self.handler.set_quiz(chat_id, quiz)
         await self.reply(message, "Pentru a seta: `/categories categorie1, categorie2`")
 
     async def handle_start(self, update: Update, _: ContextTypes.DEFAULT_TYPE):

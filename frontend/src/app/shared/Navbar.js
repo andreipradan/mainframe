@@ -327,20 +327,24 @@ const Navbar = () => {
           </Dropdown>
 
           {/* RPi Status */}
-          <li
-            className='nav-item'
-            type='button'
-            onClick={() =>
-              ngrokToken
-                ? dispatch(RpiApi.logout(ngrokToken))
-                : setShowNgrokLoginModal(!showNgrokLoginModal)
-            }
-          >
-            <div className='nav-link' id='rpi-connection-button'>
+          <li className='nav-item'>
+            <button
+              type='button'
+              className='nav-link border-0 bg-transparent'
+              id='rpi-connection-button'
+              aria-label={
+                ngrokToken ? 'Disconnect Raspberry Pi' : 'Connect Raspberry Pi'
+              }
+              onClick={() =>
+                ngrokToken
+                  ? dispatch(RpiApi.logout(ngrokToken))
+                  : setShowNgrokLoginModal(!showNgrokLoginModal)
+              }
+            >
               <i
                 className={`mdi mdi-access-point-network text-${ngrokToken ? 'success' : 'danger'}`}
               />
-            </div>
+            </button>
           </li>
           <Tooltip anchorSelect='#rpi-connection-button' place='bottom-start'>
             RPi connection:{' '}

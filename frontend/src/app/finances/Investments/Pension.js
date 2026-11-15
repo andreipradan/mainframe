@@ -303,7 +303,6 @@ const Pension = () => {
                             </td>
                             <td>
                               <input
-                                autoFocus
                                 onChange={(e) =>
                                   setContribAmount(e.target.value)
                                 }
@@ -313,7 +312,6 @@ const Pension = () => {
                             </td>
                             <td>
                               <input
-                                autoFocus
                                 onChange={(e) =>
                                   setContribUnits(e.target.value)
                                 }
@@ -398,7 +396,6 @@ const Pension = () => {
                             <td>
                               {contribToEdit === c.id ? (
                                 <input
-                                  autoFocus
                                   onChange={(e) =>
                                     setContribAmount(e.target.value)
                                   }
@@ -414,7 +411,6 @@ const Pension = () => {
                             <td>
                               {contribToEdit === c.id ? (
                                 <input
-                                  autoFocus
                                   onChange={(e) =>
                                     setContribUnits(e.target.value)
                                   }

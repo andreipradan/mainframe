@@ -7,8 +7,10 @@ const BottomPagination = (props) => {
   const kwargs = props.items.kwargs || {};
   const currentPage = !props.items.previous
     ? 1
-    : (parseInt(new URL(props.items.previous).searchParams.get('page')) || 1) +
-      1;
+    : (Number.parseInt(
+        new URL(props.items.previous).searchParams.get('page'),
+        10
+      ) || 1) + 1;
   const pageSize = props.items.page_size || 10;
   const lastPage = Math.max(1, Math.ceil((props.items.count || 0) / pageSize));
 
@@ -21,7 +23,7 @@ const BottomPagination = (props) => {
     if (w < 768) return 2; // mobile portrait
     if (w < 1024) return 3; // tablet
     return 5; // desktop
-  }
+  };
 
   const [visiblePages, setVisiblePages] = useState(getVisiblePages());
   useEffect(() => {
@@ -57,8 +59,10 @@ const BottomPagination = (props) => {
           if (p > 2 && p < lastPage - 1) pages.push(p);
         }
 
-        if (lastPage - 1 > 2 && lastPage - 1 !== pages[pages.length - 1]) pages.push(lastPage - 1);
-        if (lastPage > 2 && lastPage !== pages[pages.length - 1]) pages.push(lastPage);
+        if (lastPage - 1 > 2 && lastPage - 1 !== pages[pages.length - 1])
+          pages.push(lastPage - 1);
+        if (lastPage > 2 && lastPage !== pages[pages.length - 1])
+          pages.push(lastPage);
 
         // dedupe and sort
         const uniq = Array.from(new Set(pages)).sort((a, b) => a - b);

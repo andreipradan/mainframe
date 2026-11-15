@@ -12,7 +12,7 @@
       font-weight: bold;
       line-height: 2;
       &::before {
-        font-family: "Material Design Icons";
+        font-family: 'Material Design Icons', sans-serif;
         font-size: 1.875rem;
         font-weight: bold;
         opacity: 1;
@@ -22,18 +22,18 @@
       left: 25px;
 
       &::before {
-        content: "\F0141";
+        content: '\F0141';
         .rtl & {
-          content: "\F0142";
+          content: '\F0142';
         }
       }
     }
     &.slick-next {
       right: 25px;
       &::before {
-        content: "\F0142";
+        content: '\F0142';
         .rtl & {
-          content: "\F0141";
+          content: '\F0141';
         }
       }
     }
@@ -50,11 +50,11 @@
     li {
       button {
         &::before {
-          content: "";
+          content: '';
           width: 10px;
           height: 10px;
           border-radius: 100%;
-          background-color: #D6D6D6;
+          background-color: #d6d6d6;
         }
       }
 
@@ -76,13 +76,13 @@
         width: 32px;
         bottom: 100%;
         top: auto;
-        &::before{
+        &::before {
           color: #a7afb7;
           font-size: 1.25rem;
           font-weight: normal;
         }
       }
-  
+
       &.slick-prev {
         right: 35px;
         left: auto;
@@ -91,7 +91,7 @@
           right: auto;
         }
       }
-      
+
       &.slick-next {
         right: 0;
         .rtl & {
