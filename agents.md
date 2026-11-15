@@ -281,7 +281,7 @@ uv run poe test -k "permission"
 - **Minimum**: 60% overall
 - **Target**: 80%+ overall
 - **Critical paths**: 100% (authentication, financial operations, data modifications)
-- **Pull requests**: Aim for at least 80% line coverage for each modified executable source file, verified with its relevant test suite. For large legacy files where unrelated existing code prevents that threshold, ensure at least 80% of the changed executable lines are covered and report the limitation.
+- **Pull requests**: Every modified or new executable production source file must have at least 80% unit-test line coverage across the entire file. Run the relevant tests with coverage enabled and add tests until each file meets the threshold; do not substitute changed-line coverage for file coverage.
 - Static assets such as stylesheets, generated files, test files, and configuration-only changes are not runtime-coverage targets; validate them with appropriate checks instead.
 
 ## Database & Migrations
