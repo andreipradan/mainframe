@@ -4,11 +4,11 @@
 const compareByField = (a, b, field) => {
   const isDescending = field.startsWith('-');
   const fieldName = isDescending ? field.slice(1) : field;
-  if (
-    !Object.prototype.hasOwnProperty.call(a, fieldName) ||
-    !Object.prototype.hasOwnProperty.call(b, fieldName)
-  )
-    return 0;
+  const aHasField = Object.prototype.hasOwnProperty.call(a, fieldName);
+  const bHasField = Object.prototype.hasOwnProperty.call(b, fieldName);
+  if (!aHasField && !bHasField) return 0;
+  if (!aHasField) return -1;
+  if (!bHasField) return 1;
 
   if (a[fieldName] < b[fieldName]) return isDescending ? 1 : -1;
   if (a[fieldName] > b[fieldName]) return isDescending ? -1 : 1;

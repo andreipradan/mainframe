@@ -83,11 +83,6 @@ $container-max-widths: (
 @import '../assets/styles/footer';
 @import '../assets/styles/layout';
 
-// Define a col-xxl grid class after imports to keep CSS imports valid.
-.col-xxl {
-  flex: 0 0 auto;
-  width: 100%;
-}
 @for $i from 1 through 12 {
   .col-xxl-#{$i} {
     flex: 0 0 auto;

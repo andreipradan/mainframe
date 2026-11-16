@@ -44,6 +44,29 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
     ]);
   });
 
+  test('sorting keeps missing fields consistently before present fields', () => {
+    const opts = getBaseSliceOptions('test', {
+      ordering: ['-rank', 'name'],
+    });
+    const state = JSON.parse(JSON.stringify(opts.initialState));
+    state.results = [
+      { id: 'missing', name: 'M' },
+      { id: 'high', rank: 2, name: 'Z' },
+      { id: 'low', rank: 1, name: 'A' },
+    ];
+
+    opts.reducers.create(state, {
+      payload: { id: 'lower', rank: 0, name: 'X' },
+    });
+
+    expect(state.results.map(({ id }) => id)).toEqual([
+      'missing',
+      'high',
+      'low',
+      'lower',
+    ]);
+  });
+
   test('setExtra merges extra fields', () => {
     const opts = getBaseSliceOptions('test');
     const state = JSON.parse(JSON.stringify(opts.initialState));
