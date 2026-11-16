@@ -32,15 +32,24 @@ const SidebarSubMenu = ({ id, children }) => (
 );
 
 /** Renders an accessible collapsible navigation item and its child links. */
-const SidebarMenu = ({ active, open, onToggle, id, label, icon, children }) => (
+const SidebarMenu = ({
+  active,
+  open,
+  onToggle,
+  id,
+  label,
+  ariaLabel = label,
+  icon,
+  children,
+}) => (
   <li className={menuItemClass(active)}>
     <button
       type='button'
       className={menuToggleClass(open)}
       aria-expanded={open}
       aria-controls={id}
-      aria-label={`${label} menu`}
-      title={`${label} menu`}
+      aria-label={`${ariaLabel} menu`}
+      title={`${ariaLabel} menu`}
       onClick={onToggle}
       data-toggle='collapse'
       style={{
@@ -145,6 +154,27 @@ const StaffIdentity = ({ user, loading }) => (
   </div>
 );
 
+/** Groups the staff identity and service-action menu in the profile row. */
+const StaffProfileDetails = ({
+  user,
+  token,
+  loading,
+  handleSetModalAction,
+  setModalOpen,
+  setCurrentModal,
+}) => (
+  <div className='profile-desc'>
+    <StaffIdentity user={user} loading={loading} />
+    {token && (
+      <StaffActionMenu
+        handleSetModalAction={handleSetModalAction}
+        setModalOpen={setModalOpen}
+        setCurrentModal={setCurrentModal}
+      />
+    )}
+  </div>
+);
+
 /** Displays the signed-in staff profile and its status messages. */
 const StaffProfile = ({
   user,
@@ -162,16 +192,14 @@ const StaffProfile = ({
 }) => (
   <>
     <li className='nav-item profile'>
-      <div className='profile-desc'>
-        <StaffIdentity user={user} loading={loading} />
-        {token && (
-          <StaffActionMenu
-            handleSetModalAction={handleSetModalAction}
-            setModalOpen={setModalOpen}
-            setCurrentModal={setCurrentModal}
-          />
-        )}
-      </div>
+      <StaffProfileDetails
+        user={user}
+        token={token}
+        loading={loading}
+        handleSetModalAction={handleSetModalAction}
+        setModalOpen={setModalOpen}
+        setCurrentModal={setCurrentModal}
+      />
       {alertOpen && <Errors errors={errors} />}
       {messageOpen && (
         <Alert
@@ -227,9 +255,15 @@ const StaffTemplateNavigation = ({ navigation }) => {
       open: basicUiMenuOpen,
       onToggle: () => setBasicUiMenuOpen(!basicUiMenuOpen),
       links: [
-        ['/basic-ui/buttons', <Trans>Buttons</Trans>],
-        ['/basic-ui/dropdowns', <Trans>Dropdowns</Trans>],
-        ['/basic-ui/typography', <Trans>Typography</Trans>],
+        ['/basic-ui/buttons', <Trans key='/basic-ui/buttons'>Buttons</Trans>],
+        [
+          '/basic-ui/dropdowns',
+          <Trans key='/basic-ui/dropdowns'>Dropdowns</Trans>,
+        ],
+        [
+          '/basic-ui/typography',
+          <Trans key='/basic-ui/typography'>Typography</Trans>,
+        ],
       ],
     },
     {
@@ -239,7 +273,12 @@ const StaffTemplateNavigation = ({ navigation }) => {
       icon: 'mdi-playlist-play',
       open: formElementsMenuOpen,
       onToggle: () => setFormElementsMenuOpen(!formElementsMenuOpen),
-      links: [['/form-elements/basic-elements', <Trans>Basic Elements</Trans>]],
+      links: [
+        [
+          '/form-elements/basic-elements',
+          <Trans key='/form-elements/basic-elements'>Basic Elements</Trans>,
+        ],
+      ],
     },
     {
       id: 'sidebar-tables-menu',
@@ -248,7 +287,12 @@ const StaffTemplateNavigation = ({ navigation }) => {
       icon: 'mdi-table-large',
       open: tablesMenuOpen,
       onToggle: () => setTablesMenuOpen(!tablesMenuOpen),
-      links: [['/tables/basic-table', <Trans>Basic Table</Trans>]],
+      links: [
+        [
+          '/tables/basic-table',
+          <Trans key='/tables/basic-table'>Basic Table</Trans>,
+        ],
+      ],
     },
     {
       id: 'sidebar-charts-menu',
@@ -257,7 +301,9 @@ const StaffTemplateNavigation = ({ navigation }) => {
       icon: 'mdi-chart-bar',
       open: chartsMenuOpen,
       onToggle: () => setChartsMenuOpen(!chartsMenuOpen),
-      links: [['/charts/chart-js', <Trans>Chart Js</Trans>]],
+      links: [
+        ['/charts/chart-js', <Trans key='/charts/chart-js'>Chart Js</Trans>],
+      ],
     },
     {
       id: 'sidebar-icons-menu',
@@ -266,7 +312,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       icon: 'mdi-contacts',
       open: iconsMenuOpen,
       onToggle: () => setIconsMenuOpen(!iconsMenuOpen),
-      links: [['/icons/mdi', <Trans>Material</Trans>]],
+      links: [['/icons/mdi', <Trans key='/icons/mdi'>Material</Trans>]],
     },
     {
       id: 'sidebar-user-pages-menu',
@@ -277,8 +323,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       open: userPagesMenuOpen,
       onToggle: () => setUserPagesMenuOpen(!userPagesMenuOpen),
       links: [
-        ['/login', <Trans>Login</Trans>],
-        ['/register', <Trans>Register</Trans>],
+        ['/login', <Trans key='/login'>Login</Trans>],
+        ['/register', <Trans key='/register'>Register</Trans>],
       ],
     },
     {
@@ -307,11 +353,13 @@ const StaffTemplateNavigation = ({ navigation }) => {
           active={group.active ?? isPathActive(group.path)}
         >
           {group.links.map(([path, label]) => (
-            <li className='nav-item' key={path}>
-              <Link className={navLinkClass(isPathActive(path))} to={path}>
-                {label}
-              </Link>
-            </li>
+            <SidebarSubmenuLink
+              key={path}
+              path={path}
+              isActive={isPathActive(path)}
+            >
+              {label}
+            </SidebarSubmenuLink>
           ))}
         </SidebarMenu>
       ))}
@@ -400,29 +448,88 @@ const TravelNavigation = ({ navigation }) => {
         label='Travel'
         icon='mdi-earth'
       >
-        <li className='nav-item'>
-          <Link
-            className={navLinkClass(isPathExact('/expenses/travel/my'))}
-            to='/expenses/travel/my'
-          >
-            My expenses
-          </Link>
-        </li>
-        <li className='nav-item'>
-          <Link
-            className={navLinkClass(isPathActive('/expenses/travel/groups'))}
-            to='/expenses/travel/groups'
-          >
-            <span>My groups</span>
-          </Link>
-        </li>
+        <SidebarSubmenuLink
+          path='/expenses/travel/my'
+          isActive={isPathExact('/expenses/travel/my')}
+        >
+          My expenses
+        </SidebarSubmenuLink>
+        <SidebarSubmenuLink
+          path='/expenses/travel/groups'
+          isActive={isPathActive('/expenses/travel/groups')}
+        >
+          My groups
+        </SidebarSubmenuLink>
       </SidebarMenu>
     </>
   );
 };
 
-/** Renders the user's route-aware sidebar navigation. */
-const SidebarNavigation = ({ navigation }) => {
+/** Renders a linked item inside a collapsible sidebar menu. */
+const SidebarSubmenuLink = ({ path, isActive, icon, children }) => (
+  <li className='nav-item'>
+    <Link className={navLinkClass(isActive)} to={path}>
+      {icon && <i className={`mdi ${icon}`} />}
+      {icon && ' '}
+      {children}
+    </Link>
+  </li>
+);
+
+/** Renders a top-level sidebar route with its icon and label. */
+const SidebarRouteItem = ({ path, active, icon, children }) => (
+  <li className={menuItemClass(active)}>
+    <Link className='nav-link' to={path}>
+      <span className='menu-icon'>
+        <i className={`mdi ${icon}`} />
+      </span>
+      <span className='menu-title'>{children}</span>
+    </Link>
+  </li>
+);
+
+/** Renders a configured collapsible group and its child routes. */
+const SidebarMenuGroup = ({ group, isPathActive }) => (
+  <SidebarMenu
+    active={group.active}
+    open={group.open}
+    onToggle={group.onToggle}
+    id={group.id}
+    label={group.label}
+    icon={group.icon}
+  >
+    {group.links.map(({ path, label, icon }) => (
+      <SidebarSubmenuLink
+        key={path}
+        path={path}
+        isActive={isPathActive(path)}
+        icon={icon}
+      >
+        {label}
+      </SidebarSubmenuLink>
+    ))}
+  </SidebarMenu>
+);
+
+/** Renders the external documentation link in the staff sidebar. */
+const SidebarExternalLink = ({ href, icon, children }) => (
+  <li className='nav-item menu-items'>
+    <a
+      className='nav-link'
+      href={href}
+      rel='noopener noreferrer'
+      target='_blank'
+    >
+      <span className='menu-icon'>
+        <i className={`mdi ${icon}`} />
+      </span>
+      <span className='menu-title'>{children}</span>
+    </a>
+  </li>
+);
+
+/** Renders the staff profile and route-aware administrative menus. */
+const StaffNavigation = ({ navigation }) => {
   const {
     alertOpen,
     errors,
@@ -447,609 +554,289 @@ const SidebarNavigation = ({ navigation }) => {
     setCommandsMenuOpen,
     creditMenuOpen,
     setCreditMenuOpen,
-    documentationMenuOpen,
-    setDocumentationMenuOpen,
     expensesMenuOpen,
     setExpensesMenuOpen,
     investmentsMenuOpen,
     setInvestmentsMenuOpen,
   } = navigation;
 
+  const items = [
+    {
+      kind: 'menu',
+      id: 'sidebar-apps-menu',
+      path: '/apps',
+      label: <Trans key='apps'>Apps</Trans>,
+      icon: 'mdi-apps',
+      open: appsMenuOpen,
+      onToggle: () => setAppsMenuOpen(!appsMenuOpen),
+      links: [
+        {
+          path: '/apps/logs',
+          icon: 'mdi-file-document-outline',
+          label: 'Logs',
+        },
+        { path: '/apps/messages', icon: 'mdi-message-text', label: 'Messages' },
+        { path: '/apps/todo', icon: 'mdi-clipboard-list', label: 'To do list' },
+      ],
+    },
+    {
+      kind: 'menu',
+      id: 'sidebar-auth-menu',
+      path: '/auth',
+      label: 'Auth',
+      icon: 'mdi-account-multiple',
+      open: authMenuOpen,
+      onToggle: () => setAuthMenuOpen(!authMenuOpen),
+      links: [
+        { path: '/auth/groups', label: 'Groups' },
+        { path: '/auth/users', label: 'Users' },
+      ],
+    },
+    {
+      kind: 'route',
+      path: '/bots',
+      active: isPathActive('/bots'),
+      icon: 'mdi-robot',
+      label: 'Bots',
+    },
+    {
+      kind: 'menu',
+      id: 'sidebar-commands-menu',
+      path: '/commands',
+      label: 'Commands',
+      icon: 'mdi-console',
+      open: commandsMenuOpen,
+      onToggle: () => setCommandsMenuOpen(!commandsMenuOpen),
+      links: [
+        { path: '/commands/crons', icon: 'mdi-timer-sand', label: 'Crons' },
+        {
+          path: '/commands/management',
+          icon: 'mdi-account',
+          label: 'Management',
+        },
+        { path: '/commands/tasks', icon: 'mdi-view-list', label: 'Tasks' },
+        {
+          path: '/commands/watchers',
+          icon: 'mdi-eye-settings-outline',
+          label: 'Watchers',
+        },
+      ],
+    },
+    {
+      kind: 'route',
+      path: '/devices',
+      active: isPathActive('/devices'),
+      icon: 'mdi-devices',
+      label: 'Devices',
+    },
+    {
+      kind: 'route',
+      path: '/events',
+      active: isPathActive('/events'),
+      icon: 'mdi-calendar-multiselect',
+      label: 'Events',
+    },
+    {
+      kind: 'route',
+      path: '/sources',
+      active: isPathActive('/sources'),
+      icon: 'mdi-network',
+      label: 'Sources',
+    },
+    { kind: 'category', id: 'finance-category', label: 'Finance' },
+    {
+      kind: 'menu',
+      id: 'sidebar-accounts-menu',
+      path: '/finances/accounts',
+      label: 'Accounts',
+      icon: 'mdi-credit-card-outline',
+      open: accountsMenuOpen,
+      onToggle: () => setAccountsMenuOpen(!accountsMenuOpen),
+      links: [
+        { path: '/finances/accounts/transactions', label: 'Overview' },
+        { path: '/finances/accounts/categorize', label: 'Categorize' },
+      ],
+    },
+    {
+      kind: 'menu',
+      id: 'sidebar-credit-menu',
+      path: '/credit',
+      label: 'Credit',
+      icon: 'mdi-cash-multiple',
+      open: creditMenuOpen,
+      onToggle: () => setCreditMenuOpen(!creditMenuOpen),
+      links: [
+        { path: '/credit/details', label: 'Details' },
+        { path: '/credit/calculator', label: 'Calculator' },
+        { path: '/credit/payments', label: 'Payments' },
+        { path: '/credit/timetables', label: 'Timetables' },
+      ],
+    },
+    {
+      kind: 'menu',
+      id: 'sidebar-expenses-menu',
+      path: '/expenses',
+      label: 'Expenses',
+      icon: 'mdi-account-cash-outline',
+      open: expensesMenuOpen,
+      onToggle: () => setExpensesMenuOpen(!expensesMenuOpen),
+      links: [{ path: '/expenses/car', label: 'Car' }],
+    },
+    {
+      kind: 'route',
+      path: '/fx-rates',
+      active: isPathExact('/fx-rates'),
+      icon: 'mdi-chart-line',
+      label: 'FX Rates',
+    },
+    {
+      kind: 'menu',
+      id: 'sidebar-investments-menu',
+      path: '/investments',
+      label: 'Investments',
+      icon: 'mdi-cash-multiple',
+      open: investmentsMenuOpen,
+      onToggle: () => setInvestmentsMenuOpen(!investmentsMenuOpen),
+      links: [
+        { path: '/investments/summary', label: 'Summary' },
+        { path: '/investments/bonds', label: 'Bonds' },
+        { path: '/investments/crypto', label: 'Crypto' },
+        { path: '/investments/deposits', label: 'Deposits' },
+        { path: '/investments/pension', label: 'Pension' },
+        { path: '/investments/stocks', label: 'Stocks' },
+      ],
+    },
+  ];
+
   return (
-    <ul className='nav'>
-      {user?.is_staff && (
-        <StaffProfile
-          user={user}
-          token={token}
-          loading={loading}
-          errors={errors}
-          alertOpen={alertOpen}
-          message={message}
-          messageOpen={messageOpen}
-          setMessageOpen={setMessageOpen}
-          handleSetModalAction={handleSetModalAction}
-          setModalOpen={setModalOpen}
-          setCurrentModal={setCurrentModal}
-          isPathExact={isPathExact}
-        />
-      )}
-      {user?.is_staff && (
-        <>
-          <li className={menuItemClass(isPathActive('/apps'))}>
-            <button
-              type='button'
-              className={menuToggleClass(appsMenuOpen)}
-              aria-expanded={appsMenuOpen}
-              aria-controls='sidebar-apps-menu'
-              aria-label='Apps menu'
-              title='Apps menu'
-              onClick={() => setAppsMenuOpen(!appsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
+    <>
+      <StaffProfile
+        user={user}
+        token={token}
+        loading={loading}
+        errors={errors}
+        alertOpen={alertOpen}
+        message={message}
+        messageOpen={messageOpen}
+        setMessageOpen={setMessageOpen}
+        handleSetModalAction={handleSetModalAction}
+        setModalOpen={setModalOpen}
+        setCurrentModal={setCurrentModal}
+        isPathExact={isPathExact}
+      />
+      {items.map((item) => {
+        if (item.kind === 'category') {
+          return (
+            <li className='nav-item nav-category' key={item.id}>
+              <span className='nav-link'>{item.label}</span>
+            </li>
+          );
+        }
+        if (item.kind === 'route') {
+          return (
+            <SidebarRouteItem
+              key={item.path}
+              path={item.path}
+              active={item.active}
+              icon={item.icon}
             >
-              <span className='menu-icon'>
-                <i className='mdi mdi-apps' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Apps</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={appsMenuOpen}>
-              <div id='sidebar-apps-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/apps/logs'))}
-                      to='/apps/logs'
-                    >
-                      <i className='mdi mdi-file-document-outline' /> Logs
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/apps/messages'))}
-                      to='/apps/messages'
-                    >
-                      <i className='mdi mdi-message-text' /> Messages
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/apps/todo'))}
-                      to='/apps/todo'
-                    >
-                      <i className='mdi mdi-clipboard-list' /> To do list
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/auth'))}>
-            <button
-              type='button'
-              className={menuToggleClass(authMenuOpen)}
-              aria-expanded={authMenuOpen}
-              aria-controls='sidebar-auth-menu'
-              aria-label='Auth menu'
-              title='Auth menu'
-              onClick={() => setAuthMenuOpen(!authMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-account-multiple' />
-              </span>
-              <span className='menu-title'>Auth</span>
-              <i className='menu-arrow' />
-            </button>
-
-            <Collapse in={authMenuOpen}>
-              <div id='sidebar-auth-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/auth/groups'))}
-                      to='/auth/groups'
-                    >
-                      Groups
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/auth/users'))}
-                      to='/auth/users'
-                    >
-                      Users
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/bots'))}>
-            <Link className='nav-link' to='/bots'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-robot' />
-              </span>
-              <span className='menu-title'>Bots</span>
-            </Link>
-          </li>
-          <li className={menuItemClass(isPathActive('/commands'))}>
-            <button
-              type='button'
-              className={menuToggleClass(commandsMenuOpen)}
-              aria-expanded={commandsMenuOpen}
-              aria-controls='sidebar-commands-menu'
-              aria-label='Commands menu'
-              title='Commands menu'
-              onClick={() => setCommandsMenuOpen(!commandsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-console' />
-              </span>
-              <span className='menu-title'>Commands</span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={commandsMenuOpen}>
-              <div id='sidebar-commands-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/commands/crons'))}
-                      to='/commands/crons'
-                    >
-                      <i className='mdi mdi-timer-sand' /> Crons
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/commands/management')
-                      )}
-                      to='/commands/management'
-                    >
-                      <i className='mdi mdi-account' /> Management
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/commands/tasks'))}
-                      to='/commands/tasks'
-                    >
-                      <i className='mdi mdi-view-list' /> Tasks
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/commands/watchers')
-                      )}
-                      to='/commands/watchers'
-                    >
-                      <i className='mdi mdi-eye-settings-outline' /> Watchers
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-
-          <li className={menuItemClass(isPathActive('/devices'))}>
-            <Link className='nav-link' to='/devices'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-devices' />
-              </span>
-              <span className='menu-title'>Devices</span>
-            </Link>
-          </li>
-          <li className={menuItemClass(isPathActive('/events'))}>
-            <Link className='nav-link' to='/events'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-calendar-multiselect' />
-              </span>
-              <span className='menu-title'>Events</span>
-            </Link>
-          </li>
-          <li className={menuItemClass(isPathActive('/sources'))}>
-            <Link className='nav-link' to='/sources'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-network' />
-              </span>
-              <span className='menu-title'>Sources</span>
-            </Link>
-          </li>
-          <li className='nav-item nav-category'>
-            <span className='nav-link'>Finance</span>
-          </li>
-          <li className={menuItemClass(isPathActive('/finances/accounts'))}>
-            <button
-              type='button'
-              className={menuToggleClass(accountsMenuOpen)}
-              aria-expanded={accountsMenuOpen}
-              aria-controls='sidebar-accounts-menu'
-              aria-label='Accounts menu'
-              title='Accounts menu'
-              onClick={() => setAccountsMenuOpen(!accountsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-credit-card-outline' />
-              </span>
-              <span className='menu-title'>Accounts</span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={accountsMenuOpen}>
-              <div id='sidebar-accounts-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/finances/accounts/transactions')
-                      )}
-                      to='/finances/accounts/transactions'
-                    >
-                      Overview
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/finances/accounts/categorize')
-                      )}
-                      to='/finances/accounts/categorize'
-                    >
-                      Categorize
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-
-          <li className={menuItemClass(isPathActive('/credit'))}>
-            <button
-              type='button'
-              className={menuToggleClass(creditMenuOpen)}
-              aria-expanded={creditMenuOpen}
-              aria-controls='sidebar-credit-menu'
-              aria-label='Credit menu'
-              title='Credit menu'
-              onClick={() => setCreditMenuOpen(!creditMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-cash-multiple' />
-              </span>
-              <span className='menu-title'>Credit</span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={creditMenuOpen}>
-              <div id='sidebar-credit-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/credit/details'))}
-                      to='/credit/details'
-                    >
-                      Details
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/credit/calculator')
-                      )}
-                      to='/credit/calculator'
-                    >
-                      Calculator
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/credit/payments'))}
-                      to='/credit/payments'
-                    >
-                      Payments
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/credit/timetables')
-                      )}
-                      to='/credit/timetables'
-                    >
-                      Timetables
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-
-          <li className={menuItemClass(isPathActive('/expenses'))}>
-            <button
-              type='button'
-              className={menuToggleClass(expensesMenuOpen)}
-              aria-expanded={expensesMenuOpen}
-              aria-controls='sidebar-expenses-menu'
-              aria-label='Expenses menu'
-              title='Expenses menu'
-              onClick={() => setExpensesMenuOpen(!expensesMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-account-cash-outline' />
-              </span>
-              <span className='menu-title'>Expenses</span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={expensesMenuOpen}>
-              <div id='sidebar-expenses-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/expenses/car'))}
-                      to='/expenses/car'
-                    >
-                      Car
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-
-          <li className={menuItemClass(location.pathname === '/fx-rates')}>
-            <Link className='nav-link' to='/fx-rates'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-chart-line' />
-              </span>
-              <span className='menu-title'>FX Rates</span>
-            </Link>
-          </li>
-
-          <li className={menuItemClass(isPathActive('/investments'))}>
-            <button
-              type='button'
-              className={menuToggleClass(investmentsMenuOpen)}
-              aria-expanded={investmentsMenuOpen}
-              aria-controls='sidebar-investments-menu'
-              aria-label='Investments menu'
-              title='Investments menu'
-              onClick={() => setInvestmentsMenuOpen(!investmentsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-cash-multiple' />
-              </span>
-              <span className='menu-title'>Investments</span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={investmentsMenuOpen}>
-              <div id='sidebar-investments-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/investments/summary')
-                      )}
-                      to='/investments/summary'
-                    >
-                      Summary
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/investments/bonds')
-                      )}
-                      to='/investments/bonds'
-                    >
-                      Bonds
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/investments/crypto')
-                      )}
-                      to='/investments/crypto'
-                    >
-                      Crypto
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/investments/deposits')
-                      )}
-                      to='/investments/deposits'
-                    >
-                      Deposits
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/investments/pension')
-                      )}
-                      to='/investments/pension'
-                    >
-                      Pension
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/investments/stocks')
-                      )}
-                      to='/investments/stocks'
-                    >
-                      Stocks
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-        </>
-      )}
-      {user && (
-        <>
-          <TravelNavigation navigation={navigation} />
-          <li className='nav-item nav-category'>
-            <span className='nav-link'>Public</span>
-          </li>
-          <li className={menuItemClass(isPathActive('/earthquakes'))}>
-            <Link className='nav-link' to='/earthquakes'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-earth' />
-              </span>
-              <span className='menu-title'>Earthquakes</span>
-            </Link>
-          </li>
-          <li className={menuItemClass(isPathActive('/meals'))}>
-            <Link className='nav-link' to='/meals'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-food' />
-              </span>
-              <span className='menu-title'>Meals</span>
-            </Link>
-          </li>
-          <li className={menuItemClass(isPathActive('/transport'))}>
-            <Link className='nav-link' to='/transport'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-bus' />
-              </span>
-              <span className='menu-title'>Transport</span>
-            </Link>
-          </li>
-        </>
-      )}
-
-      <li className={menuItemClass(isPathActive('/terms-and-conditions'))}>
-        <button
-          type='button'
-          className={menuToggleClass(documentationMenuOpen)}
-          aria-expanded={documentationMenuOpen}
-          aria-controls='sidebar-documentation-menu'
-          aria-label='Documentation menu'
-          title='Documentation menu'
-          onClick={() => setDocumentationMenuOpen(!documentationMenuOpen)}
-          data-toggle='collapse'
-          style={{
-            background: 'none',
-            border: 0,
-            cursor: 'pointer',
-            font: 'inherit',
-            textAlign: 'left',
-            width: '100%',
-          }}
-        >
-          <span className='menu-icon'>
-            <i className='mdi mdi-file-document' />
-          </span>
-          <span className='menu-title'>Docs</span>
-          <i className='menu-arrow' />
-        </button>
-        <Collapse in={documentationMenuOpen}>
-          <div id='sidebar-documentation-menu'>
-            <ul className='nav flex-column sub-menu'>
-              <li className='nav-item'>
-                <Link
-                  className={navLinkClass(
-                    isPathActive('/terms-and-conditions')
-                  )}
-                  to='/terms-and-conditions'
-                >
-                  Terms and Conditions
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </Collapse>
-      </li>
-      {user?.is_staff && (
-        <>
-          <StaffTemplateNavigation navigation={navigation} />
-          <li className='nav-item menu-items'>
-            <a
-              className='nav-link'
-              href='https://bootstrapdash.com/demo/corona-react-free/documentation/documentation.html'
-              rel='noopener noreferrer'
-              target='_blank'
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-file-document-box' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Documentation</Trans>
-              </span>
-            </a>
-          </li>
-        </>
-      )}
-    </ul>
+              {item.label}
+            </SidebarRouteItem>
+          );
+        }
+        return (
+          <SidebarMenuGroup
+            key={item.id}
+            group={{ ...item, active: isPathActive(item.path) }}
+            isPathActive={isPathActive}
+          />
+        );
+      })}
+    </>
   );
 };
+
+/** Renders authenticated users' travel and public route links. */
+const PublicNavigation = ({ navigation }) => {
+  const { isPathActive } = navigation;
+
+  return (
+    <>
+      <TravelNavigation navigation={navigation} />
+      <li className='nav-item nav-category'>
+        <span className='nav-link'>Public</span>
+      </li>
+      <SidebarRouteItem
+        path='/earthquakes'
+        active={isPathActive('/earthquakes')}
+        icon='mdi-earth'
+      >
+        Earthquakes
+      </SidebarRouteItem>
+      <SidebarRouteItem
+        path='/meals'
+        active={isPathActive('/meals')}
+        icon='mdi-food'
+      >
+        Meals
+      </SidebarRouteItem>
+      <SidebarRouteItem
+        path='/transport'
+        active={isPathActive('/transport')}
+        icon='mdi-bus'
+      >
+        Transport
+      </SidebarRouteItem>
+    </>
+  );
+};
+
+/** Renders the always-available terms and conditions menu. */
+const DocumentationNavigation = ({ navigation }) => (
+  <SidebarMenu
+    active={navigation.isPathActive('/terms-and-conditions')}
+    open={navigation.documentationMenuOpen}
+    onToggle={() =>
+      navigation.setDocumentationMenuOpen(!navigation.documentationMenuOpen)
+    }
+    id='sidebar-documentation-menu'
+    label='Docs'
+    ariaLabel='Documentation'
+    icon='mdi-file-document'
+  >
+    <SidebarSubmenuLink
+      path='/terms-and-conditions'
+      isActive={navigation.isPathActive('/terms-and-conditions')}
+    >
+      Terms and Conditions
+    </SidebarSubmenuLink>
+  </SidebarMenu>
+);
+
+/** Adds the staff templates menu and external documentation link. */
+const StaffTemplateFooter = ({ navigation }) => (
+  <>
+    <StaffTemplateNavigation navigation={navigation} />
+    <SidebarExternalLink
+      href='https://bootstrapdash.com/demo/corona-react-free/documentation/documentation.html'
+      icon='mdi-file-document-box'
+    >
+      <Trans>Documentation</Trans>
+    </SidebarExternalLink>
+  </>
+);
+
+/** Renders the staff, public, and shared sidebar navigation. */
+const SidebarNavigation = ({ navigation }) => (
+  <ul className='nav'>
+    {navigation.user?.is_staff && <StaffNavigation navigation={navigation} />}
+    {navigation.user && <PublicNavigation navigation={navigation} />}
+    <DocumentationNavigation navigation={navigation} />
+    {navigation.user?.is_staff && (
+      <StaffTemplateFooter navigation={navigation} />
+    )}
+  </ul>
+);
 
 const Sidebar = () => {
   const dispatch = useDispatch();

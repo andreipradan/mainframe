@@ -43,6 +43,14 @@ const FinanceCard = ({ children, columnClass = 'col-sm-12 grid-margin' }) => (
   </div>
 );
 
+/** Shows the selected currency as a compact superscript label. */
+const CurrencyLabel = ({ currency }) =>
+  currency?.label ? (
+    <sup>
+      <small>({currency.label})</small>
+    </sup>
+  ) : null;
+
 /** Displays credit, remaining-balance, and payment summary cards. */
 const CreditSummaryCards = ({
   overview,
@@ -201,12 +209,7 @@ const NextPaymentMarquee = ({
   <div className='row'>
     <FinanceCard>
       <h6>
-        Next payment{' '}
-        <sup>
-          <small>
-            {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
-          </small>
-        </sup>
+        Next payment <CurrencyLabel currency={selectedCurrency} />
         {!overview.loading && latestTimetable?.length && (
           <span className='text-warning'> {latestTimetable[0].date}</span>
         )}
@@ -298,12 +301,7 @@ const LastPaymentMarquee = ({
   <div className='row'>
     <FinanceCard>
       <h6>
-        Last Payment{' '}
-        <sup>
-          <small>
-            {selectedCurrency?.label ? `(${selectedCurrency?.label})` : null}
-          </small>
-        </sup>
+        Last Payment <CurrencyLabel currency={selectedCurrency} />
       </h6>
       {payment.loading && <Circles />}
       {!payment.loading && payment.results?.length > 0 && (

@@ -54,6 +54,20 @@ const DashboardCardContent = (props) => (
   </div>
 );
 
+/** Renders the dashboard card title with its refresh control. */
+const DashboardCardHeading = ({ name, onRefresh }) => (
+  <h5>
+    {name[0].toUpperCase() + name.slice(1)}
+    <button
+      type='button'
+      className='btn btn-outline-success btn-sm border-0 bg-transparent'
+      onClick={onRefresh}
+    >
+      <i className='mdi mdi-refresh' />
+    </button>
+  </h5>
+);
+
 /** Renders a dashboard count card and its refresh control. */
 const DashboardCard = (props) => {
   const dispatch = useDispatch();
@@ -62,16 +76,10 @@ const DashboardCard = (props) => {
     <div className='col-sm-4 grid-margin'>
       <div className='card'>
         <div className='card-body'>
-          <h5>
-            {props.name[0].toUpperCase() + props.name.slice(1)}
-            <button
-              type='button'
-              className='btn btn-outline-success btn-sm border-0 bg-transparent'
-              onClick={() => dispatch(props.refresh())}
-            >
-              <i className='mdi mdi-refresh' />
-            </button>
-          </h5>
+          <DashboardCardHeading
+            name={props.name}
+            onRefresh={() => dispatch(props.refresh())}
+          />
           <DashboardCardContent {...props} />
         </div>
       </div>

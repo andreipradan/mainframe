@@ -94,8 +94,8 @@ describe('Profile', () => {
       type: 'users/updateUser',
     });
 
-    changeInput(container.querySelector('#currentPassword'), 'old-password');
-    changeInput(container.querySelector('#newPassword'), 'new-password');
+    changeInput(container.querySelector('#currentPassword'), 'current');
+    changeInput(container.querySelector('#newPassword'), 'updated');
     const retypePassword = container.querySelector('#retypePassword');
     changeInput(retypePassword, 'different');
     const changePasswordButton = Array.from(
@@ -103,7 +103,7 @@ describe('Profile', () => {
     ).find((button) => button.textContent.includes('Change Password'));
     expect(changePasswordButton.disabled).toBe(true);
 
-    changeInput(retypePassword, 'new-password');
+    changeInput(retypePassword, 'updated');
     expect(changePasswordButton.disabled).toBe(false);
     act(() =>
       forms[1].dispatchEvent(
@@ -111,9 +111,9 @@ describe('Profile', () => {
       )
     );
     expect(UsersApi.changePassword).toHaveBeenCalledWith('token', 7, {
-      old_password: 'old-password',
-      password: 'new-password',
-      password2: 'new-password',
+      old_password: 'current',
+      password: 'updated',
+      password2: 'updated',
     });
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'users/changePassword',

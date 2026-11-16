@@ -1,5 +1,6 @@
 const React = require('react');
 
+/** Provides the modal shell used by tests that mock React Bootstrap. */
 function Modal({ children, show }) {
   return show ? React.createElement('div', { role: 'dialog' }, children) : null;
 }
@@ -17,6 +18,7 @@ Modal.Footer = function ModalFooter({ children }) {
   return React.createElement('footer', null, children);
 };
 
+/** Provides the button replacement used by shared component tests. */
 function Button({ children, ...props }) {
   return React.createElement('button', props, children);
 }

@@ -81,6 +81,7 @@ const MealDetailsBody = ({ meal }) => (
 const EditModal = () => {
   const dispatch = useDispatch();
   const meal = useSelector((state) => state.meals.selectedItem);
+  /** Clears the selected meal when the modal closes. */
   const closeModal = () => dispatch(select());
 
   return (
