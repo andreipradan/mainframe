@@ -181,7 +181,7 @@ const Sources = () => {
                       sources.results.map((s, i) => {
                         if (sources.loadingItems?.includes(s.id)) {
                           return (
-                            <tr key={i}>
+                            <tr key={s.id}>
                               <td colSpan={6}>
                                 <ColorRing
                                   width='100%'

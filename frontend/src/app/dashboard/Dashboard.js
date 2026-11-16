@@ -25,6 +25,60 @@ import {
 
 Chart.register(ArcElement, CategoryScale);
 
+const DashboardCard = (props) => {
+  const dispatch = useDispatch();
+
+  return (
+    <div className='col-sm-4 grid-margin'>
+      <div className='card'>
+        <div className='card-body'>
+          <h5>
+            {props.name[0].toUpperCase() + props.name.slice(1)}
+            <button
+              type='button'
+              className='btn btn-outline-success btn-sm border-0 bg-transparent'
+              onClick={() => dispatch(props.refresh())}
+            >
+              <i className='mdi mdi-refresh' />
+            </button>
+          </h5>
+          <div className='row'>
+            <div className='col-8 col-sm-12 col-xl-8 my-auto'>
+              {props.loading && (
+                <ColorRing
+                  width='100%'
+                  height='50'
+                  wrapperStyle={{ width: '100%' }}
+                />
+              )}
+              {!props.loading && (
+                <>
+                  <div className='d-flex d-sm-block d-md-flex align-items-center'>
+                    <h2 className='mb-0'>{props.count}</h2>
+                    <p className='text-success ml-2 mb-0 font-weight-medium'>
+                      {props.activeCount || null}{' '}
+                      {props.activeCount ? 'active' : null}
+                    </p>
+                  </div>
+                  <h6 className='text-muted font-weight-normal'>
+                    {props.inactiveCount}{' '}
+                    {props.inactiveCount ? 'inactive' : null}
+                  </h6>
+                </>
+              )}
+            </div>
+            <div className='col-4 col-sm-12 col-xl-4 text-center text-xl-right'>
+              <i
+                className={`icon-lg mdi mdi-${props.icon} text-${props.iconVariant} ml-auto`}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const dispatch = useDispatch();
 
@@ -107,56 +161,6 @@ const Dashboard = () => {
     }
     return () => clearInterval(intervalId);
   }, [isPolling]);
-
-  const DashboardCard = (props) => (
-    <div className='col-sm-4 grid-margin'>
-      <div className='card'>
-        <div className='card-body'>
-          <h5>
-            {props.name[0].toUpperCase() + props.name.slice(1)}
-            <button
-              type='button'
-              className='btn btn-outline-success btn-sm border-0 bg-transparent'
-              onClick={() => dispatch(props.refresh())}
-            >
-              <i className='mdi mdi-refresh' />
-            </button>
-          </h5>
-          <div className='row'>
-            <div className='col-8 col-sm-12 col-xl-8 my-auto'>
-              {props.loading && (
-                <ColorRing
-                  width='100%'
-                  height='50'
-                  wrapperStyle={{ width: '100%' }}
-                />
-              )}
-              {!props.loading && (
-                <>
-                  <div className='d-flex d-sm-block d-md-flex align-items-center'>
-                    <h2 className='mb-0'>{props.count}</h2>
-                    <p className='text-success ml-2 mb-0 font-weight-medium'>
-                      {props.activeCount || null}{' '}
-                      {props.activeCount ? 'active' : null}
-                    </p>
-                  </div>
-                  <h6 className='text-muted font-weight-normal'>
-                    {props.inactiveCount}{' '}
-                    {props.inactiveCount ? 'inactive' : null}
-                  </h6>
-                </>
-              )}
-            </div>
-            <div className='col-4 col-sm-12 col-xl-4 text-center text-xl-right'>
-              <i
-                className={`icon-lg mdi mdi-${props.icon} text-${props.iconVariant} ml-auto`}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div>
@@ -930,14 +934,15 @@ const Dashboard = () => {
               </div>
               <p className='text-muted'>Well, it seems to be working now. </p>
               <div className='progress progress-md portfolio-progress'>
-                <div
+                <progress
                   className='progress-bar bg-success'
-                  role='progressbar'
-                  style={{ width: '50%' }}
-                  aria-valuenow='25'
-                  aria-valuemin='0'
-                  aria-valuemax='100'
-                />
+                  style={{ width: '100%' }}
+                  value='50'
+                  max='100'
+                  aria-label='Portfolio progress'
+                >
+                  50%
+                </progress>
               </div>
             </div>
           </div>

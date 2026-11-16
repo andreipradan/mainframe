@@ -312,10 +312,10 @@ const Crons = () => {
                                   aria-hidden='true'
                                 />
                               </button>
-                              <div
-                                className='btn-group btn-group-sm'
-                                role='group'
-                              >
+                              <fieldset className='btn-group btn-group-sm'>
+                                <legend className='sr-only'>
+                                  Actions for {cron.name}
+                                </legend>
                                 <button
                                   type='button'
                                   className='btn btn-outline-primary border-0'
@@ -336,7 +336,7 @@ const Crons = () => {
                                 >
                                   <i className='mdi mdi-skull-crossbones' />
                                 </button>
-                              </div>
+                              </fieldset>
                             </td>
                           </tr>
                         );

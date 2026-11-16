@@ -1,7 +1,7 @@
 // /* Dropdowns */
 
 .dropdown {
-  .dropdown-toggle{
+  .dropdown-toggle {
     &.no-caret {
       &::after {
         display: none;
@@ -9,12 +9,12 @@
     }
   }
   .dropdown-menu {
-    margin-top: .75rem;
+    margin-top: 0.75rem;
     font-size: $default-font-size;
     box-shadow: $dropdown-menu-box-shadow;
     .dropdown-item {
       font-size: 1rem;
-      padding: .25rem 1.5rem;
+      padding: 0.25rem 1.5rem;
       &:active {
         background: initial;
       }
@@ -25,7 +25,7 @@
     &.sidebar-dropdown {
       &.dropdown-menu-right {
         .rtl & {
-          left: 10rem !important;
+          translate: 10rem 0;
         }
       }
     }
