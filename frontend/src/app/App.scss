@@ -97,9 +97,9 @@ $container-max-widths: (
     height: 500px;
   }
 }
-.fc-daygrid-event {
-  white-space: normal !important;
-  align-items: normal !important;
+.fc .fc-daygrid-event {
+  white-space: normal;
+  align-items: normal;
 }
 .fc-event {
   cursor: pointer;

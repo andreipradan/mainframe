@@ -162,6 +162,26 @@ describe('Sidebar navigation controls', () => {
     unmount();
   });
 
+  test('confirms a reboot and dispatches the reboot action', () => {
+    mockState.rpi.token = 'rpi-token';
+    const { container, unmount } = renderSidebar();
+    const reboot = Array.from(
+      container.querySelectorAll('.preview-subject')
+    ).find((item) => item.textContent.trim() === 'Reboot');
+
+    act(() => reboot.click());
+    expect(container.textContent).toContain('Are you sure you want to reboot?');
+    expect(container.textContent).toContain('another URL will be generated');
+
+    act(() =>
+      Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent === 'REBOOT')
+        .click()
+    );
+    expect(mockDispatch).toHaveBeenCalledWith(expect.any(Function));
+    unmount();
+  });
+
   test('supports collapsed navigation hover, focus, and modal dismissal', () => {
     mockState.rpi.token = 'rpi-token';
     const { container, unmount } = renderSidebar();

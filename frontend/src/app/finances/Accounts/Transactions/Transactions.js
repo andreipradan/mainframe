@@ -64,6 +64,228 @@ const getColor = (type, border = false) => {
   }
 };
 
+/** Renders the category checkbox for one transaction row. */
+const TransactionCategoryCheckbox = ({
+  transaction,
+  index,
+  transactions,
+  getSpecificCategory,
+  onCheckedCategoryChange,
+}) => (
+  <div className='form-check form-check-muted m-0 bordered'>
+    <label className='form-check-label' htmlFor={`checkbox-${index}`}>
+      <span className='sr-only'>
+        Apply category to transaction: {transaction.description}
+      </span>
+      <input
+        id={`checkbox-${index}`}
+        disabled={!transaction.category_suggestion || transactions.loading}
+        type='checkbox'
+        className='form-check-input'
+        checked={Boolean(getSpecificCategory(transaction.description))}
+        onChange={() =>
+          onCheckedCategoryChange(
+            {
+              value: getSpecificCategory(transaction.description)
+                ? 'Unidentified'
+                : transaction.category_suggestion,
+            },
+            transaction.description
+          )
+        }
+      />
+      <i className='input-helper' />
+    </label>
+  </div>
+);
+
+/** Renders a transaction and its category and action controls. */
+const TransactionRow = ({
+  transaction,
+  index,
+  transactions,
+  getSpecificCategory,
+  onCheckedCategoryChange,
+  setCheckedCategories,
+  onEditTransaction,
+  setTransactionToRemove,
+}) => (
+  <tr
+    className={
+      getSpecificCategory(transaction.description) ? 'text-warning' : ''
+    }
+    onClick={() =>
+      onCheckedCategoryChange(
+        {
+          value: getSpecificCategory(transaction.description)
+            ? 'Unidentified'
+            : transaction.category_suggestion,
+        },
+        transaction.description
+      )
+    }
+    style={{
+      cursor: `${transaction.category_suggestion ? 'default' : 'not-allowed'}`,
+    }}
+  >
+    <td>
+      <TransactionCategoryCheckbox
+        transaction={transaction}
+        index={index}
+        transactions={transactions}
+        getSpecificCategory={getSpecificCategory}
+        onCheckedCategoryChange={onCheckedCategoryChange}
+      />
+    </td>
+    <td>
+      {new Date(transaction.started_at).toLocaleDateString()}
+      <br />
+      <small>{new Date(transaction.started_at).toLocaleTimeString()}</small>
+    </td>
+    <td>
+      {transaction.amount}{' '}
+      {Number.parseFloat(transaction.fee) ? `(Fee: ${transaction.fee})` : ''}
+    </td>
+    <td>{transaction.description}</td>
+    <td>{getTypeLabel(transaction.type)}</td>
+    <td onClick={(e) => e.stopPropagation()} style={{ minWidth: '180px' }}>
+      <Select
+        isDisabled={transaction.category !== 'Unidentified'}
+        onChange={(newValue) =>
+          onCheckedCategoryChange(newValue, transaction.description)
+        }
+        options={transactions.categories?.map((c) => ({
+          label: getCategoryVerbose(c),
+          value: c,
+        }))}
+        styles={selectStyles}
+        value={{
+          label: capitalize(
+            getSpecificCategory(transaction.description) || transaction.category
+          ).replace('-', ' '),
+          value:
+            getSpecificCategory(transaction.description) ||
+            transaction.category,
+        }}
+      />
+      <p className={'text-warning ml-2'}>
+        {transaction.category_suggestion
+          ? capitalize(transaction.category_suggestion).replace('-', ' ')
+          : null}
+      </p>
+      {getSpecificCategory(transaction.description) && (
+        <a
+          href={'!#'}
+          onClick={(e) => {
+            const currentCategory = getSpecificCategory(
+              transaction.description
+            );
+            e.preventDefault();
+            setCheckedCategories(
+              transactions.results.map((result) => ({
+                description: result.description,
+                category: currentCategory,
+              }))
+            );
+          }}
+        >
+          Set{' '}
+          {capitalize(getSpecificCategory(transaction.description)).replace(
+            '-',
+            ' '
+          )}{' '}
+          to all
+        </a>
+      )}
+    </td>
+    <td>
+      {transaction.completed_at ? (
+        <span>
+          {new Date(transaction.completed_at).toLocaleDateString()}
+          <br />
+          <small>
+            {new Date(transaction.completed_at).toLocaleTimeString()}
+          </small>
+        </span>
+      ) : (
+        transaction.state
+      )}
+    </td>
+    <td className={'text-center'}>
+      <button
+        type='button'
+        className='btn btn-link p-0 text-warning ml-1'
+        aria-label={`Edit transaction ${transaction.id}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onEditTransaction(transaction.id);
+        }}
+      >
+        <i className='mdi mdi-pencil-outline' aria-hidden='true' />
+      </button>
+      <button
+        type='button'
+        className='btn btn-link p-0 text-danger ml-1'
+        aria-label={`Delete transaction ${transaction.id}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          setTransactionToRemove(transaction);
+        }}
+      >
+        <i className='mdi mdi-trash-can-outline' aria-hidden='true' />
+      </button>
+    </td>
+  </tr>
+);
+
+/** Renders the loading, empty, or populated transaction table rows. */
+const TransactionRows = ({
+  transactions,
+  getSpecificCategory,
+  onCheckedCategoryChange,
+  setCheckedCategories,
+  onEditTransaction,
+  setTransactionToRemove,
+}) => (
+  <tbody>
+    {transactions.loading && (
+      <tr>
+        <td colSpan={3}>
+          <Circles
+            visible
+            width='100%'
+            ariaLabel='ball-triangle-loading'
+            wrapperStyle={{ float: 'right' }}
+            color='orange'
+          />
+        </td>
+      </tr>
+    )}
+    {!transactions.loading &&
+      transactions.results?.length > 0 &&
+      transactions.results.map((transaction, i) => (
+        <TransactionRow
+          key={transaction.id}
+          transaction={transaction}
+          index={i}
+          transactions={transactions}
+          getSpecificCategory={getSpecificCategory}
+          onCheckedCategoryChange={onCheckedCategoryChange}
+          setCheckedCategories={setCheckedCategories}
+          onEditTransaction={onEditTransaction}
+          setTransactionToRemove={setTransactionToRemove}
+        />
+      ))}
+    {!transactions.loading && !transactions.results?.length && (
+      <tr>
+        <td colSpan={6}>
+          <span>No transactions found</span>
+        </td>
+      </tr>
+    )}
+  </tbody>
+);
+
 const Transactions = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -787,222 +1009,14 @@ const Transactions = () => {
                       <th className={'text-center'}>Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {transactions.loading && (
-                      <tr>
-                        <td colSpan={3}>
-                          <Circles
-                            visible
-                            width='100%'
-                            ariaLabel='ball-triangle-loading'
-                            wrapperStyle={{ float: 'right' }}
-                            color='orange'
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    {!transactions.loading &&
-                      transactions.results?.length > 0 &&
-                      transactions.results.map((transaction, i) => (
-                        <tr
-                          className={
-                            getSpecificCategory(transaction.description)
-                              ? 'text-warning'
-                              : ''
-                          }
-                          key={transaction.id}
-                          onClick={() =>
-                            onCheckedCategoryChange(
-                              {
-                                value: getSpecificCategory(
-                                  transaction.description
-                                )
-                                  ? 'Unidentified'
-                                  : transaction.category_suggestion,
-                              },
-                              transaction.description
-                            )
-                          }
-                          style={{
-                            cursor: `${transaction.category_suggestion ? 'default' : 'not-allowed'}`,
-                          }}
-                        >
-                          <td>
-                            <div className='form-check form-check-muted m-0 bordered'>
-                              <label
-                                className='form-check-label'
-                                htmlFor={`checkbox-${i}`}
-                              >
-                                <span className='sr-only'>
-                                  Apply category to transaction:{' '}
-                                  {transaction.description}
-                                </span>
-                                <input
-                                  id={`checkbox-${i}`}
-                                  disabled={
-                                    !transaction.category_suggestion ||
-                                    transactions.loading
-                                  }
-                                  type='checkbox'
-                                  className='form-check-input'
-                                  checked={Boolean(
-                                    getSpecificCategory(transaction.description)
-                                  )}
-                                  onChange={() =>
-                                    onCheckedCategoryChange(
-                                      {
-                                        value: getSpecificCategory(
-                                          transaction.description
-                                        )
-                                          ? 'Unidentified'
-                                          : transaction.category_suggestion,
-                                      },
-                                      transaction.description
-                                    )
-                                  }
-                                />
-                                <i className='input-helper' />
-                              </label>
-                            </div>
-                          </td>
-                          <td>
-                            {new Date(
-                              transaction.started_at
-                            ).toLocaleDateString()}
-                            <br />
-                            <small>
-                              {new Date(
-                                transaction.started_at
-                              ).toLocaleTimeString()}
-                            </small>
-                          </td>
-                          <td>
-                            {transaction.amount}{' '}
-                            {Number.parseFloat(transaction.fee)
-                              ? `(Fee: ${transaction.fee})`
-                              : ''}
-                          </td>
-                          <td>{transaction.description}</td>
-                          <td>{getTypeLabel(transaction.type)}</td>
-                          <td
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ minWidth: '180px' }}
-                          >
-                            <Select
-                              isDisabled={
-                                transaction.category !== 'Unidentified'
-                              }
-                              onChange={(newValue) =>
-                                onCheckedCategoryChange(
-                                  newValue,
-                                  transaction.description
-                                )
-                              }
-                              options={transactions.categories?.map((c) => ({
-                                label: getCategoryVerbose(c),
-                                value: c,
-                              }))}
-                              styles={selectStyles}
-                              value={{
-                                label: capitalize(
-                                  getSpecificCategory(
-                                    transaction.description
-                                  ) || transaction.category
-                                ).replace('-', ' '),
-                                value:
-                                  getSpecificCategory(
-                                    transaction.description
-                                  ) || transaction.category,
-                              }}
-                            />
-                            <p className={'text-warning ml-2'}>
-                              {transaction.category_suggestion
-                                ? capitalize(
-                                    transaction.category_suggestion
-                                  ).replace('-', ' ')
-                                : null}
-                            </p>
-                            {getSpecificCategory(transaction.description) && (
-                              <a
-                                href={'!#'}
-                                onClick={(e) => {
-                                  const currentCategory = getSpecificCategory(
-                                    transaction.description
-                                  );
-                                  e.preventDefault();
-                                  setCheckedCategories(
-                                    transactions.results.map((result) => ({
-                                      description: result.description,
-                                      category: currentCategory,
-                                    }))
-                                  );
-                                }}
-                              >
-                                Set{' '}
-                                {capitalize(
-                                  getSpecificCategory(transaction.description)
-                                ).replace('-', ' ')}{' '}
-                                to all
-                              </a>
-                            )}
-                          </td>
-                          <td>
-                            {transaction.completed_at ? (
-                              <span>
-                                {new Date(
-                                  transaction.completed_at
-                                ).toLocaleDateString()}
-                                <br />
-                                <small>
-                                  {new Date(
-                                    transaction.completed_at
-                                  ).toLocaleTimeString()}
-                                </small>
-                              </span>
-                            ) : (
-                              transaction.state
-                            )}
-                          </td>
-                          <td className={'text-center'}>
-                            <button
-                              type='button'
-                              className='btn btn-link p-0 text-warning ml-1'
-                              aria-label={`Edit transaction ${transaction.id}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                dispatch(selectTransaction(transaction.id));
-                              }}
-                            >
-                              <i
-                                className='mdi mdi-pencil-outline'
-                                aria-hidden='true'
-                              />
-                            </button>
-                            <button
-                              type='button'
-                              className='btn btn-link p-0 text-danger ml-1'
-                              aria-label={`Delete transaction ${transaction.id}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setTransactionToRemove(transaction);
-                              }}
-                            >
-                              <i
-                                className='mdi mdi-trash-can-outline'
-                                aria-hidden='true'
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    {!transactions.loading && !transactions.results?.length && (
-                      <tr>
-                        <td colSpan={6}>
-                          <span>No transactions found</span>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
+                  <TransactionRows
+                    transactions={transactions}
+                    getSpecificCategory={getSpecificCategory}
+                    onCheckedCategoryChange={onCheckedCategoryChange}
+                    setCheckedCategories={setCheckedCategories}
+                    onEditTransaction={(id) => dispatch(selectTransaction(id))}
+                    setTransactionToRemove={setTransactionToRemove}
+                  />
                 </table>
               </div>
               <BottomPagination

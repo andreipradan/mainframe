@@ -34,7 +34,326 @@ Chart.register(
   TooltipJS
 );
 
-// skipcq: JS-R1005 - Dashboard component aggregates several credit views in one layout.
+/** Wraps a finance card in its responsive Bootstrap column. */
+const FinanceCard = ({ children, columnClass = 'col-sm-12 grid-margin' }) => (
+  <div className={columnClass}>
+    <div className='card'>
+      <div className='card-body'>{children}</div>
+    </div>
+  </div>
+);
+
+/** Shows the selected currency as a compact superscript label. */
+const CurrencyLabel = ({ currency }) =>
+  currency?.label ? (
+    <sup>
+      <small>({currency.label})</small>
+    </sup>
+  ) : null;
+
+/** Displays credit, remaining-balance, and payment summary cards. */
+const CreditSummaryCards = ({
+  overview,
+  credit,
+  latestTimetable,
+  payment,
+  summaryCredit,
+  summarySaved,
+  summaryTotal,
+  summaryInterest,
+  remainingTotal,
+  remainingInsurance,
+  remainingPrincipal,
+  remainingInterest,
+  paidTotal,
+  paidPrepaid,
+  paidPrincipal,
+  paidInterest,
+  onRefreshPayments,
+}) => (
+  <div className='row'>
+    <FinanceCard columnClass='col-sm-12 col-lg-4 grid-margin'>
+      <h5>Summary</h5>
+      {overview.loading && <Circles />}
+      {!overview.loading &&
+        (credit ? (
+          <>
+            <ListItem
+              label={'Credit'}
+              value={summaryCredit}
+              textType={'primary'}
+            />
+            <ListItem label={'Date'} value={credit.date} textType={'warning'} />
+            <ListItem
+              label={'Months'}
+              value={`${credit.number_of_months} (${credit.number_of_months / 12} yrs)`}
+            />
+            <ListItem
+              label={'Saved'}
+              value={summarySaved}
+              textType={'success'}
+            />
+            <ListItem
+              label={'~Total'}
+              value={summaryTotal}
+              textType={'warning'}
+            />
+            <ListItem
+              label={'~Interest'}
+              value={summaryInterest}
+              textType={'danger'}
+            />
+          </>
+        ) : (
+          '-'
+        ))}
+    </FinanceCard>
+    <FinanceCard columnClass='col-sm-12 col-lg-4 grid-margin'>
+      <h5>Remaining</h5>
+      {overview.loading && <Circles />}
+      {!overview.loading && overview.credit && (
+        <>
+          <ListItem
+            label={'Total'}
+            value={remainingTotal}
+            textType={'primary'}
+          />
+          {latestTimetable ? (
+            <>
+              <ListItem
+                label={'Last day'}
+                value={latestTimetable[latestTimetable?.length - 1]?.date}
+                textType={'warning'}
+              />
+              <ListItem
+                label={'Months'}
+                value={`${latestTimetable?.length} (${(latestTimetable?.length / 12).toFixed(1)} yrs)`}
+              />
+            </>
+          ) : null}
+          <ListItem label={'Insurance'} value={remainingInsurance} />
+          <ListItem
+            label={'Principal'}
+            value={remainingPrincipal}
+            textType={'success'}
+          />
+          <ListItem
+            label={'Interest'}
+            value={remainingInterest}
+            textType={'danger'}
+          />
+        </>
+      )}
+      {!overview.loading && !overview.credit && '-'}
+    </FinanceCard>
+    <FinanceCard columnClass='col-sm-12 col-lg-4 grid-margin'>
+      <h5>
+        Paid{' '}
+        <button
+          type='button'
+          className='btn btn-outline-success btn-sm border-0 bg-transparent'
+          onClick={onRefreshPayments}
+        >
+          <i className='mdi mdi-refresh' />
+        </button>
+      </h5>
+      {payment.loading && <Circles />}
+      {!payment.loading &&
+        (payment.results?.length ? (
+          <>
+            <ListItem
+              label={'Total'}
+              value={paidTotal}
+              textType={'primary'}
+              tooltip='paid-percentage'
+            />
+            <ListItem
+              label={'Date'}
+              value={new Date().toISOString().split('T')[0]}
+              textType={'warning'}
+            />
+            <ListItem label={'Payments'} value={payment.count} />
+            <ListItem
+              label={'Prepaid'}
+              value={paidPrepaid}
+              textType={'success'}
+              tooltip='prepaid-percentage'
+            />
+            <ListItem
+              label={'Principal'}
+              value={paidPrincipal}
+              textType={'success'}
+              tooltip={'principal-percentage'}
+            />
+            <ListItem
+              label={'Interest'}
+              value={paidInterest}
+              textType={'danger'}
+              tooltip={'interest-percentage'}
+            />
+          </>
+        ) : (
+          '-'
+        ))}
+    </FinanceCard>
+  </div>
+);
+
+/** Shows the scheduled next payment details in a scrolling card. */
+const NextPaymentMarquee = ({
+  selectedCurrency,
+  overview,
+  latestTimetable,
+  getAmountInCurrency,
+}) => (
+  <div className='row'>
+    <FinanceCard>
+      <h6>
+        Next payment <CurrencyLabel currency={selectedCurrency} />
+        {!overview.loading && latestTimetable?.length && (
+          <span className='text-warning'> {latestTimetable[0].date}</span>
+        )}
+      </h6>
+      {overview.loading && <Circles />}
+      {!overview.loading &&
+        (latestTimetable?.length ? (
+          <Marquee pauseOnHover>
+            <ListItem
+              label={'Total'}
+              value={getAmountInCurrency(latestTimetable[0].total)}
+              textType={'primary'}
+              className='mr-3'
+            />
+            <ListItem
+              label={'Principal'}
+              value={getAmountInCurrency(latestTimetable[0].principal)}
+              textType={'success'}
+              className='mr-3'
+            />
+            <ListItem
+              label={'Interest'}
+              value={`${getAmountInCurrency(latestTimetable[0].interest)} (${overview.latest_timetable.interest}%)`}
+              textType={'danger'}
+              className='mr-3'
+            />
+            <ListItem
+              label={'IRCC'}
+              value={`${overview.latest_timetable.ircc}%`}
+              textType={'danger'}
+              className='mr-3'
+            />
+            <ListItem
+              label={'Insurance'}
+              value={getAmountInCurrency(latestTimetable[0].insurance)}
+              textType={'danger'}
+              className='mr-3'
+            />
+            <ListItem
+              label={'Remaining'}
+              value={getAmountInCurrency(latestTimetable[0].remaining)}
+              textType={'danger'}
+              className='mr-3'
+            />
+          </Marquee>
+        ) : (
+          '-'
+        ))}
+    </FinanceCard>
+  </div>
+);
+
+/** Displays paid principal as progress toward the borrowed total. */
+const CreditProgress = ({
+  overview,
+  payment,
+  credit,
+  paidPrincipal,
+  summaryCredit,
+}) => (
+  <div className='row'>
+    <FinanceCard>
+      <h5>
+        Progress: {getPercentage(paidPrincipal, summaryCredit)}% &nbsp;
+        <i id='progress-bar-tip' className='mdi mdi-information-outline' />
+      </h5>
+      {(overview.loading || payment.loading) && <Circles />}
+      {!overview.loading &&
+        !payment.loading &&
+        (credit ? (
+          <ProgressBar
+            now={paidPrincipal || 0}
+            max={summaryCredit || 0}
+            label={`${paidPrincipal} / ${summaryCredit}`}
+          />
+        ) : (
+          '-'
+        ))}
+    </FinanceCard>
+  </div>
+);
+
+/** Shows the latest payment details in a scrolling card. */
+const LastPaymentMarquee = ({
+  selectedCurrency,
+  payment,
+  getAmountInCurrency,
+}) => (
+  <div className='row'>
+    <FinanceCard>
+      <h6>
+        Last Payment <CurrencyLabel currency={selectedCurrency} />
+      </h6>
+      {payment.loading && <Circles />}
+      {!payment.loading && payment.results?.length > 0 && (
+        <Marquee duration={10000} pauseOnHover>
+          <ListItem
+            label={'Total'}
+            value={getAmountInCurrency(payment.results[0].total)}
+            textType={'primary'}
+            className='mr-3'
+          />
+          <ListItem
+            label={'Date'}
+            value={payment.results[0].date}
+            textType={'warning'}
+            className='mr-3'
+          />
+          <ListItem
+            label={'Type'}
+            value={
+              payment.results[0].is_prepayment ? 'Prepayment' : 'Installment'
+            }
+            textType={payment.results[0].is_prepayment ? 'success' : 'warning'}
+            className='mr-3'
+          />
+          <ListItem
+            label={'Principal'}
+            value={getAmountInCurrency(payment.results[0].principal)}
+            textType={'success'}
+            className='mr-3'
+          />
+          {payment.results[0].interest > 0 && (
+            <ListItem
+              label={'Interest'}
+              value={getAmountInCurrency(payment.results[0].interest)}
+              textType={'danger'}
+              className='mr-3'
+            />
+          )}
+          <ListItem
+            label={'Saved'}
+            value={getAmountInCurrency(payment.results[0].saved)}
+            textType={Boolean(payment.results[0].saved) && 'success'}
+            className='mr-3'
+          />
+        </Marquee>
+      )}
+      {!payment.loading && !payment.results?.length && '-'}
+    </FinanceCard>
+  </div>
+);
+
+/** Loads credit data and renders the overview and payment visualizations. */
 const Details = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
@@ -517,321 +836,45 @@ const Details = () => {
       <Errors errors={overview.errors} />
       <Errors errors={payment.errors} />
 
-      {/* Top Cards - Summary, Remaining, Paid */}
-      <div className='row'>
-        <div className='col-sm-12 col-lg-4 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h5>Summary</h5>
-              {overview.loading && <Circles />}
-              {!overview.loading &&
-                (credit ? (
-                  <>
-                    <ListItem
-                      label={'Credit'}
-                      value={summaryCredit}
-                      textType={'primary'}
-                    />
-                    <ListItem
-                      label={'Date'}
-                      value={credit.date}
-                      textType={'warning'}
-                    />
-                    <ListItem
-                      label={'Months'}
-                      value={`${credit.number_of_months} (${credit.number_of_months / 12} yrs)`}
-                    />
-                    <ListItem
-                      label={'Saved'}
-                      value={summarySaved}
-                      textType={'success'}
-                    />
-                    <ListItem
-                      label={'~Total'}
-                      value={summaryTotal}
-                      textType={'warning'}
-                    />
-                    <ListItem
-                      label={'~Interest'}
-                      value={summaryInterest}
-                      textType={'danger'}
-                    />
-                  </>
-                ) : (
-                  '-'
-                ))}
-            </div>
-          </div>
-        </div>
-        <div className='col-sm-12 col-lg-4 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h5>Remaining</h5>
-              {overview.loading && <Circles />}
-              {!overview.loading && overview.credit && (
-                <>
-                  <ListItem
-                    label={'Total'}
-                    value={remainingTotal}
-                    textType={'primary'}
-                  />
-                  {latestTimetable ? (
-                    <>
-                      <ListItem
-                        label={'Last day'}
-                        value={
-                          latestTimetable[latestTimetable?.length - 1]?.date
-                        }
-                        textType={'warning'}
-                      />
-                      <ListItem
-                        label={'Months'}
-                        value={`${latestTimetable?.length} (${(latestTimetable?.length / 12).toFixed(1)} yrs)`}
-                      />
-                    </>
-                  ) : null}
+      <CreditSummaryCards
+        overview={overview}
+        credit={credit}
+        latestTimetable={latestTimetable}
+        payment={payment}
+        summaryCredit={summaryCredit}
+        summarySaved={summarySaved}
+        summaryTotal={summaryTotal}
+        summaryInterest={summaryInterest}
+        remainingTotal={remainingTotal}
+        remainingInsurance={remainingInsurance}
+        remainingPrincipal={remainingPrincipal}
+        remainingInterest={remainingInterest}
+        paidTotal={paidTotal}
+        paidPrepaid={paidPrepaid}
+        paidPrincipal={paidPrincipal}
+        paidInterest={paidInterest}
+        onRefreshPayments={() => dispatch(paymentsApi.getList())}
+      />
 
-                  <ListItem label={'Insurance'} value={remainingInsurance} />
-                  <ListItem
-                    label={'Principal'}
-                    value={remainingPrincipal}
-                    textType={'success'}
-                  />
-                  <ListItem
-                    label={'Interest'}
-                    value={remainingInterest}
-                    textType={'danger'}
-                  />
-                </>
-              )}
-              {!overview.loading && !overview.credit && '-'}
-            </div>
-          </div>
-        </div>
-        <div className='col-sm-12 col-lg-4 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h5>
-                Paid{' '}
-                <button
-                  type='button'
-                  className='btn btn-outline-success btn-sm border-0 bg-transparent'
-                  onClick={() => dispatch(paymentsApi.getList())}
-                >
-                  <i className='mdi mdi-refresh' />
-                </button>
-              </h5>
-              {payment.loading && <Circles />}
-              {!payment.loading &&
-                (payment.results?.length ? (
-                  <>
-                    <ListItem
-                      label={'Total'}
-                      value={paidTotal}
-                      textType={'primary'}
-                      tooltip='paid-percentage'
-                    />
-                    <ListItem
-                      label={'Date'}
-                      value={new Date().toISOString().split('T')[0]}
-                      textType={'warning'}
-                    />
-                    <ListItem label={'Payments'} value={payment.count} />
-                    <ListItem
-                      label={'Prepaid'}
-                      value={paidPrepaid}
-                      textType={'success'}
-                      tooltip='prepaid-percentage'
-                    />
-                    <ListItem
-                      label={'Principal'}
-                      value={paidPrincipal}
-                      textType={'success'}
-                      tooltip={'principal-percentage'}
-                    />
-                    <ListItem
-                      label={'Interest'}
-                      value={paidInterest}
-                      textType={'danger'}
-                      tooltip={'interest-percentage'}
-                    />
-                  </>
-                ) : (
-                  '-'
-                ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <NextPaymentMarquee
+        selectedCurrency={selectedCurrency}
+        overview={overview}
+        latestTimetable={latestTimetable}
+        getAmountInCurrency={getAmountInCurrency}
+      />
+      <CreditProgress
+        overview={overview}
+        payment={payment}
+        credit={credit}
+        paidPrincipal={paidPrincipal}
+        summaryCredit={summaryCredit}
+      />
 
-      {/* Marquee - Next payment */}
-      <div className='row'>
-        <div className='col-sm-12 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h6>
-                Next payment{' '}
-                <sup>
-                  <small>
-                    {selectedCurrency?.label
-                      ? `(${selectedCurrency?.label})`
-                      : null}
-                  </small>
-                </sup>
-                {!overview.loading && latestTimetable?.length && (
-                  <span className='text-warning'>
-                    {' '}
-                    {latestTimetable[0].date}
-                  </span>
-                )}
-              </h6>
-              {overview.loading && <Circles />}
-              {!overview.loading &&
-                (latestTimetable?.length ? (
-                  <Marquee pauseOnHover>
-                    <ListItem
-                      label={'Total'}
-                      value={getAmountInCurrency(latestTimetable[0].total)}
-                      textType={'primary'}
-                      className='mr-3'
-                    />
-                    <ListItem
-                      label={'Principal'}
-                      value={getAmountInCurrency(latestTimetable[0].principal)}
-                      textType={'success'}
-                      className='mr-3'
-                    />
-                    <ListItem
-                      label={'Interest'}
-                      value={`${getAmountInCurrency(latestTimetable[0].interest)} (${overview.latest_timetable.interest}%)`}
-                      textType={'danger'}
-                      className='mr-3'
-                    />
-                    <ListItem
-                      label={'IRCC'}
-                      value={`${overview.latest_timetable.ircc}%`}
-                      textType={'danger'}
-                      className='mr-3'
-                    />
-                    <ListItem
-                      label={'Insurance'}
-                      value={getAmountInCurrency(latestTimetable[0].insurance)}
-                      textType={'danger'}
-                      className='mr-3'
-                    />
-                    <ListItem
-                      label={'Remaining'}
-                      value={getAmountInCurrency(latestTimetable[0].remaining)}
-                      textType={'danger'}
-                      className='mr-3'
-                    />
-                  </Marquee>
-                ) : (
-                  '-'
-                ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress */}
-      <div className='row'>
-        <div className='col-sm-12 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h5>
-                Progress: {getPercentage(paidPrincipal, summaryCredit)}% &nbsp;
-                <i
-                  id='progress-bar-tip'
-                  className='mdi mdi-information-outline'
-                />
-              </h5>
-              {(overview.loading || payment.loading) && <Circles />}
-              {!overview.loading &&
-                !payment.loading &&
-                (credit ? (
-                  <ProgressBar
-                    now={paidPrincipal || 0}
-                    max={summaryCredit || 0}
-                    label={`${paidPrincipal} / ${summaryCredit}`}
-                  />
-                ) : (
-                  '-'
-                ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Marquee - Last payment */}
-      <div className='row'>
-        <div className='col-sm-12 grid-margin'>
-          <div className='card'>
-            <div className='card-body'>
-              <h6>
-                Last Payment{' '}
-                <sup>
-                  <small>
-                    {selectedCurrency?.label
-                      ? `(${selectedCurrency?.label})`
-                      : null}
-                  </small>
-                </sup>
-              </h6>
-              {payment.loading && <Circles />}
-              {!payment.loading && payment.results?.length > 0 && (
-                <Marquee duration={10000} pauseOnHover>
-                  <ListItem
-                    label={'Total'}
-                    value={getAmountInCurrency(payment.results[0].total)}
-                    textType={'primary'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Date'}
-                    value={payment.results[0].date}
-                    textType={'warning'}
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Type'}
-                    value={
-                      payment.results[0].is_prepayment
-                        ? 'Prepayment'
-                        : 'Installment'
-                    }
-                    textType={
-                      payment.results[0].is_prepayment ? 'success' : 'warning'
-                    }
-                    className='mr-3'
-                  />
-                  <ListItem
-                    label={'Principal'}
-                    value={getAmountInCurrency(payment.results[0].principal)}
-                    textType={'success'}
-                    className='mr-3'
-                  />
-                  {payment.results[0].interest > 0 && (
-                    <ListItem
-                      label={'Interest'}
-                      value={getAmountInCurrency(payment.results[0].interest)}
-                      textType={'danger'}
-                      className='mr-3'
-                    />
-                  )}
-                  <ListItem
-                    label={'Saved'}
-                    value={getAmountInCurrency(payment.results[0].saved)}
-                    textType={Boolean(payment.results[0].saved) && 'success'}
-                    className='mr-3'
-                  />
-                </Marquee>
-              )}
-              {!payment.loading && !payment.results?.length && '-'}
-            </div>
-          </div>
-        </div>
-      </div>
+      <LastPaymentMarquee
+        selectedCurrency={selectedCurrency}
+        payment={payment}
+        getAmountInCurrency={getAmountInCurrency}
+      />
 
       {/* Line chart - Remaining */}
       <div className='row'>

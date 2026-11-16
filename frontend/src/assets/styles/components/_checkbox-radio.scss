@@ -259,3 +259,14 @@
     }
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .form-check .form-check-label input + .input-helper {
+    &::before,
+    &::after {
+      -webkit-transition: none;
+      -o-transition: none;
+      transition: none;
+    }
+  }
+}
