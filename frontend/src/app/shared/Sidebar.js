@@ -214,16 +214,13 @@ const StaffProfile = ({
     <li className='nav-item nav-category'>
       <span className='nav-link'>Admin</span>
     </li>
-    <li className={menuItemClass(isPathExact('/'))}>
-      <Link className='nav-link' to='/'>
-        <span className='menu-icon'>
-          <i className='mdi mdi-view-dashboard' />
-        </span>
-        <span className='menu-title'>
-          <Trans>Dashboard</Trans>
-        </span>
-      </Link>
-    </li>
+    <SidebarRouteItem
+      path='/'
+      active={isPathExact('/')}
+      icon='mdi-view-dashboard'
+    >
+      <Trans>Dashboard</Trans>
+    </SidebarRouteItem>
   </>
 );
 
