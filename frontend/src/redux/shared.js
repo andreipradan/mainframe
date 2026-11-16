@@ -1,3 +1,6 @@
+/**
+ * Compare objects by a field, with a leading "-" indicating descending order.
+ */
 const compareByField = (a, b, field) => {
   const isDescending = field.startsWith('-');
   const fieldName = isDescending ? field.slice(1) : field;

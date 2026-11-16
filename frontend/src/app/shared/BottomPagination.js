@@ -51,7 +51,7 @@ const BottomPagination = (props) => {
         const pages = [];
         // always include first two pages if applicable
         if (1 <= lastPage) pages.push(1);
-        if (2 <= lastPage && 2 !== pages.at(-1)) pages.push(2);
+        if (2 <= lastPage && pages.at(-1) !== 2) pages.push(2);
 
         const windowStart = Math.max(3, currentPage - visiblePages);
         const windowEnd = Math.min(lastPage - 2, currentPage + visiblePages);
