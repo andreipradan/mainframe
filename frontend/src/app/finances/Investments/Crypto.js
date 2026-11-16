@@ -102,9 +102,7 @@ const Crypto = () => {
     if (store === crypto) setKwargsMethod = setKwargs;
     else if (store === pnl) setKwargsMethod = setPnlKwargs;
     else throw new Error('Invalid store');
-    dispatch(
-      setKwargsMethod({ ...(store.kwargs || {}), [what]: newTypes, page: 1 })
-    );
+    dispatch(setKwargsMethod({ ...store.kwargs, [what]: newTypes, page: 1 }));
   };
 
   useEffect(() => setUploadPnlOpen(Boolean(pnl.errors)), [pnl.errors]);

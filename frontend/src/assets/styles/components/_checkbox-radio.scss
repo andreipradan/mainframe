@@ -52,7 +52,7 @@
           border-radius: 2px;
           border: solid theme-color(primary);
           border-width: 2px;
-          @include transition(all);
+          @include transition((border-color, border-width, background-color));
           -webkit-transition-duration: 250ms;
           transition-duration: 250ms;
           position: absolute;
@@ -61,7 +61,9 @@
         }
 
         &:after {
-          @include transition(all);
+          @include transition(
+            (width, opacity, line-height, transform, color, background-color)
+          );
           -webkit-transition-duration: 250ms;
           transition-duration: 250ms;
           font-family: 'Material Design Icons', sans-serif;
@@ -131,7 +133,7 @@
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          @include transition(all);
+          @include transition((border-color, border-width, background-color));
           -webkit-transition-duration: 250ms;
           transition-duration: 250ms;
         }
@@ -148,11 +150,18 @@
             left: auto;
             right: 6px;
           }
-          -webkit-transition: all;
-          -o-transition: all;
-          transition: all;
-          -webkit-transition-duration: 250ms;
-          transition-duration: 250ms;
+          -webkit-transition:
+            opacity 250ms,
+            -webkit-transform 250ms,
+            line-height 250ms;
+          -o-transition:
+            opacity 250ms,
+            transform 250ms,
+            line-height 250ms;
+          transition:
+            opacity 250ms,
+            transform 250ms,
+            line-height 250ms;
           opacity: 0;
           filter: alpha(opacity=0);
           -webkit-transform: scale(0);

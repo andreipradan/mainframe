@@ -29,7 +29,7 @@ if (typeof window !== 'undefined' && typeof window.scrollTo !== 'function') {
 
 // Provide a minimal Leaflet global used by some side-effecting modules (e.g.
 // leaflet.fullscreen) so they don't throw during import in Jest.
-if (typeof window !== 'undefined' && typeof window.L === 'undefined') {
+if (typeof window !== 'undefined' && window.L === undefined) {
   window.L = {
     Control: { extend: () => ({}) },
     extend: () => ({}),

@@ -11,9 +11,37 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
     state.count = 2;
 
     // add a new item with later date -> should become first (ordering: -date,name)
-    opts.reducers.create(state, { payload: { id: 'c', date: '2022-01-01', name: 'Charlie' } });
+    opts.reducers.create(state, {
+      payload: { id: 'c', date: '2022-01-01', name: 'Charlie' },
+    });
     expect(state.count).toBe(3);
     expect(state.results[0].id).toBe('c');
+  });
+
+  test('sorting skips missing fields and uses later ordering fields', () => {
+    const opts = getBaseSliceOptions('test', {
+      ordering: ['-rank', 'name'],
+    });
+    const state = JSON.parse(JSON.stringify(opts.initialState));
+    state.results = [
+      { id: 'missing', name: 'A' },
+      { id: 'low', rank: 1, name: 'Z' },
+      { id: 'tie-z', rank: 2, name: 'Z' },
+      { id: 'tie-a', rank: 2, name: 'A' },
+    ];
+    state.count = 4;
+
+    opts.reducers.create(state, {
+      payload: { id: 'high', rank: 3, name: 'B' },
+    });
+
+    expect(state.results.map(({ id }) => id)).toEqual([
+      'missing',
+      'high',
+      'tie-a',
+      'tie-z',
+      'low',
+    ]);
   });
 
   test('setExtra merges extra fields', () => {
@@ -44,7 +72,7 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
 
     opts.reducers.deleteItem(state, { payload: 'a' });
     expect(state.count).toBe(1);
-    expect(state.results.find(r => r.id === 'a')).toBeUndefined();
+    expect(state.results.find((r) => r.id === 'a')).toBeUndefined();
     expect(state.loadingItems).toEqual(['x']);
     expect(state.selectedItem).toBeNull();
   });
@@ -73,9 +101,11 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
     expect(state.extra).toBe(5);
 
     // update existing item
-    opts.reducers.update(state, { payload: { id: 1, name: 'new', setSelected: true } });
-    expect(state.results.find(r => r.id === 1).name).toBe('new');
-    expect(state.selectedItem).toEqual(state.results.find(r => r.id === 1));
+    opts.reducers.update(state, {
+      payload: { id: 1, name: 'new', setSelected: true },
+    });
+    expect(state.results.find((r) => r.id === 1).name).toBe('new');
+    expect(state.selectedItem).toEqual(state.results.find((r) => r.id === 1));
   });
 
   test('setErrors and setItem behave as expected', () => {
@@ -94,7 +124,7 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
     expect(state.loading).toBe(true);
 
     opts.reducers.setItem(state, { payload: { id: 10, value: 2 } });
-    expect(state.results.find(r => r.id === 10).value).toBe(2);
+    expect(state.results.find((r) => r.id === 10).value).toBe(2);
     expect(state.selectedItem).toEqual({ id: 10, value: 2 });
 
     opts.reducers.setModalOpen(state, { payload: true });
@@ -107,7 +137,9 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
     state.results = [{ id: 1 }, { id: 2 }];
     state.selectedItem = { id: 1 };
 
-    opts.reducers.create(state, { payload: { id: 3, dontClearSelectedItem: true } });
+    opts.reducers.create(state, {
+      payload: { id: 3, dontClearSelectedItem: true },
+    });
     expect(state.selectedItem).toEqual({ id: 1 });
   });
 
@@ -119,17 +151,22 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
 
     opts.reducers.create(state, { payload: { id: 3, setSelected: true } });
     expect(state.count).toBe(3);
-    expect(state.selectedItem).toEqual(state.results.find(r => r.id === 3));
+    expect(state.selectedItem).toEqual(state.results.find((r) => r.id === 3));
   });
 
   test('update reducer preserves selection with dontClearSelectedItem and removes loadingItems', () => {
     const opts = getBaseSliceOptions('test');
     const state = JSON.parse(JSON.stringify(opts.initialState));
-    state.results = [{ id: 1, name: 'a' }, { id: 2, name: 'b' }];
+    state.results = [
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+    ];
     state.selectedItem = { id: 1, name: 'a' };
     state.loadingItems = [2, 1];
 
-    opts.reducers.update(state, { payload: { id: 1, name: 'updated', dontClearSelectedItem: true } });
+    opts.reducers.update(state, {
+      payload: { id: 1, name: 'updated', dontClearSelectedItem: true },
+    });
     expect(state.selectedItem).toEqual({ id: 1, name: 'a' });
     expect(state.loadingItems).toEqual([2]);
   });
@@ -141,7 +178,7 @@ describe('redux/shared getBaseSliceOptions reducers', () => {
     state.loadingItems = [10, 'x'];
 
     opts.reducers.setItem(state, { payload: { id: 10, value: 2 } });
-    expect(state.results.find(r => r.id === 10).value).toBe(2);
+    expect(state.results.find((r) => r.id === 10).value).toBe(2);
     expect(state.loadingItems).toEqual(['x']);
   });
 });

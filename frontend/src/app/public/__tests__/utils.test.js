@@ -1,6 +1,32 @@
 describe('public utils', () => {
   beforeEach(() => jest.resetModules());
 
+  test('FullscreenControl adds and removes the map control', () => {
+    jest.isolateModules(() => {
+      const mockMap = { removeControl: jest.fn() };
+      const mockControl = { addTo: jest.fn() };
+      jest.doMock('leaflet', () => ({
+        control: { fullscreen: jest.fn(() => mockControl) },
+        divIcon: jest.fn(),
+      }));
+      jest.doMock('react-leaflet', () => ({
+        TileLayer: () => null,
+        useMap: () => mockMap,
+      }));
+
+      const React = require('react');
+      const { createRoot } = require('react-dom/client');
+      const { FullscreenControl } = require('../utils');
+      const container = document.createElement('div');
+      const root = createRoot(container);
+
+      React.act(() => root.render(React.createElement(FullscreenControl)));
+      expect(mockControl.addTo).toHaveBeenCalledWith(mockMap);
+      React.act(() => root.unmount());
+      expect(mockMap.removeControl).toHaveBeenCalledWith(mockControl);
+    });
+  });
+
   test('getDirectedRoute handles missing values and direction', () => {
     jest.isolateModules(() => {
       jest.doMock('react-leaflet', () => ({ TileLayer: () => null, useMap: () => null }));

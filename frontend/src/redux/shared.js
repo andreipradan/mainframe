@@ -1,13 +1,22 @@
+const compareByField = (a, b, field) => {
+  const isDescending = field.startsWith('-');
+  const fieldName = isDescending ? field.slice(1) : field;
+  if (
+    !Object.prototype.hasOwnProperty.call(a, fieldName) ||
+    !Object.prototype.hasOwnProperty.call(b, fieldName)
+  )
+    return 0;
+
+  if (a[fieldName] < b[fieldName]) return isDescending ? 1 : -1;
+  if (a[fieldName] > b[fieldName]) return isDescending ? -1 : 1;
+  return 0;
+};
+
 const sort = (objectsList, orderList) => {
   objectsList.sort((a, b) => {
-    for (let field of orderList) {
-      const isDescending = field.startsWith('-');
-      const fieldName = isDescending ? field.slice(1) : field;
-
-      if (a.hasOwnProperty(fieldName) && b.hasOwnProperty(fieldName)) {
-        if (a[fieldName] < b[fieldName]) return isDescending ? 1 : -1;
-        if (a[fieldName] > b[fieldName]) return isDescending ? -1 : 1;
-      }
+    for (const field of orderList) {
+      const comparison = compareByField(a, b, field);
+      if (comparison !== 0) return comparison;
     }
     return 0;
   });

@@ -13,9 +13,15 @@
 @media screen and (max-width: 991px) {
   .row-offcanvas {
     position: relative;
-    -webkit-transition: all .25s ease-out;
-    -o-transition: all .25s ease-out;
-    transition: all .25s ease-out;
+    -webkit-transition:
+      left 0.25s ease-out,
+      right 0.25s ease-out;
+    -o-transition:
+      left 0.25s ease-out,
+      right 0.25s ease-out;
+    transition:
+      left 0.25s ease-out,
+      right 0.25s ease-out;
 
     &.row-offcanvas-right {
       right: 0;
@@ -52,7 +58,7 @@
     .sidebar-offcanvas {
       position: absolute;
       top: 0;
-      width: calc( 50% + 30px); // 6 columns
+      width: calc(50% + 30px); // 6 columns
     }
   }
 }

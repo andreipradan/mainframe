@@ -378,6 +378,7 @@ Key fixtures:
 - **No Code in __init__.py**: Keep `__init__.py` files empty; import directly from modules (e.g., `from package.module import Class`)
 - **Type Hints**: Add where practical (not required but encouraged)
 - **Tests**: Aim for >80% coverage, test API endpoints and business logic
+- **Avoid duplication**: Reuse existing helpers and components instead of copying code. Keep duplication on new code below the SonarQube quality gate threshold of 3%.
 - **Docstrings & Comments**:
   - **Prefer self-documenting code**: Intuitive method/function/class names reduce the need for docstrings
   - **Only document when non-obvious**: Skip docstrings for simple getters/setters, basic CRUD operations, or methods where the name clearly describes the behavior

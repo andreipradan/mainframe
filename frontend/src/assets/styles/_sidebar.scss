@@ -461,9 +461,9 @@
     bottom: 0;
     overflow: auto;
     right: -$sidebar-width-lg;
-    -webkit-transition: all 0.25s ease-out;
-    -o-transition: all 0.25s ease-out;
-    transition: all 0.25s ease-out;
+    -webkit-transition: right 0.25s ease-out;
+    -o-transition: right 0.25s ease-out;
+    transition: right 0.25s ease-out;
     &.active {
       right: 0;
     }

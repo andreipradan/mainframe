@@ -10,7 +10,7 @@ $grid-breakpoints: (
   md: 768px,
   lg: 992px,
   xl: 1200px,
-  xxl: 1400px // Add the new breakpoint for xxl
+  xxl: 1400px, // Add the new breakpoint for xxl
 );
 // Update container max-widths for the new breakpoint
 $container-max-widths: (
@@ -18,9 +18,72 @@ $container-max-widths: (
   md: 720px,
   lg: 960px,
   xl: 1140px,
-  xxl: 1320px // Add the container max-width for xxl
+  xxl: 1320px, // Add the container max-width for xxl
 );
-// Define a col-xxl grid class
+@import '~slick-carousel/slick/slick.css';
+@import '~slick-carousel/slick/slick-theme.css';
+@import 'leaflet/dist/leaflet.css';
+
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+
+@import '../assets/styles/variables';
+@import '~compass-mixins/lib/compass';
+@import '~compass-mixins/lib/animate';
+@import '~bootstrap/scss/bootstrap';
+@import '../assets/styles/fonts';
+@import '../assets/styles/functions';
+
+/* === Icon fonts === */
+@import '~@mdi/font/scss/materialdesignicons';
+
+/* === Template mixins === */
+@import '../assets/styles/mixins/animation';
+@import '../assets/styles/mixins/badges';
+@import '../assets/styles/mixins/misc';
+@import '../assets/styles/mixins/color-functions';
+@import '../assets/styles/mixins/cards';
+@import '../assets/styles/mixins/blockqoute';
+
+/* === Core Styles === */
+@import '../assets/styles/typography';
+@import '../assets/styles/reset';
+@import '../assets/styles/responsive';
+@import '../assets/styles/misc';
+@import '../assets/styles/utilities';
+@import '../assets/styles/demo';
+@import '../assets/styles/spinner';
+@import '../assets/styles/dashboard';
+
+/* === Components === */
+
+@import '../assets/styles/components/checkbox-radio';
+@import '../assets/styles/components/forms';
+@import '../assets/styles/components/icons';
+@import '../assets/styles/components/tables';
+@import '../assets/styles/components/buttons';
+@import '../assets/styles/components/breadcrumbs';
+@import '../assets/styles/components/badges';
+@import '../assets/styles/components/cards';
+@import '../assets/styles/components/preview';
+@import '../assets/styles/components/lists';
+@import '../assets/styles/components/todo-list';
+@import '../assets/styles/components/dropdowns';
+@import '../assets/styles/components/loaders/loaders';
+
+@import '../assets/styles/components/landing-screens/auth';
+
+/* === Plugin Overrides === */
+@import '../assets/styles/components/plugin-overrides/slick-carousel';
+@import '../assets/styles/components/plugin-overrides/jquery-jvectormap';
+
+/* === Layout === */
+@import '../assets/styles/navbar';
+@import '../assets/styles/sidebar';
+@import '../assets/styles/footer';
+@import '../assets/styles/layout';
+
+// Define a col-xxl grid class after imports to keep CSS imports valid.
 .col-xxl {
   flex: 0 0 auto;
   width: 100%;
@@ -28,76 +91,9 @@ $container-max-widths: (
 @for $i from 1 through 12 {
   .col-xxl-#{$i} {
     flex: 0 0 auto;
-    width: (100 / 12) * $i + "%";
+    width: (100 / 12) * $i + '%';
   }
 }
-
-
-@import "~slick-carousel/slick/slick.css";
-@import "~slick-carousel/slick/slick-theme.css";
-
-
-@import "~bootstrap/scss/functions";
-@import "~bootstrap/scss/variables";
-
-@import "../assets/styles/variables";
-@import "~compass-mixins/lib/compass";
-@import "~compass-mixins/lib/animate";
-@import "~bootstrap/scss/bootstrap";
-@import "../assets/styles/fonts";
-@import "../assets/styles/functions";
-
-/* === Icon fonts === */
-@import "~@mdi/font/scss/materialdesignicons";
-
-
-/* === Template mixins === */
-@import "../assets/styles/mixins/animation";
-@import "../assets/styles/mixins/badges";
-@import "../assets/styles/mixins/buttons";
-@import "../assets/styles/mixins/misc";
-@import "../assets/styles/mixins/color-functions";
-@import "../assets/styles/mixins/cards";
-@import "../assets/styles/mixins/blockqoute";
-
-
-/* === Core Styles === */
-@import "../assets/styles/typography";
-@import "../assets/styles/reset";
-@import "../assets/styles/responsive";
-@import "../assets/styles/misc";
-@import "../assets/styles/utilities";
-@import "../assets/styles/demo";
-@import "../assets/styles/spinner";
-@import "../assets/styles/dashboard";
-
-/* === Components === */
-
-@import "../assets/styles/components/checkbox-radio";
-@import "../assets/styles/components/forms";
-@import "../assets/styles/components/icons";
-@import "../assets/styles/components/tables";
-@import "../assets/styles/components/buttons";
-@import "../assets/styles/components/breadcrumbs";
-@import "../assets/styles/components/badges";
-@import "../assets/styles/components/cards";
-@import "../assets/styles/components/preview";
-@import "../assets/styles/components/lists";
-@import "../assets/styles/components/todo-list";
-@import "../assets/styles/components/dropdowns";
-@import "../assets/styles/components/loaders/loaders";
-
-@import "../assets/styles/components/landing-screens/auth";
-
-/* === Plugin Overrides === */
-@import "../assets/styles/components/plugin-overrides/slick-carousel";
-@import "../assets/styles/components/plugin-overrides/jquery-jvectormap";
-
-/* === Layout === */
-@import "../assets/styles/navbar";
-@import "../assets/styles/sidebar";
-@import "../assets/styles/footer";
-@import "../assets/styles/layout";
 
 .map {
   position: relative;
@@ -110,14 +106,22 @@ $container-max-widths: (
   white-space: normal !important;
   align-items: normal !important;
 }
-.fc-event{
+.fc-event {
   cursor: pointer;
 }
 .progress-bar {
-  background: -webkit-linear-gradient(left, #ff0000 0%, #2cef00 100%); /* Chrome10-25,Safari5.1-6 */
+  background: -webkit-linear-gradient(
+    left,
+    #ff0000 0%,
+    #2cef00 100%
+  ); /* Chrome10-25,Safari5.1-6 */
 }
-.close {color: gray}
-.close:hover {color: deepskyblue}
+.close {
+  color: gray;
+}
+.close:hover {
+  color: deepskyblue;
+}
 
 .pagination > .page-item > .page-link {
   background: transparent;
@@ -145,6 +149,3 @@ $container-max-widths: (
   background: $card-bg;
   z-index: 1;
 }
-
-// leaflet - live public transport
-@import "leaflet/dist/leaflet.css";

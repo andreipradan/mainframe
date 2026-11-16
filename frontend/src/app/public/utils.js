@@ -156,7 +156,7 @@ export const tileLayer = {
 };
 
 export const timeSince = (date) => {
-  const seconds = Math.floor((new Date() - date) / 1000);
+  const seconds = Math.floor((Date.now() - date) / 1000);
   let interval = seconds / 31536000;
   if (interval > 1) return `${Math.floor(interval)} years ago`;
   interval = seconds / 2592000;

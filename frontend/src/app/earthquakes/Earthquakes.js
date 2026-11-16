@@ -202,8 +202,8 @@ const Earthquakes = () => {
           countySeries.show();
           mapSeries.hide();
         })
-        .catch(function (result) {
-          console.log(`Error loading ${result.xhr.responseURL}`);
+        .catch(function (error_) {
+          console.log(`Error loading ${error_.xhr.responseURL}`);
         });
     });
 
@@ -454,8 +454,8 @@ const Earthquakes = () => {
                       <tbody
                         style={{ maxHeight: '100px', overflowY: 'scroll' }}
                       >
-                        {earthquakes.results?.map((e, i) => (
-                          <tr key={i} onClick={() => zoomToGeoPoint(e)}>
+                        {earthquakes.results?.map((e) => (
+                          <tr key={e.id} onClick={() => zoomToGeoPoint(e)}>
                             <td>
                               {formatTime(e.timestamp)}
                               {e.additional_data?.sols?.primary?.receiveTime ? (
