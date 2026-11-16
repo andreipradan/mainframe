@@ -92,25 +92,19 @@ const Stocks = () => {
     } else throw new Error('Invalid store');
 
     const newTypes = newValue.map((v) => v.value);
-    dispatch(
-      setKwargsMethod({ ...(store.kwargs || {}), currency: newTypes, page: 1 })
-    );
+    dispatch(setKwargsMethod({ ...store.kwargs, currency: newTypes, page: 1 }));
   };
 
   const onTickerChange = (newValue, store = stocks) => {
     const setKwargsMethod = store === stocks ? setKwargs : setPnlKwargs;
     const newTypes = newValue.map((v) => v.value);
-    dispatch(
-      setKwargsMethod({ ...(store.kwargs || {}), ticker: newTypes, page: 1 })
-    );
+    dispatch(setKwargsMethod({ ...store.kwargs, ticker: newTypes, page: 1 }));
   };
 
   const onTypeChange = (newValue, store) => {
     const setKwargsMethod = store === stocks ? setKwargs : setPnlKwargs;
     const newTypes = newValue.map((v) => v.value);
-    dispatch(
-      setKwargsMethod({ ...(store.kwargs || {}), type: newTypes, page: 1 })
-    );
+    dispatch(setKwargsMethod({ ...store.kwargs, type: newTypes, page: 1 }));
   };
   useEffect(() => setUploadPnlOpen(Boolean(stocks.errors)), [stocks.errors]);
 
@@ -592,10 +586,10 @@ const Stocks = () => {
                         <small className='text-warning'>
                           &nbsp;(
                           {stocks.currencies
-                            ?.map(
-                              (c) =>
-                                `${c === 'USD' ? '$' : '€'} ${stocks.aggregations?.current[`total_${c}`]}`
-                            )
+                            ?.map((c) => {
+                              const totalKey = `total_${c}`;
+                              return `${c === 'USD' ? '$' : '€'} ${stocks.aggregations?.current[totalKey]}`;
+                            })
                             .filter((i) => !i.includes(' null'))
                             .join(' | ')}
                           )

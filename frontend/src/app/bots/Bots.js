@@ -5,8 +5,7 @@ import AddModal from './modals/AddModal';
 import BotsApi from '../../api/bots';
 import EditModal from './modals/EditModal';
 import Errors from '../shared/Errors';
-import { selectItem as select } from '../../redux/botsSlice';
-import { setModalOpen } from '../../redux/botsSlice';
+import { selectItem as select, setModalOpen } from '../../redux/botsSlice';
 
 const Bots = () => {
   const dispatch = useDispatch();

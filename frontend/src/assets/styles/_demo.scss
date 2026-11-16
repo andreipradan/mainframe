@@ -16,7 +16,7 @@
   }
 
   > .btn-group,
-  >  .btn-group-vertical {
+  > .btn-group-vertical {
     @extend .mt-2;
     @extend .mr-2;
   }
@@ -27,18 +27,18 @@
 
   .circle-progress {
     @extend .mt-2;
+    padding: 15px;
   }
 
   > h2,
-   > h3,
-   > h4,
-   > h5,
-   > h6,
+  > h3,
+  > h4,
+  > h5,
+  > h6,
   > h1 {
     border-top: 1px solid $border-color;
     padding: 0.5rem 0 0;
   }
-
 
   .noUi-horizontal {
     margin-top: 2rem;
@@ -72,10 +72,6 @@
       padding-bottom: 0.8rem;
       margin-bottom: 0.8rem;
     }
-  }
-
-  .circle-progress {
-    padding: 15px;
   }
 
   .circle-progress-block {
@@ -117,16 +113,16 @@
     li {
       list-style-type: none;
       color: $text-muted;
-      font-size: .75rem;
+      font-size: 0.75rem;
       .legend-dots {
         width: 1rem;
         height: 1rem;
         border-radius: 100%;
         display: inline-block;
         vertical-align: text-bottom;
-        margin-right: .5rem;
+        margin-right: 0.5rem;
         .rtl & {
-          margin-left: .5rem;
+          margin-left: 0.5rem;
         }
       }
     }

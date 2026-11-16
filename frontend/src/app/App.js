@@ -37,8 +37,8 @@ const App = () => {
       return;
     }
     window.scrollTo(0, 0);
-    for (let i = 0; i < fullPageLayoutRoutes.length; i++) {
-      if (pathname === fullPageLayoutRoutes[i]) {
+    for (const route of fullPageLayoutRoutes) {
+      if (pathname === route) {
         setIsFullPageLayout(true);
         document
           .querySelector('.page-body-wrapper')

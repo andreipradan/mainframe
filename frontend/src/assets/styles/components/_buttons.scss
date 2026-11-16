@@ -5,7 +5,7 @@
   line-height: 1;
   font-weight: normal;
   i {
-    margin-right: .3125rem;
+    margin-right: 0.3125rem;
   }
   &.btn-rounded {
     @include border-radius(50px);
@@ -32,10 +32,10 @@
   /* Buttons with icon and text */
   &.btn-icon-text {
     .btn-icon-prepend {
-      margin-right: .5rem;
+      margin-right: 0.5rem;
     }
     .btn-icon-append {
-      margin-left: .5rem;
+      margin-left: 0.5rem;
     }
   }
   &.btn-social-icon {
@@ -65,25 +65,86 @@
 
 .btn-toolbar {
   .btn-group {
-    +.btn-group {
+    + .btn-group {
       @extend .ml-2;
     }
   }
 }
 /*social buttons*/
 @each $color, $value in $social-colors {
+  $button-color: social-color($color);
+
   .btn-#{$color} {
-    @include social-button(social-color($color));
+    background: $button-color;
+    color: $white;
+
+    &:hover,
+    &:focus {
+      background: darken($button-color, 10%);
+      color: $white;
+    }
+
+    &.btn-social-icon-text {
+      padding: 0 1.5rem 0 0;
+      background: lighten($button-color, 10%);
+
+      i {
+        background: $button-color;
+        padding: 0.75rem;
+        display: inline-block;
+        margin-right: 1.5rem;
+      }
+    }
   }
+
   .btn-outline-#{$color} {
-    @include social-outline-button(social-color($color));
+    border: 1px solid $button-color;
+    color: $button-color;
+
+    &:hover {
+      background: $button-color;
+      color: $white;
+    }
   }
 }
+
 /* inverse buttons */
 @each $color, $value in $theme-colors {
   .btn-inverse-#{$color} {
-    @include button-inverse-variant($value);
+    background-color: rgba($value, 0.2);
+    background-image: none;
+    border-color: rgba($value, 0);
+
+    &:not(.btn-inverse-light) {
+      color: $value;
+    }
+
+    @include hover {
+      color: $white;
+      background-color: $value;
+      border-color: $value;
+    }
+
+    &.focus,
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($value, 0.5);
+    }
+
+    &.disabled,
+    &:disabled {
+      color: $value;
+      background-color: transparent;
+    }
+
+    &.active,
+    &:active,
+    .show > &.dropdown-toggle {
+      color: $white;
+      background-color: $value;
+      border-color: $value;
+    }
   }
+
   .btn-#{$color} {
     &:not(.btn-light):not(.btn-secondary) {
       color: $white;

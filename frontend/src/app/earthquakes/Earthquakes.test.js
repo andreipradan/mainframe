@@ -130,6 +130,7 @@ jest.mock('@amcharts/amcharts5/themes/Animated', () => ({
 jest.mock('@amcharts/amcharts5-geodata/romaniaHigh', () => ({}));
 
 const quake = {
+  id: 1,
   timestamp: '2025-01-02T03:04:00Z',
   magnitude: 4.2,
   location: 'Cluj',
@@ -173,6 +174,7 @@ describe('Earthquakes', () => {
           quake,
           {
             ...quake,
+            id: 2,
             timestamp: '2025-01-03T03:04:00Z',
             magnitude: 5.2,
             location: 'World event',
@@ -180,9 +182,9 @@ describe('Earthquakes', () => {
               sols: { primary: { region: { type: 'world' } } },
             },
           },
-          { ...quake, magnitude: 2.2, location: 'Small event' },
-          { ...quake, magnitude: 3.5, location: 'Medium event' },
-          { ...quake, magnitude: 6.2, location: 'Large event' },
+          { ...quake, id: 3, magnitude: 2.2, location: 'Small event' },
+          { ...quake, id: 4, magnitude: 3.5, location: 'Medium event' },
+          { ...quake, id: 5, magnitude: 6.2, location: 'Large event' },
         ],
       },
     };

@@ -32,21 +32,21 @@ const ExchangeRates = () => {
   const api = new ExchangeApi(token);
 
   const onFromCurrencyChange = (newValue) => {
-    const kwargs = { ...(exchange.kwargs || {}) };
+    const kwargs = { ...exchange.kwargs };
     if (newValue) kwargs.from_currency = newValue.value;
     else delete kwargs.from_currency;
     dispatch(setKwargs(kwargs));
   };
 
   const onToCurrencyChange = (newValue) => {
-    const kwargs = { ...(exchange.kwargs || {}) };
+    const kwargs = { ...exchange.kwargs };
     if (newValue) kwargs.to_currency = newValue.value;
     else delete kwargs.to_currency;
     dispatch(setKwargs(kwargs));
   };
 
   const onSourceChange = (newValue) => {
-    const kwargs = { ...(exchange.kwargs || {}) };
+    const kwargs = { ...exchange.kwargs };
     if (newValue) kwargs.source = newValue.value;
     else delete kwargs.source;
     dispatch(setKwargs(kwargs));

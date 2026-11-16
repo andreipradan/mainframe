@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Dropdown } from 'react-bootstrap';
-import { Form } from 'react-bootstrap';
+import { Dropdown, Form } from 'react-bootstrap';
 import { Link, useHistory } from 'react-router-dom';
 import { Tooltip } from 'react-tooltip';
 import { Trans } from 'react-i18next';

@@ -6,10 +6,12 @@ import { Collapse } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 
 import { TimetableApi } from '../../../../api/finance';
-import { selectItem as selectTimetable } from '../../../../redux/timetableSlice';
+import {
+  selectItem as selectTimetable,
+  setKwargs,
+} from '../../../../redux/timetableSlice';
 import TimetableEditModal from './components/TimetableEditModal';
 import BottomPagination from '../../../shared/BottomPagination';
-import { setKwargs } from '../../../../redux/timetableSlice';
 import Errors from '../../../shared/Errors';
 
 const Timetables = () => {

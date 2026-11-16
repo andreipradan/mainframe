@@ -51,7 +51,7 @@ const BottomPagination = (props) => {
         const pages = [];
         // always include first two pages if applicable
         if (1 <= lastPage) pages.push(1);
-        if (2 <= lastPage && 2 !== pages[pages.length - 1]) pages.push(2);
+        if (2 <= lastPage && pages.at(-1) !== 2) pages.push(2);
 
         const windowStart = Math.max(3, currentPage - visiblePages);
         const windowEnd = Math.min(lastPage - 2, currentPage + visiblePages);
@@ -59,19 +59,18 @@ const BottomPagination = (props) => {
           if (p > 2 && p < lastPage - 1) pages.push(p);
         }
 
-        if (lastPage - 1 > 2 && lastPage - 1 !== pages[pages.length - 1])
+        if (lastPage - 1 > 2 && lastPage - 1 !== pages.at(-1))
           pages.push(lastPage - 1);
-        if (lastPage > 2 && lastPage !== pages[pages.length - 1])
-          pages.push(lastPage);
+        if (lastPage > 2 && lastPage !== pages.at(-1)) pages.push(lastPage);
 
         // dedupe and sort
         const uniq = Array.from(new Set(pages)).sort((a, b) => a - b);
 
         const rendered = [];
         let prev = null;
-        uniq.forEach((p, idx) => {
+        uniq.forEach((p) => {
           if (prev !== null && p - prev > 1) {
-            rendered.push(<Pagination.Ellipsis key={`e-${idx}`} />);
+            rendered.push(<Pagination.Ellipsis key={`e-${prev}-${p}`} />);
           }
           rendered.push(
             <Pagination.Item

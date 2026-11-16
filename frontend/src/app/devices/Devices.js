@@ -167,8 +167,8 @@ const Devices = () => {
     const devicesCopy = devices.slice();
     setDevices(
       devicesCopy.sort((a, b) => {
-        for (let i = 0; i < sorting.length; i++) {
-          const [key, order] = sorting[i].split('-');
+        for (const sort of sorting) {
+          const [key, order] = sort.split('-');
           const direction = order === 'asc' ? 1 : -1;
           if (a[key] > b[key]) return direction;
           if (a[key] < b[key]) return -direction;

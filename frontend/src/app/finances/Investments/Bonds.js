@@ -81,13 +81,11 @@ const Bonds = () => {
 
   const onActiveOnlyChange = () => {
     setActiveOnlyChecked(!activeOnlyChecked);
-    dispatch(
-      setKwargs({ ...(state.kwargs || {}), active_only: !activeOnlyChecked })
-    );
+    dispatch(setKwargs({ ...state.kwargs, active_only: !activeOnlyChecked }));
   };
   const onChange = (what, newValue, store) => {
     const newTypes = newValue.map((v) => v.value);
-    dispatch(setKwargs({ ...(store.kwargs || {}), [what]: newTypes, page: 1 }));
+    dispatch(setKwargs({ ...store.kwargs, [what]: newTypes, page: 1 }));
   };
 
   const onSubmit = (e) => {
