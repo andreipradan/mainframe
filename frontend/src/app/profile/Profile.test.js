@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import Profile from './Profile';
 import { UsersApi } from '../../api/users';
 
-let mockState;
+let mockState = { auth: { token: null, user: null }, users: {} };
 const mockDispatch = jest.fn();
 
 jest.mock('react-redux', () => ({

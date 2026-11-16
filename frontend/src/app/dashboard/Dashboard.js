@@ -25,6 +25,36 @@ import {
 
 Chart.register(ArcElement, CategoryScale);
 
+/** Displays the changing counts and refresh action for a dashboard resource. */
+const DashboardCardContent = (props) => (
+  <div className='row'>
+    <div className='col-8 col-sm-12 col-xl-8 my-auto'>
+      {props.loading && (
+        <ColorRing width='100%' height='50' wrapperStyle={{ width: '100%' }} />
+      )}
+      {!props.loading && (
+        <>
+          <div className='d-flex d-sm-block d-md-flex align-items-center'>
+            <h2 className='mb-0'>{props.count}</h2>
+            <p className='text-success ml-2 mb-0 font-weight-medium'>
+              {props.activeCount || null} {props.activeCount ? 'active' : null}
+            </p>
+          </div>
+          <h6 className='text-muted font-weight-normal'>
+            {props.inactiveCount} {props.inactiveCount ? 'inactive' : null}
+          </h6>
+        </>
+      )}
+    </div>
+    <div className='col-4 col-sm-12 col-xl-4 text-center text-xl-right'>
+      <i
+        className={`icon-lg mdi mdi-${props.icon} text-${props.iconVariant} ml-auto`}
+      />
+    </div>
+  </div>
+);
+
+/** Renders a dashboard count card and its refresh control. */
 const DashboardCard = (props) => {
   const dispatch = useDispatch();
 
@@ -42,37 +72,7 @@ const DashboardCard = (props) => {
               <i className='mdi mdi-refresh' />
             </button>
           </h5>
-          <div className='row'>
-            <div className='col-8 col-sm-12 col-xl-8 my-auto'>
-              {props.loading && (
-                <ColorRing
-                  width='100%'
-                  height='50'
-                  wrapperStyle={{ width: '100%' }}
-                />
-              )}
-              {!props.loading && (
-                <>
-                  <div className='d-flex d-sm-block d-md-flex align-items-center'>
-                    <h2 className='mb-0'>{props.count}</h2>
-                    <p className='text-success ml-2 mb-0 font-weight-medium'>
-                      {props.activeCount || null}{' '}
-                      {props.activeCount ? 'active' : null}
-                    </p>
-                  </div>
-                  <h6 className='text-muted font-weight-normal'>
-                    {props.inactiveCount}{' '}
-                    {props.inactiveCount ? 'inactive' : null}
-                  </h6>
-                </>
-              )}
-            </div>
-            <div className='col-4 col-sm-12 col-xl-4 text-center text-xl-right'>
-              <i
-                className={`icon-lg mdi mdi-${props.icon} text-${props.iconVariant} ml-auto`}
-              />
-            </div>
-          </div>
+          <DashboardCardContent {...props} />
         </div>
       </div>
     </div>

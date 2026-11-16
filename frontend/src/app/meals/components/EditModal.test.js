@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import EditModal from './EditModal';
 import { selectItem } from '../../../redux/mealsSlice';
 
-let mockState;
+let mockState = { meals: { selectedItem: null } };
 const mockDispatch = jest.fn();
 
 jest.mock('react-redux', () => ({
@@ -13,26 +13,14 @@ jest.mock('react-redux', () => ({
 jest.mock('../../../redux/mealsSlice', () => ({
   selectItem: jest.fn(() => ({ type: 'meals/selectItem' })),
 }));
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
-  const Modal = ({ children, show }) =>
-    show ? React.createElement('div', { role: 'dialog' }, children) : null;
-  Modal.Header = ({ children }) =>
-    React.createElement('header', null, children);
-  Modal.Title = ({ children }) => React.createElement('h2', null, children);
-  Modal.Body = ({ children }) => React.createElement('section', null, children);
-  Modal.Footer = ({ children }) =>
-    React.createElement('footer', null, children);
-  return { __esModule: true, default: Modal };
-});
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children, variant, ...props }) =>
-      React.createElement('button', props, children),
-  };
-});
+jest.mock(
+  'react-bootstrap/Modal',
+  () => require('../../../testSupport/reactBootstrapMocks').Modal
+);
+jest.mock(
+  'react-bootstrap/Button',
+  () => require('../../../testSupport/reactBootstrapMocks').Button
+);
 
 const renderEditModal = () => {
   const container = document.createElement('div');

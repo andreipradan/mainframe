@@ -16,11 +16,412 @@ import logoMini from '../../assets/images/logo-mini.svg';
 
 import { toastParams } from '../../api/auth';
 
+/** Returns the standard sidebar item classes for the active route. */
 const menuItemClass = (isActive) =>
   `nav-item menu-items${isActive ? ' active' : ''}`;
+/** Returns the standard sidebar link classes for the active route. */
 const navLinkClass = (isActive) => `nav-link${isActive ? ' active' : ''}`;
+/** Returns the standard sidebar disclosure classes for its expanded state. */
 const menuToggleClass = (isOpen) => `nav-link${isOpen ? ' menu-expanded' : ''}`;
 
+/** Renders the shared nested-list wrapper used by collapsible menu groups. */
+const SidebarSubMenu = ({ id, children }) => (
+  <div id={id}>
+    <ul className='nav flex-column sub-menu'>{children}</ul>
+  </div>
+);
+
+/** Renders an accessible collapsible navigation item and its child links. */
+const SidebarMenu = ({ active, open, onToggle, id, label, icon, children }) => (
+  <li className={menuItemClass(active)}>
+    <button
+      type='button'
+      className={menuToggleClass(open)}
+      aria-expanded={open}
+      aria-controls={id}
+      aria-label={`${label} menu`}
+      title={`${label} menu`}
+      onClick={onToggle}
+      data-toggle='collapse'
+      style={{
+        background: 'none',
+        border: 0,
+        cursor: 'pointer',
+        font: 'inherit',
+        textAlign: 'left',
+        width: '100%',
+      }}
+    >
+      <span className='menu-icon'>
+        <i className={`mdi ${icon}`} />
+      </span>
+      <span className='menu-title'>{label}</span>
+      <i className='menu-arrow' />
+    </button>
+    <Collapse in={open}>
+      <SidebarSubMenu id={id}>{children}</SidebarSubMenu>
+    </Collapse>
+  </li>
+);
+
+/** Renders the reusable icon and label content for a staff action. */
+const StaffActionItem = ({ icon, title, onClick }) => (
+  <Dropdown.Item href='!#' onClick={onClick} className='preview-item'>
+    <div className='preview-thumbnail'>
+      <div className='preview-icon bg-dark rounded-circle'>
+        <i className={`mdi ${icon}`} />
+      </div>
+    </div>
+    <div className='preview-item-content'>
+      <p className='preview-subject mb-1'>{title}</p>
+    </div>
+  </Dropdown.Item>
+);
+
+/** Provides staff-only service actions from the profile menu. */
+const StaffActionMenu = ({
+  handleSetModalAction,
+  setModalOpen,
+  setCurrentModal,
+}) => {
+  const actions = [
+    { icon: 'mdi-database-refresh text-success', title: 'Run migrations' },
+    { icon: 'mdi-autorenew text-info', title: 'Reset tasks' },
+    { icon: 'mdi-robot text-warning', title: 'Restart bot' },
+    { icon: 'mdi-poll text-warning', title: 'Restart quiz bot' },
+    { icon: 'mdi-server text-warning', title: 'Restart backend' },
+    { icon: 'mdi-sync text-warning', title: 'Restart huey' },
+  ];
+
+  return (
+    <Dropdown alignRight>
+      <Dropdown.Toggle as='a' className='cursor-pointer no-caret'>
+        <i className='mdi mdi-dots-vertical' />
+      </Dropdown.Toggle>
+      <Dropdown.Menu className='sidebar-dropdown preview-list'>
+        {actions.map((action) => (
+          <React.Fragment key={action.title}>
+            <StaffActionItem {...action} onClick={handleSetModalAction} />
+            <Dropdown.Divider />
+          </React.Fragment>
+        ))}
+        <StaffActionItem
+          icon='mdi-restart text-danger'
+          title={<Trans>Reboot</Trans>}
+          onClick={(event) => {
+            event.preventDefault();
+            setModalOpen(true);
+            setCurrentModal('reboot');
+          }}
+        />
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+};
+
+/** Displays the signed-in user's avatar, name, and login timestamp. */
+const StaffIdentity = ({ user, loading }) => (
+  <div className='profile-pic'>
+    <ProfileAvatar />
+    <div className='profile-name'>
+      <h5 className='mb-0 font-weight-normal'>
+        <Row>
+          {user?.username}&nbsp;
+          {loading && (
+            <Circles
+              visible
+              height='15'
+              width='100%'
+              ariaLabel='ball-triangle-loading'
+              wrapperStyle={{}}
+              wrapperClass={{}}
+              color='orange'
+            />
+          )}
+        </Row>
+      </h5>
+      <span>{new Date(user?.last_login).toLocaleString()}</span>
+    </div>
+  </div>
+);
+
+/** Displays the signed-in staff profile and its status messages. */
+const StaffProfile = ({
+  user,
+  token,
+  loading,
+  errors,
+  alertOpen,
+  message,
+  messageOpen,
+  setMessageOpen,
+  handleSetModalAction,
+  setModalOpen,
+  setCurrentModal,
+  isPathExact,
+}) => (
+  <>
+    <li className='nav-item profile'>
+      <div className='profile-desc'>
+        <StaffIdentity user={user} loading={loading} />
+        {token && (
+          <StaffActionMenu
+            handleSetModalAction={handleSetModalAction}
+            setModalOpen={setModalOpen}
+            setCurrentModal={setCurrentModal}
+          />
+        )}
+      </div>
+      {alertOpen && <Errors errors={errors} />}
+      {messageOpen && (
+        <Alert
+          variant='primary'
+          dismissible
+          onClose={() => setMessageOpen(false)}
+        >
+          {message}
+        </Alert>
+      )}
+    </li>
+    <li className='nav-item nav-category'>
+      <span className='nav-link'>Admin</span>
+    </li>
+    <li className={menuItemClass(isPathExact('/'))}>
+      <Link className='nav-link' to='/'>
+        <span className='menu-icon'>
+          <i className='mdi mdi-view-dashboard' />
+        </span>
+        <span className='menu-title'>
+          <Trans>Dashboard</Trans>
+        </span>
+      </Link>
+    </li>
+  </>
+);
+
+/** Renders the staff-only template navigation groups. */
+const StaffTemplateNavigation = ({ navigation }) => {
+  const {
+    basicUiMenuOpen,
+    setBasicUiMenuOpen,
+    formElementsMenuOpen,
+    setFormElementsMenuOpen,
+    tablesMenuOpen,
+    setTablesMenuOpen,
+    chartsMenuOpen,
+    setChartsMenuOpen,
+    iconsMenuOpen,
+    setIconsMenuOpen,
+    userPagesMenuOpen,
+    setUserPagesMenuOpen,
+    errorPagesMenuOpen,
+    setErrorPagesMenuOpen,
+    isPathActive,
+  } = navigation;
+  const menuGroups = [
+    {
+      id: 'sidebar-basic-ui-menu',
+      path: '/basic-ui',
+      label: <Trans>Basic UI Elements</Trans>,
+      icon: 'mdi-laptop',
+      open: basicUiMenuOpen,
+      onToggle: () => setBasicUiMenuOpen(!basicUiMenuOpen),
+      links: [
+        ['/basic-ui/buttons', <Trans>Buttons</Trans>],
+        ['/basic-ui/dropdowns', <Trans>Dropdowns</Trans>],
+        ['/basic-ui/typography', <Trans>Typography</Trans>],
+      ],
+    },
+    {
+      id: 'sidebar-form-elements-menu',
+      path: '/form-elements',
+      label: <Trans>Form Elements</Trans>,
+      icon: 'mdi-playlist-play',
+      open: formElementsMenuOpen,
+      onToggle: () => setFormElementsMenuOpen(!formElementsMenuOpen),
+      links: [['/form-elements/basic-elements', <Trans>Basic Elements</Trans>]],
+    },
+    {
+      id: 'sidebar-tables-menu',
+      path: '/tables',
+      label: <Trans>Tables</Trans>,
+      icon: 'mdi-table-large',
+      open: tablesMenuOpen,
+      onToggle: () => setTablesMenuOpen(!tablesMenuOpen),
+      links: [['/tables/basic-table', <Trans>Basic Table</Trans>]],
+    },
+    {
+      id: 'sidebar-charts-menu',
+      path: '/charts',
+      label: <Trans>Charts</Trans>,
+      icon: 'mdi-chart-bar',
+      open: chartsMenuOpen,
+      onToggle: () => setChartsMenuOpen(!chartsMenuOpen),
+      links: [['/charts/chart-js', <Trans>Chart Js</Trans>]],
+    },
+    {
+      id: 'sidebar-icons-menu',
+      path: '/icons',
+      label: <Trans>Icons</Trans>,
+      icon: 'mdi-contacts',
+      open: iconsMenuOpen,
+      onToggle: () => setIconsMenuOpen(!iconsMenuOpen),
+      links: [['/icons/mdi', <Trans>Material</Trans>]],
+    },
+    {
+      id: 'sidebar-user-pages-menu',
+      path: '/login',
+      active: isPathActive('/login') || isPathActive('/register'),
+      label: <Trans>User Pages</Trans>,
+      icon: 'mdi-security',
+      open: userPagesMenuOpen,
+      onToggle: () => setUserPagesMenuOpen(!userPagesMenuOpen),
+      links: [
+        ['/login', <Trans>Login</Trans>],
+        ['/register', <Trans>Register</Trans>],
+      ],
+    },
+    {
+      id: 'sidebar-error-pages-menu',
+      path: '/error-pages',
+      label: <Trans>Error Pages</Trans>,
+      icon: 'mdi-lock',
+      open: errorPagesMenuOpen,
+      onToggle: () => setErrorPagesMenuOpen(!errorPagesMenuOpen),
+      links: [
+        ['/error-pages/error-404', '404'],
+        ['/error-pages/error-500', '500'],
+      ],
+    },
+  ];
+
+  return (
+    <>
+      <li className='nav-item nav-category'>
+        <span className='nav-link'>Templates</span>
+      </li>
+      {menuGroups.map((group) => (
+        <SidebarMenu
+          key={group.id}
+          {...group}
+          active={group.active ?? isPathActive(group.path)}
+        >
+          {group.links.map(([path, label]) => (
+            <li className='nav-item' key={path}>
+              <Link className={navLinkClass(isPathActive(path))} to={path}>
+                {label}
+              </Link>
+            </li>
+          ))}
+        </SidebarMenu>
+      ))}
+    </>
+  );
+};
+
+/** Shows the action text used by the shared staff confirmation dialog. */
+const SidebarActionTitle = ({ currentModal }) => (
+  <Modal.Title>
+    <div className='row'>
+      <div className='col-lg-12 grid-margin stretch-card'>
+        Are you sure you want to {currentModal?.toLowerCase()}?
+      </div>
+    </div>
+    <p className='text-muted mb-0'>
+      This may take a few moments, please be patient
+    </p>
+  </Modal.Title>
+);
+
+/** Confirms and submits a staff action selected from the profile menu. */
+const SidebarActionModal = ({
+  modalOpen,
+  currentModal,
+  setModalOpen,
+  handleSubmitModal,
+}) => (
+  <Modal centered show={modalOpen} onHide={() => setModalOpen(false)}>
+    <Modal.Header closeButton>
+      <SidebarActionTitle currentModal={currentModal} />
+    </Modal.Header>
+    <Modal.Body>
+      This action is irreversible
+      {currentModal === 'reboot' && ', another URL will be generated'}!
+    </Modal.Body>
+    <Modal.Footer>
+      <Button
+        variant='secondary'
+        onClick={(event) => {
+          event.preventDefault();
+          setModalOpen(false);
+        }}
+      >
+        Close
+      </Button>
+      <Button
+        variant='danger'
+        className='float-left'
+        onClick={handleSubmitModal}
+      >
+        {currentModal.toUpperCase()}
+      </Button>
+    </Modal.Footer>
+  </Modal>
+);
+
+/** Renders the staff avatar independently from nested profile details. */
+const ProfileAvatar = () => (
+  <div className='count-indicator'>
+    <img
+      className='img-xs rounded-circle '
+      src={require('../../assets/images/faces/face15.jpg')}
+      alt='profile'
+    />
+    <span className='count bg-success' />
+  </div>
+);
+
+/** Renders authenticated users' travel menu and its route links. */
+const TravelNavigation = ({ navigation }) => {
+  const { isPathActive, isPathExact, travelMenuOpen, setTravelMenuOpen } =
+    navigation;
+
+  return (
+    <>
+      <li className='nav-item nav-category'>
+        <span className='nav-link'>Expenses & Rates</span>
+      </li>
+      <SidebarMenu
+        path='/expenses/travel'
+        active={isPathActive('/expenses/travel')}
+        open={travelMenuOpen}
+        onToggle={() => setTravelMenuOpen(!travelMenuOpen)}
+        id='sidebar-travel-menu'
+        label='Travel'
+        icon='mdi-earth'
+      >
+        <li className='nav-item'>
+          <Link
+            className={navLinkClass(isPathExact('/expenses/travel/my'))}
+            to='/expenses/travel/my'
+          >
+            My expenses
+          </Link>
+        </li>
+        <li className='nav-item'>
+          <Link
+            className={navLinkClass(isPathActive('/expenses/travel/groups'))}
+            to='/expenses/travel/groups'
+          >
+            <span>My groups</span>
+          </Link>
+        </li>
+      </SidebarMenu>
+    </>
+  );
+};
+
+/** Renders the user's route-aware sidebar navigation. */
 const SidebarNavigation = ({ navigation }) => {
   const {
     alertOpen,
@@ -29,6 +430,8 @@ const SidebarNavigation = ({ navigation }) => {
     message,
     messageOpen,
     setMessageOpen,
+    setModalOpen,
+    setCurrentModal,
     token,
     user,
     isPathActive,
@@ -40,214 +443,38 @@ const SidebarNavigation = ({ navigation }) => {
     setAppsMenuOpen,
     authMenuOpen,
     setAuthMenuOpen,
-    basicUiMenuOpen,
-    setBasicUiMenuOpen,
-    chartsMenuOpen,
-    setChartsMenuOpen,
     commandsMenuOpen,
     setCommandsMenuOpen,
     creditMenuOpen,
     setCreditMenuOpen,
     documentationMenuOpen,
     setDocumentationMenuOpen,
-    errorPagesMenuOpen,
-    setErrorPagesMenuOpen,
     expensesMenuOpen,
     setExpensesMenuOpen,
-    formElementsMenuOpen,
-    setFormElementsMenuOpen,
-    iconsMenuOpen,
-    setIconsMenuOpen,
     investmentsMenuOpen,
     setInvestmentsMenuOpen,
-    tablesMenuOpen,
-    setTablesMenuOpen,
-    travelMenuOpen,
-    setTravelMenuOpen,
-    userPagesMenuOpen,
-    setUserPagesMenuOpen,
   } = navigation;
 
   return (
     <ul className='nav'>
-      {/* profile and rpi actions*/}
-      {user?.is_staff ? (
+      {user?.is_staff && (
+        <StaffProfile
+          user={user}
+          token={token}
+          loading={loading}
+          errors={errors}
+          alertOpen={alertOpen}
+          message={message}
+          messageOpen={messageOpen}
+          setMessageOpen={setMessageOpen}
+          handleSetModalAction={handleSetModalAction}
+          setModalOpen={setModalOpen}
+          setCurrentModal={setCurrentModal}
+          isPathExact={isPathExact}
+        />
+      )}
+      {user?.is_staff && (
         <>
-          <li className='nav-item profile'>
-            <div className='profile-desc'>
-              <div className='profile-pic'>
-                <div className='count-indicator'>
-                  <img
-                    className='img-xs rounded-circle '
-                    src={require('../../assets/images/faces/face15.jpg')}
-                    alt='profile'
-                  />
-                  <span className='count bg-success' />
-                </div>
-                <div className='profile-name'>
-                  <h5 className='mb-0 font-weight-normal'>
-                    <Row>
-                      {user?.username}&nbsp;
-                      {loading && (
-                        <Circles
-                          visible
-                          height='15'
-                          width='100%'
-                          ariaLabel='ball-triangle-loading'
-                          wrapperStyle={{}}
-                          wrapperClass={{}}
-                          color='orange'
-                        />
-                      )}
-                    </Row>
-                  </h5>
-                  <span>{new Date(user?.last_login).toLocaleString()}</span>
-                </div>
-              </div>
-              {user?.is_staff && token && (
-                <Dropdown alignRight>
-                  <Dropdown.Toggle as='a' className='cursor-pointer no-caret'>
-                    <i className='mdi mdi-dots-vertical' />
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className='sidebar-dropdown preview-list'>
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={handleSetModalAction}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-database-refresh text-success' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>Run migrations</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={handleSetModalAction}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-autorenew text-info' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>Reset tasks</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={handleSetModalAction}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-robot text-warning' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>Restart bot</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={handleSetModalAction}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-poll text-warning' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>Restart quiz bot</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={handleSetModalAction}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-server text-warning' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>Restart backend</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={handleSetModalAction}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-sync text-warning' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>Restart huey</p>
-                      </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider />
-                    <Dropdown.Item
-                      href='!#'
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setModalOpen(true);
-                        setCurrentModal('reboot');
-                      }}
-                      className='preview-item'
-                    >
-                      <div className='preview-thumbnail'>
-                        <div className='preview-icon bg-dark rounded-circle'>
-                          <i className='mdi mdi-restart text-danger' />
-                        </div>
-                      </div>
-                      <div className='preview-item-content'>
-                        <p className='preview-subject mb-1'>
-                          <Trans>Reboot</Trans>
-                        </p>
-                      </div>
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              )}
-            </div>
-            {alertOpen && <Errors errors={errors} />}
-            {messageOpen && (
-              <Alert
-                variant='primary'
-                dismissible
-                onClose={() => setMessageOpen(false)}
-              >
-                {message}
-              </Alert>
-            )}
-          </li>
-          <li className='nav-item nav-category'>
-            <span className='nav-link'>Admin</span>
-          </li>
-          <li className={menuItemClass(location.pathname === '/')}>
-            <Link className='nav-link' to='/'>
-              <span className='menu-icon'>
-                <i className='mdi mdi-view-dashboard' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Dashboard</Trans>
-              </span>
-            </Link>
-          </li>
           <li className={menuItemClass(isPathActive('/apps'))}>
             <button
               type='button'
@@ -724,65 +951,10 @@ const SidebarNavigation = ({ navigation }) => {
             </Collapse>
           </li>
         </>
-      ) : null}
+      )}
       {user && (
         <>
-          <li className='nav-item nav-category'>
-            <span className='nav-link'>Expenses & Rates</span>
-          </li>
-
-          <li className={menuItemClass(isPathActive('/expenses/travel'))}>
-            <button
-              type='button'
-              className={menuToggleClass(travelMenuOpen)}
-              aria-expanded={travelMenuOpen}
-              aria-controls='sidebar-travel-menu'
-              aria-label='Travel menu'
-              title='Travel menu'
-              onClick={() => setTravelMenuOpen(!travelMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-earth' />
-              </span>
-              <span className='menu-title'>Travel</span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={travelMenuOpen}>
-              <div id='sidebar-travel-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathExact('/expenses/travel/my')
-                      )}
-                      to='/expenses/travel/my'
-                    >
-                      My expenses
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/expenses/travel/groups')
-                      )}
-                      to='/expenses/travel/groups'
-                    >
-                      <span>My groups</span>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
+          <TravelNavigation navigation={navigation} />
           <li className='nav-item nav-category'>
             <span className='nav-link'>Public</span>
           </li>
@@ -855,355 +1027,9 @@ const SidebarNavigation = ({ navigation }) => {
           </div>
         </Collapse>
       </li>
-      {user?.is_staff ? (
+      {user?.is_staff && (
         <>
-          <li className='nav-item nav-category'>
-            <span className='nav-link'>Templates</span>
-          </li>
-          <li className={menuItemClass(isPathActive('/basic-ui'))}>
-            <button
-              type='button'
-              className={menuToggleClass(basicUiMenuOpen)}
-              aria-expanded={basicUiMenuOpen}
-              aria-controls='sidebar-basic-ui-menu'
-              aria-label='Basic UI menu'
-              title='Basic UI menu'
-              onClick={() => setBasicUiMenuOpen(!basicUiMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-laptop' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Basic UI Elements</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={basicUiMenuOpen}>
-              <div id='sidebar-basic-ui-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/basic-ui/buttons')
-                      )}
-                      to='/basic-ui/buttons'
-                    >
-                      <Trans>Buttons</Trans>
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/basic-ui/dropdowns')
-                      )}
-                      to='/basic-ui/dropdowns'
-                    >
-                      <Trans>Dropdowns</Trans>
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/basic-ui/typography')
-                      )}
-                      to='/basic-ui/typography'
-                    >
-                      <Trans>Typography</Trans>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/form-elements'))}>
-            <button
-              type='button'
-              className={menuToggleClass(formElementsMenuOpen)}
-              aria-expanded={formElementsMenuOpen}
-              aria-controls='sidebar-form-elements-menu'
-              aria-label='Form elements menu'
-              title='Form elements menu'
-              onClick={() => setFormElementsMenuOpen(!formElementsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-playlist-play' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Form Elements</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={formElementsMenuOpen}>
-              <div id='sidebar-form-elements-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/form-elements/basic-elements')
-                      )}
-                      to='/form-elements/basic-elements'
-                    >
-                      <Trans>Basic Elements</Trans>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/tables'))}>
-            <button
-              type='button'
-              className={menuToggleClass(tablesMenuOpen)}
-              aria-expanded={tablesMenuOpen}
-              aria-controls='sidebar-tables-menu'
-              aria-label='Tables menu'
-              title='Tables menu'
-              onClick={() => setTablesMenuOpen(!tablesMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-table-large' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Tables</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={tablesMenuOpen}>
-              <div id='sidebar-tables-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/tables/basic-table')
-                      )}
-                      to='/tables/basic-table'
-                    >
-                      <Trans>Basic Table</Trans>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/charts'))}>
-            <button
-              type='button'
-              className={menuToggleClass(chartsMenuOpen)}
-              aria-expanded={chartsMenuOpen}
-              aria-controls='sidebar-charts-menu'
-              aria-label='Charts menu'
-              title='Charts menu'
-              onClick={() => setChartsMenuOpen(!chartsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-chart-bar' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Charts</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={chartsMenuOpen}>
-              <div id='sidebar-charts-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/charts/chart-js'))}
-                      to='/charts/chart-js'
-                    >
-                      <Trans>Chart Js</Trans>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/icons'))}>
-            <button
-              type='button'
-              className={menuToggleClass(iconsMenuOpen)}
-              aria-expanded={iconsMenuOpen}
-              aria-controls='sidebar-icons-menu'
-              aria-label='Icons menu'
-              title='Icons menu'
-              onClick={() => setIconsMenuOpen(!iconsMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-contacts' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Icons</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={iconsMenuOpen}>
-              <div id='sidebar-icons-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/icons/mdi'))}
-                      to='/icons/mdi'
-                    >
-                      <Trans>Material</Trans>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li
-            className={menuItemClass(
-              isPathActive('/login') || isPathActive('/register')
-            )}
-          >
-            <button
-              type='button'
-              className={menuToggleClass(userPagesMenuOpen)}
-              aria-expanded={userPagesMenuOpen}
-              aria-controls='sidebar-user-pages-menu'
-              aria-label='User pages menu'
-              title='User pages menu'
-              onClick={() => setUserPagesMenuOpen(!userPagesMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-security' />
-              </span>
-              <span className='menu-title'>
-                <Trans>User Pages</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={userPagesMenuOpen}>
-              <div id='sidebar-user-pages-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/login'))}
-                      to='/login'
-                    >
-                      <Trans>Login</Trans>
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(isPathActive('/register'))}
-                      to='/register'
-                    >
-                      <Trans>Register</Trans>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
-          <li className={menuItemClass(isPathActive('/error-pages'))}>
-            <button
-              type='button'
-              className={menuToggleClass(errorPagesMenuOpen)}
-              aria-expanded={errorPagesMenuOpen}
-              aria-controls='sidebar-error-pages-menu'
-              aria-label='Error pages menu'
-              title='Error pages menu'
-              onClick={() => setErrorPagesMenuOpen(!errorPagesMenuOpen)}
-              data-toggle='collapse'
-              style={{
-                background: 'none',
-                border: 0,
-                cursor: 'pointer',
-                font: 'inherit',
-                textAlign: 'left',
-                width: '100%',
-              }}
-            >
-              <span className='menu-icon'>
-                <i className='mdi mdi-lock' />
-              </span>
-              <span className='menu-title'>
-                <Trans>Error Pages</Trans>
-              </span>
-              <i className='menu-arrow' />
-            </button>
-            <Collapse in={errorPagesMenuOpen}>
-              <div id='sidebar-error-pages-menu'>
-                <ul className='nav flex-column sub-menu'>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/error-pages/error-404')
-                      )}
-                      to='/error-pages/error-404'
-                    >
-                      404
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link
-                      className={navLinkClass(
-                        isPathActive('/error-pages/error-500')
-                      )}
-                      to='/error-pages/error-500'
-                    >
-                      500
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Collapse>
-          </li>
+          <StaffTemplateNavigation navigation={navigation} />
           <li className='nav-item menu-items'>
             <a
               className='nav-link'
@@ -1220,7 +1046,7 @@ const SidebarNavigation = ({ navigation }) => {
             </a>
           </li>
         </>
-      ) : null}
+      )}
     </ul>
   );
 };
@@ -1398,6 +1224,8 @@ const Sidebar = () => {
           message,
           messageOpen,
           setMessageOpen,
+          setModalOpen,
+          setCurrentModal,
           token,
           user,
           isPathActive,
@@ -1438,43 +1266,12 @@ const Sidebar = () => {
         }}
       />
 
-      {/* action modal */}
-      <Modal centered show={modalOpen} onHide={() => setModalOpen(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <div className='row'>
-              <div className='col-lg-12 grid-margin stretch-card'>
-                Are you sure you want to {currentModal?.toLowerCase()}?
-              </div>
-            </div>
-            <p className='text-muted mb-0'>
-              This may take a few moments, please be patient
-            </p>
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          This action is irreversible
-          {currentModal === 'reboot' && ', another URL will be generated'}!
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant='secondary'
-            onClick={(e) => {
-              e.preventDefault();
-              setModalOpen(false);
-            }}
-          >
-            Close
-          </Button>
-          <Button
-            variant='danger'
-            className='float-left'
-            onClick={handleSubmitModal}
-          >
-            {currentModal.toUpperCase()}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <SidebarActionModal
+        modalOpen={modalOpen}
+        currentModal={currentModal}
+        setModalOpen={setModalOpen}
+        handleSubmitModal={handleSubmitModal}
+      />
     </nav>
   );
 };

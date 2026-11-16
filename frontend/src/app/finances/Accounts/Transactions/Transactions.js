@@ -64,6 +64,42 @@ const getColor = (type, border = false) => {
   }
 };
 
+/** Renders the category checkbox for one transaction row. */
+const TransactionCategoryCheckbox = ({
+  transaction,
+  index,
+  transactions,
+  getSpecificCategory,
+  onCheckedCategoryChange,
+}) => (
+  <div className='form-check form-check-muted m-0 bordered'>
+    <label className='form-check-label' htmlFor={`checkbox-${index}`}>
+      <span className='sr-only'>
+        Apply category to transaction: {transaction.description}
+      </span>
+      <input
+        id={`checkbox-${index}`}
+        disabled={!transaction.category_suggestion || transactions.loading}
+        type='checkbox'
+        className='form-check-input'
+        checked={Boolean(getSpecificCategory(transaction.description))}
+        onChange={() =>
+          onCheckedCategoryChange(
+            {
+              value: getSpecificCategory(transaction.description)
+                ? 'Unidentified'
+                : transaction.category_suggestion,
+            },
+            transaction.description
+          )
+        }
+      />
+      <i className='input-helper' />
+    </label>
+  </div>
+);
+
+/** Renders a transaction and its category and action controls. */
 const TransactionRow = ({
   transaction,
   index,
@@ -93,31 +129,13 @@ const TransactionRow = ({
     }}
   >
     <td>
-      <div className='form-check form-check-muted m-0 bordered'>
-        <label className='form-check-label' htmlFor={`checkbox-${index}`}>
-          <span className='sr-only'>
-            Apply category to transaction: {transaction.description}
-          </span>
-          <input
-            id={`checkbox-${index}`}
-            disabled={!transaction.category_suggestion || transactions.loading}
-            type='checkbox'
-            className='form-check-input'
-            checked={Boolean(getSpecificCategory(transaction.description))}
-            onChange={() =>
-              onCheckedCategoryChange(
-                {
-                  value: getSpecificCategory(transaction.description)
-                    ? 'Unidentified'
-                    : transaction.category_suggestion,
-                },
-                transaction.description
-              )
-            }
-          />
-          <i className='input-helper' />
-        </label>
-      </div>
+      <TransactionCategoryCheckbox
+        transaction={transaction}
+        index={index}
+        transactions={transactions}
+        getSpecificCategory={getSpecificCategory}
+        onCheckedCategoryChange={onCheckedCategoryChange}
+      />
     </td>
     <td>
       {new Date(transaction.started_at).toLocaleDateString()}
@@ -220,6 +238,7 @@ const TransactionRow = ({
   </tr>
 );
 
+/** Renders the loading, empty, or populated transaction table rows. */
 const TransactionRows = ({
   transactions,
   getSpecificCategory,

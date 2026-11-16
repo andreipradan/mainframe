@@ -25,11 +25,9 @@ const EditModal = () => {
           Edit&nbsp;<i>{msg?.chat_title}</i>
           <p className='text-muted mb-0'>by {msg?.author.full_name}</p>
           {msg && (
-            <>
-              <p className='text-muted mb-0'>
-                {new Date(msg.date).toLocaleString()}
-              </p>
-            </>
+            <p className='text-muted mb-0'>
+              {new Date(msg.date).toLocaleString()}
+            </p>
           )}
         </Modal.Title>
       </Modal.Header>
