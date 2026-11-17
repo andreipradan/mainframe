@@ -19,7 +19,12 @@ jest.mock('react-bootstrap', () => {
     React.createElement('a', props, children);
   Dropdown.Divider = () => React.createElement('hr');
   return {
-    Collapse: ({ children }) => children,
+    Collapse: ({ children, in: isOpen }) =>
+      React.createElement(
+        'div',
+        { className: isOpen ? 'collapse show' : 'collapse' },
+        children
+      ),
     Dropdown,
     Row: ({ children }) => React.createElement('div', null, children),
   };
@@ -73,13 +78,13 @@ jest.mock('react-i18next', () => ({
 jest.mock('../Errors', () => () => null);
 jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
 
-const renderSidebar = () => {
+const renderSidebar = (initialPath = '/investments/bonds') => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   act(() => {
     root.render(
-      <MemoryRouter initialEntries={['/investments/bonds']}>
+      <MemoryRouter initialEntries={[initialPath]}>
         <Sidebar />
       </MemoryRouter>
     );
@@ -117,6 +122,11 @@ describe('Sidebar navigation controls', () => {
 
     expect(menuButtons.length).toBeGreaterThan(5);
     expect(investmentsButton.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      menuButtons.filter(
+        (button) => button.getAttribute('aria-expanded') === 'true'
+      )
+    ).toHaveLength(1);
 
     for (const button of menuButtons) {
       const initiallyExpanded = button.getAttribute('aria-expanded') === 'true';
@@ -134,6 +144,56 @@ describe('Sidebar navigation controls', () => {
       const controlledId = button.getAttribute('aria-controls');
       expect(container.querySelector(`#${controlledId}`)).not.toBeNull();
     }
+    unmount();
+  });
+
+  test('opening a menu closes the previously open menu', () => {
+    const { container, unmount } = renderSidebar();
+    const appsButton = container.querySelector(
+      'button[aria-controls="sidebar-apps-menu"]'
+    );
+    const investmentsButton = container.querySelector(
+      'button[aria-controls="sidebar-investments-menu"]'
+    );
+    const appsCollapse =
+      container.querySelector('#sidebar-apps-menu').parentElement;
+    const investmentsCollapse = container.querySelector(
+      '#sidebar-investments-menu'
+    ).parentElement;
+
+    act(() => appsButton.click());
+
+    expect(appsButton.getAttribute('aria-expanded')).toBe('true');
+    expect(appsCollapse.classList.contains('show')).toBe(true);
+    expect(investmentsButton.getAttribute('aria-expanded')).toBe('false');
+    expect(investmentsCollapse.classList.contains('show')).toBe(false);
+
+    unmount();
+  });
+
+  test('route changes close the documentation menu', () => {
+    const { container, unmount } = renderSidebar('/terms-and-conditions');
+    const documentationButton = container.querySelector(
+      'button[aria-controls="sidebar-documentation-menu"]'
+    );
+
+    expect(documentationButton.getAttribute('aria-expanded')).toBe('true');
+    expect(
+      container
+        .querySelector('#sidebar-documentation-menu')
+        .parentElement.classList.contains('show')
+    ).toBe(true);
+    act(() =>
+      Array.from(container.querySelectorAll('a'))
+        .find((link) => link.textContent.trim() === 'Dashboard')
+        .click()
+    );
+    expect(documentationButton.getAttribute('aria-expanded')).toBe('false');
+    expect(
+      container
+        .querySelector('#sidebar-documentation-menu')
+        .parentElement.classList.contains('show')
+    ).toBe(false);
     unmount();
   });
 
