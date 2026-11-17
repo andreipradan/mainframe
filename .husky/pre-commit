@@ -4,7 +4,7 @@ set -e
 # then run frontend tests in CI mode
 cd frontend || exit 1
 npx --no-install lint-staged --verbose
-CI=true npm test
+CI=true npm test -- --runInBand
 
 # Also run pre-commit hooks for Python linting and other checks
 cd .. || exit 1

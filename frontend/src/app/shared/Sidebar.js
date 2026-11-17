@@ -894,6 +894,7 @@ const Sidebar = () => {
     setUserPagesMenuOpen(false);
   };
 
+  /** Closes other sidebar menus before toggling the selected menu. */
   const toggleMenu = (menuOpen, setMenuOpen) => {
     closeAllMenus();
     setMenuOpen(!menuOpen);
