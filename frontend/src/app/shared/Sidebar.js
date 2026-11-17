@@ -241,6 +241,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
     setUserPagesMenuOpen,
     errorPagesMenuOpen,
     setErrorPagesMenuOpen,
+    toggleMenu,
     isPathActive,
   } = navigation;
   const menuGroups = [
@@ -250,7 +251,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>Basic UI Elements</Trans>,
       icon: 'mdi-laptop',
       open: basicUiMenuOpen,
-      onToggle: () => setBasicUiMenuOpen(!basicUiMenuOpen),
+      onToggle: () => toggleMenu(basicUiMenuOpen, setBasicUiMenuOpen),
       links: [
         ['/basic-ui/buttons', <Trans key='/basic-ui/buttons'>Buttons</Trans>],
         [
@@ -269,7 +270,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>Form Elements</Trans>,
       icon: 'mdi-playlist-play',
       open: formElementsMenuOpen,
-      onToggle: () => setFormElementsMenuOpen(!formElementsMenuOpen),
+      onToggle: () => toggleMenu(formElementsMenuOpen, setFormElementsMenuOpen),
       links: [
         [
           '/form-elements/basic-elements',
@@ -283,7 +284,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>Tables</Trans>,
       icon: 'mdi-table-large',
       open: tablesMenuOpen,
-      onToggle: () => setTablesMenuOpen(!tablesMenuOpen),
+      onToggle: () => toggleMenu(tablesMenuOpen, setTablesMenuOpen),
       links: [
         [
           '/tables/basic-table',
@@ -297,7 +298,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>Charts</Trans>,
       icon: 'mdi-chart-bar',
       open: chartsMenuOpen,
-      onToggle: () => setChartsMenuOpen(!chartsMenuOpen),
+      onToggle: () => toggleMenu(chartsMenuOpen, setChartsMenuOpen),
       links: [
         ['/charts/chart-js', <Trans key='/charts/chart-js'>Chart Js</Trans>],
       ],
@@ -308,7 +309,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>Icons</Trans>,
       icon: 'mdi-contacts',
       open: iconsMenuOpen,
-      onToggle: () => setIconsMenuOpen(!iconsMenuOpen),
+      onToggle: () => toggleMenu(iconsMenuOpen, setIconsMenuOpen),
       links: [['/icons/mdi', <Trans key='/icons/mdi'>Material</Trans>]],
     },
     {
@@ -318,7 +319,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>User Pages</Trans>,
       icon: 'mdi-security',
       open: userPagesMenuOpen,
-      onToggle: () => setUserPagesMenuOpen(!userPagesMenuOpen),
+      onToggle: () => toggleMenu(userPagesMenuOpen, setUserPagesMenuOpen),
       links: [
         ['/login', <Trans key='/login'>Login</Trans>],
         ['/register', <Trans key='/register'>Register</Trans>],
@@ -330,7 +331,7 @@ const StaffTemplateNavigation = ({ navigation }) => {
       label: <Trans>Error Pages</Trans>,
       icon: 'mdi-lock',
       open: errorPagesMenuOpen,
-      onToggle: () => setErrorPagesMenuOpen(!errorPagesMenuOpen),
+      onToggle: () => toggleMenu(errorPagesMenuOpen, setErrorPagesMenuOpen),
       links: [
         ['/error-pages/error-404', '404'],
         ['/error-pages/error-500', '500'],
@@ -428,8 +429,13 @@ const ProfileAvatar = () => (
 
 /** Renders authenticated users' travel menu and its route links. */
 const TravelNavigation = ({ navigation }) => {
-  const { isPathActive, isPathExact, travelMenuOpen, setTravelMenuOpen } =
-    navigation;
+  const {
+    isPathActive,
+    isPathExact,
+    travelMenuOpen,
+    setTravelMenuOpen,
+    toggleMenu,
+  } = navigation;
 
   return (
     <>
@@ -440,7 +446,7 @@ const TravelNavigation = ({ navigation }) => {
         path='/expenses/travel'
         active={isPathActive('/expenses/travel')}
         open={travelMenuOpen}
-        onToggle={() => setTravelMenuOpen(!travelMenuOpen)}
+        onToggle={() => toggleMenu(travelMenuOpen, setTravelMenuOpen)}
         id='sidebar-travel-menu'
         label='Travel'
         icon='mdi-earth'
@@ -541,6 +547,7 @@ const StaffNavigation = ({ navigation }) => {
     isPathActive,
     isPathExact,
     handleSetModalAction,
+    toggleMenu,
     accountsMenuOpen,
     setAccountsMenuOpen,
     appsMenuOpen,
@@ -565,7 +572,7 @@ const StaffNavigation = ({ navigation }) => {
       label: <Trans key='apps'>Apps</Trans>,
       icon: 'mdi-apps',
       open: appsMenuOpen,
-      onToggle: () => setAppsMenuOpen(!appsMenuOpen),
+      onToggle: () => toggleMenu(appsMenuOpen, setAppsMenuOpen),
       links: [
         {
           path: '/apps/logs',
@@ -583,7 +590,7 @@ const StaffNavigation = ({ navigation }) => {
       label: 'Auth',
       icon: 'mdi-account-multiple',
       open: authMenuOpen,
-      onToggle: () => setAuthMenuOpen(!authMenuOpen),
+      onToggle: () => toggleMenu(authMenuOpen, setAuthMenuOpen),
       links: [
         { path: '/auth/groups', label: 'Groups' },
         { path: '/auth/users', label: 'Users' },
@@ -603,7 +610,7 @@ const StaffNavigation = ({ navigation }) => {
       label: 'Commands',
       icon: 'mdi-console',
       open: commandsMenuOpen,
-      onToggle: () => setCommandsMenuOpen(!commandsMenuOpen),
+      onToggle: () => toggleMenu(commandsMenuOpen, setCommandsMenuOpen),
       links: [
         { path: '/commands/crons', icon: 'mdi-timer-sand', label: 'Crons' },
         {
@@ -648,7 +655,7 @@ const StaffNavigation = ({ navigation }) => {
       label: 'Accounts',
       icon: 'mdi-credit-card-outline',
       open: accountsMenuOpen,
-      onToggle: () => setAccountsMenuOpen(!accountsMenuOpen),
+      onToggle: () => toggleMenu(accountsMenuOpen, setAccountsMenuOpen),
       links: [
         { path: '/finances/accounts/transactions', label: 'Overview' },
         { path: '/finances/accounts/categorize', label: 'Categorize' },
@@ -661,7 +668,7 @@ const StaffNavigation = ({ navigation }) => {
       label: 'Credit',
       icon: 'mdi-cash-multiple',
       open: creditMenuOpen,
-      onToggle: () => setCreditMenuOpen(!creditMenuOpen),
+      onToggle: () => toggleMenu(creditMenuOpen, setCreditMenuOpen),
       links: [
         { path: '/credit/details', label: 'Details' },
         { path: '/credit/calculator', label: 'Calculator' },
@@ -676,7 +683,7 @@ const StaffNavigation = ({ navigation }) => {
       label: 'Expenses',
       icon: 'mdi-account-cash-outline',
       open: expensesMenuOpen,
-      onToggle: () => setExpensesMenuOpen(!expensesMenuOpen),
+      onToggle: () => toggleMenu(expensesMenuOpen, setExpensesMenuOpen),
       links: [{ path: '/expenses/car', label: 'Car' }],
     },
     {
@@ -693,7 +700,7 @@ const StaffNavigation = ({ navigation }) => {
       label: 'Investments',
       icon: 'mdi-cash-multiple',
       open: investmentsMenuOpen,
-      onToggle: () => setInvestmentsMenuOpen(!investmentsMenuOpen),
+      onToggle: () => toggleMenu(investmentsMenuOpen, setInvestmentsMenuOpen),
       links: [
         { path: '/investments/summary', label: 'Summary' },
         { path: '/investments/bonds', label: 'Bonds' },
@@ -794,7 +801,10 @@ const DocumentationNavigation = ({ navigation }) => (
     active={navigation.isPathActive('/terms-and-conditions')}
     open={navigation.documentationMenuOpen}
     onToggle={() =>
-      navigation.setDocumentationMenuOpen(!navigation.documentationMenuOpen)
+      navigation.toggleMenu(
+        navigation.documentationMenuOpen,
+        navigation.setDocumentationMenuOpen
+      )
     }
     id='sidebar-documentation-menu'
     label='Docs'
@@ -873,6 +883,7 @@ const Sidebar = () => {
     setChartsMenuOpen(false);
     setCommandsMenuOpen(false);
     setCreditMenuOpen(false);
+    setDocumentationMenuOpen(false);
     setErrorPagesMenuOpen(false);
     setExpensesMenuOpen(false);
     setFormElementsMenuOpen(false);
@@ -881,6 +892,12 @@ const Sidebar = () => {
     setTablesMenuOpen(false);
     setTravelMenuOpen(false);
     setUserPagesMenuOpen(false);
+  };
+
+  /** Closes other sidebar menus before toggling the selected menu. */
+  const toggleMenu = (menuOpen, setMenuOpen) => {
+    closeAllMenus();
+    setMenuOpen(!menuOpen);
   };
 
   /** Checks whether the current route starts with a navigation path. */
@@ -1015,6 +1032,7 @@ const Sidebar = () => {
           isPathActive,
           isPathExact,
           handleSetModalAction,
+          toggleMenu,
           accountsMenuOpen,
           setAccountsMenuOpen,
           appsMenuOpen,
