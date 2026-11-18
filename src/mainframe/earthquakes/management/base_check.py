@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -12,6 +13,21 @@ from mainframe.clients.scraper import fetch
 from mainframe.earthquakes.models import Earthquake
 
 DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
+COORDINATE_QUANTUM = Decimal("0.00001")
+
+
+def normalize_coordinates(latitude, longitude):
+    return (
+        Decimal(str(latitude)).quantize(COORDINATE_QUANTUM),
+        Decimal(str(longitude)).quantize(COORDINATE_QUANTUM),
+    )
+
+
+def get_event_key(event):
+    return (
+        *normalize_coordinates(event.latitude, event.longitude),
+        event.timestamp,
+    )
 
 
 def get_magnitude_icon(magnitude):
@@ -53,10 +69,7 @@ class BaseEarthquakeCommand:
             **self.get_kwargs(),
         )
         if error:
-            if self.source == Earthquake.SOURCE_INFP:
-                logger.warning("Fetching INFP earthquakes failed", error=str(error))
-            else:
-                logger.error("Fetching USGS earthquakes failed", error=str(error))
+            self.log_fetch_error(logger, error)
             return
 
         instance = Bot.objects.get(additional_data__earthquake__isnull=False)
@@ -65,6 +78,23 @@ class BaseEarthquakeCommand:
             self.set_last_check(instance)
             return
 
+        stored_events = self.store_events(events)
+        pending_events, min_magnitude = self.get_pending_events(
+            instance,
+            events,
+            stored_events,
+        )
+        self.notify_pending_events(logger, pending_events, min_magnitude)
+        self.set_last_check(instance)
+
+    def log_fetch_error(self, logger, error):
+        if self.source == Earthquake.SOURCE_INFP:
+            logger.warning("Fetching INFP earthquakes failed", error=str(error))
+        else:
+            logger.error("Fetching USGS earthquakes failed", error=str(error))
+
+    def store_events(self, events):
+        event_timestamps = {event.timestamp for event in events}
         Earthquake.objects.bulk_create(
             events,
             update_conflicts=True,
@@ -77,26 +107,49 @@ class BaseEarthquakeCommand:
             unique_fields=["latitude", "longitude", "source", "timestamp"],
         )
 
+        return {
+            get_event_key(event): event
+            for event in Earthquake.objects.filter(
+                source=self.source,
+                timestamp__in=event_timestamps,
+            )
+        }
+
+    @staticmethod
+    def get_pending_events(instance, events, stored_events):
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
-        events = [
-            event
-            for event in events
-            if float(event.magnitude) >= float(min_magnitude) and event.is_local
-        ]
+        pending_events = []
+        for event in events:
+            stored_event = stored_events[get_event_key(event)]
+            if (
+                float(event.magnitude) >= float(min_magnitude)
+                and event.is_local
+                and not (stored_event.additional_data or {}).get("telegram_notified")
+            ):
+                pending_events.append(stored_event)
+        return pending_events, min_magnitude
 
-        if events:
-            logger.warning(
-                "New earthquakes!",
-                count=len(events),
-                min_magnitude=min_magnitude,
-            )
-            send_telegram_message(
-                text="\n\n".join(parse_event(event) for event in events),
-                parse_mode=ParseMode.HTML,
-            )
-
-        self.set_last_check(instance)
+    @staticmethod
+    def notify_pending_events(logger, events, min_magnitude):
+        if not events:
+            return
+        logger.warning(
+            "New earthquakes!",
+            count=len(events),
+            min_magnitude=min_magnitude,
+        )
+        result = send_telegram_message(
+            text="\n\n".join(parse_event(event) for event in events),
+            parse_mode=ParseMode.HTML,
+        )
+        if result is None:
+            return
+        for event in events:
+            additional_data = dict(event.additional_data or {})
+            additional_data["telegram_notified"] = True
+            event.additional_data = additional_data
+            event.save(update_fields=["additional_data"])
 
     def get_kwargs(self) -> dict:
         raise NotImplementedError
@@ -112,8 +165,5 @@ class BaseEarthquakeCommand:
         earthquake_config = instance.additional_data["earthquake"]
         now = datetime.now().astimezone(ZoneInfo(settings.TIME_ZONE))
         parsed_now = now.strftime(DATETIME_FORMAT)
-        if self.source in earthquake_config["last_check"]:
-            earthquake_config["last_check"][self.source] = parsed_now
-        else:
-            earthquake_config["last_check"] = {self.source: parsed_now}
+        earthquake_config.setdefault("last_check", {})[self.source] = parsed_now
         instance.save()
