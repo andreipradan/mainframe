@@ -370,6 +370,8 @@ const Watchers = () => {
   }
 
   function renderWatcherForm() {
+    const pendingData = selectedItem?.pending_data ?? [];
+
     if (loadingItems?.includes(selectedItem?.id)) {
       return (
         <ColorRing width='100%' height='50' wrapperStyle={{ width: '100%' }} />
@@ -487,6 +489,21 @@ const Watchers = () => {
             height='100px'
           />
         </Form.Group>
+        {selectedItem ? (
+          <Form.Group className='mb-3'>
+            <Form.Label htmlFor='watcher-pending-data'>
+              Pending data ({pendingData.length}{' '}
+              {pendingData.length === 1 ? 'item' : 'items'})
+            </Form.Label>
+            <Form.Control
+              as='textarea'
+              id='watcher-pending-data'
+              readOnly
+              value={JSON.stringify(pendingData, null, '\t')}
+              rows={5}
+            />
+          </Form.Group>
+        ) : null}
         <Form.Group className='mb-3'>
           <Form.Label>Request parameters</Form.Label>
           <AceEditor

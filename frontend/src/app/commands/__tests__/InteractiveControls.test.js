@@ -108,9 +108,14 @@ jest.mock('react-bootstrap/Form', () => {
     React.createElement('div', props, children);
   Form.Label = ({ children, ...props }) =>
     React.createElement('label', props, children);
-  Form.Control = React.forwardRef((props, ref) =>
-    React.createElement('input', { ...props, value: props.value ?? '', ref })
-  );
+  Form.Control = React.forwardRef((props, ref) => {
+    const { as = 'input', ...controlProps } = props;
+    return React.createElement(as, {
+      ...controlProps,
+      value: props.value ?? '',
+      ref,
+    });
+  });
   Form.Check = (props) => React.createElement('input', props);
   return { __esModule: true, default: Form };
 });
@@ -132,11 +137,12 @@ jest.mock('react-bootstrap/Modal', () => {
 });
 jest.mock('react-ace', () => ({
   __esModule: true,
-  default: ({ value, placeholder, onChange, className }) =>
+  default: ({ value, placeholder, onChange, className, readOnly }) =>
     require('react').createElement('textarea', {
       value: value ?? '',
       placeholder,
       className,
+      readOnly,
       onChange: (event) =>
         onChange(event.target.value, { end: { row: 0, column: 0 } }),
     }),
@@ -181,6 +187,25 @@ const changeValue = (element, value) => {
     element.dispatchEvent(new Event('change', { bubbles: true }));
   });
 };
+
+const createWatcher = (overrides = {}) => ({
+  id: 21,
+  name: 'Daily prices',
+  cron: '0 9 * * *',
+  cron_notification: '0 9 * * *',
+  cron_description: 'At 09:00',
+  cron_notification_description: 'At 09:00',
+  is_active: true,
+  latest: {},
+  pending_data: [],
+  request: {},
+  selector: '.price',
+  type: 'html',
+  url: 'https://example.test/prices',
+  link_base_url: '',
+  redis: { history: [], errors: [] },
+  ...overrides,
+});
 
 beforeEach(() => {
   mockDispatch.mockClear();
@@ -910,22 +935,7 @@ describe('command-related accessible controls', () => {
   });
 
   test('duplicates a watcher and runs the selected record', () => {
-    const watcher = {
-      id: 21,
-      name: 'Daily prices',
-      cron: '0 9 * * *',
-      cron_notification: '0 9 * * *',
-      cron_description: 'At 09:00',
-      cron_notification_description: 'At 09:00',
-      is_active: true,
-      latest: {},
-      request: {},
-      selector: '.price',
-      type: 'html',
-      url: 'https://example.test/prices',
-      link_base_url: '',
-      redis: { history: [], errors: [] },
-    };
+    const watcher = createWatcher();
     mockState = {
       auth: { token: 'token' },
       rpi: { token: 'ngrok-token' },
@@ -963,28 +973,71 @@ describe('command-related accessible controls', () => {
     unmount();
   });
 
+  test('renders inactive watcher status and last update', () => {
+    const timestamp = '2025-01-02T12:00:00Z';
+    const watcher = createWatcher({
+      is_active: false,
+      latest: { timestamp },
+      redis: { history: [{ status: 'executing' }], errors: [] },
+    });
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      watchers: {
+        results: [watcher],
+        errors: null,
+        loading: false,
+        loadingItems: [],
+        modalOpen: false,
+        selectedItem: null,
+        types: [['html', 'HTML']],
+      },
+    };
+
+    const { container, unmount } = render(<Watchers />);
+
+    expect(container.querySelector('i.mdi-alert.text-danger')).toBeDefined();
+    expect(container.querySelector('td.text-warning').textContent).toBe(
+      'Executing'
+    );
+    expect(container.textContent).toContain(
+      new Date(timestamp).toLocaleString()
+    );
+    unmount();
+  });
+
+  test('shows loading indicators for a watcher in progress', () => {
+    const watcher = createWatcher();
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      watchers: {
+        results: [watcher],
+        errors: null,
+        loading: false,
+        loadingItems: [watcher.id],
+        modalOpen: false,
+        selectedItem: watcher,
+        types: [['html', 'HTML']],
+      },
+    };
+
+    const { container, unmount } = render(<Watchers />);
+
+    expect(container.textContent).toContain('Loading');
+    expect(container.querySelector('#watcher-pending-data')).toBeNull();
+    unmount();
+  });
+
   test('opens watcher history and error disclosures for the selected watcher', () => {
-    const watcher = {
-      id: 21,
-      name: 'Daily prices',
-      cron: '0 9 * * *',
-      cron_notification: '0 9 * * *',
-      cron_description: 'At 09:00',
-      cron_notification_description: 'At 09:00',
-      is_active: true,
-      latest: {},
-      request: {},
-      selector: '.price',
-      type: 'html',
-      url: 'https://example.test/prices',
-      link_base_url: '',
+    const watcher = createWatcher({
       redis: {
         history: [{ timestamp: '2025-01-02T12:00:00Z', status: 'complete' }],
         errors: [
           { timestamp: '2025-01-03T12:00:00Z', message: 'Fetch failed' },
         ],
       },
-    };
+    });
     mockState = {
       auth: { token: 'token' },
       rpi: { token: 'ngrok-token' },
@@ -1017,6 +1070,37 @@ describe('command-related accessible controls', () => {
     expect(container.querySelector('#watcher-21-errors').textContent).toContain(
       'Message: Fetch failed'
     );
+    unmount();
+  });
+
+  test('shows pending watcher data as read-only JSON', () => {
+    const watcher = createWatcher({
+      pending_data: [
+        { title: 'Pending item', url: 'https://example.test/item' },
+      ],
+      redis: {},
+    });
+    mockState = {
+      auth: { token: 'token' },
+      rpi: { token: null },
+      watchers: {
+        results: [watcher],
+        errors: null,
+        loading: false,
+        loadingItems: [],
+        modalOpen: false,
+        selectedItem: watcher,
+        types: [['html', 'HTML']],
+      },
+    };
+
+    const { container, unmount } = render(<Watchers />);
+    const pendingDataEditor = container.querySelector('#watcher-pending-data');
+
+    expect(container.textContent).toContain('Pending data (1 item)');
+    expect(pendingDataEditor).toBeDefined();
+    expect(pendingDataEditor.value).toContain('Pending item');
+    expect(pendingDataEditor.readOnly).toBe(true);
     unmount();
   });
 
