@@ -70,7 +70,7 @@ def schedule_deploy():
         cmd_params.append("requirements")
         msg_extra.append("requirements")
     else:
-        cmd_params.append("no-requirements")
+        cmd_params.append("noreq")
 
     if "migrations/" in output:
         cmd_params.append("migrate")
