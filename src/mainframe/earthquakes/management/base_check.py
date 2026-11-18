@@ -69,10 +69,7 @@ class BaseEarthquakeCommand:
             **self.get_kwargs(),
         )
         if error:
-            if self.source == Earthquake.SOURCE_INFP:
-                logger.warning("Fetching INFP earthquakes failed", error=str(error))
-            else:
-                logger.error("Fetching USGS earthquakes failed", error=str(error))
+            self.log_fetch_error(logger, error)
             return
 
         instance = Bot.objects.get(additional_data__earthquake__isnull=False)
@@ -81,6 +78,22 @@ class BaseEarthquakeCommand:
             self.set_last_check(instance)
             return
 
+        stored_events = self.store_events(events)
+        pending_events, min_magnitude = self.get_pending_events(
+            instance,
+            events,
+            stored_events,
+        )
+        self.notify_pending_events(logger, pending_events, min_magnitude)
+        self.set_last_check(instance)
+
+    def log_fetch_error(self, logger, error):
+        if self.source == Earthquake.SOURCE_INFP:
+            logger.warning("Fetching INFP earthquakes failed", error=str(error))
+        else:
+            logger.error("Fetching USGS earthquakes failed", error=str(error))
+
+    def store_events(self, events):
         event_timestamps = {event.timestamp for event in events}
         Earthquake.objects.bulk_create(
             events,
@@ -94,7 +107,7 @@ class BaseEarthquakeCommand:
             unique_fields=["latitude", "longitude", "source", "timestamp"],
         )
 
-        stored_events = {
+        return {
             get_event_key(event): event
             for event in Earthquake.objects.filter(
                 source=self.source,
@@ -102,6 +115,8 @@ class BaseEarthquakeCommand:
             )
         }
 
+    @staticmethod
+    def get_pending_events(instance, events, stored_events):
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
         pending_events = []
@@ -113,26 +128,28 @@ class BaseEarthquakeCommand:
                 and not (stored_event.additional_data or {}).get("telegram_notified")
             ):
                 pending_events.append(stored_event)
-        events = pending_events
+        return pending_events, min_magnitude
 
-        if events:
-            logger.warning(
-                "New earthquakes!",
-                count=len(events),
-                min_magnitude=min_magnitude,
-            )
-            result = send_telegram_message(
-                text="\n\n".join(parse_event(event) for event in events),
-                parse_mode=ParseMode.HTML,
-            )
-            if result is not None:
-                for event in events:
-                    additional_data = dict(event.additional_data or {})
-                    additional_data["telegram_notified"] = True
-                    event.additional_data = additional_data
-                    event.save(update_fields=["additional_data"])
-
-        self.set_last_check(instance)
+    @staticmethod
+    def notify_pending_events(logger, events, min_magnitude):
+        if not events:
+            return
+        logger.warning(
+            "New earthquakes!",
+            count=len(events),
+            min_magnitude=min_magnitude,
+        )
+        result = send_telegram_message(
+            text="\n\n".join(parse_event(event) for event in events),
+            parse_mode=ParseMode.HTML,
+        )
+        if result is None:
+            return
+        for event in events:
+            additional_data = dict(event.additional_data or {})
+            additional_data["telegram_notified"] = True
+            event.additional_data = additional_data
+            event.save(update_fields=["additional_data"])
 
     def get_kwargs(self) -> dict:
         raise NotImplementedError
