@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest import mock
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -11,6 +12,7 @@ from mainframe.earthquakes.management.base_check import (
 )
 from mainframe.earthquakes.management.commands.check_infp import Command as InfpCommand
 from mainframe.earthquakes.management.commands.check_usgs import Command as UsgsCommand
+from mainframe.earthquakes.models import Earthquake
 
 
 @override_settings(TIME_ZONE="Europe/Bucharest")
@@ -48,6 +50,48 @@ def test_check_usgs_parse_earthquake_timestamp_utc():
     evt = make_usgs_event(1700000000000)
     parsed = UsgsCommand.parse_earthquake(evt)
     assert parsed.timestamp.tzinfo == ZoneInfo("UTC")
+
+
+@pytest.mark.django_db
+@override_settings(EARTHQUAKE_DEFAULT_COORDINATES=(0, 0))
+def test_base_check_does_not_notify_for_an_existing_usgs_event():
+    event_timestamp_ms = 1700000000000
+    event = make_usgs_event(event_timestamp_ms)
+    parsed_event = UsgsCommand.parse_earthquake(event)
+    bot = mock.MagicMock()
+    bot.additional_data = {
+        "earthquake": {"min_magnitude": 2, "last_check": {}},
+    }
+    response = mock.MagicMock()
+    response.json.return_value = {"features": [event]}
+
+    with (
+        mock.patch(
+            "mainframe.earthquakes.management.base_check.Bot.objects.get",
+            return_value=bot,
+        ),
+        mock.patch(
+            "mainframe.earthquakes.management.base_check.fetch",
+            return_value=(response, None),
+        ),
+        mock.patch(
+            "mainframe.earthquakes.management.base_check.healthchecks.ping",
+        ),
+        mock.patch(
+            "mainframe.earthquakes.management.base_check.send_telegram_message",
+        ) as send_message,
+    ):
+        UsgsCommand().handle()
+        UsgsCommand().handle()
+
+    assert (
+        Earthquake.objects.filter(
+            source=parsed_event.source,
+            timestamp=parsed_event.timestamp,
+        ).count()
+        == 1
+    )
+    send_message.assert_called_once()
 
 
 def test_base_check_set_last_check_formats_datetime():

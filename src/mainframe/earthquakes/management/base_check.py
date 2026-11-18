@@ -65,6 +65,19 @@ class BaseEarthquakeCommand:
             self.set_last_check(instance)
             return
 
+        event_timestamps = {event.timestamp for event in events}
+        existing_events = set(
+            Earthquake.objects.filter(
+                source=self.source,
+                timestamp__in=event_timestamps,
+            ).values_list("latitude", "longitude", "timestamp")
+        )
+        new_events = [
+            event
+            for event in events
+            if (event.latitude, event.longitude, event.timestamp) not in existing_events
+        ]
+
         Earthquake.objects.bulk_create(
             events,
             update_conflicts=True,
@@ -81,7 +94,7 @@ class BaseEarthquakeCommand:
         min_magnitude = earthquake_config["min_magnitude"]
         events = [
             event
-            for event in events
+            for event in new_events
             if float(event.magnitude) >= float(min_magnitude) and event.is_local
         ]
 
