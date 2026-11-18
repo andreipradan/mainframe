@@ -212,4 +212,32 @@ def test_mainframe_schedules_successful_deploy(github_patches):
     assert result.status_code == 204
     deploy.assert_called_once_with()
     send.assert_called_once()
+    assert "RPi deployment scheduled" in send.call_args.kwargs["text"]
     assert "Deployment queued" in send.call_args.kwargs["text"]
+
+
+def test_mainframe_reports_when_deploy_is_not_scheduled(github_patches):
+    _, _, send = github_patches
+    request = make_request(
+        {
+            "action": "completed",
+            "workflow_job": {
+                "workflow_name": "Mainframe pipeline",
+                "name": "BE - Deploy",
+                "head_branch": "main",
+                "conclusion": "success",
+                "html_url": "https://example.test/job",
+            },
+        },
+        event="workflow_job",
+    )
+    task = mock.MagicMock()
+    task.get.return_value = False
+    with mock.patch(
+        "mainframe.api.hooks.github.schedule_deploy", return_value=task
+    ):
+        result = mainframe(request)
+
+    assert result.status_code == 204
+    send.assert_called_once()
+    assert "RPi deployment not scheduled" in send.call_args.kwargs["text"]
