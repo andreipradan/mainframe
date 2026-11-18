@@ -186,7 +186,9 @@ def test_base_check_set_last_check_formats_datetime():
 
     class FakeInstance:
         def __init__(self):
-            self.additional_data = {"earthquake": {"last_check": {}}}
+            self.additional_data = {
+                "earthquake": {"last_check": {"OTHER_SRC": "existing value"}},
+            }
 
         def save(self):
             self._saved = True
@@ -194,6 +196,10 @@ def test_base_check_set_last_check_formats_datetime():
     inst = FakeInstance()
     cmd.set_last_check(inst)
     stored = inst.additional_data["earthquake"]["last_check"][cmd.source]
+    assert (
+        inst.additional_data["earthquake"]["last_check"]["OTHER_SRC"]
+        == "existing value"
+    )
     # Ensure it parses with the expected format (includes timezone offset)
     parsed = datetime.strptime(stored, DATETIME_FORMAT)
     assert parsed.tzinfo is not None

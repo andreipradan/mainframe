@@ -23,6 +23,13 @@ def normalize_coordinates(latitude, longitude):
     )
 
 
+def get_event_key(event):
+    return (
+        *normalize_coordinates(event.latitude, event.longitude),
+        event.timestamp,
+    )
+
+
 def get_magnitude_icon(magnitude):
     magnitude = float(magnitude)
     if magnitude < 4:  # noqa: PLR2004
@@ -88,10 +95,7 @@ class BaseEarthquakeCommand:
         )
 
         stored_events = {
-            (
-                *normalize_coordinates(event.latitude, event.longitude),
-                event.timestamp,
-            ): event
+            get_event_key(event): event
             for event in Earthquake.objects.filter(
                 source=self.source,
                 timestamp__in=event_timestamps,
@@ -100,26 +104,16 @@ class BaseEarthquakeCommand:
 
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
-        events = [
-            stored_events[
-                (
-                    *normalize_coordinates(event.latitude, event.longitude),
-                    event.timestamp,
-                )
-            ]
-            for event in events
-            if float(event.magnitude) >= float(min_magnitude)
-            and event.is_local
-            and not (
-                stored_events[
-                    (
-                        *normalize_coordinates(event.latitude, event.longitude),
-                        event.timestamp,
-                    )
-                ].additional_data
-                or {}
-            ).get("telegram_notified")
-        ]
+        pending_events = []
+        for event in events:
+            stored_event = stored_events[get_event_key(event)]
+            if (
+                float(event.magnitude) >= float(min_magnitude)
+                and event.is_local
+                and not (stored_event.additional_data or {}).get("telegram_notified")
+            ):
+                pending_events.append(stored_event)
+        events = pending_events
 
         if events:
             logger.warning(
@@ -154,8 +148,5 @@ class BaseEarthquakeCommand:
         earthquake_config = instance.additional_data["earthquake"]
         now = datetime.now().astimezone(ZoneInfo(settings.TIME_ZONE))
         parsed_now = now.strftime(DATETIME_FORMAT)
-        if self.source in earthquake_config["last_check"]:
-            earthquake_config["last_check"][self.source] = parsed_now
-        else:
-            earthquake_config["last_check"] = {self.source: parsed_now}
+        earthquake_config.setdefault("last_check", {})[self.source] = parsed_now
         instance.save()
