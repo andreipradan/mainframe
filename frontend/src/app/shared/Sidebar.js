@@ -226,15 +226,32 @@ const StaffProfile = ({
 
 /** Renders the staff-only template navigation groups. */
 const StaffTemplateNavigation = ({ navigation }) => {
-  const { openMenuId, toggleMenu, isPathActive } = navigation;
+  const {
+    basicUiMenuOpen,
+    setBasicUiMenuOpen,
+    formElementsMenuOpen,
+    setFormElementsMenuOpen,
+    tablesMenuOpen,
+    setTablesMenuOpen,
+    chartsMenuOpen,
+    setChartsMenuOpen,
+    iconsMenuOpen,
+    setIconsMenuOpen,
+    userPagesMenuOpen,
+    setUserPagesMenuOpen,
+    errorPagesMenuOpen,
+    setErrorPagesMenuOpen,
+    toggleMenu,
+    isPathActive,
+  } = navigation;
   const menuGroups = [
     {
       id: 'sidebar-basic-ui-menu',
       path: '/basic-ui',
       label: <Trans>Basic UI Elements</Trans>,
       icon: 'mdi-laptop',
-      open: openMenuId === 'sidebar-basic-ui-menu',
-      onToggle: () => toggleMenu('sidebar-basic-ui-menu'),
+      open: basicUiMenuOpen,
+      onToggle: () => toggleMenu(basicUiMenuOpen, setBasicUiMenuOpen),
       links: [
         ['/basic-ui/buttons', <Trans key='/basic-ui/buttons'>Buttons</Trans>],
         [
@@ -252,8 +269,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       path: '/form-elements',
       label: <Trans>Form Elements</Trans>,
       icon: 'mdi-playlist-play',
-      open: openMenuId === 'sidebar-form-elements-menu',
-      onToggle: () => toggleMenu('sidebar-form-elements-menu'),
+      open: formElementsMenuOpen,
+      onToggle: () => toggleMenu(formElementsMenuOpen, setFormElementsMenuOpen),
       links: [
         [
           '/form-elements/basic-elements',
@@ -266,8 +283,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       path: '/tables',
       label: <Trans>Tables</Trans>,
       icon: 'mdi-table-large',
-      open: openMenuId === 'sidebar-tables-menu',
-      onToggle: () => toggleMenu('sidebar-tables-menu'),
+      open: tablesMenuOpen,
+      onToggle: () => toggleMenu(tablesMenuOpen, setTablesMenuOpen),
       links: [
         [
           '/tables/basic-table',
@@ -280,8 +297,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       path: '/charts',
       label: <Trans>Charts</Trans>,
       icon: 'mdi-chart-bar',
-      open: openMenuId === 'sidebar-charts-menu',
-      onToggle: () => toggleMenu('sidebar-charts-menu'),
+      open: chartsMenuOpen,
+      onToggle: () => toggleMenu(chartsMenuOpen, setChartsMenuOpen),
       links: [
         ['/charts/chart-js', <Trans key='/charts/chart-js'>Chart Js</Trans>],
       ],
@@ -291,8 +308,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       path: '/icons',
       label: <Trans>Icons</Trans>,
       icon: 'mdi-contacts',
-      open: openMenuId === 'sidebar-icons-menu',
-      onToggle: () => toggleMenu('sidebar-icons-menu'),
+      open: iconsMenuOpen,
+      onToggle: () => toggleMenu(iconsMenuOpen, setIconsMenuOpen),
       links: [['/icons/mdi', <Trans key='/icons/mdi'>Material</Trans>]],
     },
     {
@@ -301,8 +318,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       active: isPathActive('/login') || isPathActive('/register'),
       label: <Trans>User Pages</Trans>,
       icon: 'mdi-security',
-      open: openMenuId === 'sidebar-user-pages-menu',
-      onToggle: () => toggleMenu('sidebar-user-pages-menu'),
+      open: userPagesMenuOpen,
+      onToggle: () => toggleMenu(userPagesMenuOpen, setUserPagesMenuOpen),
       links: [
         ['/login', <Trans key='/login'>Login</Trans>],
         ['/register', <Trans key='/register'>Register</Trans>],
@@ -313,8 +330,8 @@ const StaffTemplateNavigation = ({ navigation }) => {
       path: '/error-pages',
       label: <Trans>Error Pages</Trans>,
       icon: 'mdi-lock',
-      open: openMenuId === 'sidebar-error-pages-menu',
-      onToggle: () => toggleMenu('sidebar-error-pages-menu'),
+      open: errorPagesMenuOpen,
+      onToggle: () => toggleMenu(errorPagesMenuOpen, setErrorPagesMenuOpen),
       links: [
         ['/error-pages/error-404', '404'],
         ['/error-pages/error-500', '500'],
@@ -412,7 +429,13 @@ const ProfileAvatar = () => (
 
 /** Renders authenticated users' travel menu and its route links. */
 const TravelNavigation = ({ navigation }) => {
-  const { isPathActive, isPathExact, openMenuId, toggleMenu } = navigation;
+  const {
+    isPathActive,
+    isPathExact,
+    travelMenuOpen,
+    setTravelMenuOpen,
+    toggleMenu,
+  } = navigation;
 
   return (
     <>
@@ -422,8 +445,8 @@ const TravelNavigation = ({ navigation }) => {
       <SidebarMenu
         path='/expenses/travel'
         active={isPathActive('/expenses/travel')}
-        open={openMenuId === 'sidebar-travel-menu'}
-        onToggle={() => toggleMenu('sidebar-travel-menu')}
+        open={travelMenuOpen}
+        onToggle={() => toggleMenu(travelMenuOpen, setTravelMenuOpen)}
         id='sidebar-travel-menu'
         label='Travel'
         icon='mdi-earth'
@@ -525,7 +548,20 @@ const StaffNavigation = ({ navigation }) => {
     isPathExact,
     handleSetModalAction,
     toggleMenu,
-    openMenuId,
+    accountsMenuOpen,
+    setAccountsMenuOpen,
+    appsMenuOpen,
+    setAppsMenuOpen,
+    authMenuOpen,
+    setAuthMenuOpen,
+    commandsMenuOpen,
+    setCommandsMenuOpen,
+    creditMenuOpen,
+    setCreditMenuOpen,
+    expensesMenuOpen,
+    setExpensesMenuOpen,
+    investmentsMenuOpen,
+    setInvestmentsMenuOpen,
   } = navigation;
 
   const items = [
@@ -535,8 +571,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/apps',
       label: <Trans key='apps'>Apps</Trans>,
       icon: 'mdi-apps',
-      open: openMenuId === 'sidebar-apps-menu',
-      onToggle: () => toggleMenu('sidebar-apps-menu'),
+      open: appsMenuOpen,
+      onToggle: () => toggleMenu(appsMenuOpen, setAppsMenuOpen),
       links: [
         {
           path: '/apps/logs',
@@ -553,8 +589,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/auth',
       label: 'Auth',
       icon: 'mdi-account-multiple',
-      open: openMenuId === 'sidebar-auth-menu',
-      onToggle: () => toggleMenu('sidebar-auth-menu'),
+      open: authMenuOpen,
+      onToggle: () => toggleMenu(authMenuOpen, setAuthMenuOpen),
       links: [
         { path: '/auth/groups', label: 'Groups' },
         { path: '/auth/users', label: 'Users' },
@@ -573,8 +609,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/commands',
       label: 'Commands',
       icon: 'mdi-console',
-      open: openMenuId === 'sidebar-commands-menu',
-      onToggle: () => toggleMenu('sidebar-commands-menu'),
+      open: commandsMenuOpen,
+      onToggle: () => toggleMenu(commandsMenuOpen, setCommandsMenuOpen),
       links: [
         { path: '/commands/crons', icon: 'mdi-timer-sand', label: 'Crons' },
         {
@@ -618,8 +654,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/finances/accounts',
       label: 'Accounts',
       icon: 'mdi-credit-card-outline',
-      open: openMenuId === 'sidebar-accounts-menu',
-      onToggle: () => toggleMenu('sidebar-accounts-menu'),
+      open: accountsMenuOpen,
+      onToggle: () => toggleMenu(accountsMenuOpen, setAccountsMenuOpen),
       links: [
         { path: '/finances/accounts/transactions', label: 'Overview' },
         { path: '/finances/accounts/categorize', label: 'Categorize' },
@@ -631,8 +667,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/credit',
       label: 'Credit',
       icon: 'mdi-cash-multiple',
-      open: openMenuId === 'sidebar-credit-menu',
-      onToggle: () => toggleMenu('sidebar-credit-menu'),
+      open: creditMenuOpen,
+      onToggle: () => toggleMenu(creditMenuOpen, setCreditMenuOpen),
       links: [
         { path: '/credit/details', label: 'Details' },
         { path: '/credit/calculator', label: 'Calculator' },
@@ -646,8 +682,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/expenses',
       label: 'Expenses',
       icon: 'mdi-account-cash-outline',
-      open: openMenuId === 'sidebar-expenses-menu',
-      onToggle: () => toggleMenu('sidebar-expenses-menu'),
+      open: expensesMenuOpen,
+      onToggle: () => toggleMenu(expensesMenuOpen, setExpensesMenuOpen),
       links: [{ path: '/expenses/car', label: 'Car' }],
     },
     {
@@ -663,8 +699,8 @@ const StaffNavigation = ({ navigation }) => {
       path: '/investments',
       label: 'Investments',
       icon: 'mdi-cash-multiple',
-      open: openMenuId === 'sidebar-investments-menu',
-      onToggle: () => toggleMenu('sidebar-investments-menu'),
+      open: investmentsMenuOpen,
+      onToggle: () => toggleMenu(investmentsMenuOpen, setInvestmentsMenuOpen),
       links: [
         { path: '/investments/summary', label: 'Summary' },
         { path: '/investments/bonds', label: 'Bonds' },
@@ -763,8 +799,13 @@ const PublicNavigation = ({ navigation }) => {
 const DocumentationNavigation = ({ navigation }) => (
   <SidebarMenu
     active={navigation.isPathActive('/terms-and-conditions')}
-    open={navigation.openMenuId === 'sidebar-documentation-menu'}
-    onToggle={() => navigation.toggleMenu('sidebar-documentation-menu')}
+    open={navigation.documentationMenuOpen}
+    onToggle={() =>
+      navigation.toggleMenu(
+        navigation.documentationMenuOpen,
+        navigation.setDocumentationMenuOpen
+      )
+    }
     id='sidebar-documentation-menu'
     label='Docs'
     ariaLabel='Documentation'
@@ -817,42 +858,76 @@ const Sidebar = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentModal, setCurrentModal] = useState('');
 
-  const [openMenuId, setOpenMenuId] = useState(null);
+  const [accountsMenuOpen, setAccountsMenuOpen] = useState(false);
+  const [appsMenuOpen, setAppsMenuOpen] = useState(false);
+  const [authMenuOpen, setAuthMenuOpen] = useState(false);
+  const [basicUiMenuOpen, setBasicUiMenuOpen] = useState(false);
+  const [chartsMenuOpen, setChartsMenuOpen] = useState(false);
+  const [commandsMenuOpen, setCommandsMenuOpen] = useState(false);
+  const [creditMenuOpen, setCreditMenuOpen] = useState(false);
+  const [documentationMenuOpen, setDocumentationMenuOpen] = useState(false);
+  const [errorPagesMenuOpen, setErrorPagesMenuOpen] = useState(false);
+  const [expensesMenuOpen, setExpensesMenuOpen] = useState(false);
+  const [formElementsMenuOpen, setFormElementsMenuOpen] = useState(false);
+  const [iconsMenuOpen, setIconsMenuOpen] = useState(false);
+  const [investmentsMenuOpen, setInvestmentsMenuOpen] = useState(false);
+  const [tablesMenuOpen, setTablesMenuOpen] = useState(false);
+  const [travelMenuOpen, setTravelMenuOpen] = useState(false);
+  const [userPagesMenuOpen, setUserPagesMenuOpen] = useState(false);
 
-  /** Keeps sidebar disclosure state mutually exclusive. */
-  const toggleMenu = (menuId) => {
-    setOpenMenuId((currentMenuId) =>
-      currentMenuId === menuId ? null : menuId
-    );
+  const closeAllMenus = () => {
+    setAccountsMenuOpen(false);
+    setAppsMenuOpen(false);
+    setAuthMenuOpen(false);
+    setBasicUiMenuOpen(false);
+    setChartsMenuOpen(false);
+    setCommandsMenuOpen(false);
+    setCreditMenuOpen(false);
+    setDocumentationMenuOpen(false);
+    setErrorPagesMenuOpen(false);
+    setExpensesMenuOpen(false);
+    setFormElementsMenuOpen(false);
+    setIconsMenuOpen(false);
+    setInvestmentsMenuOpen(false);
+    setTablesMenuOpen(false);
+    setTravelMenuOpen(false);
+    setUserPagesMenuOpen(false);
+  };
+
+  /** Closes other sidebar menus before toggling the selected menu. */
+  const toggleMenu = (menuOpen, setMenuOpen) => {
+    closeAllMenus();
+    setMenuOpen(!menuOpen);
   };
 
   /** Checks whether the current route starts with a navigation path. */
   const isPathActive = (path) => location.pathname.startsWith(path);
   const onRouteChanged = () => {
     document.querySelector('#sidebar').classList.remove('active');
+    closeAllMenus();
 
     const dropdownPaths = [
-      { path: '/apps', id: 'sidebar-apps-menu' },
-      { path: '/auth', id: 'sidebar-auth-menu' },
-      { path: '/basic-ui', id: 'sidebar-basic-ui-menu' },
-      { path: '/credit', id: 'sidebar-credit-menu' },
-      { path: '/commands', id: 'sidebar-commands-menu' },
-      { path: '/expenses/car', id: 'sidebar-expenses-menu' },
-      { path: '/expenses/travel', id: 'sidebar-travel-menu' },
-      { path: '/finances/accounts', id: 'sidebar-accounts-menu' },
-      { path: '/form-elements', id: 'sidebar-form-elements-menu' },
-      { path: '/investments', id: 'sidebar-investments-menu' },
-      { path: '/tables', id: 'sidebar-tables-menu' },
-      { path: '/icons', id: 'sidebar-icons-menu' },
-      { path: '/charts', id: 'sidebar-charts-menu' },
-      { path: '/login', id: 'sidebar-user-pages-menu' },
-      { path: '/register', id: 'sidebar-user-pages-menu' },
-      { path: '/error-pages', id: 'sidebar-error-pages-menu' },
-      { path: '/terms-and-conditions', id: 'sidebar-documentation-menu' },
+      { path: '/apps', setState: setAppsMenuOpen },
+      { path: '/auth', setState: setAuthMenuOpen },
+      { path: '/basic-ui', setState: setBasicUiMenuOpen },
+      { path: '/credit', setState: setCreditMenuOpen },
+      { path: '/commands', setState: setCommandsMenuOpen },
+      { path: '/expenses/car', setState: setExpensesMenuOpen },
+      { path: '/expenses/travel', setState: setTravelMenuOpen },
+      { path: '/finances/accounts', setState: setAccountsMenuOpen },
+      { path: '/form-elements', setState: setFormElementsMenuOpen },
+      { path: '/investments', setState: setInvestmentsMenuOpen },
+      { path: '/tables', setState: setTablesMenuOpen },
+      { path: '/icons', setState: setIconsMenuOpen },
+      { path: '/charts', setState: setChartsMenuOpen },
+      { path: '/login', setState: setUserPagesMenuOpen },
+      { path: '/register', setState: setUserPagesMenuOpen },
+      { path: '/error-pages', setState: setErrorPagesMenuOpen },
+      { path: '/terms-and-conditions', setState: setDocumentationMenuOpen },
     ];
 
-    setOpenMenuId(
-      dropdownPaths.find(({ path }) => isPathActive(path))?.id ?? null
+    dropdownPaths.forEach(
+      (obj) => isPathActive(obj.path) && obj.setState(true)
     );
   };
 
@@ -958,7 +1033,38 @@ const Sidebar = () => {
           isPathExact,
           handleSetModalAction,
           toggleMenu,
-          openMenuId,
+          accountsMenuOpen,
+          setAccountsMenuOpen,
+          appsMenuOpen,
+          setAppsMenuOpen,
+          authMenuOpen,
+          setAuthMenuOpen,
+          basicUiMenuOpen,
+          setBasicUiMenuOpen,
+          chartsMenuOpen,
+          setChartsMenuOpen,
+          commandsMenuOpen,
+          setCommandsMenuOpen,
+          creditMenuOpen,
+          setCreditMenuOpen,
+          documentationMenuOpen,
+          setDocumentationMenuOpen,
+          errorPagesMenuOpen,
+          setErrorPagesMenuOpen,
+          expensesMenuOpen,
+          setExpensesMenuOpen,
+          formElementsMenuOpen,
+          setFormElementsMenuOpen,
+          iconsMenuOpen,
+          setIconsMenuOpen,
+          investmentsMenuOpen,
+          setInvestmentsMenuOpen,
+          tablesMenuOpen,
+          setTablesMenuOpen,
+          travelMenuOpen,
+          setTravelMenuOpen,
+          userPagesMenuOpen,
+          setUserPagesMenuOpen,
         }}
       />
 

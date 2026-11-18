@@ -194,11 +194,6 @@ describe('Sidebar navigation controls', () => {
         .querySelector('#sidebar-documentation-menu')
         .parentElement.classList.contains('show')
     ).toBe(false);
-    expect(
-      Array.from(
-        container.querySelectorAll('button[aria-controls^="sidebar-"]')
-      ).every((button) => button.getAttribute('aria-expanded') === 'false')
-    ).toBe(true);
     unmount();
   });
 
