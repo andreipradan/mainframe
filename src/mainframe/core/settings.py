@@ -19,6 +19,8 @@ import sentry_sdk
 import structlog
 from sentry_sdk.integrations.django import DjangoIntegration
 
+from mainframe.clients.sentry import redact_telegram_token_from_breadcrumb
+
 env = environ.Env(
     ALLOWED_HOSTS=(list, []),
     CORS_ALLOW_ALL_ORIGINS=(bool, False),
@@ -319,6 +321,7 @@ if ENV in ["local", "prod", "rpi"]:
             integrations=[DjangoIntegration()],
             traces_sample_rate=1.0,
             send_default_pii=False,
+            before_breadcrumb=redact_telegram_token_from_breadcrumb,
             profiles_sample_rate=1.0,
         )
 elif ENV not in ["ci", "test"]:

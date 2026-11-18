@@ -2,6 +2,7 @@ from datetime import datetime
 
 import structlog
 import telegram
+from asgiref.sync import sync_to_async
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 from mainframe.bots.management.commands.inlines.shared import BaseInlines
@@ -38,24 +39,26 @@ class LightsInline(BaseInlines):
         )
 
     @classmethod
-    def refresh(cls, update: Update):
+    async def refresh(cls, update: Update):
         greeting_message = f"Hi {update.callback_query.from_user.full_name}!"
 
         text = f"Last update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         try:
-            return update.callback_query.edit_message_text(
-                text=f"{greeting_message}\n{text}", reply_markup=cls.get_markup()
+            reply_markup = await sync_to_async(cls.get_markup)()
+            return await update.callback_query.edit_message_text(
+                text=f"{greeting_message}\n{text}", reply_markup=reply_markup
             )
         except telegram.error.BadRequest as e:
-            return e.message
+            logger.info("Unable to refresh lights message", error=e.message)
+            return None
 
     @classmethod
-    def toggle(cls, update, ip):
+    async def toggle(cls, update, ip):
         try:
-            response = LightsClient.toggle(ip)
-        except LightsException:
-            logger.exception("Error toggling light", ip=ip)
-            return ""
+            response = await sync_to_async(LightsClient.toggle)(ip)
+        except LightsException as error:
+            logger.warning("Error toggling light", ip=ip, error=str(error))
+            return None
 
         logger.info("Light toggled", ip=ip, response=str(response))
-        return cls.refresh(update)
+        return await cls.refresh(update)
