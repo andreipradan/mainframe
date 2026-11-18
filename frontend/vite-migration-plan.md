@@ -38,14 +38,14 @@ CRA 5.0.1 declares `webpack-dev-server` `^4.6.0`, while the frontend currently f
    - `build.outDir` set from `BUILD_PATH` when supplied, otherwise `build`. This preserves the existing CI/Docker output contract.
    - A development server bound to `0.0.0.0`, using port 3000 with strict port selection.
    - A narrowly scoped Codespaces `allowedHosts` entry derived from `CODESPACE_NAME`; do not allow arbitrary hosts.
-3. Move the CRA HTML entry template from `frontend/public/index.html` to `frontend/index.html`. Keep the root element, metadata, favicon/manifest references, and TinyMCE CDN script. Leave other static files in `frontend/public`.
+3. Move the CRA HTML entry template from `frontend/public/index.html` to `frontend/index.html`. Keep the root element, metadata, and TinyMCE CDN script. Replace the `%PUBLIC_URL%` prefix in the favicon and manifest references with `/`, matching the `/` base path from step 2. Leave other static files in `frontend/public`.
 4. Change package scripts so `start`/`dev` runs Vite and `build` runs `vite build`. Keep the existing `format` command.
 5. Update the Poe frontend task in `pyproject.toml` to invoke the Vite script and pass `VITE_API_URL` and `VITE_NGROK_URL`. Use the Codespaces backend URL on port 8000.
 6. During this phase, retain CRA's Jest test command temporarily so the build-tool change does not also require an immediate rewrite of the test suite. A small Vite `define` compatibility bridge can map the existing `REACT_APP_*` expressions to the new `VITE_*` task variables until Phase 4.
 
 ## Phase 3: Migrate CRA-Specific Application Details
 
-1. Replace the `REACT_APP_API_URL` and `REACT_APP_NGROK_URL` reads with Vite environment access, preserving the localhost backend fallback at `http://127.0.0.1:8000/`.
+1. Replace the `REACT_APP_API_URL` and `REACT_APP_NGROK_URL` reads with Vite environment access, preserving the localhost backend fallback at `http://127.0.0.1:5678/`.
 2. Update service-worker environment handling. The app currently unregisters its service worker; preserve that behavior and ensure any previously installed CRA worker cannot keep serving stale assets. Use Vite's production/base URL values rather than CRA's `PUBLIC_URL`.
 3. Replace production-source static `require()` calls for images with explicit imports (or Vite-supported `new URL(..., import.meta.url)` references). Do not change test-only `require()` calls in this phase.
 4. Remove webpack-only `~` prefixes from package imports in `App.scss`, preserving Sass import order and Bootstrap variable overrides.

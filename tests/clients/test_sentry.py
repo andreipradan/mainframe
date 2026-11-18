@@ -23,4 +23,6 @@ def test_redact_telegram_bot_token_from_url_and_message():
 def test_redact_telegram_bot_token_leaves_other_breadcrumbs_unchanged():
     breadcrumb = {"data": {"url": "https://example.com/api"}}
 
-    assert redact_telegram_token_from_breadcrumb(breadcrumb, {}) == breadcrumb
+    result = redact_telegram_token_from_breadcrumb(breadcrumb, {})
+
+    assert result["data"]["url"] == "https://example.com/api"

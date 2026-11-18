@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -12,6 +13,14 @@ from mainframe.clients.scraper import fetch
 from mainframe.earthquakes.models import Earthquake
 
 DATETIME_FORMAT = "%d.%m.%Y, %H:%M:%S %z"
+COORDINATE_QUANTUM = Decimal("0.00001")
+
+
+def normalize_coordinates(latitude, longitude):
+    return (
+        Decimal(str(latitude)).quantize(COORDINATE_QUANTUM),
+        Decimal(str(longitude)).quantize(COORDINATE_QUANTUM),
+    )
 
 
 def get_magnitude_icon(magnitude):
@@ -66,18 +75,6 @@ class BaseEarthquakeCommand:
             return
 
         event_timestamps = {event.timestamp for event in events}
-        existing_events = set(
-            Earthquake.objects.filter(
-                source=self.source,
-                timestamp__in=event_timestamps,
-            ).values_list("latitude", "longitude", "timestamp")
-        )
-        new_events = [
-            event
-            for event in events
-            if (event.latitude, event.longitude, event.timestamp) not in existing_events
-        ]
-
         Earthquake.objects.bulk_create(
             events,
             update_conflicts=True,
@@ -90,12 +87,38 @@ class BaseEarthquakeCommand:
             unique_fields=["latitude", "longitude", "source", "timestamp"],
         )
 
+        stored_events = {
+            (
+                *normalize_coordinates(event.latitude, event.longitude),
+                event.timestamp,
+            ): event
+            for event in Earthquake.objects.filter(
+                source=self.source,
+                timestamp__in=event_timestamps,
+            )
+        }
+
         earthquake_config = instance.additional_data["earthquake"]
         min_magnitude = earthquake_config["min_magnitude"]
         events = [
-            event
-            for event in new_events
-            if float(event.magnitude) >= float(min_magnitude) and event.is_local
+            stored_events[
+                (
+                    *normalize_coordinates(event.latitude, event.longitude),
+                    event.timestamp,
+                )
+            ]
+            for event in events
+            if float(event.magnitude) >= float(min_magnitude)
+            and event.is_local
+            and not (
+                stored_events[
+                    (
+                        *normalize_coordinates(event.latitude, event.longitude),
+                        event.timestamp,
+                    )
+                ].additional_data
+                or {}
+            ).get("telegram_notified")
         ]
 
         if events:
@@ -104,10 +127,16 @@ class BaseEarthquakeCommand:
                 count=len(events),
                 min_magnitude=min_magnitude,
             )
-            send_telegram_message(
+            result = send_telegram_message(
                 text="\n\n".join(parse_event(event) for event in events),
                 parse_mode=ParseMode.HTML,
             )
+            if result is not None:
+                for event in events:
+                    additional_data = dict(event.additional_data or {})
+                    additional_data["telegram_notified"] = True
+                    event.additional_data = additional_data
+                    event.save(update_fields=["additional_data"])
 
         self.set_last_check(instance)
 
