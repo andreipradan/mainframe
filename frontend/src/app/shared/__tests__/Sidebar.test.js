@@ -134,6 +134,11 @@ describe('Sidebar navigation controls', () => {
       expect(button.getAttribute('aria-expanded')).toBe(
         String(!initiallyExpanded)
       );
+      expect(
+        menuButtons.filter(
+          (menuButton) => menuButton.getAttribute('aria-expanded') === 'true'
+        )
+      ).toHaveLength(initiallyExpanded ? 0 : 1);
       act(() => button.click());
       expect(button.getAttribute('aria-expanded')).toBe(
         String(initiallyExpanded)
