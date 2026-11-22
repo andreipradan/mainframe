@@ -71,6 +71,8 @@ export default defineConfig(({ mode }) => ({
           ) {
             return 'react-vendor';
           }
+
+          return undefined;
         },
       },
     },

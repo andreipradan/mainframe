@@ -1,7 +1,7 @@
 import { unregister } from '../serviceWorker';
 
 describe('service worker cleanup', () => {
-  let originalServiceWorker;
+  let originalServiceWorker = null;
 
   beforeEach(() => {
     originalServiceWorker = Object.getOwnPropertyDescriptor(

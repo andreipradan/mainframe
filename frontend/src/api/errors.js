@@ -17,7 +17,7 @@ export const handleErrors = (err, dispatch, setErrors, setLoading) => {
         toast.warning('Session expired - please log in!', toastParams);
         if (setLoading) dispatch(setLoading(false));
         dispatch(logout());
-        return;
+        return undefined;
       }
       return dispatch(setErrors(err.response.data));
     }

@@ -14,6 +14,7 @@ export const ngrokAxios = Axios.create({
   },
 });
 
+/** Installs pass-through request and response interceptors on an Axios instance. */
 const setupAxiosInstance = (instance) => {
   instance.interceptors.request.use(
     (config) => {

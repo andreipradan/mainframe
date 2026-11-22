@@ -10,8 +10,8 @@ import {
   UploadApi,
   RunApi,
 } from '../shared';
-import axios, * as apiModule from '../index';
-import * as errors from '../errors';
+import axios, { ngrokAxios } from '../index';
+import { handleErrors } from '../errors';
 import { toast } from 'react-toastify';
 
 vi.mock('../index', () => ({
@@ -239,7 +239,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(errors.handleErrors).toHaveBeenCalled();
+    expect(handleErrors).toHaveBeenCalled();
   });
 
   test('CreateApi uses displayField and displayFields for toast', async () => {
@@ -290,9 +290,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
 
   test('ListApi uses ngrokAxios when configured', async () => {
     // ensure ngrokAxios has a get mock
-    apiModule.ngrokAxios.get = vi
-      .fn()
-      .mockResolvedValueOnce({ data: { results: [9] } });
+    ngrokAxios.get = vi.fn().mockResolvedValueOnce({ data: { results: [9] } });
     const methods = {
       set: (p) => ({ type: 'set', payload: p }),
       setLoading: () => ({ type: 'ld' }),
@@ -309,7 +307,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(apiModule.ngrokAxios.get).toHaveBeenCalled();
+    expect(ngrokAxios.get).toHaveBeenCalled();
   });
 
   test('UpdateApi.update handles failure via handleErrors', async () => {
@@ -333,7 +331,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(errors.handleErrors).toHaveBeenCalled();
+    expect(handleErrors).toHaveBeenCalled();
   });
 
   test('UploadApi.upload dispatches and shows toast', async () => {
@@ -359,7 +357,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
   });
 
   test('RunApi.run uses ngrokAxios and shows toast on success', async () => {
-    apiModule.ngrokAxios.put = vi.fn().mockResolvedValueOnce({});
+    ngrokAxios.put = vi.fn().mockResolvedValueOnce({});
     const methods = {
       set: () => ({}),
       setLoading: () => ({}),
@@ -375,7 +373,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(apiModule.ngrokAxios.put).toHaveBeenCalled();
+    expect(ngrokAxios.put).toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalled();
   });
 });
