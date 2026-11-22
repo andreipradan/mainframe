@@ -7,33 +7,38 @@ import {
   DeleteApi,
   ListApi,
   UpdateApi,
+  UploadApi,
+  RunApi,
 } from '../shared';
+import axios, { ngrokAxios } from '../index';
+import { handleErrors } from '../errors';
+import { toast } from 'react-toastify';
 
-jest.mock('../index', () => ({
+vi.mock('../index', () => ({
   __esModule: true,
   default: {
-    post: jest.fn(),
-    get: jest.fn(),
-    delete: jest.fn(),
-    patch: jest.fn(),
-    put: jest.fn(),
+    post: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn(),
+    patch: vi.fn(),
+    put: vi.fn(),
   },
   ngrokAxios: {},
 }));
 
-jest.mock('../errors', () => ({ handleErrors: jest.fn() }));
-jest.mock('react-toastify', () => ({
+vi.mock('../errors', () => ({ handleErrors: vi.fn() }));
+vi.mock('react-toastify', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
-    info: jest.fn(),
-    warning: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
   },
 }));
-jest.mock('../auth', () => ({ toastParams: {} }));
+vi.mock('../auth', () => ({ toastParams: {} }));
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('shared utils', () => {
@@ -68,9 +73,6 @@ describe('shared utils', () => {
 });
 
 describe('CreateApi', () => {
-  const axios = require('../index').default;
-  const { toast } = require('react-toastify');
-
   test('create dispatches create action and shows toast on success', async () => {
     const responseData = { id: 1, name: 'MyItem' };
     axios.post.mockResolvedValueOnce({ data: responseData });
@@ -88,7 +90,7 @@ describe('CreateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('token-123');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     // call create
     instance.create({ foo: 'bar' })(dispatch);
@@ -106,9 +108,6 @@ describe('CreateApi', () => {
 });
 
 describe('DeleteApi, ListApi and UpdateApi', () => {
-  const axios = require('../index').default;
-  const { toast } = require('react-toastify');
-
   test('DeleteApi.delete dispatches delete and shows toast on success', async () => {
     axios.delete.mockResolvedValueOnce({});
 
@@ -126,7 +125,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('token-xyz');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.delete('abc', 'MyThing')(dispatch);
     await Promise.resolve();
@@ -154,7 +153,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('token-xyz');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.delete('bad')(dispatch);
     await Promise.resolve();
@@ -180,7 +179,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('t');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.getList({ a: 1 })(dispatch);
     await Promise.resolve();
@@ -206,7 +205,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('t');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.update(5, { name: 'x' })(dispatch);
     await Promise.resolve();
@@ -220,8 +219,6 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
   });
 
   test('CreateApi.create handles failure via handleErrors', async () => {
-    const errors = require('../errors');
-    const axios = require('../index').default;
     axios.post.mockRejectedValueOnce(new Error('create-fail'));
 
     const methods = {
@@ -236,19 +233,16 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('t');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.create({})(dispatch);
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(errors.handleErrors).toHaveBeenCalled();
+    expect(handleErrors).toHaveBeenCalled();
   });
 
   test('CreateApi uses displayField and displayFields for toast', async () => {
-    const axios = require('../index').default;
-    const { toast } = require('react-toastify');
-
     // displayField case
     const dataA = { id: 7, label: 'LabelA' };
     axios.post.mockResolvedValueOnce({ data: dataA });
@@ -263,7 +257,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     ApiA.methods = methodsA;
     ApiA.displayField = 'label';
     const instanceA = new ApiA('t');
-    instanceA.create({})(jest.fn());
+    instanceA.create({})(vi.fn());
     await Promise.resolve();
     await Promise.resolve();
     expect(toast.success).toHaveBeenCalledWith(
@@ -285,7 +279,7 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     ApiB.methods = methodsB;
     ApiB.displayFields = ['first', 'second'];
     const instanceB = new ApiB('t');
-    instanceB.create({})(jest.fn());
+    instanceB.create({})(vi.fn());
     await Promise.resolve();
     await Promise.resolve();
     expect(toast.success).toHaveBeenCalledWith(
@@ -295,34 +289,28 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
   });
 
   test('ListApi uses ngrokAxios when configured', async () => {
-    const pkg = require('../index');
     // ensure ngrokAxios has a get mock
-    pkg.ngrokAxios.get = jest
-      .fn()
-      .mockResolvedValueOnce({ data: { results: [9] } });
+    ngrokAxios.get = vi.fn().mockResolvedValueOnce({ data: { results: [9] } });
     const methods = {
       set: (p) => ({ type: 'set', payload: p }),
       setLoading: () => ({ type: 'ld' }),
       setErrors: () => ({ type: 'err' }),
     };
-    const { ListApi } = require('../shared');
     class Api extends mix(ListApi, TokenMixin) {}
     Api.baseUrl = 'things/list';
     Api.methods = methods;
     Api.ngrokAxios = ['getList'];
 
     const instance = new Api('t');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
     instance.getList({})(dispatch);
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(pkg.ngrokAxios.get).toHaveBeenCalled();
+    expect(ngrokAxios.get).toHaveBeenCalled();
   });
 
   test('UpdateApi.update handles failure via handleErrors', async () => {
-    const errors = require('../errors');
-    const axios = require('../index').default;
     axios.patch.mockRejectedValueOnce(new Error('update-fail'));
 
     const methods = {
@@ -337,19 +325,17 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('t');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.update(5, { name: 'x' })(dispatch);
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(errors.handleErrors).toHaveBeenCalled();
+    expect(handleErrors).toHaveBeenCalled();
   });
 
   test('UploadApi.upload dispatches and shows toast', async () => {
-    const axios = require('../index').default;
     axios.post.mockResolvedValueOnce({ data: { id: 11 } });
-    const { UploadApi } = require('../shared');
     const methods = {
       set: (p) => ({ type: 'set', payload: p }),
       setLoading: () => ({ type: 'ld' }),
@@ -360,21 +346,18 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.methods = methods;
 
     const instance = new Api('t');
-    const dispatch = jest.fn();
+    const dispatch = vi.fn();
 
     instance.upload(new FormData())(dispatch);
     await Promise.resolve();
     await Promise.resolve();
 
-    const { toast } = require('react-toastify');
     expect(dispatch).toHaveBeenCalledWith(methods.set({ id: 11 }));
     expect(toast.success).toHaveBeenCalled();
   });
 
   test('RunApi.run uses ngrokAxios and shows toast on success', async () => {
-    const pkg = require('../index');
-    pkg.ngrokAxios.put = jest.fn().mockResolvedValueOnce({});
-    const { RunApi } = require('../shared');
+    ngrokAxios.put = vi.fn().mockResolvedValueOnce({});
     const methods = {
       set: () => ({}),
       setLoading: () => ({}),
@@ -386,12 +369,11 @@ describe('DeleteApi, ListApi and UpdateApi', () => {
     Api.ngrokAxios = ['run'];
 
     const instance = new Api('t');
-    instance.run('abc', {})(jest.fn());
+    instance.run('abc', {})(vi.fn());
     await Promise.resolve();
     await Promise.resolve();
 
-    const { toast } = require('react-toastify');
-    expect(pkg.ngrokAxios.put).toHaveBeenCalled();
+    expect(ngrokAxios.put).toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalled();
   });
 });

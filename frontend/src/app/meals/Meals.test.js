@@ -5,64 +5,67 @@ import MealsApi from '../../api/meals';
 import { selectItem } from '../../redux/mealsSlice';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/meals', () => ({
+vi.mock('../../api/meals', () => ({
   __esModule: true,
   default: {
-    getList: jest.fn((...args) => ({ type: 'meals/getList', args })),
-    sync: jest.fn((...args) => ({ type: 'meals/sync', args })),
+    getList: vi.fn((...args) => ({ type: 'meals/getList', args })),
+    sync: vi.fn((...args) => ({ type: 'meals/sync', args })),
   },
 }));
-jest.mock('../../redux/mealsSlice', () => ({
-  selectItem: jest.fn((id) => ({ type: 'meals/selectItem', payload: id })),
+vi.mock('../../redux/mealsSlice', () => ({
+  selectItem: vi.fn((id) => ({ type: 'meals/selectItem', payload: id })),
 }));
-jest.mock('../meals/components/EditModal', () => () => null);
-jest.mock('react-loader-spinner', () => ({
+vi.mock('../meals/components/EditModal', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading</div>,
 }));
-jest.mock('@fullcalendar/react', () => {
-  const React = require('react');
-  return ({ datesSet, eventClick, events }) =>
-    React.createElement(
-      'div',
-      { 'data-testid': 'calendar' },
+vi.mock('@fullcalendar/react', () => {
+  return {
+    default: ({ datesSet, eventClick, events }) =>
       React.createElement(
-        'button',
-        {
-          type: 'button',
-          onClick: () =>
-            datesSet({
-              start: new Date('2025-01-01T00:00:00Z'),
-              end: new Date('2025-02-01T00:00:00Z'),
-            }),
-        },
-        'Set dates'
+        'div',
+        { 'data-testid': 'calendar' },
+        React.createElement(
+          'button',
+          {
+            type: 'button',
+            onClick: () =>
+              datesSet({
+                start: new Date('2025-01-01T00:00:00Z'),
+                end: new Date('2025-02-01T00:00:00Z'),
+              }),
+          },
+          'Set dates'
+        ),
+        React.createElement(
+          'button',
+          {
+            type: 'button',
+            onClick: () => eventClick({ event: { id: '17' } }),
+          },
+          'Open meal'
+        ),
+        events?.map((event) =>
+          React.createElement('span', { key: event.id }, event.title)
+        )
       ),
-      React.createElement(
-        'button',
-        {
-          type: 'button',
-          onClick: () => eventClick({ event: { id: '17' } }),
-        },
-        'Open meal'
-      ),
-      events?.map((event) =>
-        React.createElement('span', { key: event.id }, event.title)
-      )
-    );
+  };
 });
-jest.mock('react-bootstrap/Alert', () => ({ children, onClose }) => (
-  <div role='alert'>
-    {children}
-    <button type='button' onClick={onClose}>
-      Dismiss
-    </button>
-  </div>
-));
+vi.mock('react-bootstrap/Alert', () => ({
+  default: ({ children, onClose }) => (
+    <div role='alert'>
+      {children}
+      <button type='button' onClick={onClose}>
+        Dismiss
+      </button>
+    </div>
+  ),
+}));
 
 describe('Meals', () => {
   beforeEach(() => {

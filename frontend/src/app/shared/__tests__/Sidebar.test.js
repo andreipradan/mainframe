@@ -4,13 +4,12 @@ import { MemoryRouter } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Dropdown = ({ children }) => React.createElement('div', null, children);
   Dropdown.Toggle = ({ children, ...props }) =>
     React.createElement('button', props, children);
@@ -20,17 +19,16 @@ jest.mock('react-bootstrap', () => {
   Dropdown.Divider = () => React.createElement('hr');
   return {
     Collapse: ({ children, in: isOpen }) =>
-      React.createElement(
-        'div',
-        { className: isOpen ? 'collapse show' : 'collapse' },
-        children
-      ),
+      React.cloneElement(children, {
+        className: [children.props.className, 'collapse', isOpen && 'show']
+          .filter(Boolean)
+          .join(' '),
+      }),
     Dropdown,
     Row: ({ children }) => React.createElement('div', null, children),
   };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, onHide, show }) =>
     show
       ? React.createElement(
@@ -57,26 +55,24 @@ jest.mock('react-bootstrap/Modal', () => {
     Title: Modal.Title,
   };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Alert', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Alert', () => {
   return {
     __esModule: true,
     default: ({ children }) => React.createElement('div', null, children),
   };
 });
-jest.mock('react-i18next', () => ({
+vi.mock('react-i18next', () => ({
   Trans: ({ children }) => children,
 }));
-jest.mock('../Errors', () => () => null);
-jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
+vi.mock('../Errors', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({ Circles: () => null }));
 
 const renderSidebar = (initialPath = '/investments/bonds') => {
   const container = document.createElement('div');
@@ -127,6 +123,14 @@ describe('Sidebar navigation controls', () => {
         (button) => button.getAttribute('aria-expanded') === 'true'
       )
     ).toHaveLength(1);
+    for (const button of menuButtons) {
+      const controlledMenu = container.querySelector(
+        `#${button.getAttribute('aria-controls')}`
+      );
+      expect(controlledMenu.classList.contains('show')).toBe(
+        button.getAttribute('aria-expanded') === 'true'
+      );
+    }
 
     for (const button of menuButtons) {
       const initiallyExpanded = button.getAttribute('aria-expanded') === 'true';
@@ -160,11 +164,10 @@ describe('Sidebar navigation controls', () => {
     const investmentsButton = container.querySelector(
       'button[aria-controls="sidebar-investments-menu"]'
     );
-    const appsCollapse =
-      container.querySelector('#sidebar-apps-menu').parentElement;
+    const appsCollapse = container.querySelector('#sidebar-apps-menu');
     const investmentsCollapse = container.querySelector(
       '#sidebar-investments-menu'
-    ).parentElement;
+    );
 
     act(() => appsButton.click());
 
@@ -186,7 +189,7 @@ describe('Sidebar navigation controls', () => {
     expect(
       container
         .querySelector('#sidebar-documentation-menu')
-        .parentElement.classList.contains('show')
+        .classList.contains('show')
     ).toBe(true);
     act(() =>
       Array.from(container.querySelectorAll('a'))
@@ -197,7 +200,7 @@ describe('Sidebar navigation controls', () => {
     expect(
       container
         .querySelector('#sidebar-documentation-menu')
-        .parentElement.classList.contains('show')
+        .classList.contains('show')
     ).toBe(false);
     unmount();
   });

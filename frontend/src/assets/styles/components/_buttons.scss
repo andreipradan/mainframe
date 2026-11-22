@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* Buttons */
 
 .btn {
@@ -8,7 +10,7 @@
     margin-right: 0.3125rem;
   }
   &.btn-rounded {
-    @include border-radius(50px);
+    border-radius: 50px;
   }
   &.btn-fw {
     min-width: $button-fixed-width;
@@ -80,13 +82,13 @@
 
     &:hover,
     &:focus {
-      background: darken($button-color, 10%);
+      background: color.adjust($button-color, $lightness: -10%, $space: hsl);
       color: $white;
     }
 
     &.btn-social-icon-text {
       padding: 0 1.5rem 0 0;
-      background: lighten($button-color, 10%);
+      background: color.adjust($button-color, $lightness: 10%, $space: hsl);
 
       i {
         background: $button-color;

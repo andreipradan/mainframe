@@ -1,35 +1,10 @@
-/* global jest */
+import { vi } from 'vitest';
 
-// Setup test environment overrides
-// Tell React that the test environment supports `act()` (React 18+)
-if (typeof global !== 'undefined') {
-  global.IS_REACT_ACT_ENVIRONMENT = true;
-}
-// Mock CSS imports that some node_modules include and that break Jest's parser
-const cssModules = [
-  'react-toastify/dist/ReactToastify.css',
-  'react-datepicker/dist/react-datepicker.css',
-];
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-if (typeof jest !== 'undefined' && typeof jest.mock === 'function') {
-  cssModules.forEach((m) => {
-    jest.mock(m, () => ({}));
-  });
+window.scrollTo = vi.fn();
 
-  // Some libraries (ace-builds) include webpack-specific resolver imports that
-  // Jest can't resolve. Provide lightweight virtual mocks here to avoid errors.
-  jest.mock('ace-builds/webpack-resolver', () => ({}), { virtual: true });
-  jest.mock('ace-builds', () => ({}), { virtual: true });
-}
-
-// jsdom doesn't implement window.scrollTo; provide a noop to avoid warnings/errors
-if (typeof window !== 'undefined' && typeof window.scrollTo !== 'function') {
-  window.scrollTo = jest.fn();
-}
-
-// Provide a minimal Leaflet global used by some side-effecting modules (e.g.
-// leaflet.fullscreen) so they don't throw during import in Jest.
-if (typeof window !== 'undefined' && window.L === undefined) {
+if (window.L === undefined) {
   window.L = {
     Control: { extend: () => ({}) },
     extend: () => ({}),
@@ -37,8 +12,8 @@ if (typeof window !== 'undefined' && window.L === undefined) {
     icon: () => ({}),
     control: {
       fullscreen: () => ({
-        addTo: jest.fn(),
-        remove: jest.fn(),
+        addTo: vi.fn(),
+        remove: vi.fn(),
       }),
     },
   };

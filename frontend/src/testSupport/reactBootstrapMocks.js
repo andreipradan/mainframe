@@ -1,4 +1,4 @@
-const React = require('react');
+import React from 'react';
 
 /** Provides the modal shell used by tests that mock React Bootstrap. */
 function Modal({ children, show }) {
@@ -23,7 +23,7 @@ function Button({ children, ...props }) {
   return React.createElement('button', props, children);
 }
 
-module.exports = {
+export const reactBootstrapMocks = {
   Modal: { __esModule: true, default: Modal },
   Button: { __esModule: true, default: Button },
 };

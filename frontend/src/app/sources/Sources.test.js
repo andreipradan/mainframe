@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import Sources from './Sources';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/sources', () => ({
+vi.mock('../../api/sources', () => ({
   __esModule: true,
   default: class SourcesApiMock {
     constructor(token) {
@@ -24,27 +24,27 @@ jest.mock('../../api/sources', () => ({
     delete = (id, name) => ({ type: 'sources/delete', payload: { id, name } });
   },
 }));
-jest.mock('../../redux/sourcesSlice', () => ({
+vi.mock('../../redux/sourcesSlice', () => ({
   selectItem: (id) => ({ type: 'sources/selectItem', payload: id }),
   setKwargs: (kwargs) => ({ type: 'sources/setKwargs', payload: kwargs }),
   setModalOpen: (open) => ({ type: 'sources/setModalOpen', payload: open }),
 }));
-jest.mock('../shared/BottomPagination', () => () => null);
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <div>{errors?.detail || null}</div>
-));
-jest.mock('react-ace', () => {
-  const React = require('react');
-  return ({ onChange, value, className, placeholder }) =>
-    React.createElement('textarea', {
-      className,
-      placeholder,
-      value: value || '',
-      onChange: (event) => onChange(event.target.value, { end: { row: 0 } }),
-    });
+vi.mock('../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => <div>{errors?.detail || null}</div>,
+}));
+vi.mock('react-ace', () => {
+  return {
+    default: ({ onChange, value, className, placeholder }) =>
+      React.createElement('textarea', {
+        className,
+        placeholder,
+        value: value || '',
+        onChange: (event) => onChange(event.target.value, { end: { row: 0 } }),
+      }),
+  };
 });
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: ({ options = [], onChange }) =>
@@ -63,17 +63,17 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Audio: () => <div>Loading sources</div>,
   ColorRing: () => <div>Loading source</div>,
 }));
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
-  return ({ children, ...props }) =>
-    React.createElement('button', props, children);
+vi.mock('react-bootstrap/Button', () => {
+  return {
+    default: ({ children, ...props }) =>
+      React.createElement('button', props, children),
+  };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -89,8 +89,7 @@ jest.mock('react-bootstrap/Form', () => {
     });
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children }) => React.createElement('div', null, children);
   Modal.Header = ({ children }) => React.createElement('div', null, children);
   Modal.Title = ({ children }) => React.createElement('h2', null, children);
@@ -98,7 +97,7 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('../finances/Accounts/Categorize/EditModal', () => ({
+vi.mock('../finances/Accounts/Categorize/EditModal', () => ({
   selectStyles: {},
 }));
 

@@ -11,6 +11,20 @@ import { SliderPicker } from 'react-color';
 import { useDispatch, useSelector } from 'react-redux';
 import 'nouislider/dist/nouislider.css';
 
+import face1 from '../../assets/images/faces/face1.jpg';
+import face2 from '../../assets/images/faces/face2.jpg';
+import face3 from '../../assets/images/faces/face3.jpg';
+import face4 from '../../assets/images/faces/face4.jpg';
+import face5 from '../../assets/images/faces/face5.jpg';
+import face6 from '../../assets/images/faces/face6.jpg';
+import face8 from '../../assets/images/faces/face8.jpg';
+import face9 from '../../assets/images/faces/face9.jpg';
+import face11 from '../../assets/images/faces/face11.jpg';
+import face12 from '../../assets/images/faces/face12.jpg';
+import dashboardRectangle from '../../assets/images/dashboard/Rectangle.jpg';
+import dashboardImage5 from '../../assets/images/dashboard/Img_5.jpg';
+import dashboardImage6 from '../../assets/images/dashboard/img_6.jpg';
+
 import BotsApi from '../../api/bots';
 import LightsApi from '../../api/lights';
 import RpiApi from '../../api/rpi';
@@ -636,10 +650,7 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <div className='d-flex'>
-                          <img
-                            src={require('../../assets/images/faces/face1.jpg')}
-                            alt='face'
-                          />
+                          <img src={face1} alt='face' />
                           <span className='pl-2'>Henry Klein</span>
                         </div>
                       </td>
@@ -671,10 +682,7 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <div className='d-flex'>
-                          <img
-                            src={require('../../assets/images/faces/face2.jpg')}
-                            alt='face'
-                          />
+                          <img src={face2} alt='face' />
                           <span className='pl-2'>Estella Bryan</span>
                         </div>
                       </td>
@@ -706,10 +714,7 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <div className='d-flex'>
-                          <img
-                            src={require('../../assets/images/faces/face5.jpg')}
-                            alt='face'
-                          />
+                          <img src={face5} alt='face' />
                           <span className='pl-2'>Lucy Abbott</span>
                         </div>
                       </td>
@@ -741,10 +746,7 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <div className='d-flex'>
-                          <img
-                            src={require('../../assets/images/faces/face3.jpg')}
-                            alt='face'
-                          />
+                          <img src={face3} alt='face' />
                           <span className='pl-2'>Peter Gill</span>
                         </div>
                       </td>
@@ -776,10 +778,7 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <div className='d-flex'>
-                          <img
-                            src={require('../../assets/images/faces/face4.jpg')}
-                            alt='face'
-                          />
+                          <img src={face4} alt='face' />
                           <span className='pl-2'>Sallie Reyes</span>
                         </div>
                       </td>
@@ -812,11 +811,7 @@ const Dashboard = () => {
               <div className='preview-list'>
                 <div className='preview-item border-bottom'>
                   <div className='preview-thumbnail'>
-                    <img
-                      src={require('../../assets/images/faces/face6.jpg')}
-                      alt='face'
-                      className='rounded-circle'
-                    />
+                    <img src={face6} alt='face' className='rounded-circle' />
                   </div>
                   <div className='preview-item-content d-flex flex-grow'>
                     <div className='flex-grow'>
@@ -832,11 +827,7 @@ const Dashboard = () => {
                 </div>
                 <div className='preview-item border-bottom'>
                   <div className='preview-thumbnail'>
-                    <img
-                      src={require('../../assets/images/faces/face8.jpg')}
-                      alt='face'
-                      className='rounded-circle'
-                    />
+                    <img src={face8} alt='face' className='rounded-circle' />
                   </div>
                   <div className='preview-item-content d-flex flex-grow'>
                     <div className='flex-grow'>
@@ -852,11 +843,7 @@ const Dashboard = () => {
                 </div>
                 <div className='preview-item border-bottom'>
                   <div className='preview-thumbnail'>
-                    <img
-                      src={require('../../assets/images/faces/face9.jpg')}
-                      alt='face'
-                      className='rounded-circle'
-                    />
+                    <img src={face9} alt='face' className='rounded-circle' />
                   </div>
                   <div className='preview-item-content d-flex flex-grow'>
                     <div className='flex-grow'>
@@ -870,11 +857,7 @@ const Dashboard = () => {
                 </div>
                 <div className='preview-item border-bottom'>
                   <div className='preview-thumbnail'>
-                    <img
-                      src={require('../../assets/images/faces/face11.jpg')}
-                      alt='face'
-                      className='rounded-circle'
-                    />
+                    <img src={face11} alt='face' className='rounded-circle' />
                   </div>
                   <div className='preview-item-content d-flex flex-grow'>
                     <div className='flex-grow'>
@@ -898,33 +881,20 @@ const Dashboard = () => {
               <h4 className='card-title'>Portfolio Slide</h4>
               <Slider className='portfolio-slider' {...sliderSettings}>
                 <div className='item'>
-                  <img
-                    src={require('../../assets/images/dashboard/Rectangle.jpg')}
-                    alt='carousel-item'
-                  />
+                  <img src={dashboardRectangle} alt='carousel-item' />
                 </div>
                 <div className='item'>
-                  <img
-                    src={require('../../assets/images/dashboard/Img_5.jpg')}
-                    alt='carousel-item'
-                  />
+                  <img src={dashboardImage5} alt='carousel-item' />
                 </div>
                 <div className='item'>
-                  <img
-                    src={require('../../assets/images/dashboard/img_6.jpg')}
-                    alt='carousel-item'
-                  />
+                  <img src={dashboardImage6} alt='carousel-item' />
                 </div>
               </Slider>
               <div className='d-flex py-4'>
                 <div className='preview-list w-100'>
                   <div className='preview-item p-0'>
                     <div className='preview-thumbnail'>
-                      <img
-                        src={require('../../assets/images/faces/face12.jpg')}
-                        className='rounded-circle'
-                        alt='face'
-                      />
+                      <img src={face12} className='rounded-circle' alt='face' />
                     </div>
                     <div className='preview-item-content d-flex flex-grow'>
                       <div className='flex-grow'>

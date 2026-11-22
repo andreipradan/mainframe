@@ -15,7 +15,7 @@ it('renders without crashing', async () => {
   document.body.appendChild(pageBody);
   // jsdom's default `window.scrollTo` throws 'Not implemented' — override it
   if (typeof window !== 'undefined') {
-    window.scrollTo = jest.fn();
+    window.scrollTo = vi.fn();
   }
   const initialState = {
     auth: {
@@ -50,6 +50,8 @@ it('renders without crashing', async () => {
 });
 
 it('renders terms and conditions without authentication', async () => {
+  await import('./user-pages/TermsAndConditions');
+
   const div = document.createElement('div');
   const sidebarDiv = document.createElement('div');
   sidebarDiv.id = 'sidebar';
@@ -57,7 +59,7 @@ it('renders terms and conditions without authentication', async () => {
   const pageBody = document.createElement('div');
   pageBody.className = 'page-body-wrapper';
   document.body.appendChild(pageBody);
-  window.scrollTo = jest.fn();
+  window.scrollTo = vi.fn();
 
   const initialState = {
     auth: {

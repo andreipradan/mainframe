@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* Sidebar */
 
 .sidebar {
@@ -40,7 +42,7 @@
       width: 55px;
     }
     .sidebar-brand {
-      color: lighten(color(gray-dark), 20%);
+      color: color.adjust(color(gray-dark), $lightness: 20%, $space: hsl);
       font-size: 1.5rem;
       line-height: 48px;
       margin-right: 0;
@@ -50,7 +52,7 @@
       &:active,
       &:focus,
       &:hover {
-        color: lighten(color(gray-dark), 10%);
+        color: color.adjust(color(gray-dark), $lightness: 10%, $space: hsl);
       }
 
       img {
@@ -83,7 +85,8 @@
     }
 
     .nav-item {
-      @include transition-duration(0.25s);
+      -webkit-transition-duration: 0.25s;
+      transition-duration: 0.25s;
       transition-property: background;
       -webkit-transition-property: background;
       padding-right: 20px;
@@ -92,13 +95,14 @@
       }
 
       .nav-link {
-        @include display-flex;
-        @include align-items(center);
+        display: flex;
+        align-items: center;
         white-space: nowrap;
         padding: $sidebar-menu-padding-y 10px $sidebar-menu-padding-y
           $sidebar-menu-padding-x;
         color: $sidebar-menu-color;
-        @include transition-duration(0.45s);
+        -webkit-transition-duration: 0.45s;
+        transition-duration: 0.45s;
         transition-property: color;
         -webkit-transition-property: color;
         height: 46px;

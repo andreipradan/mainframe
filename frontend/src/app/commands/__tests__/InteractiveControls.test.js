@@ -8,7 +8,7 @@ import Watchers from '../Watchers';
 import CronsApi from '../../../api/crons';
 import WatchersApi from '../../../api/watchers';
 
-jest.mock('../../../api/crons', () => {
+vi.mock('../../../api/crons', () => {
   class CronsApi {
     constructor(token) {
       this.token = token;
@@ -30,7 +30,7 @@ jest.mock('../../../api/crons', () => {
   return { __esModule: true, default: CronsApi };
 });
 
-jest.mock('../../../api/watchers', () => {
+vi.mock('../../../api/watchers', () => {
   class WatchersApi {
     constructor(token) {
       this.token = token;
@@ -48,7 +48,7 @@ jest.mock('../../../api/watchers', () => {
   return { __esModule: true, default: WatchersApi };
 });
 
-jest.mock('../../../api/commands', () => ({
+vi.mock('../../../api/commands', () => ({
   __esModule: true,
   default: class CommandsApi {
     constructor(token) {
@@ -64,7 +64,7 @@ jest.mock('../../../api/commands', () => ({
     };
   },
 }));
-jest.mock('../../../api/tasks', () => ({
+vi.mock('../../../api/tasks', () => ({
   __esModule: true,
   default: {
     getList: (token) => ({ type: 'tasks/getList', token }),
@@ -84,24 +84,22 @@ jest.mock('../../../api/tasks', () => ({
   },
 }));
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-bootstrap', () => ({
+vi.mock('react-bootstrap', () => ({
   Collapse: ({ children }) => children,
 }));
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -114,8 +112,7 @@ jest.mock('react-bootstrap/Form', () => {
   Form.Check = (props) => React.createElement('input', props);
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children }) => React.createElement('div', null, children);
   Modal.Body = ({ children }) => React.createElement('div', null, children);
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
@@ -130,10 +127,10 @@ jest.mock('react-bootstrap/Modal', () => {
     Title: Modal.Title,
   };
 });
-jest.mock('react-ace', () => ({
+vi.mock('react-ace', () => ({
   __esModule: true,
   default: ({ value, placeholder, onChange, className }) =>
-    require('react').createElement('textarea', {
+    React.createElement('textarea', {
       value: value ?? '',
       placeholder,
       className,
@@ -141,14 +138,14 @@ jest.mock('react-ace', () => ({
         onChange(event.target.value, { end: { row: 0, column: 0 } }),
     }),
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Audio: () => null,
   ColorRing: () => <div>Loading</div>,
 }));
-jest.mock('react-select', () => ({
+vi.mock('react-select', () => ({
   __esModule: true,
   default: ({ value, options, onChange }) =>
-    require('react').createElement(
+    React.createElement(
       'div',
       {
         'data-testid': 'select-control',
@@ -157,8 +154,8 @@ jest.mock('react-select', () => ({
       value?.label
     ),
 }));
-jest.mock('../../shared/Errors', () => () => null);
-jest.mock('../../shared/BottomPagination', () => () => null);
+vi.mock('../../shared/Errors', () => ({ default: () => null }));
+vi.mock('../../shared/BottomPagination', () => ({ default: () => null }));
 
 const render = (component) => {
   const container = document.createElement('div');
@@ -939,7 +936,7 @@ describe('command-related accessible controls', () => {
         types: [['html', 'HTML']],
       },
     };
-    const runSpy = jest.spyOn(WatchersApi, 'run');
+    const runSpy = vi.spyOn(WatchersApi, 'run');
     const { container, unmount } = render(<Watchers />);
 
     act(() =>

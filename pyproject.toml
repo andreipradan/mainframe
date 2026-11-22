@@ -112,7 +112,7 @@ dev = [
 bot = "python src/manage.py run_bot_polling"
 createsuperuser = "python src/manage.py createsuperuser"
 dbshell = "python src/manage.py dbshell"
-dev = "python src/manage.py runserver"
+backend = "python src/manage.py runserver"
 huey = "python src/manage.py run_huey"
 manage = "python src/manage.py"
 shell = "python src/manage.py shell_plus"
@@ -120,8 +120,12 @@ startapp = "python src/manage.py startapp"
 test = "pytest"
 
 [tool.poe.tasks.frontend]
-cmd = "npm start --prefix=frontend"
-env = { REACT_APP_API_URL = "https://${CODESPACE_NAME}-8000.app.github.dev", REACT_APP_NGROK_URL = "https://replace-me-in-pyproject-toml-tool-poe-tasks-frontend.com" }
+cmd = "npm run dev --prefix=frontend"
+env = { VITE_API_URL = "https://${CODESPACE_NAME}-8000.app.github.dev", VITE_NGROK_URL = "https://replace-me-in-pyproject-toml-tool-poe-tasks-frontend.com" }
+
+[tool.poe.tasks.dev]
+help = "Run backend and frontend development servers concurrently"
+parallel = ["backend", "frontend"]
 
 [tool.poe.tasks.migrate]
 sequence = [

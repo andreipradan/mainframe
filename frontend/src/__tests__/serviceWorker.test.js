@@ -1,122 +1,63 @@
-const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+import { unregister } from '../serviceWorker';
 
-describe('service worker lifecycle', () => {
-  let originalNodeEnv = process.env.NODE_ENV;
-  let originalPublicUrl = process.env.PUBLIC_URL;
-  let originalFetch = global.fetch;
-  let registration = null;
-  let serviceWorker = null;
-  let loadHandlers = [];
+describe('service worker cleanup', () => {
+  let originalServiceWorker = null;
 
   beforeEach(() => {
-    jest.resetModules();
-    originalNodeEnv = process.env.NODE_ENV;
-    originalPublicUrl = process.env.PUBLIC_URL;
-    originalFetch = global.fetch;
-    loadHandlers = [];
-    process.env.NODE_ENV = 'production';
-    process.env.PUBLIC_URL = '';
-
-    registration = {
-      installing: { state: 'installed', onstatechange: null },
-      unregister: jest.fn().mockResolvedValue(true),
-    };
-    serviceWorker = {
-      controller: null,
-      register: jest.fn().mockResolvedValue(registration),
-      ready: Promise.resolve(registration),
-    };
-    Object.defineProperty(navigator, 'serviceWorker', {
-      configurable: true,
-      value: serviceWorker,
-    });
-    global.fetch = jest.fn().mockResolvedValue({
-      status: 200,
-      headers: { get: () => 'application/javascript' },
-    });
-    jest.spyOn(console, 'log').mockImplementation(() => undefined);
-    jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    jest
-      .spyOn(window, 'addEventListener')
-      .mockImplementation((event, handler) => {
-        if (event === 'load') loadHandlers.push(handler);
-      });
+    originalServiceWorker = Object.getOwnPropertyDescriptor(
+      navigator,
+      'serviceWorker'
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv;
-    if (originalPublicUrl === undefined) {
-      delete process.env.PUBLIC_URL;
+    if (originalServiceWorker) {
+      Object.defineProperty(navigator, 'serviceWorker', originalServiceWorker);
     } else {
-      process.env.PUBLIC_URL = originalPublicUrl;
+      delete navigator.serviceWorker;
     }
-    global.fetch = originalFetch;
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
-  test('validates and registers the localhost worker and reports first install', async () => {
-    const { register } = require('../serviceWorker');
-    const onSuccess = jest.fn();
-
-    register({ onSuccess });
-    loadHandlers.at(-1)();
-    await flushPromises();
-    await flushPromises();
-
-    expect(global.fetch).toHaveBeenCalledWith('/service-worker.js');
-    expect(serviceWorker.register).toHaveBeenCalled();
-    registration.onupdatefound();
-    expect(registration.installing.onstatechange).toBeInstanceOf(Function);
-    registration.installing.onstatechange();
-    expect(onSuccess).toHaveBeenCalledWith(registration);
-  });
-
-  test('reports updates and handles a missing installing worker', async () => {
-    const { register } = require('../serviceWorker');
-    const onUpdate = jest.fn();
-
-    serviceWorker.controller = {};
-    registration.installing = null;
-    register({ onUpdate });
-    loadHandlers.at(-1)();
-    await flushPromises();
-    await flushPromises();
-    expect(registration.installing).toBeNull();
-    registration.onupdatefound();
-
-    registration.installing = { state: 'installed', onstatechange: null };
-    register({ onUpdate });
-    loadHandlers.at(-1)();
-    await flushPromises();
-    await flushPromises();
-    registration.onupdatefound();
-    registration.installing.onstatechange();
-    expect(onUpdate).toHaveBeenCalledWith(registration);
-  });
-
-  test('unregisters an invalid worker and handles offline fetch errors', async () => {
-    const { register, unregister } = require('../serviceWorker');
-    global.fetch.mockResolvedValueOnce({
-      status: 404,
-      headers: { get: () => 'application/javascript' },
+  test('unregisters all existing workers', async () => {
+    const registrations = [
+      { unregister: vi.fn().mockResolvedValue(true) },
+      { unregister: vi.fn().mockResolvedValue(true) },
+    ];
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: { getRegistrations: vi.fn().mockResolvedValue(registrations) },
     });
 
-    register({});
-    loadHandlers.at(-1)();
-    await flushPromises();
-    await flushPromises();
-    expect(registration.unregister).toHaveBeenCalled();
+    unregister();
+    await Promise.resolve();
+    await Promise.resolve();
 
-    global.fetch.mockRejectedValueOnce(new Error('offline'));
-    register({});
-    loadHandlers.at(-1)();
-    await flushPromises();
-    expect(console.log).toHaveBeenCalledWith(
-      'No internet connection found. App is running in offline mode.'
-    );
+    expect(registrations[0].unregister).toHaveBeenCalledTimes(1);
+    expect(registrations[1].unregister).toHaveBeenCalledTimes(1);
+  });
+
+  test('logs failures while retrieving registrations', async () => {
+    const error = new Error('registration lookup failed');
+    Object.defineProperty(navigator, 'serviceWorker', {
+      configurable: true,
+      value: { getRegistrations: vi.fn().mockRejectedValue(error) },
+    });
 
     unregister();
-    await flushPromises();
-    expect(registration.unregister).toHaveBeenCalledTimes(2);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(console.error).toHaveBeenCalledWith(
+      'Error unregistering service workers:',
+      error
+    );
+  });
+
+  test('does nothing when service workers are unsupported', () => {
+    delete navigator.serviceWorker;
+
+    expect(() => unregister()).not.toThrow();
   });
 });

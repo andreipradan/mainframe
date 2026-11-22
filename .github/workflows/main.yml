@@ -13,8 +13,8 @@ env:
   FRONTEND_SERVICE: ${{ secrets.FRONTEND_SERVICE }}
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   RUN_REGION: ${{ secrets.REGION }}
-  REACT_APP_NGROK_URL: ${{ secrets.REACT_APP_NGROK_URL }}
-  REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+  VITE_NGROK_URL: ${{ secrets.REACT_APP_NGROK_URL }}
+  VITE_API_URL: ${{ secrets.REACT_APP_API_URL }}
 
 jobs:
   notify-telegram:
@@ -136,8 +136,7 @@ jobs:
         run: npm ci --no-audit --no-fund --ignore-scripts
       - name: Run frontend tests with coverage
         working-directory: frontend
-        run: |
-          CI=true npm test -- --coverage --watchAll=false --coverageReporters=lcov
+        run: npm run test:ci
       - name: Upload frontend coverage
         uses: actions/upload-artifact@v7
         with:
@@ -357,8 +356,7 @@ jobs:
             --region "$RUN_REGION" \
             --image "$RUN_REGION-docker.pkg.dev/$PROJECT_ID/mainframe-frontend/$FRONTEND_SERVICE:$GITHUB_SHA" \
             --platform "managed" \
-            --allow-unauthenticated \
-            --set-env-vars "REACT_APP_NGROK_URL=$REACT_APP_NGROK_URL,REACT_APP_API_URL=$REACT_APP_API_URL"
+            --allow-unauthenticated
 
       - name: Notify
         uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3

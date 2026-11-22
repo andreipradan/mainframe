@@ -3,28 +3,28 @@ import { createRoot } from 'react-dom/client';
 import Users from './Users';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-const mockHistory = { push: jest.fn() };
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+const mockHistory = { push: vi.fn() };
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useHistory: () => mockHistory,
 }));
-jest.mock('../../api/users', () => ({
+vi.mock('../../api/users', () => ({
   UsersApi: {
     getList: (token) => ({ type: 'users/getList', token }),
   },
 }));
-jest.mock('./EditModal', () => () => null);
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <div>{errors ? 'User errors' : null}</div>
-));
-jest.mock('react-tooltip', () => ({
+vi.mock('./EditModal', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => <div>{errors ? 'User errors' : null}</div>,
+}));
+vi.mock('react-tooltip', () => ({
   Tooltip: ({ children }) => <div>{children}</div>,
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Circles: () => (
     <tr>
       <td>Loading users</td>

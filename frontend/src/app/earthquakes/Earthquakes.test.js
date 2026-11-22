@@ -4,15 +4,15 @@ import Earthquakes, { formatDate, formatTime } from './Earthquakes';
 
 let mockState = null;
 let mockBarProps = null;
-const mockDispatch = jest.fn();
-const mockPolygonOn = jest.fn();
-const mockHomeOn = jest.fn();
-const mockBulletPush = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+const mockPolygonOn = vi.fn();
+const mockHomeOn = vi.fn();
+const mockBulletPush = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/earthquakes', () => ({
+vi.mock('../../api/earthquakes', () => ({
   __esModule: true,
   default: class EarthquakesApiMock {
     constructor(token) {
@@ -22,7 +22,7 @@ jest.mock('../../api/earthquakes', () => ({
     getList = (kwargs) => ({ type: 'earthquakes/getList', payload: kwargs });
   },
 }));
-jest.mock('../../api/bots', () => ({
+vi.mock('../../api/bots', () => ({
   __esModule: true,
   default: class BotsApiMock {
     constructor(token) {
@@ -32,34 +32,35 @@ jest.mock('../../api/bots', () => ({
     getList = () => ({ type: 'bots/getList' });
   },
 }));
-jest.mock('../../redux/earthquakesSlice', () => ({
+vi.mock('../../redux/earthquakesSlice', () => ({
   setKwargs: (kwargs) => ({ type: 'earthquakes/setKwargs', payload: kwargs }),
 }));
-jest.mock('../shared/BottomPagination', () => () => null);
-jest.mock('react-loader-spinner', () => ({
+vi.mock('../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({
   BallTriangle: () => <div>Loading earthquake chart</div>,
   Circles: () => <div>Loading earthquake update</div>,
 }));
-jest.mock('react-bootstrap/Alert', () => {
-  const React = require('react');
-  return ({ children, onClose }) =>
-    React.createElement(
-      'div',
-      null,
-      children,
-      React.createElement('button', { onClick: onClose }, 'Dismiss')
-    );
+vi.mock('react-bootstrap/Alert', () => {
+  return {
+    default: ({ children, onClose }) =>
+      React.createElement(
+        'div',
+        null,
+        children,
+        React.createElement('button', { onClick: onClose }, 'Dismiss')
+      ),
+  };
 });
-jest.mock('react-chartjs-2', () => ({
+vi.mock('react-chartjs-2', () => ({
   Bar: (props) => {
     mockBarProps = props;
     return <div>Earthquake chart</div>;
   },
 }));
-jest.mock('chart.js', () => ({
+vi.mock('chart.js', () => ({
   BarElement: {},
   CategoryScale: {},
-  Chart: { register: jest.fn() },
+  Chart: { register: vi.fn() },
   LinearScale: {},
   Tooltip: {},
 }));
@@ -67,36 +68,36 @@ jest.mock('chart.js', () => ({
 const mockCreateSeries = () => ({
   mapPolygons: {
     template: {
-      setAll: jest.fn(),
-      states: { create: jest.fn() },
+      setAll: vi.fn(),
+      states: { create: vi.fn() },
       events: { on: mockPolygonOn },
     },
   },
-  setAll: jest.fn(),
-  show: jest.fn(),
-  hide: jest.fn(),
-  chart: { zoomToGeoPoint: jest.fn() },
-  data: { push: jest.fn() },
+  setAll: vi.fn(),
+  show: vi.fn(),
+  hide: vi.fn(),
+  chart: { zoomToGeoPoint: vi.fn() },
+  data: { push: vi.fn() },
   bullets: { push: mockBulletPush },
-  zoomToDataItem: () => ({ waitForStop: jest.fn() }),
+  zoomToDataItem: () => ({ waitForStop: vi.fn() }),
 });
-jest.mock('@amcharts/amcharts5', () => ({
+vi.mock('@amcharts/amcharts5', () => ({
   percent: () => 100,
   color: (value) => value,
   Root: {
     new: () => ({
       container: { children: { push: (child) => child } },
-      setThemes: jest.fn(),
-      dispose: jest.fn(),
+      setThemes: vi.fn(),
+      dispose: vi.fn(),
     }),
   },
   Graphics: { new: () => ({}) },
   Button: {
-    new: () => ({ events: { on: mockHomeOn }, show: jest.fn() }),
+    new: () => ({ events: { on: mockHomeOn }, show: vi.fn() }),
   },
   net: { load: () => Promise.resolve({ response: '{}' }) },
   ColorSet: { new: () => ({ next: () => 'blue' }) },
-  Container: { new: () => ({ children: { push: jest.fn() } }) },
+  Container: { new: () => ({ children: { push: vi.fn() } }) },
   Circle: { new: () => ({}) },
   Line: { new: () => ({}) },
   Label: { new: () => ({}) },
@@ -104,30 +105,30 @@ jest.mock('@amcharts/amcharts5', () => ({
   Bullet: { new: () => ({}) },
   p50: 50,
 }));
-jest.mock('@amcharts/amcharts5/map', () => ({
-  geoNaturalEarth1: jest.fn(),
+vi.mock('@amcharts/amcharts5/map', () => ({
+  geoNaturalEarth1: vi.fn(),
   MapChart: {
     new: () => ({
       series: { push: () => mockCreateSeries() },
       children: { push: (child) => child },
-      set: jest.fn(),
-      goHome: jest.fn(),
+      set: vi.fn(),
+      goHome: vi.fn(),
     }),
   },
   MapPolygonSeries: { new: () => mockCreateSeries() },
   MapPointSeries: { new: () => ({}) },
   ZoomControl: {
     new: () => ({
-      minusButton: { set: jest.fn() },
-      plusButton: { set: jest.fn() },
+      minusButton: { set: vi.fn() },
+      plusButton: { set: vi.fn() },
     }),
   },
 }));
-jest.mock('@amcharts/amcharts5/themes/Animated', () => ({
+vi.mock('@amcharts/amcharts5/themes/Animated', () => ({
   __esModule: true,
   default: { new: () => ({}) },
 }));
-jest.mock('@amcharts/amcharts5-geodata/romaniaHigh', () => ({}));
+vi.mock('@amcharts/amcharts5-geodata/romaniaHigh', () => ({ default: {} }));
 
 const quake = {
   id: 1,
@@ -198,7 +199,7 @@ describe('Earthquakes', () => {
     expect(container.textContent).toContain('4.2');
     expect(container.textContent).toContain('Earthquake chart');
 
-    const gradient = { addColorStop: jest.fn() };
+    const gradient = { addColorStop: vi.fn() };
     const context = {
       dataIndex: 1,
       chart: { ctx: { createLinearGradient: () => gradient } },

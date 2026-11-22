@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import ExchangeRates from './ExchangeRates';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/exchange', () => ({
+vi.mock('../../api/exchange', () => ({
   __esModule: true,
   default: class ExchangeApiMock {
     constructor(token) {
@@ -18,20 +18,19 @@ jest.mock('../../api/exchange', () => ({
     getList = (kwargs) => ({ type: 'exchange/getList', payload: kwargs });
   },
 }));
-jest.mock('./Accounts/Categorize/EditModal', () => ({ selectStyles: {} }));
-jest.mock('../shared/BottomPagination', () => () => null);
-jest.mock('../shared/Errors', () => () => null);
-jest.mock('react-chartjs-2', () => ({
+vi.mock('./Accounts/Categorize/EditModal', () => ({ selectStyles: {} }));
+vi.mock('../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({ default: () => null }));
+vi.mock('react-chartjs-2', () => ({
   Bar: (props) => {
     global.mockBarProps = props;
     return <div>Exchange chart</div>;
   },
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Circles: () => <div>Loading exchange rates</div>,
 }));
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: ({ options = [], onChange, value }) =>
@@ -54,8 +53,7 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children }) => React.createElement('div', null, children);
@@ -115,10 +113,10 @@ describe('ExchangeRates', () => {
     );
 
     const gradient = {
-      addColorStop: jest.fn(),
+      addColorStop: vi.fn(),
     };
     const context = {
-      chart: { ctx: { createLinearGradient: jest.fn(() => gradient) } },
+      chart: { ctx: { createLinearGradient: vi.fn(() => gradient) } },
       height: 75,
     };
     expect(global.mockBarProps.data.datasets[0].backgroundColor(context)).toBe(

@@ -15,7 +15,7 @@ Mainframe is a personal automation and monitoring platform built with Django RES
 
 ### Tech Stack
 - **Backend**: Python 3.11+ / Django 5.x / Django REST Framework
-- **Frontend**: React 18 / Redux Toolkit / Bootstrap 4 / Leaflet
+- **Frontend**: React 18 / Vite 6 / Vitest 4 / Redux Toolkit / Bootstrap 4 / Leaflet
 - **Database**: PostgreSQL
 - **Task Queue**: Redis + Huey
 - **Monitoring**: Sentry + Logfire
@@ -432,8 +432,9 @@ Key fixtures:
 
 ```bash
 # Development
-uv run poe dev              # Start backend
-uv run poe frontend         # Start frontend
+uv run poe dev              # Start backend and Vite frontend concurrently
+uv run poe backend          # Start backend
+uv run poe frontend         # Start Vite frontend on port 3000
 uv run poe huey             # Start task queue worker
 uv run poe bot              # Start Telegram bot polling (management command)
 
@@ -445,6 +446,8 @@ uv run poe shell            # Launches a django shell_plus
 uv run poe test             # Run all tests
 uv run poe test [path]      # Run specific tests
 uv run poe test --cov       # With coverage report
+cd frontend && npm run test:ci  # Frontend Vitest with coverage
+cd frontend && npm run build    # Production frontend build
 
 # Admin
 uv run poe createsuperuser  # Create admin user

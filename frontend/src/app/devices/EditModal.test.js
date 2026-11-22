@@ -7,35 +7,38 @@ import { selectItem, setModalOpen } from '../../redux/devicesSlice';
 
 let mockState;
 let mockApi;
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/devices', () =>
-  jest.fn(() => ({
-    create: jest.fn((...args) => ({ type: 'devices/create', args })),
-    update: jest.fn((...args) => ({ type: 'devices/update', args })),
-    delete: jest.fn((...args) => ({ type: 'devices/delete', args })),
-  }))
-);
-jest.mock('../../redux/devicesSlice', () => ({
-  selectItem: jest.fn((...args) => ({ type: 'devices/selectItem', args })),
-  setModalOpen: jest.fn((...args) => ({ type: 'devices/setModalOpen', args })),
+vi.mock('../../api/devices', () => ({
+  default: vi.fn(function DevicesApiMock() {
+    return {
+      create: vi.fn((...args) => ({ type: 'devices/create', args })),
+      update: vi.fn((...args) => ({ type: 'devices/update', args })),
+      delete: vi.fn((...args) => ({ type: 'devices/delete', args })),
+    };
+  }),
 }));
-jest.mock('react-ace', () => ({ className, onChange, value }) => (
-  <textarea
-    className={className}
-    data-testid='additional-data'
-    value={value || ''}
-    onChange={(event) =>
-      onChange(event.target.value, { end: { row: 0, column: 0 } })
-    }
-  />
-));
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('../../redux/devicesSlice', () => ({
+  selectItem: vi.fn((...args) => ({ type: 'devices/selectItem', args })),
+  setModalOpen: vi.fn((...args) => ({ type: 'devices/setModalOpen', args })),
+}));
+vi.mock('react-ace', () => ({
+  default: ({ className, onChange, value }) => (
+    <textarea
+      className={className}
+      data-testid='additional-data'
+      value={value || ''}
+      onChange={(event) =>
+        onChange(event.target.value, { end: { row: 0, column: 0 } })
+      }
+    />
+  ),
+}));
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', null, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -44,13 +47,15 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('react-tooltip', () => ({ Tooltip: () => null }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-tooltip', () => ({ Tooltip: () => null }));
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => <div data-testid='loading'>Loading</div>,
 }));
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <div data-testid='errors'>{JSON.stringify(errors)}</div>
-));
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => (
+    <div data-testid='errors'>{JSON.stringify(errors)}</div>
+  ),
+}));
 
 describe('Device EditModal', () => {
   let container;
@@ -60,11 +65,11 @@ describe('Device EditModal', () => {
     mockDispatch.mockClear();
     DevicesApi.mockClear();
     mockApi = null;
-    DevicesApi.mockImplementation(() => {
+    DevicesApi.mockImplementation(function DevicesApiMock() {
       mockApi = {
-        create: jest.fn((...args) => ({ type: 'devices/create', args })),
-        update: jest.fn((...args) => ({ type: 'devices/update', args })),
-        delete: jest.fn((...args) => ({ type: 'devices/delete', args })),
+        create: vi.fn((...args) => ({ type: 'devices/create', args })),
+        update: vi.fn((...args) => ({ type: 'devices/update', args })),
+        delete: vi.fn((...args) => ({ type: 'devices/delete', args })),
       };
       return mockApi;
     });

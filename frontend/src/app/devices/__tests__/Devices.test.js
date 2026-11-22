@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import Devices from '../Devices';
 
-jest.mock('../../../api/devices', () => {
+vi.mock('../../../api/devices', () => {
   class DevicesApi {
     constructor(token) {
       this.token = token;
@@ -14,16 +14,16 @@ jest.mock('../../../api/devices', () => {
       return { type: 'devices/getList', token: this.token };
     }
   }
-  DevicesApi.sync = jest.fn(() => ({ type: 'devices/sync' }));
+  DevicesApi.sync = vi.fn(() => ({ type: 'devices/sync' }));
   return { __esModule: true, default: DevicesApi };
 });
-jest.mock('../EditModal', () => () => null);
-jest.mock('../../shared/Errors', () => () => null);
-jest.mock('react-loader-spinner', () => ({
+vi.mock('../EditModal', () => ({ default: () => null }));
+vi.mock('../../shared/Errors', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({
   Audio: () => null,
   Circles: () => null,
 }));
-jest.mock('react-bootstrap', () => ({
+vi.mock('react-bootstrap', () => ({
   Collapse: ({ children }) => <div>{children}</div>,
 }));
 

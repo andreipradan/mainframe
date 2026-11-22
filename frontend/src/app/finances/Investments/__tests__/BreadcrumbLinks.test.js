@@ -9,30 +9,25 @@ import Stocks from '../Stocks';
 import axios from '../../../../api';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Circles: () => <div>Loading pension data</div>,
   ColorRing: () => null,
 }));
-jest.mock(
-  'react-fast-marquee',
-  () =>
-    ({ children }) =>
-      children
-);
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-fast-marquee', () => ({
+  default: ({ children }) => children,
+}));
+vi.mock('react-bootstrap', () => {
   return {
     Collapse: ({ children }) =>
       React.createElement(React.Fragment, null, children),
   };
 });
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: (props) =>
@@ -50,20 +45,20 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-datepicker', () => {
-  const React = require('react');
-  return (props) =>
-    React.createElement(
-      'button',
-      {
-        type: 'button',
-        onClick: () => props.onChange?.(new Date('2025-03-01T12:00:00Z')),
-      },
-      'Set date'
-    );
+vi.mock('react-datepicker', () => {
+  return {
+    default: (props) =>
+      React.createElement(
+        'button',
+        {
+          type: 'button',
+          onClick: () => props.onChange?.(new Date('2025-03-01T12:00:00Z')),
+        },
+        'Set date'
+      ),
+  };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', { role: 'dialog' }, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -72,27 +67,26 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('src/app/shared/Errors', () => () => null);
-jest.mock('src/app/shared/ListItem', () => {
-  const React = require('react');
+vi.mock('src/app/shared/Errors', () => ({ default: () => null }));
+vi.mock('src/app/shared/ListItem', () => {
   return {
     __esModule: true,
     default: ({ label, value }) =>
       React.createElement('div', null, `${label}: ${value}`),
   };
 });
-jest.mock('src/app/shared/BottomPagination', () => () => null);
-jest.mock('src/app/earthquakes/Earthquakes', () => ({
+vi.mock('src/app/shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('src/app/earthquakes/Earthquakes', () => ({
   formatDate: (value) => value,
   formatTime: (value) => value,
 }));
-jest.mock('react-chartjs-2', () => ({ Bar: () => null, Doughnut: () => null }));
-jest.mock('../../../../api', () => ({
+vi.mock('react-chartjs-2', () => ({ Bar: () => null, Doughnut: () => null }));
+vi.mock('../../../../api', () => ({
   __esModule: true,
   default: {
-    post: jest.fn().mockResolvedValue({ data: {} }),
-    patch: jest.fn().mockResolvedValue({ data: {} }),
-    delete: jest.fn().mockResolvedValue({}),
+    post: vi.fn().mockResolvedValue({ data: {} }),
+    patch: vi.fn().mockResolvedValue({ data: {} }),
+    delete: vi.fn().mockResolvedValue({}),
   },
 }));
 
@@ -278,7 +272,7 @@ test('Pension submits contribution creation, updates, and deletion', async () =>
   );
   expect(mockDispatch).toHaveBeenCalledTimes(1);
   await act(async () => {
-    mockDispatch.mock.calls[0][0](jest.fn());
+    mockDispatch.mock.calls[0][0](vi.fn());
     await Promise.resolve();
   });
   expect(axios.post).toHaveBeenCalledWith(
@@ -302,7 +296,7 @@ test('Pension submits contribution creation, updates, and deletion', async () =>
   );
   expect(mockDispatch).toHaveBeenCalledTimes(1);
   await act(async () => {
-    mockDispatch.mock.calls[0][0](jest.fn());
+    mockDispatch.mock.calls[0][0](vi.fn());
     await Promise.resolve();
   });
   expect(axios.patch).toHaveBeenCalledWith(
@@ -322,7 +316,7 @@ test('Pension submits contribution creation, updates, and deletion', async () =>
   );
   expect(mockDispatch).toHaveBeenCalledTimes(1);
   await act(async () => {
-    mockDispatch.mock.calls[0][0](jest.fn());
+    mockDispatch.mock.calls[0][0](vi.fn());
     await Promise.resolve();
   });
   expect(axios.delete).toHaveBeenCalledWith(

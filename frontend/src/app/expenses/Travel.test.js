@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import Travel from './Travel';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/expenses', () => ({
+vi.mock('../../api/expenses', () => ({
   ExpensesApi: class ExpensesApiMock {
     constructor(token) {
       this.token = token;
@@ -19,9 +19,9 @@ jest.mock('../../api/expenses', () => ({
     }
   },
 }));
-jest.mock('./EditModal', () => () => null);
-jest.mock('../shared/Errors', () => () => null);
-jest.mock('react-loader-spinner', () => ({
+vi.mock('./EditModal', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({
   Circles: () => <div>Loading expenses</div>,
 }));
 

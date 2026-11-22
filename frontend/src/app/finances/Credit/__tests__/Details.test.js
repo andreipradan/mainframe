@@ -1,12 +1,11 @@
-import { act } from 'react';
+import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import Details from '../Details';
 
 // Mock charts and marquee
-jest.mock('react-chartjs-2', () => {
-  const React = require('react');
+vi.mock('react-chartjs-2', () => {
   const ChartMock = ({ data, options, name }) => {
     const callbacks = options?.tooltips?.callbacks;
     const tooltipData = {
@@ -50,20 +49,21 @@ jest.mock('react-chartjs-2', () => {
       React.createElement(ChartMock, { ...props, name: 'doughnut' }),
   };
 });
-jest.mock('react-fast-marquee', () => (p) => <div>{p.children}</div>);
-jest.mock('src/api/finance', () => ({
+vi.mock('react-fast-marquee', () => ({
+  default: (p) => <div>{p.children}</div>,
+}));
+vi.mock('src/api/finance', () => ({
   FinanceApi: { getCredit: () => ({ type: 'finance/getCredit' }) },
   TimetableApi: function TimetableApiMock() {
     return { getList: () => ({ type: 'timetable/getList' }) };
   },
 }));
-jest.mock('src/api/finance/payments', () => ({
+vi.mock('src/api/finance/payments', () => ({
   PaymentsApi: function PaymentsApiMock() {
     return { getList: () => ({ type: 'payments/getList' }) };
   },
 }));
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: (props) =>
@@ -92,7 +92,7 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-tooltip', () => ({
+vi.mock('react-tooltip', () => ({
   Tooltip: () => null,
 }));
 

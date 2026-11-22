@@ -3,16 +3,19 @@ import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import { BasicElements } from './BasicElements';
 
-jest.mock('bs-custom-file-input', () => ({ init: jest.fn() }));
-jest.mock('react-datepicker', () => {
-  const React = require('react');
-  return ({ selected, onChange }) =>
-    React.createElement('input', {
-      type: 'text',
-      'data-testid': 'date-picker',
-      value: selected?.toISOString() || '',
-      onChange: () => onChange(new Date('2025-01-02T00:00:00Z')),
-    });
+vi.mock('bs-custom-file-input', () => ({
+  default: { init: vi.fn() },
+}));
+vi.mock('react-datepicker', () => {
+  return {
+    default: ({ selected, onChange }) =>
+      React.createElement('input', {
+        type: 'text',
+        'data-testid': 'date-picker',
+        value: selected?.toISOString() || '',
+        onChange: () => onChange(new Date('2025-01-02T00:00:00Z')),
+      }),
+  };
 });
 
 test('renders form controls and updates its date picker', () => {

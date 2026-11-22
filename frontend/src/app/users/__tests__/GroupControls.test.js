@@ -4,12 +4,12 @@ import Groups from '../Groups';
 import ExpenseGroups from '../../expenses/ExpenseGroups';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('src/api/expenses', () => ({
+vi.mock('src/api/expenses', () => ({
   GroupsApi: Object.assign(
     function GroupsApiMock() {
       return {
@@ -28,9 +28,8 @@ jest.mock('src/api/expenses', () => ({
     }
   ),
 }));
-jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-loader-spinner', () => ({ Circles: () => null }));
+vi.mock('react-bootstrap', () => {
   const Form = ({ children }) => React.createElement('form', null, children);
   Form.Group = ({ children }) => React.createElement('div', null, children);
   Form.Control = React.forwardRef((props, ref) =>
@@ -38,16 +37,14 @@ jest.mock('react-bootstrap', () => {
   );
   return { Form };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', { role: 'dialog' }, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -63,18 +60,16 @@ jest.mock('react-bootstrap/Modal', () => {
     Footer: Modal.Footer,
   };
 });
-jest.mock('../../shared/BottomPagination', () => () => null);
-jest.mock('../../shared/Errors', () => () => null);
-jest.mock(
-  '../../expenses/EmailCollapse',
-  () =>
-    ({ emailOpen, groupId }) =>
-      require('react').createElement(
-        'output',
-        { 'data-testid': `email-${groupId}` },
-        emailOpen === groupId ? 'open' : 'closed'
-      )
-);
+vi.mock('../../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../../shared/Errors', () => ({ default: () => null }));
+vi.mock('../../expenses/EmailCollapse', () => ({
+  default: ({ emailOpen, groupId }) =>
+    React.createElement(
+      'output',
+      { 'data-testid': `email-${groupId}` },
+      emailOpen === groupId ? 'open' : 'closed'
+    ),
+}));
 
 const groupRecord = {
   id: 3,

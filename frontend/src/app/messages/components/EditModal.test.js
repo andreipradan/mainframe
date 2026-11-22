@@ -4,24 +4,28 @@ import EditModal from './EditModal';
 import { selectItem } from '../../../redux/messagesSlice';
 
 let mockState = { messages: { selectedItem: null, loadingItems: [] } };
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../../redux/messagesSlice', () => ({
-  selectItem: jest.fn(() => ({ type: 'messages/selectItem' })),
+vi.mock('../../../redux/messagesSlice', () => ({
+  selectItem: vi.fn(() => ({ type: 'messages/selectItem' })),
 }));
-jest.mock(
+vi.mock(
   'react-bootstrap/Modal',
-  () => require('../../../testSupport/reactBootstrapMocks').Modal
+  async () =>
+    (await import('../../../testSupport/reactBootstrapMocks'))
+      .reactBootstrapMocks.Modal
 );
-jest.mock(
+vi.mock(
   'react-bootstrap/Button',
-  () => require('../../../testSupport/reactBootstrapMocks').Button
+  async () =>
+    (await import('../../../testSupport/reactBootstrapMocks'))
+      .reactBootstrapMocks.Button
 );
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading message</div>,
 }));
 

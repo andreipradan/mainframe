@@ -2,28 +2,27 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Login from './Login';
 import Register from './Register';
+import mockAuthApi from '../../api/auth';
 
-let mockState = null;
-const mockDispatch = jest.fn();
-const mockHistory = { push: jest.fn() };
-jest.mock('../../api/auth', () => ({
+let mockState = vi.hoisted(() => null);
+const mockDispatch = vi.hoisted(() => vi.fn());
+const mockHistory = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock('../../api/auth', () => ({
   __esModule: true,
   default: {
-    Login: jest.fn((...args) => ({ type: 'auth/login', args })),
-    Register: jest.fn((...args) => ({ type: 'auth/register', args })),
+    Login: vi.fn((...args) => ({ type: 'auth/login', args })),
+    Register: vi.fn((...args) => ({ type: 'auth/register', args })),
   },
 }));
-const mockAuthApi = require('../../api/auth').default;
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   Link: ({ children, to }) => <a href={to}>{children}</a>,
   useHistory: () => mockHistory,
 }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -34,22 +33,23 @@ jest.mock('react-bootstrap', () => {
     React.createElement('button', props, children);
   return { Button, Form };
 });
-jest.mock('react-bootstrap/Alert', () => {
-  const React = require('react');
-  return ({ children, onClose }) =>
-    React.createElement(
-      'div',
-      null,
-      children,
-      React.createElement('button', { onClick: onClose }, 'Dismiss')
-    );
+vi.mock('react-bootstrap/Alert', () => {
+  return {
+    default: ({ children, onClose }) =>
+      React.createElement(
+        'div',
+        null,
+        children,
+        React.createElement('button', { onClick: onClose }, 'Dismiss')
+      ),
+  };
 });
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Dna: () => <div>Submitting</div>,
 }));
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <pre>{JSON.stringify(errors)}</pre>
-));
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => <pre>{JSON.stringify(errors)}</pre>,
+}));
 
 const render = (component) => {
   const container = document.createElement('div');

@@ -3,22 +3,24 @@ import { createRoot } from 'react-dom/client';
 import Logs from './Logs';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/logs', () => ({
+vi.mock('../../api/logs', () => ({
   __esModule: true,
   default: {
     getList: (token, path) => ({ type: 'logs/getList', token, path }),
     getFile: (token, path) => ({ type: 'logs/getFile', token, path }),
   },
 }));
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <div data-testid='errors'>{errors ? JSON.stringify(errors) : null}</div>
-));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => (
+    <div data-testid='errors'>{errors ? JSON.stringify(errors) : null}</div>
+  ),
+}));
+vi.mock('react-loader-spinner', () => ({
   BallTriangle: () => <div>Loading logs</div>,
 }));
 

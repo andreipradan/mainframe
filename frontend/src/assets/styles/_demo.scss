@@ -128,7 +128,7 @@
     }
   }
   &.legend-horizontal {
-    @include display-flex;
+    display: flex;
     ul {
       li {
         display: inline-block;

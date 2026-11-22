@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 
 import Errors from './Errors';
 import RpiApi from '../../api/rpi';
+import face15 from '../../assets/images/faces/face15.jpg';
 import logo from '../../assets/images/logo.svg';
 import logoMini from '../../assets/images/logo-mini.svg';
 
@@ -25,11 +26,11 @@ const navLinkClass = (isActive) => `nav-link${isActive ? ' active' : ''}`;
 const menuToggleClass = (isOpen) => `nav-link${isOpen ? ' menu-expanded' : ''}`;
 
 /** Renders the shared nested-list wrapper used by collapsible menu groups. */
-const SidebarSubMenu = ({ id, children }) => (
-  <div id={id}>
+const SidebarSubMenu = React.forwardRef(({ id, children, ...props }, ref) => (
+  <div {...props} id={id} ref={ref}>
     <ul className='nav flex-column sub-menu'>{children}</ul>
   </div>
-);
+));
 
 /** Renders an accessible collapsible navigation item and its child links. */
 const SidebarMenu = ({
@@ -400,11 +401,7 @@ const SidebarActionModal = ({
 /** Renders the staff avatar independently from nested profile details. */
 const ProfileAvatar = () => (
   <div className='count-indicator'>
-    <img
-      className='img-xs rounded-circle '
-      src={require('../../assets/images/faces/face15.jpg')}
-      alt='profile'
-    />
+    <img className='img-xs rounded-circle ' src={face15} alt='profile' />
     <span className='count bg-success' />
   </div>
 );

@@ -2,20 +2,21 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import { Provider } from 'react-redux';
+import Transactions from '../Transactions';
 
 // Ensure modules the component uses don't perform network calls
-jest.mock('../../../../../api/finance/accounts', () => ({
+vi.mock('../../../../../api/finance/accounts', () => ({
   AccountsApi: {
     getList: (...args) => ({ type: 'accounts/getList', args }),
     get: (...args) => ({ type: 'accounts/get', args }),
   },
 }));
-jest.mock('../../../../../api/finance', () => ({
+vi.mock('../../../../../api/finance', () => ({
   FinanceApi: {
     getExpenses: (...args) => ({ type: 'finance/getExpenses', args }),
   },
 }));
-jest.mock('../../../../../api/finance/transactions', () => ({
+vi.mock('../../../../../api/finance/transactions', () => ({
   TransactionsApi: class {
     constructor() {
       this.getList = (...args) => ({ type: 'transactions/getList', args });
@@ -30,35 +31,31 @@ jest.mock('../../../../../api/finance/transactions', () => ({
     }
   },
 }));
-jest.mock('react-toastify', () => ({
-  toast: { success: jest.fn(), warning: jest.fn(), error: jest.fn() },
+vi.mock('react-toastify', () => ({
+  toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
 }));
 
 // Mock heavy UI and third-party components to keep render deterministic
-jest.mock('src/app/shared/ListItem', () => {
-  const React = require('react');
+vi.mock('src/app/shared/ListItem', () => {
   return {
     __esModule: true,
     default: ({ label, value, children }) =>
       React.createElement('div', null, `${label}: ${value}`, children),
   };
 });
-jest.mock('src/app/shared/BottomPagination', () => {
-  const React = require('react');
+vi.mock('src/app/shared/BottomPagination', () => {
   return {
     __esModule: true,
     default: () => React.createElement('div', null, 'pagination'),
   };
 });
-jest.mock('react-fast-marquee', () => {
-  const React = require('react');
+vi.mock('react-fast-marquee', () => {
   return {
     __esModule: true,
     default: ({ children }) => React.createElement('div', null, children),
   };
 });
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: (props) =>
@@ -98,8 +95,7 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-datepicker', () => {
-  const React = require('react');
+vi.mock('react-datepicker', () => {
   return {
     __esModule: true,
     default: (props) =>
@@ -110,8 +106,7 @@ jest.mock('react-datepicker', () => {
       }),
   };
 });
-jest.mock('react-chartjs-2', () => {
-  const React = require('react');
+vi.mock('react-chartjs-2', () => {
   return {
     Bar: ({ getElementAtEvent, options }) => {
       const [tooltip, setTooltip] = React.useState('');
@@ -181,42 +176,37 @@ jest.mock('react-chartjs-2', () => {
     },
   };
 });
-jest.mock('react-loader-spinner', () => {
-  const React = require('react');
+vi.mock('react-loader-spinner', () => {
   return { Circles: () => React.createElement('div', null) };
 });
-jest.mock('src/app/shared/Errors', () => {
-  const React = require('react');
+vi.mock('src/app/shared/Errors', () => {
   return {
     __esModule: true,
     default: ({ errors }) =>
       React.createElement('div', null, errors ? String(errors) : null),
   };
 });
-jest.mock(
+vi.mock(
   'src/app/finances/Accounts/Transactions/components/AccountEditModal',
   () => {
-    const React = require('react');
     return {
       __esModule: true,
       default: () => React.createElement('div', null),
     };
   }
 );
-jest.mock(
+vi.mock(
   'src/app/finances/Accounts/Transactions/components/TransactionEditModal',
   () => {
-    const React = require('react');
     return {
       __esModule: true,
       default: () => React.createElement('div', null),
     };
   }
 );
-jest.mock(
+vi.mock(
   'src/app/finances/Accounts/Transactions/components/TransactionsBulkUpdateModal',
   () => {
-    const React = require('react');
     return {
       __esModule: true,
       default: ({ specificCategoriesModalOpen }) =>
@@ -226,8 +216,7 @@ jest.mock(
     };
   }
 );
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   return {
     Collapse: ({ children }) => React.createElement('div', null, children),
     Dropdown: (() => {
@@ -262,16 +251,14 @@ jest.mock('react-bootstrap', () => {
     })(),
   };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -283,8 +270,7 @@ jest.mock('react-bootstrap/Form', () => {
     React.createElement('input', { type: 'checkbox', ...props }, null);
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', { role: 'dialog' }, children) : null;
   Modal.Body = ({ children }) => React.createElement('div', null, children);
@@ -303,7 +289,6 @@ jest.mock('react-bootstrap/Modal', () => {
 
 // Note: we intentionally use the local Transactions above for deterministic testing
 // Import the real Transactions component (mocks above will replace heavy deps)
-const Transactions = require('../Transactions').default;
 function renderWithState(initialState) {
   const div = document.createElement('div');
   document.body.appendChild(div);
@@ -311,7 +296,7 @@ function renderWithState(initialState) {
   const store = {
     getState: () => initialState,
     subscribe: () => () => {},
-    dispatch: jest.fn(),
+    dispatch: vi.fn(),
   };
   // Use React 18 createRoot to avoid ReactDOM.render deprecation warnings
   const rootInstance = createRoot(div);
