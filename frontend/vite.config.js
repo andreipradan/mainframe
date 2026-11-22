@@ -29,6 +29,13 @@ export default defineConfig(({ mode }) => ({
     include: /src\/.*\.js/,
     exclude: [],
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+      },
+    },
+  },
   css: {
     preprocessorOptions: {
       scss: {

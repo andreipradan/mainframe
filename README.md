@@ -50,7 +50,7 @@ Personal automation and monitoring platform built with Django REST Framework and
 
 ### Using Dev Container (Recommended)
 
-Open this repository in VS Code with the Dev Containers extension or in Gitpod. The dev container includes Python 3.12 and Node.js 20, and automatically installs dependencies via uv. Its post-create script generates the git-ignored `src/mainframe/.env` file using `.devcontainer/scripts/set-local-env-vars.sh`; in Codespaces, it adds the backend hostname to `ALLOWED_HOSTS` and provisions a local development superuser (`user@test.com` / `pass`).
+Open this repository in VS Code with the Dev Containers extension or in Gitpod. The dev container includes Python 3.12 and Node.js 20, and automatically installs dependencies via uv. Its post-create script generates the git-ignored `src/mainframe/.env` file using `.devcontainer/scripts/set-local-env-vars.sh`; in Codespaces, it adds the backend hostname to `ALLOWED_HOSTS`.
 
 ### Manual Setup
 
@@ -107,15 +107,16 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
    uv run poe huey
    ```
 
-In Codespaces, make backend port 8000 **Public** in the VS Code **Ports** tab;
-the frontend runs in your browser and needs to reach the backend through that
-public URL. The post-create script adds
+In Codespaces, first create a superuser with a unique password by running
+`uv run poe createsuperuser` while backend port 8000 is still private. Then
+make the port **Public** in the VS Code **Ports** tab; the frontend runs in your
+browser and needs to reach the backend through that public URL. The post-create
+script adds
 `<CODESPACE_NAME>-8000.app.github.dev` to Django's `ALLOWED_HOSTS`, and
 `uv run poe frontend` sets the frontend's `VITE_API_URL` to the Codespaces
-backend URL. Sign in to the local development app with `user@test.com` and
-`pass`. For local development without Poe, run
+backend URL. For local development without Poe, run
 `cd frontend && npm run dev`; the frontend uses the local backend at
-`http://127.0.0.1:5678/`.
+`http://127.0.0.1:8000/`.
 
 ## Available Tasks
 
