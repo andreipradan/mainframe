@@ -109,9 +109,8 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
 
 In Codespaces, the post-create script provisions a development superuser with
 a unique password stored in the git-ignored `src/mainframe/.env`. Retrieve the
-password for `user@test.com` with
-`grep '^DEV_SUPERUSER_PASSWORD=' src/mainframe/.env` while backend port 8000 is
-still private. Then make the port **Public** in the VS Code **Ports** tab; the
+password for `user@test.com` from that file while backend port 8000 is still
+private. Then make the port **Public** in the VS Code **Ports** tab; the
 frontend runs in your browser and needs to reach the backend through that
 public URL. The post-create script adds
 `<CODESPACE_NAME>-8000.app.github.dev` to Django's `ALLOWED_HOSTS`, and
