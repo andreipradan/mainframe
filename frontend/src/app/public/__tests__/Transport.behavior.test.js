@@ -2,17 +2,21 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
+import Transport from '../Transport';
 
 // Mock mapping libs before requiring the component
-jest.mock('leaflet.fullscreen', () => ({}));
-jest.mock('react-leaflet-cluster', () => ({ __esModule: true, default: (p) => <div>{p.children}</div> }));
-jest.mock('leaflet', () => ({
-  divIcon: function (opts) { return { _opts: opts }; },
-  control: { fullscreen: () => ({ addTo: jest.fn(), remove: jest.fn() }) },
-}));
+vi.mock('leaflet.fullscreen', () => ({}));
+vi.mock('react-leaflet-cluster', () => ({ __esModule: true, default: (p) => <div>{p.children}</div> }));
+vi.mock('leaflet', () => {
+  const leaflet = {
+    divIcon: function (opts) { return { _opts: opts }; },
+    control: { fullscreen: () => ({ addTo: vi.fn(), remove: vi.fn() }) },
+  };
+  return { ...leaflet, default: leaflet };
+});
 
 // Marker will trigger popupopen immediately to set selectedVehicle inside the component
-jest.mock('react-leaflet', () => ({
+vi.mock('react-leaflet', () => ({
   MapContainer: (props) => <div data-testid="map">{props.children}</div>,
   Marker: (props) => {
     // simulate popupopen after render (microtask) to avoid setState-in-render
@@ -24,17 +28,17 @@ jest.mock('react-leaflet', () => ({
     return <div data-testid="marker">{props.children}</div>;
   },
   TileLayer: () => <div data-testid="tilelayer" />,
-  useMap: () => ({ addControl: jest.fn(), removeControl: jest.fn() }),
+  useMap: () => ({ addControl: vi.fn(), removeControl: vi.fn() }),
   Popup: (props) => <div>{props.children}</div>,
   Polyline: () => <div data-testid="polyline" />, 
   Tooltip: (props) => <div>{props.children}</div>,
   
 }));
 
-jest.mock('src/api/transport', () => ({
+vi.mock('src/api/transport', () => ({
   TransitApi: class {
-    getList = () => jest.fn();
-    getVehicles = () => jest.fn();
+    getList = () => vi.fn();
+    getVehicles = () => vi.fn();
   },
 }));
 
@@ -59,7 +63,7 @@ describe('Transport behavior', () => {
     act(() => {
       root.render(
         <Provider store={store}>
-          {(() => { const Transport = require('../Transport').default; return <Transport />; })()}
+          <Transport />
         </Provider>
       );
     });
@@ -93,7 +97,7 @@ describe('Transport behavior', () => {
     act(() => {
       root.render(
         <Provider store={store}>
-          {(() => { const Transport = require('../Transport').default; return <Transport />; })()}
+          <Transport />
         </Provider>
       );
     });
@@ -134,7 +138,7 @@ describe('Transport behavior', () => {
     act(() => {
       root.render(
         <Provider store={store}>
-          {(() => { const Transport = require('../Transport').default; return <Transport />; })()}
+          <Transport />
         </Provider>
       );
     });

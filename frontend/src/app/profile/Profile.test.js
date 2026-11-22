@@ -4,22 +4,22 @@ import Profile from './Profile';
 import { UsersApi } from '../../api/users';
 
 let mockState = { auth: { token: null, user: null }, users: {} };
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/users', () => ({
+vi.mock('../../api/users', () => ({
   UsersApi: {
-    updateUser: jest.fn(() => ({ type: 'users/updateUser' })),
-    changePassword: jest.fn(() => ({ type: 'users/changePassword' })),
+    updateUser: vi.fn(() => ({ type: 'users/updateUser' })),
+    changePassword: vi.fn(() => ({ type: 'users/changePassword' })),
   },
 }));
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <div>{errors ? 'User errors' : null}</div>
-));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => <div>{errors ? 'User errors' : null}</div>,
+}));
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading profile</div>,
 }));
 

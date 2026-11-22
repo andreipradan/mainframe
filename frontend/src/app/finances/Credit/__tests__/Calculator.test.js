@@ -3,17 +3,17 @@ import { createRoot } from 'react-dom/client';
 import Calculator from '../Calculator';
 
 let mockState = {};
-const mockDispatch = jest.fn();
-const mockHistoryPush = jest.fn();
+const mockDispatch = vi.fn();
+const mockHistoryPush = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useHistory: () => ({ push: mockHistoryPush }),
 }));
-jest.mock('src/api/finance', () => ({
+vi.mock('src/api/finance', () => ({
   TimetableApi: class TimetableApi {
     constructor(token) {
       this.token = token;
@@ -24,7 +24,7 @@ jest.mock('src/api/finance', () => ({
     }
   },
 }));
-jest.mock('react-select', () => ({
+vi.mock('react-select', () => ({
   __esModule: true,
   default: ({ options, value, onChange }) => (
     <button
@@ -36,10 +36,10 @@ jest.mock('react-select', () => ({
     </button>
   ),
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Circles: () => <div>Loading</div>,
 }));
-jest.mock('../../../shared/Errors', () => () => null);
+vi.mock('../../../shared/Errors', () => ({ default: () => null }));
 
 const makeTimetable = (id, date) => ({
   id,

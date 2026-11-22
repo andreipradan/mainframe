@@ -40,9 +40,9 @@
   height: 26px;
 }
 .stretch-card {
-  @include display-flex;
-  @include align-items(stretch);
-  @include justify-content(stretch);
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
   > .card {
     width: 100%;
     min-width: 100%;

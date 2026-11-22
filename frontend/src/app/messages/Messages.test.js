@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import Messages from './Messages';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/messages', () => ({
+vi.mock('../../api/messages', () => ({
   __esModule: true,
   default: class MessagesApiMock {
     constructor(token) {
@@ -18,20 +18,19 @@ jest.mock('../../api/messages', () => ({
     getList = (kwargs) => ({ type: 'messages/getList', payload: kwargs });
   },
 }));
-jest.mock('../shared/BottomPagination', () => () => null);
-jest.mock('../shared/Errors', () => ({ errors }) => (
-  <div>{errors?.detail || null}</div>
-));
-jest.mock('./components/EditModal', () => () => null);
-jest.mock('../finances/Accounts/Categorize/EditModal', () => ({
+vi.mock('../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({
+  default: ({ errors }) => <div>{errors?.detail || null}</div>,
+}));
+vi.mock('./components/EditModal', () => ({ default: () => null }));
+vi.mock('../finances/Accounts/Categorize/EditModal', () => ({
   selectStyles: {},
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Audio: () => <div>Loading messages</div>,
   ColorRing: () => <div>Loading message</div>,
 }));
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: ({ options = [], onChange }) =>
@@ -50,8 +49,7 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -162,7 +160,7 @@ describe('Messages', () => {
     mockState.messages.loadingItems = [];
     mockState.messages.results = [];
     const empty = renderMessages();
-    expect(empty.container.textContent).toContain('No crons available');
+    expect(empty.container.textContent).toContain('No saved messages');
     empty.unmount();
   });
 });

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Color Functions Mixins
 
 // Solid tab variations
@@ -64,14 +66,14 @@
     background: transparent;
 
     .breadcrumb-item {
-      background: lighten($color, 25%);
+      background: color.adjust($color, $lightness: 25%, $space: hsl);
 
       a {
         color: $color;
         border: none;
 
         &:before {
-          border-left-color: lighten($color, 25%);
+          border-left-color: color.adjust($color, $lightness: 25%, $space: hsl);
         }
       }
 
@@ -97,7 +99,7 @@
 
     .page-link {
       &:hover {
-        background: lighten($color, 5%);
+        background: color.adjust($color, $lightness: 5%, $space: hsl);
         border-color: $color;
         color: $white;
       }

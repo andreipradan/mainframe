@@ -4,22 +4,26 @@ import EditModal from './EditModal';
 import { selectItem } from '../../../redux/mealsSlice';
 
 let mockState = { meals: { selectedItem: null } };
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../../redux/mealsSlice', () => ({
-  selectItem: jest.fn(() => ({ type: 'meals/selectItem' })),
+vi.mock('../../../redux/mealsSlice', () => ({
+  selectItem: vi.fn(() => ({ type: 'meals/selectItem' })),
 }));
-jest.mock(
+vi.mock(
   'react-bootstrap/Modal',
-  () => require('../../../testSupport/reactBootstrapMocks').Modal
+  async () =>
+    (await import('../../../testSupport/reactBootstrapMocks'))
+      .reactBootstrapMocks.Modal
 );
-jest.mock(
+vi.mock(
   'react-bootstrap/Button',
-  () => require('../../../testSupport/reactBootstrapMocks').Button
+  async () =>
+    (await import('../../../testSupport/reactBootstrapMocks'))
+      .reactBootstrapMocks.Button
 );
 
 const renderEditModal = () => {

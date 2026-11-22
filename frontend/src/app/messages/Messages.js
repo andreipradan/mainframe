@@ -185,7 +185,7 @@ const Messages = () => {
                         })
                       ) : (
                         <tr>
-                          <td colSpan={6}>No crons available</td>
+                          <td colSpan={6}>No saved messages</td>
                         </tr>
                       ))}
                   </tbody>

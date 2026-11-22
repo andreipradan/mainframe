@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter, useLocation, useHistory } from 'react-router-dom';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import 'leaflet/dist/leaflet.css';
 import './App.scss';
+import '@mdi/font/css/materialdesignicons.css';
 import AppRoutes from './AppRoutes';
 import Navbar from './shared/Navbar';
 import Sidebar from './shared/Sidebar';

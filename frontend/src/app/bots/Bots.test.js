@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import Bots from './Bots';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/bots', () => ({
+vi.mock('../../api/bots', () => ({
   __esModule: true,
   default: class BotsApiMock {
     constructor(token) {
@@ -20,10 +20,10 @@ jest.mock('../../api/bots', () => ({
     }
   },
 }));
-jest.mock('./modals/AddModal', () => () => null);
-jest.mock('./modals/EditModal', () => () => null);
-jest.mock('../shared/Errors', () => () => null);
-jest.mock('react-loader-spinner', () => ({
+vi.mock('./modals/AddModal', () => ({ default: () => null }));
+vi.mock('./modals/EditModal', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({
   Audio: () => <div>Loading bots</div>,
   ColorRing: () => <div>Loading bot</div>,
 }));

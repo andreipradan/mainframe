@@ -4,6 +4,10 @@ import { Link, useHistory } from 'react-router-dom';
 import { Tooltip } from 'react-tooltip';
 import { Trans } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import face2 from '../../assets/images/faces/face2.jpg';
+import face3 from '../../assets/images/faces/face3.jpg';
+import face4 from '../../assets/images/faces/face4.jpg';
+import face15 from '../../assets/images/faces/face15.jpg';
 import logoMini from '../../assets/images/logo-mini.svg';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -171,7 +175,7 @@ const Navbar = () => {
                 <div className='preview-thumbnail'>
                   <div className='preview-icon bg-dark rounded-circle'>
                     <img
-                      src={require('../../assets/images/faces/face4.jpg')}
+                      src={face4}
                       alt='profile'
                       className='rounded-circle profile-pic'
                     />
@@ -196,7 +200,7 @@ const Navbar = () => {
                 <div className='preview-thumbnail'>
                   <div className='preview-icon bg-dark rounded-circle'>
                     <img
-                      src={require('../../assets/images/faces/face2.jpg')}
+                      src={face2}
                       alt='profile'
                       className='rounded-circle profile-pic'
                     />
@@ -221,7 +225,7 @@ const Navbar = () => {
                 <div className='preview-thumbnail'>
                   <div className='preview-icon bg-dark rounded-circle'>
                     <img
-                      src={require('../../assets/images/faces/face3.jpg')}
+                      src={face3}
                       alt='profile'
                       className='rounded-circle profile-pic'
                     />
@@ -363,7 +367,7 @@ const Navbar = () => {
               <div className='navbar-profile'>
                 <img
                   className='img-xs rounded-circle'
-                  src={require('../../assets/images/faces/face15.jpg')}
+                  src={face15}
                   alt='profile'
                 />
                 <p className='mb-0 d-none d-sm-block navbar-profile-name'>

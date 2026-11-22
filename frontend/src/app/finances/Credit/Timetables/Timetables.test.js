@@ -4,16 +4,16 @@ import Timetables from './Timetables';
 import TimetableEditModal from './components/TimetableEditModal';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-const mockHistory = { push: jest.fn() };
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+const mockHistory = { push: vi.fn() };
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-router-dom', () => ({
+vi.mock('react-router-dom', () => ({
   useHistory: () => mockHistory,
 }));
-jest.mock('../../../../api/finance', () => ({
+vi.mock('../../../../api/finance', () => ({
   TimetableApi: class TimetableApiMock {
     getList = () => ({ type: 'timetable/getList' });
 
@@ -24,19 +24,18 @@ jest.mock('../../../../api/finance', () => ({
     upload = (payload) => ({ type: 'timetable/upload', payload });
   },
 }));
-jest.mock('../../../shared/BottomPagination', () => () => null);
-jest.mock('../../../shared/Errors', () => ({ errors }) => (
-  <div>{errors?.[0] || errors?.detail || null}</div>
-));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('../../../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../../../shared/Errors', () => ({
+  default: ({ errors }) => <div>{errors?.[0] || errors?.detail || null}</div>,
+}));
+vi.mock('react-loader-spinner', () => ({
   Circles: () => <div>Loading timetables</div>,
   ColorRing: () => <div>Loading timetable</div>,
 }));
-jest.mock('react-bootstrap', () => ({
+vi.mock('react-bootstrap', () => ({
   Collapse: ({ children }) => children,
 }));
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -44,8 +43,7 @@ jest.mock('react-bootstrap/Form', () => {
   Form.Control = (props) => React.createElement('input', props);
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', { 'data-show': show }, children) : null;
   Modal.Body = ({ children }) => React.createElement('div', null, children);
@@ -61,8 +59,7 @@ jest.mock('react-bootstrap/Modal', () => {
     Title: Modal.Title,
   };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .glowing-loader {
   position: relative;
 }
@@ -122,7 +124,11 @@
 @keyframes small {
   0% {
     transform: scale(1);
-    background-color: lighten(theme-color(primary), 20%);
+    background-color: color.adjust(
+      theme-color(primary),
+      $lightness: 20%,
+      $space: hsl
+    );
   }
   10% {
     transform: scale(1.3);

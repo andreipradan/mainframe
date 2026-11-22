@@ -3,13 +3,13 @@ import { createRoot } from 'react-dom/client';
 import EditModal from '../EditModal';
 
 let mockState = {};
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../../api/expenses', () => ({
+vi.mock('../../../api/expenses', () => ({
   ExpensesApi: class ExpensesApi {
     constructor(token) {
       this.token = token;
@@ -28,8 +28,7 @@ jest.mock('../../../api/expenses', () => ({
     };
   },
 }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -38,8 +37,7 @@ jest.mock('react-bootstrap', () => {
   Form.Control = (props) => React.createElement('input', props);
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', null, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -48,27 +46,27 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-datepicker', () => {
-  const React = require('react');
-  return ({ selected, onChange, className, readOnly }) =>
-    React.createElement('input', {
-      className,
-      readOnly,
-      type: 'date',
-      value: selected?.toISOString().slice(0, 10) || '',
-      onChange: (event) =>
-        onChange(new Date(`${event.target.value}T00:00:00Z`)),
-    });
+vi.mock('react-datepicker', () => {
+  return {
+    default: ({ selected, onChange, className, readOnly }) =>
+      React.createElement('input', {
+        className,
+        readOnly,
+        type: 'date',
+        value: selected?.toISOString().slice(0, 10) || '',
+        onChange: (event) =>
+          onChange(new Date(`${event.target.value}T00:00:00Z`)),
+      }),
+  };
 });
-jest.mock('react-select', () => ({
+vi.mock('react-select', () => ({
   __esModule: true,
   default: ({ options, value, onChange }) => (
     <div>
@@ -82,7 +80,7 @@ jest.mock('react-select', () => ({
     </div>
   ),
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading</div>,
 }));
 

@@ -5,8 +5,32 @@ This file contains developer-facing contribution and testing guidelines for the 
 ## Development Workflow
 
 - Install dependencies: `uv sync`
-- Configure environment: edit `src/mainframe/.env` (see README.md template)
+- Configure environment: the Dev Container post-create script generates the
+  git-ignored `src/mainframe/.env`; for manual setup, use the README.md template
 - Run migrations: `uv run poe migrate` (this command runs both `makemigrations` and `migrate`)
+- Install frontend dependencies: `npm ci --prefix frontend`
+
+## Frontend Development
+
+- Start the backend and Vite frontend together: `uv run poe dev`
+- Start the Vite development server on port 3000: `uv run poe frontend`
+- For local development without Poe, run `cd frontend && npm run dev`. The
+  local frontend API fallback is `http://127.0.0.1:5678/`.
+- In Codespaces, make backend port 8000 public in the VS Code **Ports** tab.
+  The Poe frontend task sets `VITE_API_URL` to the Codespaces backend URL; do
+  not expose ports programmatically. The post-create script adds
+  `<CODESPACE_NAME>-8000.app.github.dev` to Django's `ALLOWED_HOSTS`.
+- The frontend reads `VITE_API_URL` and `VITE_NGROK_URL` from Vite's
+  environment. CI supplies both variables to the production build.
+- Run the frontend test suite: `cd frontend && npm test`
+- Run the CI test command with coverage: `cd frontend && npm run test:ci`.
+  This writes `frontend/coverage/lcov.info` when run from the repository root.
+- Build the frontend: `cd frontend && npm run build`. To reproduce the
+  deployment output path, run
+  `cd frontend && BUILD_PATH=.docker/build npm run build`.
+
+The frontend uses Vite for development and production builds and Vitest with
+jsdom for tests. The project supports Node.js 20 or newer.
 
 ## Dependabot Alerts
 
@@ -77,7 +101,7 @@ Notes on Test Placement and Naming
 
 ```bash
 # Run backend
-uv run poe dev
+uv run poe backend
 
 # Run tests
 uv run poe test

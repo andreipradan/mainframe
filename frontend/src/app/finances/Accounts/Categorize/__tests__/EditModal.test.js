@@ -3,18 +3,18 @@ import { createRoot } from 'react-dom/client';
 import EditModal, { getTypeLabel } from '../EditModal';
 
 let mockState = {};
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('src/api/finance/categories', () => ({
+vi.mock('src/api/finance/categories', () => ({
   CategoriesApi: {
     getList: (token) => ({ type: 'categories/getList', token }),
   },
 }));
-jest.mock('src/api/finance/transactions', () => ({
+vi.mock('src/api/finance/transactions', () => ({
   TransactionsApi: {
     update: (token, id, data) => ({
       type: 'transactions/update',
@@ -30,24 +30,21 @@ jest.mock('src/api/finance/transactions', () => ({
     }),
   },
 }));
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children }) => React.createElement('div', null, children);
   Form.Label = ({ children }) => React.createElement('label', null, children);
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', null, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -56,7 +53,7 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('react-select/creatable', () => ({
+vi.mock('react-select/creatable', () => ({
   __esModule: true,
   default: ({ options, onChange, onCreateOption, styles, value }) => {
     const backgrounds = [
@@ -82,11 +79,11 @@ jest.mock('react-select/creatable', () => ({
     );
   },
 }));
-jest.mock('react-ace', () => ({
+vi.mock('react-ace', () => ({
   __esModule: true,
   default: ({ value }) => <textarea readOnly value={value} />,
 }));
-jest.mock('../../../../shared/Errors', () => () => null);
+vi.mock('../../../../shared/Errors', () => ({ default: () => null }));
 
 const transaction = {
   id: 31,

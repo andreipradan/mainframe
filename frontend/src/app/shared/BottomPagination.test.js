@@ -2,16 +2,15 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import BottomPagination from './BottomPagination';
 
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 let mockToken = 'token';
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector({ auth: { token: mockToken } }),
 }));
 
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Pagination = ({ children }) =>
     React.createElement('nav', null, children);
   const control =
@@ -38,10 +37,10 @@ jest.mock('react-bootstrap', () => {
   return { Pagination };
 });
 
-const renderPagination = (items, fetchMethod = jest.fn()) => {
+const renderPagination = (items, fetchMethod = vi.fn()) => {
   const container = document.createElement('div');
   const root = createRoot(container);
-  const setKwargs = jest.fn((kwargs) => ({ type: 'setKwargs', kwargs }));
+  const setKwargs = vi.fn((kwargs) => ({ type: 'setKwargs', kwargs }));
 
   act(() =>
     root.render(
@@ -89,7 +88,7 @@ test('shows page controls and dispatches navigation using the previous page', ()
 });
 
 test('uses first page when there is no previous URL and handles the new API', () => {
-  const fetchMethod = jest.fn((kwargs) => ({ type: 'fetch', kwargs }));
+  const fetchMethod = vi.fn((kwargs) => ({ type: 'fetch', kwargs }));
   const { container, root } = renderPagination(
     {
       count: 25,

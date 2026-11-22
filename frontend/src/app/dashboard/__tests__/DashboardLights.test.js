@@ -4,12 +4,12 @@ import { Simulate } from 'react-dom/test-utils';
 import Dashboard from '../Dashboard';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('src/api/bots', () => ({
+vi.mock('src/api/bots', () => ({
   __esModule: true,
   default: class {
     constructor(token) {
@@ -21,7 +21,7 @@ jest.mock('src/api/bots', () => ({
     }
   },
 }));
-jest.mock('src/api/devices', () => ({
+vi.mock('src/api/devices', () => ({
   __esModule: true,
   default: class {
     constructor(token) {
@@ -33,7 +33,7 @@ jest.mock('src/api/devices', () => ({
     }
   },
 }));
-jest.mock('src/api/activity', () => ({
+vi.mock('src/api/activity', () => ({
   __esModule: true,
   default: class {
     constructor(token) {
@@ -45,7 +45,7 @@ jest.mock('src/api/activity', () => ({
     }
   },
 }));
-jest.mock('src/api/lights', () => ({
+vi.mock('src/api/lights', () => ({
   __esModule: true,
   default: class {
     constructor(token) {
@@ -68,39 +68,44 @@ jest.mock('src/api/lights', () => ({
     static setColorTemp = (...args) => ({ type: 'lights/setColorTemp', args });
   },
 }));
-jest.mock('src/api/rpi', () => ({
+vi.mock('src/api/rpi', () => ({
   __esModule: true,
   default: class {
     static logout = (...args) => ({ type: 'rpi/logout', args });
   },
 }));
-jest.mock('../chartsData', () => ({
+vi.mock('../chartsData', () => ({
   doughnutPieOptions: {},
   getLightsData: () => ({ labels: [], datasets: [] }),
   sliderSettings: {},
 }));
-jest.mock('chart.js', () => ({
+vi.mock('chart.js', () => ({
   ArcElement: {},
   CategoryScale: {},
-  Chart: { register: jest.fn() },
+  Chart: { register: vi.fn() },
 }));
-jest.mock('react-chartjs-2', () => ({ Doughnut: () => null }));
-jest.mock('nouislider-react', () => ({ onChange, onSet, onSlide }) => (
-  <div>
-    <span className='noUi-tooltip' />
-    <button type='button' onClick={() => onChange?.('', 0, [2700], null, [54])}>
-      Change slider
-    </button>
-    <button type='button' onClick={() => onSet?.()}>
-      Set slider
-    </button>
-    <button type='button' onClick={() => onSlide?.()}>
-      Slide slider
-    </button>
-  </div>
-));
-jest.mock('react-slick', () => () => null);
-jest.mock('react-color', () => ({
+vi.mock('react-chartjs-2', () => ({ Doughnut: () => null }));
+vi.mock('nouislider-react', () => ({
+  default: ({ onChange, onSet, onSlide }) => (
+    <div>
+      <span className='noUi-tooltip' />
+      <button
+        type='button'
+        onClick={() => onChange?.('', 0, [2700], null, [54])}
+      >
+        Change slider
+      </button>
+      <button type='button' onClick={() => onSet?.()}>
+        Set slider
+      </button>
+      <button type='button' onClick={() => onSlide?.()}>
+        Slide slider
+      </button>
+    </div>
+  ),
+}));
+vi.mock('react-slick', () => ({ default: () => null }));
+vi.mock('react-color', () => ({
   SliderPicker: ({ onChange, onChangeComplete }) => (
     <div>
       <button type='button' onClick={() => onChange?.({ hex: '#abcdef' })}>
@@ -115,13 +120,12 @@ jest.mock('react-color', () => ({
     </div>
   ),
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => null,
   InfinitySpin: () => null,
   LineWave: () => null,
 }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Form = ({ children }) => React.createElement('div', null, children);
   Form.Group = ({ children }) => React.createElement('div', null, children);
   Form.Label = ({ children }) => React.createElement('label', null, children);
@@ -133,16 +137,14 @@ jest.mock('react-bootstrap', () => {
     Form,
   };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, onHide, show }) =>
     show
       ? React.createElement(
@@ -162,14 +164,14 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('../../shared/Errors', () => () => null);
+vi.mock('../../shared/Errors', () => ({ default: () => null }));
 
 describe('Dashboard light disclosures', () => {
   beforeEach(() => {
     mockDispatch.mockClear();
   });
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test('expands a light using its accessible disclosure button', () => {
@@ -208,7 +210,7 @@ describe('Dashboard light disclosures', () => {
   });
 
   test('controls lights, edits names, refreshes data, and polls activity', () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     mockState = {
       auth: { token: 'auth-token' },
       rpi: { token: 'rpi-token' },
@@ -337,7 +339,7 @@ describe('Dashboard light disclosures', () => {
     });
 
     act(() => container.querySelector('.mdi-toggle-switch-off').click());
-    act(() => jest.advanceTimersByTime(5000));
+    act(() => vi.advanceTimersByTime(5000));
     expect(
       mockDispatch.mock.calls.some(
         ([action]) => action?.type === 'activity/getList'

@@ -2,10 +2,12 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
+import { toast } from 'react-toastify';
+import Transport from '../Transport';
 
 // Mock heavy mapping libraries before importing Transport
-jest.mock('leaflet.fullscreen', () => ({}));
-jest.mock('react-leaflet', () => ({
+vi.mock('leaflet.fullscreen', () => ({}));
+vi.mock('react-leaflet', () => ({
   MapContainer: (props) => <div data-testid="map">{props.children}</div>,
   Marker: (props) => (
     <div
@@ -18,20 +20,23 @@ jest.mock('react-leaflet', () => ({
     </div>
   ),
   TileLayer: () => <div data-testid="tilelayer" />,
-  useMap: () => ({ addControl: jest.fn(), removeControl: jest.fn() }),
+  useMap: () => ({ addControl: vi.fn(), removeControl: vi.fn() }),
   Popup: (props) => <div>{props.children}</div>,
   Polyline: () => <div data-testid="polyline" />,
   Tooltip: (props) => <div>{props.children}</div>,
 }));
-jest.mock('react-leaflet-cluster', () => ({ __esModule: true, default: (p) => <div>{p.children}</div> }));
-jest.mock('leaflet', () => ({
-  divIcon: function () { return jest.fn(); },
-  control: { fullscreen: () => ({ addTo: jest.fn(), remove: jest.fn() }) },
+vi.mock('react-leaflet-cluster', () => ({ __esModule: true, default: (p) => <div>{p.children}</div> }));
+vi.mock('leaflet', () => {
+  const leaflet = {
+    divIcon: function () { return vi.fn(); },
+    control: { fullscreen: () => ({ addTo: vi.fn(), remove: vi.fn() }) },
+  };
+  return { ...leaflet, default: leaflet };
+});
+vi.mock('react-toastify', () => ({
+  toast: { warning: vi.fn() },
 }));
-jest.mock('react-toastify', () => ({
-  toast: { warning: jest.fn() },
-}));
-jest.mock('src/api/transport', () => ({
+vi.mock('src/api/transport', () => ({
   TransitApi: class {
     getList = (...args) => ({ type: 'transport/getList', payload: args });
     getVehicles = (...args) => ({
@@ -43,7 +48,6 @@ jest.mock('src/api/transport', () => ({
 
 describe('Transport unit behaviors', () => {
   it('renders vehicle markers from state', async () => {
-    const Transport = require('../Transport').default;
 
     const vehicles = [
       { id: 'v1', latitude: 46.77, longitude: 23.58, bike_accessible: 'BIKE_ACCESSIBLE', wheelchair_accessible: 'WHEELCHAIR_ACCESSIBLE', route_id: 'r1', trip_id: 't1', timestamp: new Date().toISOString(), speed: 10 },
@@ -87,7 +91,6 @@ describe('Transport unit behaviors', () => {
   });
 
   it('bike toggle filters vehicle markers', async () => {
-    const Transport = require('../Transport').default;
 
     const vehicles = [
       { id: 'v1', latitude: 46.77, longitude: 23.58, bike_accessible: 'BIKE_ACCESSIBLE', wheelchair_accessible: 'WHEELCHAIR_ACCESSIBLE', route_id: 'r1', trip_id: 't1', timestamp: new Date().toISOString(), speed: 10 },
@@ -140,7 +143,6 @@ describe('Transport unit behaviors', () => {
   });
 
   it('renders stops markers when switching to stops mode', async () => {
-    const Transport = require('../Transport').default;
 
     const stops = [
       { stop_id: 's1', stop_lat: 46.77, stop_lon: 23.58, stop_name: 'A' },
@@ -185,7 +187,6 @@ describe('Transport unit behaviors', () => {
   });
 
   it('shows polylines when vehicle popup opened and shapes exist', async () => {
-    const Transport = require('../Transport').default;
 
     const vehicles = [
       { id: 'v1', latitude: 46.77, longitude: 23.58, bike_accessible: 'BIKE_ACCESSIBLE', wheelchair_accessible: 'WHEELCHAIR_ACCESSIBLE', route_id: 'r1', trip_id: 'shape1', timestamp: new Date().toISOString(), speed: 10 },
@@ -238,7 +239,6 @@ describe('Transport unit behaviors', () => {
   });
 
   it('applies map filters, displays vehicle and stop fields, and fetches selected data', async () => {
-    const Transport = require('../Transport').default;
     const now = new Date().toISOString();
     const vehicles = [
       {
@@ -383,9 +383,7 @@ describe('Transport unit behaviors', () => {
   });
 
   it('stops polling after the configured polling duration', async () => {
-    const Transport = require('../Transport').default;
-    const { toast } = require('react-toastify');
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const initialState = {
       auth: { token: 'token' },
       transit: {
@@ -408,7 +406,7 @@ describe('Transport unit behaviors', () => {
     });
 
     await act(async () => {
-      jest.advanceTimersByTime(245_000);
+      vi.advanceTimersByTime(245_000);
       await Promise.resolve();
     });
     expect(toast.warning).toHaveBeenCalledWith(
@@ -420,6 +418,6 @@ describe('Transport unit behaviors', () => {
       root.unmount();
       await Promise.resolve();
     });
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });

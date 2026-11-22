@@ -1,6 +1,5 @@
-import {isLocalhost} from "./serviceWorker";
-
+import { isLocalhost } from './serviceWorker';
 
 export const API_SERVER = isLocalhost
-  ? "http://127.0.0.1:5678/"
-  : `${process.env.REACT_APP_API_URL}/`
+  ? 'http://127.0.0.1:5678/'
+  : `${import.meta.env.VITE_API_URL}/`;

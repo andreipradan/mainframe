@@ -17,12 +17,14 @@ body {
 
 .page-body-wrapper {
   min-height: calc(100vh - #{$navbar-height});
-  @include display-flex();
-  @include flex-direction(row);
+  display: flex;
+  flex-direction: row;
   padding-left: 0;
   padding-right: 0;
   width: calc(100% - #{$sidebar-width-lg});
-  transition: width $action-transition-duration $action-transition-timing-function, margin $action-transition-duration $action-transition-timing-function;
+  transition:
+    width $action-transition-duration $action-transition-timing-function,
+    margin $action-transition-duration $action-transition-timing-function;
 
   &.full-page-wrapper {
     min-height: 100vh;
@@ -42,18 +44,20 @@ body {
     }
   }
 
-  @media (max-width:992px) {
+  @media (max-width: 992px) {
     width: 100%;
   }
 }
 
 .main-panel {
-  transition: width $action-transition-duration $action-transition-timing-function, margin $action-transition-duration $action-transition-timing-function;
+  transition:
+    width $action-transition-duration $action-transition-timing-function,
+    margin $action-transition-duration $action-transition-timing-function;
   width: 100%;
   min-height: calc(100vh - #{$navbar-height});
   padding-top: $navbar-height;
-  @include display-flex();
-  @include flex-direction(column);
+  display: flex;
+  flex-direction: column;
   @media (max-width: 991px) {
     margin-left: 0;
     width: 100%;
@@ -67,7 +71,7 @@ body {
   background: $content-bg;
   padding: $content-padding;
   width: 100%;
-  @include flex-grow(1);
+  flex-grow: 1;
 }
 
 .container-scroller {
@@ -113,7 +117,7 @@ code {
     text-align: center;
     box-shadow: 0px 3px 8.3px 0.7px rgba(163, 93, 255, 0.35);
     i {
-      font-size: .9375rem;
+      font-size: 0.9375rem;
       line-height: 36px;
     }
   }

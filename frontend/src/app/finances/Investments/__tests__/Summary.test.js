@@ -3,21 +3,18 @@ import { createRoot } from 'react-dom/client';
 import Summary from '../Summary';
 
 let mockState = {};
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('react-chartjs-2', () => ({ Line: () => null }));
-jest.mock(
-  'react-fast-marquee',
-  () =>
-    ({ children }) =>
-      children
-);
-jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
-jest.mock('../../../earthquakes/Earthquakes', () => ({
+vi.mock('react-chartjs-2', () => ({ Line: () => null }));
+vi.mock('react-fast-marquee', () => ({
+  default: ({ children }) => children,
+}));
+vi.mock('react-loader-spinner', () => ({ Circles: () => null }));
+vi.mock('../../../earthquakes/Earthquakes', () => ({
   formatDate: (date) => date.toLocaleDateString(),
 }));
 

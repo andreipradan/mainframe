@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import Car from '../Car';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('src/api/expenses', () => ({
+vi.mock('src/api/expenses', () => ({
   CarApi: function CarApiMock() {
     return {
       getList() {
@@ -38,21 +38,18 @@ jest.mock('src/api/expenses', () => ({
     };
   },
 }));
-jest.mock(
-  'src/app/shared/ListItem',
-  () =>
-    ({ label, value }) =>
-      require('react').createElement('div', null, `${label}: ${value}`)
-);
-jest.mock('src/app/shared/BottomPagination', () => () => null);
-jest.mock('src/app/shared/Errors', () => () => null);
-jest.mock('react-datepicker', () => () => null);
-jest.mock('react-loader-spinner', () => ({
+vi.mock('src/app/shared/ListItem', () => ({
+  default: ({ label, value }) =>
+    React.createElement('div', null, `${label}: ${value}`),
+}));
+vi.mock('src/app/shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('src/app/shared/Errors', () => ({ default: () => null }));
+vi.mock('react-datepicker', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({
   Circles: () => null,
   ColorRing: () => null,
 }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children }) => React.createElement('div', null, children);
@@ -63,16 +60,14 @@ jest.mock('react-bootstrap', () => {
     Form,
   };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', null, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);

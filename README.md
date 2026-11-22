@@ -27,6 +27,8 @@ Personal automation and monitoring platform built with Django REST Framework and
 
 **Frontend:**
 - React 18
+- Vite 6
+- Vitest 4
 - Redux Toolkit
 - Bootstrap 4
 - Leaflet maps
@@ -48,7 +50,7 @@ Personal automation and monitoring platform built with Django REST Framework and
 
 ### Using Dev Container (Recommended)
 
-Open this repository in VS Code with the Dev Containers extension or in Gitpod. The dev container includes Python 3.12 and Node.js 20, and automatically installs dependencies via uv.
+Open this repository in VS Code with the Dev Containers extension or in Gitpod. The dev container includes Python 3.12 and Node.js 20, and automatically installs dependencies via uv. Its post-create script generates the git-ignored `src/mainframe/.env` file using `.devcontainer/scripts/set-local-env-vars.sh`; in Codespaces, it adds the backend hostname to `ALLOWED_HOSTS` and provisions a local development superuser (`user@test.com` / `pass`).
 
 ### Manual Setup
 
@@ -64,7 +66,7 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
 
 3. **Install frontend dependencies:**
    ```shell
-   cd frontend && npm install
+   npm ci --prefix frontend
    ```
 
 4. **Configure environment:**
@@ -72,6 +74,8 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
    ```shell
    ENV=local
    DEBUG=1
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   CORS_ALLOW_ALL_ORIGINS=True
    SECRET_KEY=your-secret-key
    DB_DATABASE=mainframe
    DB_USER=postgres
@@ -89,15 +93,29 @@ Open this repository in VS Code with the Dev Containers extension or in Gitpod. 
 
 6. **Start development servers:**
    ```shell
-   # Backend (port 8000)
+   # Backend and frontend concurrently
    uv run poe dev
 
-   # Frontend (port 3000)
+   # Or start them separately
+   # Backend (port 8000)
+   uv run poe backend
+
+   # Frontend (Vite, port 3000)
    uv run poe frontend
 
    # Task queue
    uv run poe huey
    ```
+
+In Codespaces, make backend port 8000 **Public** in the VS Code **Ports** tab;
+the frontend runs in your browser and needs to reach the backend through that
+public URL. The post-create script adds
+`<CODESPACE_NAME>-8000.app.github.dev` to Django's `ALLOWED_HOSTS`, and
+`uv run poe frontend` sets the frontend's `VITE_API_URL` to the Codespaces
+backend URL. Sign in to the local development app with `user@test.com` and
+`pass`. For local development without Poe, run
+`cd frontend && npm run dev`; the frontend uses the local backend at
+`http://127.0.0.1:5678/`.
 
 ## Available Tasks
 
@@ -105,8 +123,9 @@ Tasks are defined using [poethepoet](https://github.com/nat-n/poethepoet) and ru
 
 | Command | Description |
 |---------|-------------|
-| `uv run poe dev` | Start Django development server |
-| `uv run poe frontend` | Start React development server |
+| `uv run poe dev` | Start Django and Vite development servers concurrently |
+| `uv run poe backend` | Start Django development server |
+| `uv run poe frontend` | Start Vite frontend development server on port 3000 |
 | `uv run poe huey` | Start Huey task queue worker |
 | `uv run poe migrate` | Create and apply database migrations (runs both makemigrations and migrate) |
 | `uv run poe shell` | Open Django shell_plus |
@@ -124,6 +143,21 @@ uv run poe test --cov=.
 # Run specific test file
 uv run poe test tests/api/test_views.py
 ```
+
+### Frontend
+
+```shell
+# Run Vitest interactively
+cd frontend && npm test
+
+# Run all frontend tests with coverage (writes coverage/lcov.info)
+cd frontend && npm run test:ci
+
+# Build for deployment
+cd frontend && npm run build
+```
+
+The deployment workflow sets `BUILD_PATH=.docker/build` for the frontend build.
 
 ## Code Quality
 

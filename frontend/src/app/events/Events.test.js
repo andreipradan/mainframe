@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import Events from './Events';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/events', () => ({
+vi.mock('../../api/events', () => ({
   __esModule: true,
   default: class EventsApiMock {
     constructor(token) {
@@ -30,7 +30,7 @@ jest.mock('../../api/events', () => ({
     });
   },
 }));
-jest.mock('../../api/favorites', () => ({
+vi.mock('../../api/favorites', () => ({
   __esModule: true,
   default: class FavoritesApiMock {
     constructor(token) {
@@ -40,20 +40,19 @@ jest.mock('../../api/favorites', () => ({
     getList = (kwargs) => ({ type: 'favorites/getList', payload: kwargs });
   },
 }));
-jest.mock('../shared/BottomPagination', () => () => null);
-jest.mock('../shared/Errors', () => () => null);
-jest.mock('./FavoriteBandsFilter', () => () => null);
-jest.mock('../earthquakes/Earthquakes', () => ({
+vi.mock('../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../shared/Errors', () => ({ default: () => null }));
+vi.mock('./FavoriteBandsFilter', () => ({ default: () => null }));
+vi.mock('../earthquakes/Earthquakes', () => ({
   formatTime: (value) => `formatted:${value}`,
 }));
-jest.mock('../finances/Accounts/Categorize/EditModal', () => ({
+vi.mock('../finances/Accounts/Categorize/EditModal', () => ({
   selectStyles: {},
 }));
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   Audio: () => <div>Loading events</div>,
 }));
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: ({ options = [], isMulti, onChange }) =>
@@ -78,10 +77,10 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-ace', () => ({
+vi.mock('react-ace', () => ({
   __esModule: true,
   default: ({ value, onChange, className, placeholder }) =>
-    require('react').createElement('textarea', {
+    React.createElement('textarea', {
       value: value || '',
       className,
       placeholder,
@@ -89,21 +88,20 @@ jest.mock('react-ace', () => ({
         onChange(event.target.value, { end: { row: 0, column: 0 } }),
     }),
 }));
-jest.mock('react-bootstrap/Badge', () => {
-  const React = require('react');
-  return ({ children, ...props }) =>
-    React.createElement('span', props, children);
+vi.mock('react-bootstrap/Badge', () => {
+  return {
+    default: ({ children, ...props }) =>
+      React.createElement('span', props, children),
+  };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Form', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Form', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Group = ({ children, ...props }) =>
@@ -115,8 +113,7 @@ jest.mock('react-bootstrap/Form', () => {
   Form.Check = (props) => React.createElement('input', props);
   return { __esModule: true, default: Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', null, children) : null;
   Modal.Body = ({ children }) => React.createElement('div', null, children);

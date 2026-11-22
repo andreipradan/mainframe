@@ -8,38 +8,42 @@ let mockState = {
   users: { errors: null, loadingUsers: [], selectedUser: null },
   auth: { token: null, user: null },
 };
-const mockDispatch = jest.fn();
+const mockDispatch = vi.fn();
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../api/users', () => ({
+vi.mock('../../api/users', () => ({
   UsersApi: {
-    getUser: jest.fn(() => ({ type: 'users/getUser' })),
-    updateUser: jest.fn(() => ({ type: 'users/updateUser' })),
-    deleteUser: jest.fn(() => ({ type: 'users/deleteUser' })),
+    getUser: vi.fn(() => ({ type: 'users/getUser' })),
+    updateUser: vi.fn(() => ({ type: 'users/updateUser' })),
+    deleteUser: vi.fn(() => ({ type: 'users/deleteUser' })),
   },
 }));
-jest.mock('../../redux/usersSlice', () => ({
-  selectUser: jest.fn(() => ({ type: 'users/selectUser' })),
+vi.mock('../../redux/usersSlice', () => ({
+  selectUser: vi.fn(() => ({ type: 'users/selectUser' })),
 }));
-jest.mock(
+vi.mock(
   'react-bootstrap/Modal',
-  () => require('../../testSupport/reactBootstrapMocks').Modal
+  async () =>
+    (await import('../../testSupport/reactBootstrapMocks')).reactBootstrapMocks
+      .Modal
 );
-jest.mock(
+vi.mock(
   'react-bootstrap/Button',
-  () => require('../../testSupport/reactBootstrapMocks').Button
+  async () =>
+    (await import('../../testSupport/reactBootstrapMocks')).reactBootstrapMocks
+      .Button
 );
-jest.mock('react-loader-spinner', () => ({
+vi.mock('react-loader-spinner', () => ({
   ColorRing: () => <div>Loading selected user</div>,
 }));
-jest.mock('ace-builds', () => ({}));
-jest.mock('ace-builds/webpack-resolver', () => ({}));
-jest.mock('ace-builds/src-noconflict/mode-json', () => ({}));
-jest.mock('ace-builds/src-noconflict/theme-monokai', () => ({}));
-jest.mock('ace-builds/src-noconflict/ext-language_tools', () => ({}));
+vi.mock('ace-builds', () => ({}));
+vi.mock('ace-builds/webpack-resolver', () => ({}));
+vi.mock('ace-builds/src-noconflict/mode-json', () => ({}));
+vi.mock('ace-builds/src-noconflict/theme-monokai', () => ({}));
+vi.mock('ace-builds/src-noconflict/ext-language_tools', () => ({}));
 
 const renderEditModal = () => {
   const container = document.createElement('div');

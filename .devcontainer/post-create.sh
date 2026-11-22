@@ -14,5 +14,13 @@ npm run install:all
 
 uv run poe manage shell -c \
     "from mainframe.api.user.models import User; \
-    User.objects.filter(email='user@test.com').exists() or \
-    User.objects.create_superuser('user@test.com', 'user@test.com', 'pass')"
+    user, _ = User.objects.get_or_create( \
+        email='user@test.com', \
+        defaults={'username': 'user@test.com'} \
+    ); \
+    user.username = 'user@test.com'; \
+    user.is_active = True; \
+    user.is_staff = True; \
+    user.is_superuser = True; \
+    user.set_password('pass'); \
+    user.save()"

@@ -1,5 +1,6 @@
+@use 'sass:map';
 // Functions
 
-@function social-color($key: "twitter") {
-  @return map-get($social-colors, $key);
+@function social-color($key: 'twitter') {
+  @return map.get($social-colors, $key);
 }

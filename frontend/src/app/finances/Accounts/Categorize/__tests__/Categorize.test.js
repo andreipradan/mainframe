@@ -1,4 +1,4 @@
-import { act } from 'react';
+import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import { Provider } from 'react-redux';
@@ -6,7 +6,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import Categorize from '../Categorize';
 
 // Mock APIs and heavy components
-jest.mock('src/api/finance', () => ({
+vi.mock('src/api/finance', () => ({
   PredictionApi: {
     getTasks: (token) => ({ type: 'prediction/getTasks', token }),
     getTask: (token, task) => ({ type: 'prediction/getTask', token, task }),
@@ -19,7 +19,7 @@ jest.mock('src/api/finance', () => ({
     train: (token) => ({ type: 'prediction/train', token }),
   },
 }));
-jest.mock('src/api/finance/transactions', () => ({
+vi.mock('src/api/finance/transactions', () => ({
   TransactionsApi: class {
     getList = (kwargs) => ({ type: 'transactions/getList', kwargs });
 
@@ -31,8 +31,7 @@ jest.mock('src/api/finance/transactions', () => ({
     });
   },
 }));
-jest.mock('react-select', () => {
-  const React = require('react');
+vi.mock('react-select', () => {
   return {
     __esModule: true,
     default: ({ isMulti, onChange, onMenuClose, options, value }) =>
@@ -56,8 +55,7 @@ jest.mock('react-select', () => {
       ),
   };
 });
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Collapse = ({ children, in: isOpen }) =>
     isOpen ? React.createElement('div', null, children) : null;
   const Form = ({ children, ...props }) =>
@@ -69,8 +67,7 @@ jest.mock('react-bootstrap', () => {
   Form.Control = (props) => React.createElement('input', props);
   return { Collapse, Form };
 });
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show }) =>
     show ? React.createElement('div', null, children) : null;
   Modal.Header = ({ children }) => React.createElement('div', null, children);
@@ -79,40 +76,40 @@ jest.mock('react-bootstrap/Modal', () => {
   Modal.Footer = ({ children }) => React.createElement('div', null, children);
   return { __esModule: true, default: Modal };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
       React.createElement('button', props, children),
   };
 });
-jest.mock('react-bootstrap/Alert', () => {
-  const React = require('react');
-  return ({ children, onClose }) =>
-    React.createElement(
-      'div',
-      null,
-      children,
-      onClose &&
-        React.createElement(
-          'button',
-          { type: 'button', onClick: onClose },
-          'Dismiss'
-        )
-    );
+vi.mock('react-bootstrap/Alert', () => {
+  return {
+    default: ({ children, onClose }) =>
+      React.createElement(
+        'div',
+        null,
+        children,
+        onClose &&
+          React.createElement(
+            'button',
+            { type: 'button', onClick: onClose },
+            'Dismiss'
+          )
+      ),
+  };
 });
-jest.mock('react-loader-spinner', () => ({ Circles: () => null }));
-jest.mock('../../../../shared/Errors', () => () => null);
-jest.mock('../../../../shared/BottomPagination', () => () => null);
-jest.mock('../EditModal', () => ({
+vi.mock('react-loader-spinner', () => ({ Circles: () => null }));
+vi.mock('../../../../shared/Errors', () => ({ default: () => null }));
+vi.mock('../../../../shared/BottomPagination', () => ({ default: () => null }));
+vi.mock('../EditModal', () => ({
   __esModule: true,
   default: () => null,
   getTypeLabel: (type) => type,
   selectStyles: {},
 }));
-jest.mock('react-toastify', () => ({
-  toast: { success: jest.fn(), warning: jest.fn(), error: jest.fn() },
+vi.mock('react-toastify', () => ({
+  toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
 }));
 
 describe('Categorize component', () => {
@@ -180,7 +177,7 @@ describe('Categorize component', () => {
       prediction: { loading: false },
     };
     const store = configureStore({ reducer: (state = initialState) => state });
-    const dispatchSpy = jest.spyOn(store, 'dispatch');
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
     const div = document.createElement('div');
     const root = createRoot(div);
 
@@ -285,7 +282,7 @@ describe('Categorize component', () => {
       },
     };
     const store = configureStore({ reducer: (state = initialState) => state });
-    const dispatchSpy = jest.spyOn(store, 'dispatch');
+    const dispatchSpy = vi.spyOn(store, 'dispatch');
     const div = document.createElement('div');
     const root = createRoot(div);
 

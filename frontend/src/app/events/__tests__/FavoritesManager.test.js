@@ -4,12 +4,12 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import FavoritesManager from '../FavoritesManager';
 
 let mockState = null;
-const mockDispatch = jest.fn();
-jest.mock('react-redux', () => ({
+const mockDispatch = vi.fn();
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
-jest.mock('../../../api/favorites', () => ({
+vi.mock('../../../api/favorites', () => ({
   __esModule: true,
   default: function FavoritesApiMock() {
     return {
@@ -25,17 +25,15 @@ jest.mock('../../../api/favorites', () => ({
     };
   },
 }));
-jest.mock('../../shared/Errors', () => () => null);
-jest.mock('react-loader-spinner', () => ({ Audio: () => null }));
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('../../shared/Errors', () => ({ default: () => null }));
+vi.mock('react-loader-spinner', () => ({ Audio: () => null }));
+vi.mock('react-bootstrap', () => {
   const Form = ({ children, ...props }) =>
     React.createElement('form', props, children);
   Form.Control = (props) => React.createElement('input', props);
   return { Form };
 });
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>

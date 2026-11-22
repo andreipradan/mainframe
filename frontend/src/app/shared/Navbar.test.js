@@ -3,19 +3,18 @@ import { createRoot } from 'react-dom/client';
 import { Simulate } from 'react-dom/test-utils';
 import Navbar from './Navbar';
 
-const mockDispatch = jest.fn();
-const mockHistory = { push: jest.fn() };
+const mockDispatch = vi.fn();
+const mockHistory = { push: vi.fn() };
 let mockState = {};
 const rpiSession = 'rpi-session';
 const authSession = 'auth-session';
 
-jest.mock('react-redux', () => ({
+vi.mock('react-redux', () => ({
   useDispatch: () => mockDispatch,
   useSelector: (selector) => selector(mockState),
 }));
 
-jest.mock('react-router-dom', () => {
-  const React = require('react');
+vi.mock('react-router-dom', () => {
   return {
     Link: ({ children, to, ...props }) =>
       React.createElement('a', { href: to, ...props }, children),
@@ -23,22 +22,22 @@ jest.mock('react-router-dom', () => {
   };
 });
 
-jest.mock('react-i18next', () => ({
+vi.mock('react-i18next', () => ({
   Trans: ({ children }) => children,
 }));
 
-jest.mock('react-tooltip', () => ({
+vi.mock('react-tooltip', () => ({
   Tooltip: ({ children }) => <div>{children}</div>,
 }));
 
-jest.mock('../../api/auth', () => ({
+vi.mock('../../api/auth', () => ({
   __esModule: true,
   default: {
     Logout: (token, history) => ({ type: 'auth/logout', token, history }),
   },
 }));
 
-jest.mock('../../api/rpi', () => ({
+vi.mock('../../api/rpi', () => ({
   __esModule: true,
   default: {
     login: (credentials) => ({ type: 'rpi/login', credentials }),
@@ -46,10 +45,9 @@ jest.mock('../../api/rpi', () => ({
   },
 }));
 
-jest.mock('./Errors', () => () => null);
+vi.mock('./Errors', () => ({ default: () => null }));
 
-jest.mock('react-bootstrap', () => {
-  const React = require('react');
+vi.mock('react-bootstrap', () => {
   const Dropdown = ({
     children,
     as: Component = 'div',
@@ -102,8 +100,7 @@ jest.mock('react-bootstrap', () => {
   return { Dropdown, Form, Modal };
 });
 
-jest.mock('react-bootstrap/Button', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Button', () => {
   return {
     __esModule: true,
     default: ({ children, ...props }) =>
@@ -111,8 +108,7 @@ jest.mock('react-bootstrap/Button', () => {
   };
 });
 
-jest.mock('react-bootstrap/Modal', () => {
-  const React = require('react');
+vi.mock('react-bootstrap/Modal', () => {
   const Modal = ({ children, show, onHide }) =>
     show
       ? React.createElement(
