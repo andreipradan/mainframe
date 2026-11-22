@@ -1,5 +1,6 @@
 import io
 import re
+import unicodedata
 from datetime import datetime
 
 from django.core.exceptions import ValidationError
@@ -11,6 +12,32 @@ from mainframe.finance.tasks import backup_finance_model
 
 
 class TimetableImportError(Exception): ...
+
+
+def is_expected_header(fields):
+    normalized_fields = unicodedata.normalize("NFKD", fields).casefold()
+    normalized_fields = "".join(
+        character
+        for character in normalized_fields
+        if not unicodedata.combining(character)
+    )
+    normalized_fields = " ".join(normalized_fields.split())
+    expected_fields = (
+        "data urmatoarei plati",
+        "suma de plata",
+        "dobanda",
+        "rata capital",
+        "capital datorat la sfarsitul perioadei",
+        "prima asigurare",
+    )
+
+    next_position = 0
+    for expected_field in expected_fields:
+        position = normalized_fields.find(expected_field, next_position)
+        if position == -1:
+            return False
+        next_position = position + len(expected_field)
+    return True
 
 
 def extract_amortization_table(pages):
@@ -30,13 +57,10 @@ def extract_first_page(first_page, logger):
         summary, contents = first_page.extract_text().split("TABEL DE AMORTIZARE")
     except ValueError as e:
         raise TimetableImportError("Could not extract details on first page") from e
-    fields, _, *rows, footer, __ = [x for x in contents.split("\n") if x]
-    if fields != (
-        "Data următoarei plăţi"
-        "Suma de plată "
-        "Dobânda Rata capital Capital datorat la sfârşitul perioadei"
-        "Primă asigurare"
-    ):
+    fields, header_continuation, *rows, footer, __ = [
+        x for x in contents.split("\n") if x
+    ]
+    if not is_expected_header(f"{fields} {header_continuation}"):
         raise TimetableImportError("Format has changed, please update extraction logic")
     if not footer.startswith(
         "Scadenţar al Rambursării Creditului şi Dobânzilor Data raport:"
