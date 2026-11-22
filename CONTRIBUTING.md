@@ -16,11 +16,13 @@ This file contains developer-facing contribution and testing guidelines for the 
 - Start the Vite development server on port 3000: `uv run poe frontend`
 - For local development without Poe, run `cd frontend && npm run dev`. The
   local frontend API fallback is `http://127.0.0.1:8000/`.
-- In Codespaces, create a superuser with a unique password using
-  `uv run poe createsuperuser` while backend port 8000 is still private. Then
-  make that port public in the VS Code **Ports** tab. The Poe frontend task
-  sets `VITE_API_URL` to the Codespaces backend URL; do not expose ports
-  programmatically. The post-create script adds
+- In Codespaces, the post-create script provisions a development superuser
+  with a unique password stored in the git-ignored `src/mainframe/.env`.
+  Sign in as `user@test.com`; retrieve the password with
+  `grep '^DEV_SUPERUSER_PASSWORD=' src/mainframe/.env` while backend port 8000
+  is still private, then make that port public in the VS Code **Ports** tab.
+  The Poe frontend task sets `VITE_API_URL` to the Codespaces backend URL; do
+  not expose ports programmatically. The post-create script adds
   `<CODESPACE_NAME>-8000.app.github.dev` to Django's `ALLOWED_HOSTS`.
 - The frontend reads `VITE_API_URL` and `VITE_NGROK_URL` from Vite's
   environment. CI supplies both variables to the production build.
