@@ -5,7 +5,7 @@ import 'ace-builds';
 import 'ace-builds/src-noconflict/ext-searchbox';
 import App from './app/App';
 import './i18n';
-import * as serviceWorker from './serviceWorker';
+import { unregister } from './serviceWorker';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
@@ -18,4 +18,4 @@ createRoot(document.getElementById('root')).render(
   document.getElementById('root')
 );
 
-serviceWorker.unregister();
+unregister();
