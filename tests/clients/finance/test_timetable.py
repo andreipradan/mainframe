@@ -82,6 +82,37 @@ def test_extract_first_page_accepts_new_homebank_header():
     ]
 
 
+def test_extract_first_page_accepts_header_without_continuation_line():
+    account = SimpleNamespace(id=1)
+    credit = SimpleNamespace(id=2)
+    page = make_first_page()
+    page.extract_text.return_value = (
+        "summary\nTABEL DE AMORTIZARE\n"
+        f"{HEADER}\n"
+        "17.12.2026 1470.27 875.8 594.47 169188.96 50.02\n"
+        f"{FOOTER}\n"
+        "end"
+    )
+
+    with (
+        mock.patch.object(timetable, "extract_summary", return_value=SUMMARY_DATA),
+        mock.patch.object(
+            timetable.Account.objects,
+            "get_or_create",
+            return_value=(account, True),
+        ),
+        mock.patch.object(
+            timetable.Credit.objects,
+            "get_or_create",
+            return_value=(credit, True),
+        ),
+        mock.patch.object(timetable, "backup_finance_model"),
+    ):
+        result = timetable.extract_first_page(page, mock.MagicMock())
+
+    assert result.amortization_table[0]["date"] == "17.12.2026"
+
+
 def test_extract_first_page_rejects_missing_title():
     page = mock.Mock(extract_text=mock.Mock(return_value="No table"))
 
