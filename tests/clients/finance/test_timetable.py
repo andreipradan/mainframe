@@ -161,6 +161,28 @@ def test_extract_summary_parses_account_credit_and_rate_values():
     assert timetable.extract_summary(summary) == SUMMARY_DATA
 
 
+def test_extract_summary_parses_fields_merged_onto_same_line():
+    summary = "\n".join(
+        [
+            "Cod Client 123456",
+            "Numele Doe Prenumele Jane",
+            "Număr cont 789",
+            "Număr şi data contract credit 98765 -01.02.2020 "
+            "Rata dobânzii fixă înprimii 5 ani: 5,50",
+            "Rata dobânzii variabilă folosită",
+            "începând cu al 6\xadlea an al duratei",
+            "creditului",
+            "4.25 compusă din:",
+            "Marjă: +1.25 şi Indice IRCC: 3.00",
+            "Valoare credit 100.000,00 Moneda RON",
+            "Scadenţarul este generat pentru o",
+            "perioadă de 360 luni",
+        ]
+    )
+
+    assert timetable.extract_summary(summary) == SUMMARY_DATA
+
+
 def test_extract_summary_rejects_unexpected_format():
     with pytest.raises(ValueError, match="Line does not match"):
         timetable.extract_summary("Unexpected summary")

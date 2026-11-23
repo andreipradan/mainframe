@@ -120,7 +120,7 @@ def extract_rows(rows):
 def extract_summary(summary):
     expected = [
         r"Cod Client (\d+)",
-        r"Numele ([^>]+) Prenumele ([^>]+)",
+        r"Numele ([^>\n]+) Prenumele ([^>\n]+)",
         r"Număr cont (\d+)",
         r"Număr şi data contract credit (\d+) -",
         r"(\d{2}\.\d{2}\.\d{4})",
@@ -136,12 +136,14 @@ def extract_summary(summary):
         r"perioadă de (\d+) luni",
     ]
     extracted_values = []
+    position = 0
 
-    for line, pattern in zip(summary.split("\n"), expected, strict=False):
-        match = re.match(pattern, line)
+    for pattern in expected:
+        match = re.compile(pattern).search(summary, position)
         if not match:
             raise ValueError(f"Line does not match expected format: {pattern}")
         extracted_values.extend(match.groups())
+        position = match.end()
 
     return {
         "account__client_code": extracted_values[0],
