@@ -89,7 +89,7 @@ def test_extract_first_page_accepts_header_without_continuation_line():
     page.extract_text.return_value = (
         "summary\nTABEL DE AMORTIZARE\n"
         f"{HEADER}\n"
-        "17.12.2026 1470.27 875.8 594.47 169188.96 50.02\n"
+        "31.12.2099 99999.99 88888.88 11111.11 777777.77 666.66\n"
         f"{FOOTER}\n"
         "end"
     )
@@ -110,7 +110,7 @@ def test_extract_first_page_accepts_header_without_continuation_line():
     ):
         result = timetable.extract_first_page(page, mock.MagicMock())
 
-    assert result.amortization_table[0]["date"] == "17.12.2026"
+    assert result.amortization_table[0]["date"] == "31.12.2099"
 
 
 def test_extract_first_page_rejects_missing_title():
