@@ -10,9 +10,9 @@ export const handleErrors = (err, dispatch, setErrors, setLoading) => {
       return dispatch(setErrors([error]));
     }
     if (err.response.data) {
-      const isNgrok = err.request.responseURL.startsWith(
-        import.meta.env.VITE_NGROK_URL
-      );
+      const ngrokUrl = import.meta.env.VITE_NGROK_URL;
+      const isNgrok =
+        Boolean(ngrokUrl) && err.request.responseURL.startsWith(ngrokUrl);
       if (!isNgrok && err.response.data?.msg === 'User is not logged on.') {
         toast.warning('Session expired - please log in!', toastParams);
         if (setLoading) dispatch(setLoading(false));

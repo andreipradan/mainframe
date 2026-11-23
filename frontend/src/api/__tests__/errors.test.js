@@ -19,6 +19,11 @@ describe('handleErrors', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv('VITE_NGROK_URL', '');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   test('dispatches unexpected-response messages for non-JSON responses', () => {
