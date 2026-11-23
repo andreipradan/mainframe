@@ -35,7 +35,7 @@ def make_first_page(header=HEADER, footer=FOOTER):
     rows = (
         f"{header}\n"
         "de viață de grup\n"
-        "17.12.2026 1470.27 875.8 594.47 169188.96 50.02\n"
+        "31.12.2099 99999.99 88888.88 11111.11 777777.77 666.66\n"
         f"{footer}\n"
         "end"
     )
@@ -67,12 +67,12 @@ def test_extract_first_page_accepts_new_homebank_header():
     assert result.date.isoformat() == "2026-11-22"
     assert result.amortization_table == [
         {
-            "date": "17.12.2026",
-            "total": "1470.27",
-            "interest": "875.8",
-            "principal": "594.47",
-            "remaining": "169188.96",
-            "insurance": "50.02",
+            "date": "31.12.2099",
+            "total": "99999.99",
+            "interest": "88888.88",
+            "principal": "11111.11",
+            "remaining": "777777.77",
+            "insurance": "666.66",
         }
     ]
     assert logger.warning.call_count == 2
@@ -80,6 +80,37 @@ def test_extract_first_page_accepts_new_homebank_header():
         {"model": "Account"},
         {"model": "Credit"},
     ]
+
+
+def test_extract_first_page_accepts_header_without_continuation_line():
+    account = SimpleNamespace(id=1)
+    credit = SimpleNamespace(id=2)
+    page = make_first_page()
+    page.extract_text.return_value = (
+        "summary\nTABEL DE AMORTIZARE\n"
+        f"{HEADER}\n"
+        "31.12.2099 99999.99 88888.88 11111.11 777777.77 666.66\n"
+        f"{FOOTER}\n"
+        "end"
+    )
+
+    with (
+        mock.patch.object(timetable, "extract_summary", return_value=SUMMARY_DATA),
+        mock.patch.object(
+            timetable.Account.objects,
+            "get_or_create",
+            return_value=(account, True),
+        ),
+        mock.patch.object(
+            timetable.Credit.objects,
+            "get_or_create",
+            return_value=(credit, True),
+        ),
+        mock.patch.object(timetable, "backup_finance_model"),
+    ):
+        result = timetable.extract_first_page(page, mock.MagicMock())
+
+    assert result.amortization_table[0]["date"] == "31.12.2099"
 
 
 def test_extract_first_page_rejects_missing_title():
@@ -105,15 +136,15 @@ def test_extract_first_page_rejects_invalid_footer():
 
 def test_extract_rows_maps_all_columns():
     assert timetable.extract_rows(
-        ["17.12.2026 1470.27 875.8 594.47 169188.96 50.02"]
+        ["31.12.2099 99999.99 88888.88 11111.11 777777.77 666.66"]
     ) == [
         {
-            "date": "17.12.2026",
-            "total": "1470.27",
-            "interest": "875.8",
-            "principal": "594.47",
-            "remaining": "169188.96",
-            "insurance": "50.02",
+            "date": "31.12.2099",
+            "total": "99999.99",
+            "interest": "88888.88",
+            "principal": "11111.11",
+            "remaining": "777777.77",
+            "insurance": "666.66",
         }
     ]
     assert timetable.extract_rows([]) == []
@@ -123,13 +154,14 @@ def test_extract_amortization_table_checks_page_number():
     page = mock.Mock(
         extract_text=mock.Mock(
             return_value=(
-                "17.12.2026 1470.27 875.8 594.47 169188.96 50.02\ntable footer\n2/5"
+                "31.12.2099 99999.99 88888.88 11111.11 777777.77 666.66\n"
+                "table footer\n2/5"
             )
         )
     )
 
     assert timetable.extract_amortization_table([page]) == timetable.extract_rows(
-        ["17.12.2026 1470.27 875.8 594.47 169188.96 50.02"]
+        ["31.12.2099 99999.99 88888.88 11111.11 777777.77 666.66"]
     )
 
     page.extract_text.return_value = "row\nfooter\n3/5"

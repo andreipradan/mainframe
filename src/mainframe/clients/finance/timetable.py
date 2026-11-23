@@ -57,14 +57,30 @@ def extract_first_page(first_page, logger):
         summary, contents = first_page.extract_text().split("TABEL DE AMORTIZARE")
     except ValueError as e:
         raise TimetableImportError("Could not extract details on first page") from e
-    fields, header_continuation, *rows, footer, __ = [
-        x for x in contents.split("\n") if x
+    lines = [x for x in contents.split("\n") if x]
+    row_indexes = [
+        index
+        for index, line in enumerate(lines)
+        if re.match(r"\d{2}\.\d{2}\.\d{4}(?:\s|$)", line)
     ]
-    if not is_expected_header(f"{fields} {header_continuation}"):
+    if not row_indexes:
         raise TimetableImportError("Format has changed, please update extraction logic")
-    if not footer.startswith(
-        "Scadenţar al Rambursării Creditului şi Dobânzilor Data raport:"
-    ):
+
+    first_row_index = row_indexes[0]
+    header = " ".join(lines[:first_row_index])
+    if not is_expected_header(header):
+        raise TimetableImportError("Format has changed, please update extraction logic")
+    footer = next(
+        (
+            line
+            for line in lines[first_row_index:]
+            if line.startswith(
+                "Scadenţar al Rambursării Creditului şi Dobânzilor Data raport:"
+            )
+        ),
+        None,
+    )
+    if footer is None:
         raise TimetableImportError("Invalid footer format")
     date = footer.split("Data raport: ")[-1]
     summary = extract_summary(summary)
@@ -97,7 +113,7 @@ def extract_first_page(first_page, logger):
         interest=summary["interest"],
         ircc=summary["ircc"],
         margin=summary["margin"],
-        amortization_table=extract_rows(rows),
+        amortization_table=extract_rows([lines[index] for index in row_indexes]),
     )
 
 

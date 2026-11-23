@@ -86,6 +86,12 @@ Notes on Test Placement and Naming
 	consistent). This keeps tests consistent and reduces import-time side effects.
 - When testing mocked interactions, do not just verify that a certain mock was called (e.g., `mock.assert_called_once()`). Instead, validate the entire `call_args_list` in its entirety to ensure the correct arguments, keyword arguments, and call sequence are used. This provides stronger guarantees about the behavior being tested.
 
+## Sensitive Data
+
+- Never add personally identifiable information (PII), real production or live data, credentials, tokens, or other sensitive data to source code, tests, fixtures, snapshots, logs, documentation, or commits.
+- Use clearly fabricated, synthetic values in tests. Never copy data from production records, user-provided files, external service responses, or logs into the repository.
+- Keep secrets out of source and test code. Read configuration from environment variables or settings, and use fake values when testing credential handling.
+
 ## Code Conventions
 
 - Use `snake_case` for functions/variables and `PascalCase` for classes.
